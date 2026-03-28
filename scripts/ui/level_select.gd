@@ -1,11 +1,16 @@
 extends Control
 
-## Level selection screen. Shows levels 1-10 with star ratings and lock states.
+## Level selection screen with background art.
 
 @onready var level_grid: GridContainer = $MarginContainer/VBoxContainer/LevelGrid
+@onready var bg: TextureRect = $Background
 
 
 func _ready() -> void:
+	# Try to load level select background
+	var bg_path := "res://assets/textures/ui/levelselect_bg.png"
+	if bg and ResourceLoader.exists(bg_path):
+		bg.texture = load(bg_path)
 	_populate_levels()
 
 
@@ -60,10 +65,7 @@ func _stars_text(count: int) -> String:
 
 func _on_level_pressed(level_id: int) -> void:
 	GameManager.start_level(level_id)
-	# Go to story screen as a full scene change (not overlay)
 	get_tree().change_scene_to_file("res://scenes/ui/story_screen.tscn")
-	# The story screen will call setup() in its own _ready()
-	# We pass the level_id via GameManager.current_level
 
 
 func _on_back_button_pressed() -> void:

@@ -21,33 +21,34 @@ texture = ExtResource("2")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="ButtonContainer" type="VBoxContainer" parent="."]
+[node name="ButtonPanel" type="PanelContainer" parent="."]
 layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = -200.0
-offset_left = 40.0
-offset_right = -40.0
+offset_top = -230.0
 grow_vertical = 0
-theme_override_constants/separation = 12
 
-[node name="PlayButton" type="Button" parent="ButtonContainer"]
+[node name="ButtonContainer" type="VBoxContainer" parent="ButtonPanel"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 55)
+theme_override_constants/separation = 8
+
+[node name="PlayButton" type="Button" parent="ButtonPanel/ButtonContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 60)
 text = "RAUBZUG STARTE"
 
-[node name="LoreButton" type="Button" parent="ButtonContainer"]
+[node name="LoreButton" type="Button" parent="ButtonPanel/ButtonContainer"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 45)
+custom_minimum_size = Vector2(0, 50)
 text = "D'HEILIGI GSCHICHT"
 
-[node name="QuitButton" type="Button" parent="ButtonContainer"]
+[node name="QuitButton" type="Button" parent="ButtonPanel/ButtonContainer"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 45)
+custom_minimum_size = Vector2(0, 50)
 text = "ABHAUE (QUIT)"
 
-[connection signal="pressed" from="ButtonContainer/PlayButton" to="." method="_on_play_button_pressed"]
-[connection signal="pressed" from="ButtonContainer/LoreButton" to="." method="_on_lore_button_pressed"]
-[connection signal="pressed" from="ButtonContainer/QuitButton" to="." method="_on_quit_button_pressed"]
+[connection signal="pressed" from="ButtonPanel/ButtonContainer/PlayButton" to="." method="_on_play_button_pressed"]
+[connection signal="pressed" from="ButtonPanel/ButtonContainer/LoreButton" to="." method="_on_lore_button_pressed"]
+[connection signal="pressed" from="ButtonPanel/ButtonContainer/QuitButton" to="." method="_on_quit_button_pressed"]
