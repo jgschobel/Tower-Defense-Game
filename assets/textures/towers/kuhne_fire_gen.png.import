@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dd6wp8f6yxvu5"
-path="res://.godot/imported/djbooth.png-7f80e14d1eb192691c3d040c01024137.ctex"
+uid="uid://bqflaacvk6nt3"
+path="res://.godot/imported/kuhne_fire_gen.png-84cf155f550bc6a284fca2d4e4ccd1d7.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/textures/towers/djbooth.png"
-dest_files=["res://.godot/imported/djbooth.png-7f80e14d1eb192691c3d040c01024137.ctex"]
+source_file="res://assets/textures/towers/kuhne_fire_gen.png"
+dest_files=["res://.godot/imported/kuhne_fire_gen.png-84cf155f550bc6a284fca2d4e4ccd1d7.ctex"]
 
 [params]
 

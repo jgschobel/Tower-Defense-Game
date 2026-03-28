@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b54juam2gw10"
-path="res://.godot/imported/sniper.png-4bb716c05b43f4c8156aab8a8c970856.ctex"
+uid="uid://nrjsnyd7rmoe"
+path="res://.godot/imported/kuhne_fire.png-d6a547e5b6df22e22ceba0f8d52acc06.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/textures/towers/sniper.png"
-dest_files=["res://.godot/imported/sniper.png-4bb716c05b43f4c8156aab8a8c970856.ctex"]
+source_file="res://assets/textures/towers/kuhne_fire.png"
+dest_files=["res://.godot/imported/kuhne_fire.png-d6a547e5b6df22e22ceba0f8d52acc06.ctex"]
 
 [params]
 

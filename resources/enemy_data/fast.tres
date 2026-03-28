@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1")
 id = "fast"
-display_name = "Turbo Toblerone"
+display_name = "Turbo Hafer-Riegel"
 friend_character_id = "enemy_2"
 max_health = 60.0
 move_speed = 160.0

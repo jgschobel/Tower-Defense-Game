@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1")
 id = "boss"
-display_name = "Der M-Teufel"
+display_name = "De Vegan-Tüüfel"
 friend_character_id = "enemy_boss"
 max_health = 2000.0
 move_speed = 35.0

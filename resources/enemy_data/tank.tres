@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1")
 id = "tank"
-display_name = "Beefy Cervelat"
+display_name = "Mega Soja-Steak"
 friend_character_id = "enemy_3"
 max_health = 400.0
 move_speed = 45.0

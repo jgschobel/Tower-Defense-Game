@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1")
 id = "healer"
-display_name = "Dr. Rivella"
+display_name = "Dr. Hafer-Milch"
 friend_character_id = "enemy_4"
 max_health = 120.0
 move_speed = 70.0

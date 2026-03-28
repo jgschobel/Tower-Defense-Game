@@ -24,7 +24,7 @@ var _game_speed: float = 1.0
 var _selected_tower: BaseTower = null
 var _is_placing: bool = false
 
-var _shop_tower_ids: Array = ["basic", "sniper", "splash", "slow", "support"]
+var _shop_tower_ids: Array = ["basic", "sniper", "splash", "slow"]
 
 
 func _ready() -> void:

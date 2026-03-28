@@ -1,19 +1,19 @@
 [gd_resource type="Resource" script_class="TowerData" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/towers/tower_data.gd" id="1"]
-[ext_resource type="Texture2D" path="res://assets/textures/towers/bomber.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/textures/towers/jojo.png" id="2"]
 
 [resource]
 script = ExtResource("1")
 id = "splash"
-display_name = "Bärius"
-description = "A burly bear who lobs explosives at groups. Great crowd control. Can't hit flyers."
-friend_character_id = "friend_3"
+display_name = "JoJo"
+description = "De verruckti Chemiker! Schmeisst Chemikalie uf Gruppe vo Feind. Splash-Schade!"
+friend_character_id = "friend_jojo"
 buy_cost = 175
 sell_return_pct = 0.6
 damage = 30.0
 attack_speed = 0.7
-attack_range = 130.0
+attack_range = 140.0
 damage_type = 1
 target_mode = 0
 is_splash = true
@@ -25,11 +25,11 @@ can_target_flying = false
 buff_range = 0.0
 buff_damage_pct = 0.0
 buff_speed_pct = 0.0
-base_color = Color(1, 0.5, 0, 1)
-projectile_color = Color(1, 0.6, 0, 1)
+base_color = Color(0.2, 0.8, 0.3, 1)
+projectile_color = Color(0.3, 1.0, 0.4, 1)
 custom_texture = ExtResource("2")
 upgrade_costs = Array[int]([200, 400, 800])
 upgrade_damage_bonus = Array[float]([15.0, 30.0, 50.0])
 upgrade_range_bonus = Array[float]([10.0, 20.0, 35.0])
 upgrade_speed_bonus = Array[float]([0.1, 0.15, 0.25])
-upgrade_names = Array[String](["Heavy Bombs", "Napalm", "Carpet Bomber"])
+upgrade_names = Array[String](["Stärcheri Formel", "Chaos-Chemie", "Lotter JoJo"])

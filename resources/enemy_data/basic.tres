@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1")
 id = "basic"
-display_name = "Angry Brötli"
+display_name = "Wüetende Tofu-Würschtli"
 friend_character_id = "enemy_1"
 max_health = 100.0
 move_speed = 80.0

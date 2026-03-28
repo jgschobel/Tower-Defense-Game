@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://djn7mbbntgsfl"
-path="res://.godot/imported/bomber_gen.png-43117dc1bf12d809b5411cc631731bdc.ctex"
+uid="uid://d22l1ghr68l4v"
+path="res://.godot/imported/jojo.png-0da0c5dda42bdcdfd0321b90e6c19e1f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/textures/towers/bomber_gen.png"
-dest_files=["res://.godot/imported/bomber_gen.png-43117dc1bf12d809b5411cc631731bdc.ctex"]
+source_file="res://assets/textures/towers/jojo.png"
+dest_files=["res://.godot/imported/jojo.png-0da0c5dda42bdcdfd0321b90e6c19e1f.ctex"]
 
 [params]
 

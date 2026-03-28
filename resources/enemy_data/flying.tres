@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1")
 id = "flying"
-display_name = "Fliegende Fondue"
+display_name = "Fliegendi Avocado"
 friend_character_id = "enemy_5"
 max_health = 80.0
 move_speed = 110.0

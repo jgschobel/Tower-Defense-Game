@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dgcb0a8xppmj7"
-path="res://.godot/imported/djbooth_gen.png-7b1dce64000bd5b8d9030c6490cc742a.ctex"
+uid="uid://c55hsmsasfq0o"
+path="res://.godot/imported/jojo_lotter.png-d8aca13c2fbf7c6f153d5c3d4a72bd26.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/textures/towers/djbooth_gen.png"
-dest_files=["res://.godot/imported/djbooth_gen.png-7b1dce64000bd5b8d9030c6490cc742a.ctex"]
+source_file="res://assets/textures/towers/jojo_lotter.png"
+dest_files=["res://.godot/imported/jojo_lotter.png-d8aca13c2fbf7c6f153d5c3d4a72bd26.ctex"]
 
 [params]
 

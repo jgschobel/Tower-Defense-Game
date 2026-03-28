@@ -1,20 +1,20 @@
 [gd_resource type="Resource" script_class="TowerData" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/towers/tower_data.gd" id="1"]
-[ext_resource type="Texture2D" path="res://assets/textures/towers/sniper.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/textures/towers/kuhne.png" id="2"]
 
 [resource]
 script = ExtResource("1")
 id = "sniper"
-display_name = "Falkenius"
-description = "A hawk-eyed marksman. Long range, devastating shots. Targets the strongest enemy."
-friend_character_id = "friend_2"
+display_name = "Kühne"
+description = "E Blueme-Meitli wo Blütestaub schüüsst. Langi Riichwiiti, trifft d'stärchschte Feind."
+friend_character_id = "friend_kuhne"
 buy_cost = 200
 sell_return_pct = 0.6
 damage = 80.0
 attack_speed = 0.4
 attack_range = 300.0
-damage_type = 0
+damage_type = 1
 target_mode = 3
 is_splash = false
 splash_radius = 0.0
@@ -25,11 +25,11 @@ can_target_flying = true
 buff_range = 0.0
 buff_damage_pct = 0.0
 buff_speed_pct = 0.0
-base_color = Color(0.6, 0.1, 0.1, 1)
-projectile_color = Color(1, 0.2, 0.2, 1)
+base_color = Color(0.9, 0.8, 0.2, 1)
+projectile_color = Color(1, 0.95, 0.3, 1)
 custom_texture = ExtResource("2")
 upgrade_costs = Array[int]([250, 500, 1000])
 upgrade_damage_bonus = Array[float]([30.0, 60.0, 120.0])
 upgrade_range_bonus = Array[float]([30.0, 50.0, 80.0])
 upgrade_speed_bonus = Array[float]([0.05, 0.1, 0.15])
-upgrade_names = Array[String](["Marksman", "Elite Sniper", "Deadeye"])
+upgrade_names = Array[String](["Giftige Pollen", "Iis-Blüete", "Füür-Lilie"])
