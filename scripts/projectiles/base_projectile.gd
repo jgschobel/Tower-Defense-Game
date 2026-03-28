@@ -82,10 +82,14 @@ func _process(delta: float) -> void:
 func _draw() -> void:
 	if not _is_tongue:
 		return
-	# Draw bright pink tongue from tower center to projectile tip
+	# Draw hot pink tongue from tower face to projectile tip
 	var local_origin := to_local(_origin_pos)
-	draw_line(local_origin, Vector2.ZERO, Color(1.0, 0.2, 0.55, 0.95), 8.0)
-	draw_circle(Vector2.ZERO, 10.0, Color(1.0, 0.1, 0.4, 1.0))
+	# Thick tongue line
+	draw_line(local_origin, Vector2.ZERO, Color(1.0, 0.1, 0.45, 1.0), 10.0)
+	# Thinner highlight stripe down the middle
+	draw_line(local_origin, Vector2.ZERO, Color(1.0, 0.4, 0.6, 0.7), 4.0)
+	# Round sticky tip
+	draw_circle(Vector2.ZERO, 12.0, Color(1.0, 0.05, 0.35, 1.0))
 
 
 func _hit() -> void:
