@@ -1,14 +1,13 @@
 extends Control
 
-## Story cutscene with character portraits talking to each other.
+## Story cutscene with character portraits and typewriter text.
 
 @onready var bg: TextureRect = $Background
 @onready var title_label: Label = $Panel/VBox/TitleLabel
 @onready var subtitle_label: Label = $Panel/VBox/SubtitleLabel
-@onready var dialogue_container: HBoxContainer = $Panel/VBox/DialogueContainer
-@onready var left_portrait: TextureRect = $Panel/VBox/DialogueContainer/LeftPortrait
-@onready var story_label: Label = $Panel/VBox/DialogueContainer/StoryScroll/StoryLabel
-@onready var right_portrait: TextureRect = $Panel/VBox/DialogueContainer/RightPortrait
+@onready var left_portrait: TextureRect = $Panel/VBox/PortraitRow/LeftPortrait
+@onready var right_portrait: TextureRect = $Panel/VBox/PortraitRow/RightPortrait
+@onready var story_label: Label = $Panel/VBox/StoryScroll/StoryLabel
 @onready var enemy_label: Label = $Panel/VBox/EnemyLabel
 @onready var continue_button: Button = $Panel/VBox/ContinueButton
 
@@ -28,7 +27,7 @@ func _ready() -> void:
 	if bg and ResourceLoader.exists(bg_path):
 		bg.texture = load(bg_path)
 
-	# Load character portraits
+	# Load character portraits (small, centered)
 	var lemurius_path := "res://assets/textures/towers/lemurius.png"
 	var amosius_path := "res://assets/textures/towers/amosius.png"
 	if left_portrait and ResourceLoader.exists(lemurius_path):
