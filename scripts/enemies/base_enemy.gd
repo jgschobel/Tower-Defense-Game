@@ -313,7 +313,22 @@ func _heal_nearby() -> void:
 
 
 func _spawn_children() -> void:
-	pass
+	if not data or data.spawns_on_death == "" or data.spawn_count <= 0:
+		return
+	var parent_path := get_parent() as Path2D
+	if not parent_path:
+		return
+	var enemy_scene := preload("res://scenes/enemies/base_enemy.tscn")
+	var data_path := "res://resources/enemy_data/%s.tres" % data.spawns_on_death
+	if not ResourceLoader.exists(data_path):
+		return
+	var child_data = load(data_path)
+	for i in data.spawn_count:
+		var child = enemy_scene.instantiate()
+		child.data = child_data
+		child.add_to_group("enemies")
+		parent_path.add_child(child)
+		child.progress = progress + (i * 20.0)
 
 
 func _on_heal_timer_timeout() -> void:

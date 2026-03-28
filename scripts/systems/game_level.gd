@@ -16,10 +16,14 @@ var wave_definitions: Array = []
 
 
 func _ready() -> void:
+	# Always use the level from GameManager (set by level select)
+	level_id = GameManager.current_level
+
 	# Safety init for standalone testing (F5 in editor)
 	if CurrencyManager.gold == 0:
 		GameManager.start_level(level_id)
 
+	Engine.time_scale = 1.0
 	MusicManager.play_music()
 
 	wave_manager.enemy_path = enemy_path

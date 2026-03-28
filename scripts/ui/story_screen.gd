@@ -32,7 +32,7 @@ func _ready() -> void:
 	if story_label:
 		story_label.text = ""
 
-	continue_button.text = "Skip..."
+	continue_button.text = "Überspringä..."
 
 
 func _process(delta: float) -> void:
@@ -42,7 +42,7 @@ func _process(delta: float) -> void:
 	if _char_index >= _full_text.length():
 		_char_index = _full_text.length()
 		_typing = false
-		continue_button.text = "LOS GEHT'S!"
+		continue_button.text = "LOS GAHT'S!"
 	if story_label:
 		story_label.text = _full_text.left(_char_index)
 
@@ -54,7 +54,7 @@ func _on_continue_button_pressed() -> void:
 		_char_index = _full_text.length()
 		if story_label:
 			story_label.text = _full_text
-		continue_button.text = "LOS GEHT'S!"
+		continue_button.text = "LOS GAHT'S!"
 	else:
 		# Start the level — change to the game scene
 		var level_path := "res://scenes/game/level_%d.tscn" % _level_id

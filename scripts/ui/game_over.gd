@@ -9,34 +9,63 @@ extends Control
 @onready var next_button: Button = $Panel/VBoxContainer/HBoxContainer/NextButton
 @onready var menu_button: Button = $Panel/VBoxContainer/HBoxContainer/MenuButton
 
+var _victory_messages_3 := [
+	"Perfekt! Kei einzigi Banane verlore!",
+	"De M-Tüüfel isch am hüle! Din Banane-Rabatt isch SICHER!",
+	"Lemurius und Amösius sind unstoppbar!",
+]
+var _victory_messages_2 := [
+	"Guet gmacht! D'Migros isch grettet!",
+	"Chli Schäde, aber mir händ's packt!",
+]
+var _victory_messages_1 := [
+	"Knapp... aber mir händ überläbt!",
+	"Das isch eng gsi. Meh Banane nächscht Mal!",
+]
+var _defeat_messages := [
+	"Sie sind duregbroche! D'Banane sind verlore!",
+	"De M-Tüüfel lachet! Versuch's nomal!",
+	"D'Migros isch gfalle... aber mir gäbed nöd uf!",
+]
+
 
 func show_victory(stars: int) -> void:
 	visible = true
 	if title_label:
-		title_label.text = "VICTORY!"
+		title_label.text = "SIEG!"
 	if stars_label:
 		stars_label.text = "*".repeat(stars) + "-".repeat(3 - stars)
 	if message_label:
 		if stars == 3:
-			message_label.text = "Perfect! Not a scratch!"
+			message_label.text = _victory_messages_3[randi() % _victory_messages_3.size()]
 		elif stars == 2:
-			message_label.text = "Well done!"
+			message_label.text = _victory_messages_2[randi() % _victory_messages_2.size()]
 		else:
-			message_label.text = "Close call... but you made it!"
+			message_label.text = _victory_messages_1[randi() % _victory_messages_1.size()]
 	if next_button:
 		next_button.visible = GameManager.current_level < GameManager.MAX_LEVELS
+	if retry_button:
+		retry_button.text = "Nomal"
+	if next_button:
+		next_button.text = "Wiiter"
+	if menu_button:
+		menu_button.text = "Menü"
 
 
 func show_defeat() -> void:
 	visible = true
 	if title_label:
-		title_label.text = "DEFEATED"
+		title_label.text = "VERLORE!"
 	if stars_label:
 		stars_label.text = ""
 	if message_label:
-		message_label.text = "They broke through! Try again?"
+		message_label.text = _defeat_messages[randi() % _defeat_messages.size()]
 	if next_button:
 		next_button.visible = false
+	if retry_button:
+		retry_button.text = "Nomal"
+	if menu_button:
+		menu_button.text = "Menü"
 
 
 func _on_retry_button_pressed() -> void:
@@ -49,13 +78,10 @@ func _on_next_button_pressed() -> void:
 	Engine.time_scale = 1.0
 	var next_level := GameManager.current_level + 1
 	GameManager.start_level(next_level)
-	var path := "res://scenes/game/level_%d.tscn" % next_level
-	if ResourceLoader.exists(path):
-		get_tree().change_scene_to_file(path)
-	else:
-		get_tree().change_scene_to_file("res://scenes/game/game.tscn")
+	get_tree().change_scene_to_file("res://scenes/ui/story_screen.tscn")
 
 
 func _on_menu_button_pressed() -> void:
 	Engine.time_scale = 1.0
+	MusicManager.stop_music()
 	get_tree().change_scene_to_file("res://scenes/ui/main_menu.tscn")

@@ -2,102 +2,63 @@ class_name Lore
 extends RefCounted
 
 ## All game lore, story text, and character descriptions.
-## The sacred texts of the Affoltern Banani Raubzug.
-
-# ========================================
-# THE LORE OF AFFOLTERN BANANI RAUBZUG
-# ========================================
-#
-# In the quiet suburb of Affoltern, Zürich, two unlikely heroes share a flat
-# above the Migros supermarket on Wehntalerstrasse.
-#
-# LEMURIUS — a lemur-human hybrid who moved to Switzerland for the chocolate
-# but stayed for the bananas. She works part-time at the Migros banana aisle
-# (employee of the month, 17 times running). Her weapon of choice: bananas,
-# thrown with surgical precision.
-#
-# AMÖSIUS — a gecko-man who claims to be a distant cousin of a Komodo dragon
-# (nobody believes him). He hangs upside down from the ceiling of their flat
-# and catches flies with his tongue. He also catches enemies with it. He once
-# won CHF 2.50 on a Lotto ticket and hasn't shut up about it since.
-#
-# One fateful Tuesday evening, they returned from their weekly Apéro at
-# Biergarten Affoltern to find the Migros in CHAOS. The shelves were alive.
-# The Cervelats were marching. The Brötli were screaming. And at the center
-# of it all, floating above the self-checkout machines, was...
-#
-# DER M-TEUFEL — The Migros Devil himself. A demonic entity made of expired
-# Cumulus points and broken shopping cart wheels. He had cursed every product
-# in the store, turning them into an army of food soldiers.
-#
-# "Your banana discount is REVOKED!" he screamed.
-#
-# Lemurius dropped her Alnatura smoothie.
-# Amösius's tongue went dry.
-#
-# This was personal.
-#
-# And so begins... the AFFOLTERN BANANI RAUBZUG.
+## D'heilige Schrifte vom Affoltern Banani Raubzug.
 
 const GAME_TITLE := "Affoltern Banani Raubzug"
-const GAME_SUBTITLE := "The Great Banana Heist of Zürich-Affoltern"
+const GAME_SUBTITLE := "De Grooss Banane-Raubzug vo Züri-Affoltern"
 
-# Story text shown before each level
 static func get_level_intro(level_id: int) -> Dictionary:
 	match level_id:
 		1:
 			return {
-				"title": "Chapter 1: Migros Affoltern",
-				"subtitle": "Wehntalerstrasse 634, 8046 Zürich",
-				"text": "Tuesday, 19:47. Lemurius and Amösius return from Apéro to find their beloved Migros in chaos. The shelves are alive, the self-checkout is possessed, and someone has put the bananas in the FREEZER AISLE. This cannot stand.\n\nThe first wave of cursed groceries approaches from the entrance...\n\n\"Amösius, do you see what I see?\"\n\"Ja, Lemurius. Those Brötli have eyes now.\"\n\"...and teeth.\"\n\"We're going to need more bananas.\"",
-				"enemy_preview": "Angry Brötli • Turbo Toblerone • Beefy Cervelat",
+				"title": "Kapitel 1: Migros Affoltern",
+				"subtitle": "Jonas Furrer-Strasse 25, 8046 Züri",
+				"text": "Ziischtig, 19:47. D'Lemurius und de Amösius chömed vom Apéro zrugg und finded ihri gliebti Migros im totale Chaos. D'Regäl sind läbig, de Sälf-Tscheckout isch bsässe, und öpper het d'Banane id TIEFCHÜEL-ABTEILIG gstellt. Das gaht gar nöd.\n\nDi erschti Welle vo verfluechtne Lääbesmittel chunnt vom Igang...\n\n\"Amösius, gsehsch du das au?\"\n\"Ja, Lemurius. Die Brötli händ jetzt Auge.\"\n\"...und Zähn.\"\n\"Mir bruuched meh Banane.\"",
+				"enemy_preview": "Bösi Brötli • Turbo Toblerone • Beefy Cervelat",
 			}
 		2:
 			return {
-				"title": "Chapter 2: The Frozen Section",
-				"subtitle": "Temperature: -18°C. Morale: Also -18°C.",
-				"text": "Deep in the frozen food aisle, the cursed products move faster — the cold makes them ANGRY. Frozen pizzas slide across the floor like hockey pucks. Fish sticks have formed a militia.\n\nAmösius's tongue keeps sticking to the shelves.\n\n\"My tongue ith thtuck again.\"\n\"Stop licking the freezer doors, Amösius!\"\n\"I can't help it! I'm a gecko! Cold thurfathes are my weakneth!\"",
-				"enemy_preview": "Frozen Pizza Frisbee • Fish Stick Militia • Ice Cream Golem",
+				"title": "Kapitel 2: D'Tiefchüel-Abteilig",
+				"subtitle": "Temperatur: -18°C. Moral: Au -18°C.",
+				"text": "Tüüf ide Tiefchüel-Abteilig sind d'verfluechte Produkt schnäller — d'Chelti macht sie AGGRESSIV. Gfrorni Pizza rutschet über de Bode wie Hockey-Pucks. Fischstäbli händ es Militär bildet.\n\nEm Amösius sini Zunge bliibt immer a de Regäl härige.\n\n\"Mini Zunge isch scho wieder fescht!\"\n\"Hör uf d'Gfrüürer-Türe z'schlecke, Amösius!\"\n\"Ich chan nüt defür! Ich bi en Gecko! Chalti Oberfläche sind mini Schwächi!\"",
+				"enemy_preview": "Gfrorni Pizza • Fischstäbli-Militär • Glacé-Golem",
 			}
 		3:
 			return {
-				"title": "Chapter 3: The Bakery of Horrors",
-				"subtitle": "Fresh bread. Fresh nightmares.",
-				"text": "The in-store bakery has become a fortress. The Zopf has braided itself into barricades. Gipfeli are dive-bombing from the ceiling. And the sourdough starter... it's ALIVE. Like, more alive than usual.\n\nLemurius spots a crate of organic bananas behind enemy lines.\n\n\"Those are MY bananas. Fairtrade. Bio. CHF 2.95 per kilo.\"\n\"Lemurius, this is not the time—\"\n\"IT IS ALWAYS THE TIME FOR AFFORDABLE ORGANIC BANANAS.\"",
-				"enemy_preview": "Kamikaze Gipfeli • Zopf Barricade • Dr. Rivella • The Sourdough",
+				"title": "Kapitel 3: D'Bäckerei vom Gruse",
+				"subtitle": "Frischs Brot. Frischi Alpträum.",
+				"text": "D'Migros-Bäckerei isch zur Festig worde. De Zopf het sich sälber zu Barrikade gflochte. Gipfeli mached Sturzflüg vo de Decki. Und de Suurteig... er LÄBT. Also, no meh als süsch.\n\nD'Lemurius gseht en Chischte Bio-Banane hinder de feindliche Linie.\n\n\"Das sind MINI Banane. Fairtrade. Bio. CHF 2.95 s'Kilo.\"\n\"Lemurius, jetzt isch nöd de Moment—\"\n\"ES ISCH IMMER DE MOMENT FÜR GÜNSTIGI BIO-BANANE.\"",
+				"enemy_preview": "Kamikaze-Gipfeli • Zopf-Barrikade • Dr. Rivella • De Suurteig",
 			}
 		_:
 			return {
-				"title": "Chapter %d: Deeper Into Migros" % level_id,
-				"subtitle": "The M-Teufel grows stronger...",
-				"text": "The cursed products keep coming. But Lemurius and Amösius push forward, one banana at a time.\n\n\"How many aisles does this Migros HAVE?!\"\n\"It's Swiss retail, Amösius. It goes on forever.\"",
+				"title": "Kapitel %d: Tüüfer id Migros" % level_id,
+				"subtitle": "De M-Tüüfel wird stärcher...",
+				"text": "D'verfluechte Produkt höred nöd uf cho. Aber d'Lemurius und de Amösius kämpfed sich dure, eini Banane uf einisch.\n\n\"Wieviel Gäng het die Migros EIGENTLICH?!\"\n\"S'isch Schwiizer Detailhandel, Amösius. Das gaht ewig wiiter.\"",
 				"enemy_preview": "???",
 			}
 
 
-# Character bios for the menu/gallery
 const CHARACTER_BIOS := {
 	"lemurius": {
-		"name": "Lemurius — The Peacekeeper",
-		"bio": "Species: Ring-tailed lemur / human hybrid\nOccupation: Migros banana aisle specialist (Employee of the Month x17)\nWeapon: Bananas (organic, Fairtrade, thrown at 140 km/h)\nWeakness: Banana discounts\nFavorite drink: Alnatura Mango Smoothie\nCatchphrase: \"Banane isch Banane, aber BIO Banane isch Läbe.\"",
+		"name": "Lemurius — D'Friedeswächterin",
+		"bio": "Art: Ringelschwanz-Lemur / Mönsch-Hybrid\nBruef: Migros Banane-Gang Spezialistin (Mitarbeiterin vom Monet x17)\nWaffe: Banane (Bio, Fairtrade, gworfe mit 140 km/h)\nSchwächi: Banane-Rabatt\nLieblings-Getränk: Alnatura Mango Smoothie\nSpruch: \"Banane isch Banane, aber BIO Banane isch Läbe.\"",
 	},
 	"amosius": {
-		"name": "Amösius — The Tongue of Justice",
-		"bio": "Species: Tokay gecko / human hybrid\nOccupation: Self-employed \"pest control\" (he eats flies)\nWeapon: 40cm sticky tongue (reaches further when angry)\nWeakness: Cold surfaces, Lotto tickets\nFavorite drink: Whatever's in that blue can\nCatchphrase: \"I once won CHF 2.50 on Lotto. I am basically rich.\"",
+		"name": "Amösius — D'Zunge vo de Grächtigkeit",
+		"bio": "Art: Tokay Gecko / Mönsch-Hybrid\nBruef: Sälbständigi \"Schädlingsbekämpfig\" (er frisst Mugge)\nWaffe: 40cm chläbrigi Zunge (reicht wiiter wenn er verruckt isch)\nSchwächi: Chalti Oberfläche, Lotto-Zettel\nLieblings-Getränk: Was au immer i dere blaue Dose isch\nSpruch: \"Ich han mal CHF 2.50 im Lotto gwunne. Ich bi basically riich.\"",
 	},
 	"m_teufel": {
-		"name": "Der M-Teufel — The Migros Devil",
-		"bio": "Species: Demonic retail entity\nOccupation: Cursing supermarket products\nWeapon: Expired Cumulus points, broken shopping carts\nOrigin: Born from 10,000 unredeemed Cumulus points and the collective rage of customers who forgot their bags\nGoal: Revoke all banana discounts in Zürich\nCatchphrase: \"CUMULUS POINTS ARE WORTHLESS NOW! MWAHAHAHA!\"",
+		"name": "De M-Tüüfel — De Migros-Tüüfel",
+		"bio": "Art: Dämonischi Detailhandels-Entität\nBruef: Supermarkt-Produkt verfluche\nWaffe: Abglaufeni Cumulus-Punkte, kaputti Iichaufswäge\nUrsprung: Gebore us 10'000 nöd iglööste Cumulus-Punkte und de kollektive Wuet vo Chunde wo ihri Täsche vergässe händ\nZiel: Alli Banane-Rabatt z'Züri widerruefe\nSpruch: \"CUMULUS-PUNKTE SIND JETZT WÄRTLOS! MWAHAHAHA!\"",
 	},
 }
 
-
-# Enemy descriptions
 const ENEMY_LORE := {
-	"basic": "Angry Brötli — A cursed bread roll with googly eyes and a bad attitude. Marches slowly but in terrifying numbers. Still warm from the oven.",
-	"fast": "Turbo Toblerone — A chocolate bar possessed by Swiss precision and caffeine. Zooms through aisles at dangerous speeds. Pointy edges.",
-	"tank": "Beefy Cervelat — The national sausage of Switzerland, now 3 meters long and armored in its own casing. Slow but unstoppable. Smells incredible.",
-	"healer": "Dr. Rivella — A bottle of Switzerland's favorite mysterious drink. Nobody knows what's in it. Heals nearby enemies with fizzy healing energy.",
-	"flying": "Fliegende Fondue — A pot of melted cheese that has gained sentience and the ability to fly. Drips hot cheese on everything below.",
-	"boss": "Der M-Teufel — The Migros Devil himself. Made of expired Cumulus points and broken shopping cart wheels. His coupons have all expired but his rage has not.",
+	"basic": "Bösi Brötli — Es verfluechts Brötli mit Guggelauge und ere schlechte Laune. Marschiert langsam aber i grusige Zahl. No warm vom Ofe.",
+	"fast": "Turbo Toblerone — En Schoggistange bsässe vo Schwiizer Präzision und Koffein. Rast dure d'Gäng mit gföhrlicher Gschwindigkeit. Spitzigi Ecke.",
+	"tank": "Beefy Cervelat — D'Nationalwurscht vo de Schwiiz, jetzt 3 Meter lang und gpanzeret i ihrem eigene Darm. Langsam aber nöd z'stoppe. Rücht unglaublich.",
+	"healer": "Dr. Rivella — En Fläsche vom gheimnisvollste Getränk vo de Schwiiz. Niemer weiss was drin isch. Heilt Feind i de Nöchi mit sprudliger Heilenergie.",
+	"flying": "Fliegendi Fondue — En Topf mit gschmolznem Chäs wo Bewusstsi und d'Fähigkeit zum Fliege übercho het. Tropft heisse Chäs uf alles unde dra.",
+	"boss": "De M-Tüüfel — De Migros-Tüüfel persönlich. Gmacht us abglaufene Cumulus-Punkte und kaputte Iichaufswage-Rädli. Sini Coupons sind alli abglaufe aber sini Wuet nöd.",
 }

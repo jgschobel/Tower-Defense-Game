@@ -94,7 +94,7 @@ func _populate_tower_shop() -> void:
 
 func update_wave_info(current: int, total: int) -> void:
 	if wave_label:
-		wave_label.text = "Wave %d/%d" % [current, total]
+		wave_label.text = "Welle %d/%d" % [current, total]
 
 
 func show_next_wave_button(visible_flag: bool) -> void:
@@ -157,7 +157,7 @@ func _refresh_tower_info() -> void:
 			upgrade_btn.disabled = not _selected_tower.can_upgrade()
 	if sell_btn:
 		var sell_val := td.get_sell_value(_selected_tower.upgrade_level)
-		sell_btn.text = "Sell %d" % sell_val
+		sell_btn.text = "Verchaufe %d" % sell_val
 
 
 func _on_gold_changed(amount: int) -> void:
@@ -173,7 +173,7 @@ func _on_gold_changed(amount: int) -> void:
 
 func _on_lives_changed(amount: int) -> void:
 	if lives_label:
-		lives_label.text = "%d HP" % amount
+		lives_label.text = "%d Läbe" % amount
 
 
 func _on_tower_button_pressed(td: TowerData) -> void:

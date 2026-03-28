@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/systems/game_level.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/systems/wave_manager.gd" id="2"]
@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="4"]
 [ext_resource type="PackedScene" path="res://scenes/ui/game_over_screen.tscn" id="5"]
 [ext_resource type="PackedScene" path="res://scenes/ui/pause_menu.tscn" id="6"]
+[ext_resource type="Texture2D" path="res://assets/textures/maps/level1_bg.png" id="7"]
 
 [sub_resource type="Curve2D" id="curve_1"]
 point_count = 13
@@ -53,16 +54,29 @@ point_12/out = Vector2(0, 0)
 script = ExtResource("1")
 level_id = 1
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="TextureRect" parent="."]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.85, 0.82, 0.75, 1)
+texture = ExtResource("7")
+expand_mode = 1
+stretch_mode = 6
 
 [node name="PathDraw" type="Line2D" parent="."]
 points = PackedVector2Array(360, -40, 620, 80, 620, 200, 100, 300, 100, 430, 620, 530, 620, 650, 100, 750, 100, 870, 620, 950, 620, 1050, 100, 1130, 360, 1320)
-width = 40.0
-default_color = Color(0.6, 0.6, 0.55, 1)
+width = 45.0
+default_color = Color(0.35, 0.3, 0.25, 0.7)
+begin_cap_mode = 1
+end_cap_mode = 1
+joint_mode = 2
+
+[node name="PathBorder" type="Line2D" parent="."]
+points = PackedVector2Array(360, -40, 620, 80, 620, 200, 100, 300, 100, 430, 620, 530, 620, 650, 100, 750, 100, 870, 620, 950, 620, 1050, 100, 1130, 360, 1320)
+width = 50.0
+default_color = Color(0.2, 0.18, 0.15, 0.4)
+begin_cap_mode = 1
+end_cap_mode = 1
+joint_mode = 2
 
 [node name="EnemyPath" type="Path2D" parent="."]
 curve = SubResource("curve_1")

@@ -36,17 +36,17 @@ theme_override_constants/separation = 12
 [node name="PlayButton" type="Button" parent="ButtonContainer"]
 layout_mode = 2
 custom_minimum_size = Vector2(0, 55)
-text = "START RAUBZUG"
+text = "RAUBZUG STARTE"
 
 [node name="LoreButton" type="Button" parent="ButtonContainer"]
 layout_mode = 2
 custom_minimum_size = Vector2(0, 45)
-text = "THE SACRED LORE"
+text = "D'HEILIGI GSCHICHT"
 
 [node name="QuitButton" type="Button" parent="ButtonContainer"]
 layout_mode = 2
 custom_minimum_size = Vector2(0, 45)
-text = "FLEE (QUIT)"
+text = "ABHAUE (QUIT)"
 
 [connection signal="pressed" from="ButtonContainer/PlayButton" to="." method="_on_play_button_pressed"]
 [connection signal="pressed" from="ButtonContainer/LoreButton" to="." method="_on_lore_button_pressed"]

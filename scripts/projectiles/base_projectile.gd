@@ -60,10 +60,18 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
-	# If target is gone, self-destruct immediately
+	# If target is gone
 	if not is_instance_valid(target) or target.is_dead:
-		queue_free()
-		return
+		if is_splash:
+			# Splash continues to last known position and detonates
+			_direction = (_last_target_pos - global_position).normalized()
+			global_position += _direction * speed * delta
+			if global_position.distance_to(_last_target_pos) < 15.0:
+				_hit()
+			return
+		else:
+			queue_free()
+			return
 
 	_last_target_pos = target.global_position
 	_direction = (_last_target_pos - global_position).normalized()

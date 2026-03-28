@@ -30,8 +30,17 @@ func _ready() -> void:
 
 func start_level(level_id: int) -> void:
 	current_level = level_id
+	# Load level data for starting gold/lives
+	var data_path := "res://resources/level_data/level_%d.tres" % level_id
+	if ResourceLoader.exists(data_path):
+		var level_data = load(data_path)
+		max_lives = level_data.starting_lives
+		CurrencyManager.gold = level_data.starting_gold
+		CurrencyManager.gold_changed.emit(CurrencyManager.gold)
+	else:
+		max_lives = 20
+		CurrencyManager.reset_for_level(level_id)
 	lives = max_lives
-	CurrencyManager.reset_for_level(level_id)
 	set_state(GameState.PLAYING)
 
 
