@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "healer"
+display_name = "Dr. Rivella"
+friend_character_id = "enemy_4"
+max_health = 120.0
+move_speed = 70.0
+armor = 0.0
+gold_reward = 25
+base_color = Color(0.9, 0.2, 0.2, 1)
+scale_factor = 1.0
+is_flying = false
+heals_nearby = true
+heal_amount = 8.0
+heal_radius = 80.0

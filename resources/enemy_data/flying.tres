@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "flying"
+display_name = "Fliegende Fondue"
+friend_character_id = "enemy_5"
+max_health = 80.0
+move_speed = 110.0
+armor = 0.0
+gold_reward = 20
+base_color = Color(1.0, 0.85, 0.3, 1)
+scale_factor = 0.9
+is_flying = true
+heals_nearby = false

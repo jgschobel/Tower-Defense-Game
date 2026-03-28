@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="TowerData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/towers/tower_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/textures/towers/amosius.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "slow"
+display_name = "Amosius"
+description = "A cheeky gecko who stuns enemies with his sticky pink tongue. They hate it."
+friend_character_id = "friend_4"
+buy_cost = 120
+sell_return_pct = 0.6
+damage = 25.0
+attack_speed = 2.0
+attack_range = 160.0
+damage_type = 1
+target_mode = 0
+is_splash = false
+splash_radius = 0.0
+splash_damage_pct = 0.5
+slow_amount = 0.75
+slow_duration = 4.0
+can_target_flying = true
+buff_range = 0.0
+buff_damage_pct = 0.0
+buff_speed_pct = 0.0
+base_color = Color(0.3, 0.8, 0.4, 1)
+projectile_color = Color(1, 0.5, 0.6, 1)
+custom_texture = ExtResource("2")
+upgrade_costs = Array[int]([150, 300, 600])
+upgrade_damage_bonus = Array[float]([12.0, 25.0, 40.0])
+upgrade_range_bonus = Array[float]([20.0, 35.0, 55.0])
+upgrade_speed_bonus = Array[float]([0.3, 0.5, 0.8])
+upgrade_names = Array[String](["Sticky Tongue", "Mega Lick", "Tongue God"])

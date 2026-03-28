@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "fast"
+display_name = "Turbo Toblerone"
+friend_character_id = "enemy_2"
+max_health = 60.0
+move_speed = 160.0
+armor = 0.0
+gold_reward = 15
+base_color = Color(0.55, 0.3, 0.15, 1)
+scale_factor = 0.8
+is_flying = false
+heals_nearby = false

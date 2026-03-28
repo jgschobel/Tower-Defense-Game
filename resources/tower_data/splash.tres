@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="TowerData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/towers/tower_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "splash"
+display_name = "Bomber"
+description = "Lobs explosives that damage groups of enemies. Great for crowds."
+friend_character_id = "friend_3"
+buy_cost = 175
+sell_return_pct = 0.6
+damage = 30.0
+attack_speed = 0.7
+attack_range = 130.0
+damage_type = 1
+target_mode = 0
+is_splash = true
+splash_radius = 60.0
+splash_damage_pct = 0.6
+slow_amount = 0.0
+slow_duration = 0.0
+can_target_flying = false
+buff_range = 0.0
+buff_damage_pct = 0.0
+buff_speed_pct = 0.0
+base_color = Color(1, 0.5, 0, 1)
+projectile_color = Color(1, 0.6, 0, 1)
+upgrade_costs = Array[int]([200, 400, 800])
+upgrade_damage_bonus = Array[float]([15.0, 30.0, 50.0])
+upgrade_range_bonus = Array[float]([10.0, 20.0, 35.0])
+upgrade_speed_bonus = Array[float]([0.1, 0.15, 0.25])
+upgrade_names = Array[String](["Heavy Bombs", "Napalm", "Carpet Bomber"])
