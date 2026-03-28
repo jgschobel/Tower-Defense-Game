@@ -58,12 +58,10 @@ func _stars_text(count: int) -> String:
 
 func _on_level_pressed(level_id: int) -> void:
 	GameManager.start_level(level_id)
-	# Show story cutscene before the level
-	var story_scene := preload("res://scenes/ui/story_screen.tscn")
-	var story := story_scene.instantiate()
-	get_tree().root.add_child(story)
-	story.setup(level_id)
-	queue_free()
+	# Go to story screen as a full scene change (not overlay)
+	get_tree().change_scene_to_file("res://scenes/ui/story_screen.tscn")
+	# The story screen will call setup() in its own _ready()
+	# We pass the level_id via GameManager.current_level
 
 
 func _on_back_button_pressed() -> void:

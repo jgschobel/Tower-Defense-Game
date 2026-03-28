@@ -1,6 +1,6 @@
 extends Control
 
-## Story cutscene shown before each level. Displays lore text with a typewriter effect.
+## Story cutscene shown before each level. Typewriter text effect.
 
 @onready var title_label: Label = $Panel/VBox/TitleLabel
 @onready var subtitle_label: Label = $Panel/VBox/SubtitleLabel
@@ -15,9 +15,9 @@ var _typing: bool = false
 var _chars_per_second: float = 40.0
 
 
-func setup(level_id: int) -> void:
-	_level_id = level_id
-	var intro := Lore.get_level_intro(level_id)
+func _ready() -> void:
+	_level_id = GameManager.current_level
+	var intro := Lore.get_level_intro(_level_id)
 
 	if title_label:
 		title_label.text = intro.title
@@ -56,7 +56,7 @@ func _on_continue_button_pressed() -> void:
 			story_label.text = _full_text
 		continue_button.text = "LOS GEHT'S!"
 	else:
-		# Start the level
+		# Start the level — change to the game scene
 		var level_path := "res://scenes/game/level_%d.tscn" % _level_id
 		if ResourceLoader.exists(level_path):
 			get_tree().change_scene_to_file(level_path)

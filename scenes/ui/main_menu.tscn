@@ -26,9 +26,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -200.0
-offset_top = -250.0
+offset_top = -220.0
 offset_right = 200.0
-offset_bottom = 250.0
+offset_bottom = 220.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 18
@@ -56,11 +56,6 @@ layout_mode = 2
 custom_minimum_size = Vector2(250, 60)
 text = "START RAUBZUG"
 
-[node name="SettingsButton" type="Button" parent="VBoxContainer"]
-layout_mode = 2
-custom_minimum_size = Vector2(250, 60)
-text = "AI ART GENERATOR"
-
 [node name="LoreButton" type="Button" parent="VBoxContainer"]
 layout_mode = 2
 custom_minimum_size = Vector2(250, 60)
@@ -72,6 +67,5 @@ custom_minimum_size = Vector2(250, 60)
 text = "FLEE (QUIT)"
 
 [connection signal="pressed" from="VBoxContainer/PlayButton" to="." method="_on_play_button_pressed"]
-[connection signal="pressed" from="VBoxContainer/SettingsButton" to="." method="_on_settings_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/LoreButton" to="." method="_on_lore_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/QuitButton" to="." method="_on_quit_button_pressed"]

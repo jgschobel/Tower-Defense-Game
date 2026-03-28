@@ -2,8 +2,6 @@ extends Control
 
 ## Main menu for Affoltern Banani Raubzug.
 
-var _ai_panel_scene: PackedScene = preload("res://scenes/ui/ai_generator_panel.tscn")
-var _ai_panel: Control = null
 var _lore_panel: Control = null
 
 
@@ -13,13 +11,6 @@ func _ready() -> void:
 
 func _on_play_button_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/ui/level_select.tscn")
-
-
-func _on_settings_button_pressed() -> void:
-	if _ai_panel == null:
-		_ai_panel = _ai_panel_scene.instantiate()
-		add_child(_ai_panel)
-	_ai_panel.visible = true
 
 
 func _on_lore_button_pressed() -> void:
@@ -43,7 +34,7 @@ func _create_lore_panel() -> Control:
 	dimmer.anchors_preset = Control.PRESET_FULL_RECT
 	dimmer.anchor_right = 1.0
 	dimmer.anchor_bottom = 1.0
-	dimmer.color = Color(0, 0, 0, 0.8)
+	dimmer.color = Color(0, 0, 0, 0.85)
 	panel.add_child(dimmer)
 
 	var scroll := ScrollContainer.new()
@@ -61,41 +52,35 @@ func _create_lore_panel() -> Control:
 	vbox.add_theme_constant_override("separation", 20)
 	scroll.add_child(vbox)
 
-	# Title
 	var title := Label.new()
-	title.text = "THE SACRED LORE OF AFFOLTERN BANANI RAUBZUG"
+	title.text = "THE SACRED LORE"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	vbox.add_child(title)
 
-	# Backstory
 	var backstory := Label.new()
-	backstory.text = """In the quiet suburb of Affoltern, Zürich, two unlikely heroes share a flat above the Migros supermarket on Wehntalerstrasse.
+	backstory.text = """In the quiet suburb of Affoltern, Zürich, two unlikely heroes share a flat above the Migros on Wehntalerstrasse.
 
-One fateful Tuesday evening, they returned from their weekly Apéro at Biergarten Affoltern to find the Migros in CHAOS. The shelves were alive. The Cervelats were marching. The Brötli were screaming.
+One fateful Tuesday evening, they returned from Apéro at Biergarten Affoltern to find the Migros in CHAOS. The shelves were alive. The Cervelats were marching. The Brötli were screaming.
 
-And at the center of it all, floating above the self-checkout machines, was DER M-TEUFEL — The Migros Devil himself. A demonic entity made of expired Cumulus points and broken shopping cart wheels.
+Floating above the self-checkout machines was DER M-TEUFEL — a demonic entity made of expired Cumulus points and broken shopping cart wheels.
 
 "Your banana discount is REVOKED!" he screamed.
 
-Lemurius dropped her Alnatura smoothie.
-Amösius's tongue went dry.
+Lemurius dropped her Alnatura smoothie. Amösius's tongue went dry.
 
 This was personal."""
 	backstory.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	vbox.add_child(backstory)
 
-	# Character bios
 	for char_id in Lore.CHARACTER_BIOS:
 		var bio_data: Dictionary = Lore.CHARACTER_BIOS[char_id]
 		var bio_label := Label.new()
-		bio_label.text = "--- %s ---\n%s" % [bio_data.name, bio_data.bio]
+		bio_label.text = "\n--- %s ---\n%s" % [bio_data.name, bio_data.bio]
 		bio_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		vbox.add_child(bio_label)
 
-	# Enemy lore
 	var enemy_title := Label.new()
-	enemy_title.text = "--- THE CURSED PRODUCTS ---"
+	enemy_title.text = "\n--- THE CURSED PRODUCTS ---"
 	enemy_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(enemy_title)
 
@@ -105,7 +90,6 @@ This was personal."""
 		enemy_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		vbox.add_child(enemy_label)
 
-	# Close button
 	var close_btn := Button.new()
 	close_btn.text = "Close the Sacred Texts"
 	close_btn.anchors_preset = Control.PRESET_BOTTOM_WIDE
