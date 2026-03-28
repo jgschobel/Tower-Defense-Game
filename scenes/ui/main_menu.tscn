@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/main_menu.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/textures/ui/start_screen.png" id="2"]
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -11,61 +12,42 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="TextureRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.08, 0.06, 0.14, 1)
+texture = ExtResource("2")
+expand_mode = 1
+stretch_mode = 6
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="ButtonContainer" type="VBoxContainer" parent="."]
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -200.0
-offset_top = -220.0
-offset_right = 200.0
-offset_bottom = 220.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/separation = 18
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -200.0
+offset_left = 40.0
+offset_right = -40.0
+grow_vertical = 0
+theme_override_constants/separation = 12
 
-[node name="Title" type="Label" parent="VBoxContainer"]
+[node name="PlayButton" type="Button" parent="ButtonContainer"]
 layout_mode = 2
-text = "AFFOLTERN
-BANANI RAUBZUG"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="Subtitle" type="Label" parent="VBoxContainer"]
-layout_mode = 2
-text = "The Great Banana Heist of Zürich-Affoltern"
-horizontal_alignment = 1
-autowrap_mode = 2
-
-[node name="Tagline" type="Label" parent="VBoxContainer"]
-layout_mode = 2
-text = "Lemurius & Amösius vs. Der M-Teufel"
-horizontal_alignment = 1
-
-[node name="PlayButton" type="Button" parent="VBoxContainer"]
-layout_mode = 2
-custom_minimum_size = Vector2(250, 60)
+custom_minimum_size = Vector2(0, 55)
 text = "START RAUBZUG"
 
-[node name="LoreButton" type="Button" parent="VBoxContainer"]
+[node name="LoreButton" type="Button" parent="ButtonContainer"]
 layout_mode = 2
-custom_minimum_size = Vector2(250, 60)
+custom_minimum_size = Vector2(0, 45)
 text = "THE SACRED LORE"
 
-[node name="QuitButton" type="Button" parent="VBoxContainer"]
+[node name="QuitButton" type="Button" parent="ButtonContainer"]
 layout_mode = 2
-custom_minimum_size = Vector2(250, 60)
+custom_minimum_size = Vector2(0, 45)
 text = "FLEE (QUIT)"
 
-[connection signal="pressed" from="VBoxContainer/PlayButton" to="." method="_on_play_button_pressed"]
-[connection signal="pressed" from="VBoxContainer/LoreButton" to="." method="_on_lore_button_pressed"]
-[connection signal="pressed" from="VBoxContainer/QuitButton" to="." method="_on_quit_button_pressed"]
+[connection signal="pressed" from="ButtonContainer/PlayButton" to="." method="_on_play_button_pressed"]
+[connection signal="pressed" from="ButtonContainer/LoreButton" to="." method="_on_lore_button_pressed"]
+[connection signal="pressed" from="ButtonContainer/QuitButton" to="." method="_on_quit_button_pressed"]

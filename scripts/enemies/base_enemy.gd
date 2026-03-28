@@ -162,10 +162,12 @@ func _update_visual() -> void:
 	if data:
 		var label := Label.new()
 		label.text = data.display_name
-		label.add_theme_font_size_override("font_size", 10)
+		label.add_theme_font_size_override("font_size", 11)
 		label.add_theme_color_override("font_color", Color.WHITE)
+		label.add_theme_color_override("font_outline_color", Color.BLACK)
+		label.add_theme_constant_override("outline_size", 3)
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		label.position = Vector2(-35, -45)
+		label.position = Vector2(-45, -65)
 		add_child(label)
 
 	queue_redraw()

@@ -15,7 +15,8 @@ func _populate_levels() -> void:
 
 	for i in range(1, GameManager.MAX_LEVELS + 1):
 		var btn := Button.new()
-		btn.custom_minimum_size = Vector2(120, 120)
+		btn.custom_minimum_size = Vector2(0, 90)
+		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
 		var unlocked := i <= GameManager.levels_unlocked
 		var stars: int = 0
@@ -25,8 +26,9 @@ func _populate_levels() -> void:
 			stars = GameManager.level_stars.get(str(i), 0)
 
 		var level_name := _get_level_name(i)
-		btn.text = "%s\n%s" % [level_name, _stars_text(stars)]
+		btn.text = "%d. %s\n%s" % [i, level_name, _stars_text(stars)]
 		btn.disabled = not unlocked
+		btn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
 		if unlocked:
 			btn.pressed.connect(_on_level_pressed.bind(i))
