@@ -1,12 +1,13 @@
-[gd_resource type="Resource" script_class="TowerData" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="TowerData" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/towers/tower_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/textures/towers/djbooth.png" id="2"]
 
 [resource]
 script = ExtResource("1")
 id = "support"
-display_name = "DJ Booth"
-description = "Doesn't attack but boosts nearby towers' damage and speed. Stack 'em!"
+display_name = "DJ Katzo"
+description = "A cool cat who drops sick beats. Boosts nearby towers' damage and speed. Doesn't attack."
 friend_character_id = "friend_5"
 buy_cost = 250
 sell_return_pct = 0.6
@@ -26,6 +27,7 @@ buff_damage_pct = 0.2
 buff_speed_pct = 0.15
 base_color = Color(1, 0.85, 0, 1)
 projectile_color = Color(1, 1, 1, 1)
+custom_texture = ExtResource("2")
 upgrade_costs = Array[int]([300, 600, 1200])
 upgrade_damage_bonus = Array[float]([0.0, 0.0, 0.0])
 upgrade_range_bonus = Array[float]([20.0, 40.0, 60.0])

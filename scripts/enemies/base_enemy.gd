@@ -153,6 +153,22 @@ func _update_visual() -> void:
 	# Use custom texture if set
 	if data and data.custom_texture:
 		sprite.texture = data.custom_texture
+		sprite.visible = true
+		# Auto-scale based on enemy size
+		var max_dim := maxf(data.custom_texture.get_width(), data.custom_texture.get_height())
+		var target_size := 50.0 * data.scale_factor
+		var s := target_size / max_dim
+		sprite.scale = Vector2(s, s)
+		# Add name label above sprite
+		var label := Label.new()
+		label.text = data.display_name
+		label.add_theme_font_size_override("font_size", 11)
+		label.add_theme_color_override("font_color", Color.WHITE)
+		label.add_theme_color_override("font_outline_color", Color.BLACK)
+		label.add_theme_constant_override("outline_size", 3)
+		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		label.position = Vector2(-45, -target_size * 0.6 - 15)
+		add_child(label)
 		return
 
 	# Hide the default icon sprite — we draw food shapes instead

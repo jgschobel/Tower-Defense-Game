@@ -1,12 +1,13 @@
-[gd_resource type="Resource" script_class="TowerData" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="TowerData" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/towers/tower_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/textures/towers/sniper.png" id="2"]
 
 [resource]
 script = ExtResource("1")
 id = "sniper"
-display_name = "Sniper"
-description = "Long range, high damage, but slow fire rate. Picks off big threats."
+display_name = "Falkenius"
+description = "A hawk-eyed marksman. Long range, devastating shots. Targets the strongest enemy."
 friend_character_id = "friend_2"
 buy_cost = 200
 sell_return_pct = 0.6
@@ -26,6 +27,7 @@ buff_damage_pct = 0.0
 buff_speed_pct = 0.0
 base_color = Color(0.6, 0.1, 0.1, 1)
 projectile_color = Color(1, 0.2, 0.2, 1)
+custom_texture = ExtResource("2")
 upgrade_costs = Array[int]([250, 500, 1000])
 upgrade_damage_bonus = Array[float]([30.0, 60.0, 120.0])
 upgrade_range_bonus = Array[float]([30.0, 50.0, 80.0])
