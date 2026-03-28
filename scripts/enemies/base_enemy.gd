@@ -54,8 +54,7 @@ func _process(delta: float) -> void:
 		if slow_timer <= 0.0:
 			slow_factor = 1.0
 			# Reset tint when slow wears off
-			if sprite:
-				sprite.modulate = _get_base_color()
+			modulate = Color.WHITE
 
 	# Move along path
 	var speed := move_speed * slow_factor
@@ -76,12 +75,11 @@ func take_damage(amount: float, _damage_type: String = "physical") -> void:
 	var actual_damage := maxf(1.0, amount - armor)
 	health -= actual_damage
 
-	# Flash white on hit, then restore to slow tint or base color
-	if sprite:
-		sprite.modulate = Color.WHITE
-		var tween := create_tween()
-		var restore_color := Color(0.6, 0.7, 1.0) if slow_factor < 1.0 else _get_base_color()
-		tween.tween_property(sprite, "modulate", restore_color, 0.15)
+	# Flash white on hit, then restore
+	modulate = Color(2.0, 2.0, 2.0)  # bright flash
+	var tween := create_tween()
+	var restore_color := Color(0.6, 0.7, 1.0) if slow_factor < 1.0 else Color.WHITE
+	tween.tween_property(self, "modulate", restore_color, 0.15)
 
 	if health <= 0.0:
 		die()
@@ -90,9 +88,8 @@ func take_damage(amount: float, _damage_type: String = "physical") -> void:
 func apply_slow(factor: float, duration: float) -> void:
 	slow_factor = factor
 	slow_timer = duration
-	# Tint blue-ish when slowed
-	if sprite:
-		sprite.modulate = Color(0.6, 0.7, 1.0, 1.0)
+	# Tint blue-ish when slowed (whole node including drawn shapes)
+	modulate = Color(0.6, 0.7, 1.0, 1.0)
 
 
 func show_hit_reaction() -> void:
@@ -158,10 +155,118 @@ func _update_visual() -> void:
 		sprite.texture = data.custom_texture
 		return
 
-	# Fallback: tint the default sprite
-	sprite.modulate = _get_base_color()
+	# Hide the default icon sprite — we draw food shapes instead
+	sprite.visible = false
+
+	# Add a name label
 	if data:
-		sprite.scale = Vector2.ONE * data.scale_factor
+		var label := Label.new()
+		label.text = data.display_name
+		label.add_theme_font_size_override("font_size", 10)
+		label.add_theme_color_override("font_color", Color.WHITE)
+		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		label.position = Vector2(-35, -45)
+		add_child(label)
+
+	queue_redraw()
+
+
+func _draw() -> void:
+	if not data:
+		# Fallback circle
+		draw_circle(Vector2.ZERO, 15.0, Color.RED)
+		return
+
+	if sprite and sprite.visible:
+		return  # Using a real texture, don't draw
+
+	var s := data.scale_factor
+	var c := data.base_color
+
+	match data.id:
+		"basic":
+			# Brötli (bread roll) - round golden bun
+			draw_circle(Vector2.ZERO, 16.0 * s, c)
+			draw_circle(Vector2.ZERO, 12.0 * s, Color(0.9, 0.78, 0.55))
+			# Cross on top
+			draw_line(Vector2(-6, -6) * s, Vector2(6, 6) * s, Color(0.7, 0.55, 0.3), 2.0)
+			draw_line(Vector2(6, -6) * s, Vector2(-6, 6) * s, Color(0.7, 0.55, 0.3), 2.0)
+			# Angry eyes
+			draw_circle(Vector2(-5, -3) * s, 2.5, Color.WHITE)
+			draw_circle(Vector2(5, -3) * s, 2.5, Color.WHITE)
+			draw_circle(Vector2(-5, -3) * s, 1.2, Color.BLACK)
+			draw_circle(Vector2(5, -3) * s, 1.2, Color.BLACK)
+		"fast":
+			# Toblerone - triangular chocolate bar
+			var tri := PackedVector2Array([
+				Vector2(0, -18) * s,
+				Vector2(-12, 12) * s,
+				Vector2(12, 12) * s,
+			])
+			draw_colored_polygon(tri, c)
+			draw_colored_polygon(tri, Color(0.65, 0.4, 0.2), PackedVector2Array(), null)
+			# Eyes
+			draw_circle(Vector2(-4, 0) * s, 2.0, Color.WHITE)
+			draw_circle(Vector2(4, 0) * s, 2.0, Color.WHITE)
+			draw_circle(Vector2(-4, 0) * s, 1.0, Color.BLACK)
+			draw_circle(Vector2(4, 0) * s, 1.0, Color.BLACK)
+		"tank":
+			# Cervelat (sausage) - thick oval
+			var rect := Rect2(Vector2(-22, -10) * s, Vector2(44, 20) * s)
+			draw_rect(rect, c, true)
+			# Rounded ends
+			draw_circle(Vector2(-22, 0) * s, 10.0 * s, c)
+			draw_circle(Vector2(22, 0) * s, 10.0 * s, c)
+			# Skin lines
+			draw_line(Vector2(-10, -8) * s, Vector2(-10, 8) * s, Color(0.6, 0.35, 0.25), 1.5)
+			draw_line(Vector2(10, -8) * s, Vector2(10, 8) * s, Color(0.6, 0.35, 0.25), 1.5)
+			# Angry face
+			draw_circle(Vector2(-5, -2) * s, 2.5, Color.WHITE)
+			draw_circle(Vector2(5, -2) * s, 2.5, Color.WHITE)
+			draw_circle(Vector2(-5, -2) * s, 1.2, Color.BLACK)
+			draw_circle(Vector2(5, -2) * s, 1.2, Color.BLACK)
+		"healer":
+			# Rivella bottle - red bottle shape
+			draw_rect(Rect2(Vector2(-8, -15) * s, Vector2(16, 30) * s), c, true)
+			draw_rect(Rect2(Vector2(-5, -22) * s, Vector2(10, 8) * s), Color(0.8, 0.15, 0.15), true)
+			# Label
+			draw_rect(Rect2(Vector2(-6, -5) * s, Vector2(12, 10) * s), Color.WHITE, true)
+			# Plus sign (healing)
+			draw_line(Vector2(0, -3) * s, Vector2(0, 3) * s, Color.RED, 2.0)
+			draw_line(Vector2(-3, 0) * s, Vector2(3, 0) * s, Color.RED, 2.0)
+		"flying":
+			# Fondue pot - round pot with cheese dripping
+			draw_circle(Vector2.ZERO, 14.0 * s, c)
+			draw_rect(Rect2(Vector2(-16, -4) * s, Vector2(32, 12) * s), Color(0.4, 0.35, 0.3), true)
+			# Cheese drips
+			draw_circle(Vector2(-8, 10) * s, 4.0 * s, Color(1, 0.9, 0.4))
+			draw_circle(Vector2(6, 12) * s, 3.0 * s, Color(1, 0.9, 0.4))
+			# Steam
+			draw_line(Vector2(-5, -14) * s, Vector2(-7, -22) * s, Color(1, 1, 1, 0.4), 1.5)
+			draw_line(Vector2(5, -14) * s, Vector2(7, -22) * s, Color(1, 1, 1, 0.4), 1.5)
+		"boss":
+			# M-Teufel - big orange M with horns
+			draw_circle(Vector2.ZERO, 25.0 * s, c)
+			# Horns
+			draw_line(Vector2(-12, -20) * s, Vector2(-18, -35) * s, Color(0.8, 0.2, 0), 4.0)
+			draw_line(Vector2(12, -20) * s, Vector2(18, -35) * s, Color(0.8, 0.2, 0), 4.0)
+			# M letter
+			draw_line(Vector2(-10, 8) * s, Vector2(-10, -5) * s, Color.WHITE, 3.0)
+			draw_line(Vector2(-10, -5) * s, Vector2(0, 3) * s, Color.WHITE, 3.0)
+			draw_line(Vector2(0, 3) * s, Vector2(10, -5) * s, Color.WHITE, 3.0)
+			draw_line(Vector2(10, -5) * s, Vector2(10, 8) * s, Color.WHITE, 3.0)
+			# Evil eyes
+			draw_circle(Vector2(-8, -8) * s, 4.0, Color(1, 1, 0))
+			draw_circle(Vector2(8, -8) * s, 4.0, Color(1, 1, 0))
+			draw_circle(Vector2(-8, -8) * s, 2.0, Color.RED)
+			draw_circle(Vector2(8, -8) * s, 2.0, Color.RED)
+		_:
+			# Unknown enemy - generic colored circle
+			draw_circle(Vector2.ZERO, 15.0 * s, c)
+			draw_circle(Vector2(-4, -3), 2.0, Color.WHITE)
+			draw_circle(Vector2(4, -3), 2.0, Color.WHITE)
+			draw_circle(Vector2(-4, -3), 1.0, Color.BLACK)
+			draw_circle(Vector2(4, -3), 1.0, Color.BLACK)
 
 
 func _get_base_color() -> Color:

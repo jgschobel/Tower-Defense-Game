@@ -107,6 +107,10 @@ func set_placing(placing: bool) -> void:
 	cancel_button.visible = placing
 	if placing:
 		next_wave_button.visible = false
+	else:
+		# Restore the wave button when done placing
+		cancel_button.visible = false
+		next_wave_button.visible = true
 
 
 func show_tower_info(tower: BaseTower) -> void:
