@@ -36,7 +36,13 @@ horizontal_alignment = 1
 [node name="WaveLabel" type="Label" parent="TopBar/HBox"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Welle 0/5"
+text = "Bereit"
+horizontal_alignment = 1
+
+[node name="EnemyCountLabel" type="Label" parent="TopBar/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = ""
 horizontal_alignment = 1
 
 [node name="SpeedButton" type="Button" parent="TopBar/HBox"]

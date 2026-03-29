@@ -12,6 +12,7 @@ signal auto_wave_toggled(enabled: bool)
 @onready var gold_label: Label = $TopBar/HBox/GoldLabel
 @onready var lives_label: Label = $TopBar/HBox/LivesLabel
 @onready var wave_label: Label = $TopBar/HBox/WaveLabel
+@onready var enemy_count_label: Label = $TopBar/HBox/EnemyCountLabel
 @onready var speed_button: Button = $TopBar/HBox/SpeedButton
 @onready var pause_button: Button = $TopBar/HBox/PauseButton
 @onready var next_wave_button: Button = $BottomPanel/BottomBar/ButtonRow/NextWaveButton
@@ -98,11 +99,48 @@ func update_wave_info(current: int, total: int) -> void:
 			wave_label.text = "Bereit"
 		else:
 			wave_label.text = "Welle %d/%d" % [current, total]
+			# Wave announcement — big text that fades
+			_show_wave_announcement(current, total)
+
+
+func _show_wave_announcement(current: int, total: int) -> void:
+	var announce := Label.new()
+	announce.text = "WELLE %d!" % current
+	announce.add_theme_font_size_override("font_size", 40)
+	announce.add_theme_color_override("font_color", Color(1, 0.9, 0.2))
+	announce.add_theme_color_override("font_outline_color", Color(0.2, 0.1, 0))
+	announce.add_theme_constant_override("outline_size", 5)
+	announce.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	announce.anchors_preset = Control.PRESET_CENTER
+	announce.anchor_left = 0.5
+	announce.anchor_top = 0.4
+	announce.anchor_right = 0.5
+	announce.anchor_bottom = 0.4
+	announce.offset_left = -150
+	announce.offset_right = 150
+	announce.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	add_child(announce)
+	var tween := announce.create_tween()
+	tween.tween_property(announce, "modulate:a", 0.0, 1.5).set_delay(0.5)
+	tween.tween_callback(announce.queue_free)
 
 
 func show_next_wave_button(visible_flag: bool) -> void:
 	if next_wave_button:
 		next_wave_button.visible = visible_flag
+		if visible_flag:
+			# Pulse animation to draw attention
+			var pulse := next_wave_button.create_tween().set_loops(3)
+			pulse.tween_property(next_wave_button, "modulate", Color(1.3, 1.2, 0.8), 0.4)
+			pulse.tween_property(next_wave_button, "modulate", Color.WHITE, 0.4)
+
+
+func update_enemy_count(count: int) -> void:
+	if enemy_count_label:
+		if count > 0:
+			enemy_count_label.text = "%d übrig" % count
+		else:
+			enemy_count_label.text = ""
 
 
 func set_placing(placing: bool) -> void:
@@ -117,16 +155,26 @@ func set_placing(placing: bool) -> void:
 
 
 func show_tower_info(tower: BaseTower) -> void:
+	# Deselect previous
+	if _selected_tower and is_instance_valid(_selected_tower):
+		_selected_tower.modulate = Color.WHITE
+		_selected_tower.show_range(false)
 	_selected_tower = tower
 	tower.show_range(true)
+	# Glow effect on selected tower
+	var glow := tower.create_tween().set_loops()
+	glow.tween_property(tower, "modulate", Color(1.2, 1.2, 1.4), 0.5)
+	glow.tween_property(tower, "modulate", Color.WHITE, 0.5)
+	SfxManager.play_click()
 	if tower_info:
 		tower_info.visible = true
 		_refresh_tower_info()
 
 
 func hide_tower_info() -> void:
-	if _selected_tower:
+	if _selected_tower and is_instance_valid(_selected_tower):
 		_selected_tower.show_range(false)
+		_selected_tower.modulate = Color.WHITE
 		_selected_tower = null
 	if tower_info:
 		tower_info.visible = false

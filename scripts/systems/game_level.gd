@@ -30,6 +30,7 @@ func _ready() -> void:
 	wave_manager.wave_started.connect(_on_wave_started)
 	wave_manager.wave_completed.connect(_on_wave_completed)
 	wave_manager.all_waves_completed.connect(_on_all_waves_completed)
+	wave_manager.enemies_remaining_changed.connect(_on_enemies_remaining_changed)
 
 	hud.tower_selected_for_placement.connect(_on_tower_selected)
 	hud.placement_cancelled.connect(_on_placement_cancelled)
@@ -120,6 +121,10 @@ func _on_auto_wave_toggled(enabled: bool) -> void:
 	# If enabling and no wave is active, start immediately
 	if enabled and not wave_manager.wave_in_progress and not wave_manager.all_done:
 		wave_manager.start_next_wave()
+
+
+func _on_enemies_remaining_changed(count: int) -> void:
+	hud.update_enemy_count(count)
 
 
 func _unhandled_input(event: InputEvent) -> void:

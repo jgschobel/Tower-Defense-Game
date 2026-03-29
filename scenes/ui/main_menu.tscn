@@ -1,9 +1,9 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene format=3 uid="uid://cg1auloevrfmb"]
 
-[ext_resource type="Script" path="res://scripts/ui/main_menu.gd" id="1"]
-[ext_resource type="Texture2D" path="res://assets/textures/ui/start_screen.png" id="2"]
+[ext_resource type="Script" uid="uid://be0owmqrvk0qg" path="res://scripts/ui/main_menu.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://der5fdkwaoi8q" path="res://assets/textures/ui/start_screen.png" id="2"]
 
-[node name="MainMenu" type="Control"]
+[node name="MainMenu" type="Control" unique_id=175222081]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -12,62 +12,63 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1")
 
-[node name="HBox" type="HBoxContainer" parent="."]
+[node name="HBox" type="HBoxContainer" parent="." unique_id=931849517]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 
-[node name="ArtworkPanel" type="PanelContainer" parent="HBox"]
+[node name="ArtworkPanel" type="PanelContainer" parent="HBox" unique_id=75526649]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 2.0
 
-[node name="Artwork" type="TextureRect" parent="HBox/ArtworkPanel"]
+[node name="Artwork" type="TextureRect" parent="HBox/ArtworkPanel" unique_id=1946297376]
 layout_mode = 2
 texture = ExtResource("2")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="MenuPanel" type="PanelContainer" parent="HBox"]
+[node name="MenuPanel" type="PanelContainer" parent="HBox" unique_id=1765305053]
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_stretch_ratio = 1.0
 
-[node name="VBox" type="VBoxContainer" parent="HBox/MenuPanel"]
+[node name="VBox" type="VBoxContainer" parent="HBox/MenuPanel" unique_id=2101099785]
 layout_mode = 2
-alignment = 1
 theme_override_constants/separation = 15
+alignment = 1
 
-[node name="Title" type="Label" parent="HBox/MenuPanel/VBox"]
+[node name="Title" type="Label" parent="HBox/MenuPanel/VBox" unique_id=1924501435]
 layout_mode = 2
 text = "AFFOLTERN
 BANANI
 RAUBZUG"
 horizontal_alignment = 1
 
-[node name="Subtitle" type="Label" parent="HBox/MenuPanel/VBox"]
+[node name="Subtitle" type="Label" parent="HBox/MenuPanel/VBox" unique_id=858186724]
 layout_mode = 2
 text = "Tower Defense Adventure"
 horizontal_alignment = 1
 
-[node name="Spacer" type="Control" parent="HBox/MenuPanel/VBox"]
-layout_mode = 2
+[node name="Spacer" type="Control" parent="HBox/MenuPanel/VBox" unique_id=771740786]
 custom_minimum_size = Vector2(0, 20)
-
-[node name="PlayButton" type="Button" parent="HBox/MenuPanel/VBox"]
 layout_mode = 2
+
+[node name="PlayButton" type="Button" parent="HBox/MenuPanel/VBox" unique_id=1970079040]
 custom_minimum_size = Vector2(0, 55)
+layout_mode = 2
 text = "RAUBZUG STARTE"
 
-[node name="LoreButton" type="Button" parent="HBox/MenuPanel/VBox"]
-layout_mode = 2
+[node name="LoreButton" type="Button" parent="HBox/MenuPanel/VBox" unique_id=408519206]
 custom_minimum_size = Vector2(0, 45)
+layout_mode = 2
 text = "D'HEILIGI GSCHICHT"
 
-[node name="QuitButton" type="Button" parent="HBox/MenuPanel/VBox"]
-layout_mode = 2
+[node name="QuitButton" type="Button" parent="HBox/MenuPanel/VBox" unique_id=1913364721]
 custom_minimum_size = Vector2(0, 45)
+layout_mode = 2
 text = "ABHAUE (QUIT)"
 
 [connection signal="pressed" from="HBox/MenuPanel/VBox/PlayButton" to="." method="_on_play_button_pressed"]
