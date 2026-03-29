@@ -60,6 +60,23 @@ assets/
 - Autoloads reference each other (GameManager ↔ CurrencyManager) — ensure both are registered in project.godot
 - When using `.bind()` on signal connections, bound args come AFTER the signal's own args in the callback
 
+## AI Agent Architecture
+This project uses a multi-agent workflow. See `AGENTS.md` for full details.
+
+- **Conductor (Opus)** — architecture, code, creative, git, user communication
+- **Art Factory (Sonnet, background)** — image generation via Stability AI, background removal, batch processing
+- **Code Scout (Sonnet, on-demand)** — codebase exploration, file searches, path validation
+- **Build Tester (Sonnet, pre-push)** — validates signal connections, file paths, node references
+
+API keys stored at `C:/Users/josef/.api_keys/keys.json` (outside repo).
+
+## Common Pitfalls
+- Enemies are `PathFollow2D` nodes — they must be children of a `Path2D` to work
+- Tower `DetectionArea` uses `area_entered`/`area_exited` to detect enemy `HitBox` Area2D — NOT body_entered
+- Autoloads reference each other (GameManager ↔ CurrencyManager) — ensure both are registered in project.godot
+- When using `.bind()` on signal connections, bound args come AFTER the signal's own args in the callback
+- Use simple types in signal declarations (Node2D, Resource, int) not custom class_name types
+
 ## Build & Run
 - Open in Godot 4.6+
 - Main scene: `res://scenes/ui/main_menu.tscn`

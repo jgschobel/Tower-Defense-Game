@@ -1,6 +1,13 @@
-# Tower Defense: Friends Edition
+# Affoltern Banani Raubzug
 
-A mobile tower defense game built in Godot 4.6 where you use your friends' photos as towers and enemies.
+A mobile tower defense game built in Godot 4.6 set in Migros Affoltern, Zürich. Lemurius, Amösius, Kühne, JoJo, and Cordula fight cursed vegan supermarket products controlled by Der M-Tüüfel. All text in Swiss German (Züridütsch).
+
+## Development
+- Built with AI-assisted workflow: Opus (architecture/code) + Sonnet sub-agents (art generation, validation)
+- Art generated via Stability AI API, backgrounds removed with rembg
+- See `AGENTS.md` for the multi-agent architecture
+- See `PLAN.md` for the full development roadmap
+- See `CLAUDE.md` for coding conventions and project structure
 
 ## What's Done
 

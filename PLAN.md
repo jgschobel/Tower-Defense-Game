@@ -1,5 +1,12 @@
 # Affoltern Banani Raubzug — Development Plan
 
+## Workflow
+Tasks are executed using the agent architecture defined in `AGENTS.md`:
+- **Conductor (Opus)** handles bug fixes, game logic, creative decisions
+- **Art Factory (Sonnet)** runs image generation in background while Conductor codes
+- **Code Scout (Sonnet)** explores codebase when Conductor needs info
+- **Build Tester (Sonnet)** validates everything before git push
+
 ## Critical Bugs (Must Fix First)
 
 - [ ] **All levels play as Level 1** — `game.tscn` hardcodes `level_id = 1`. Need to read from `GameManager.current_level` in `_ready()`
