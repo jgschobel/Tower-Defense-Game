@@ -3,8 +3,8 @@ extends Node2D
 ## Draws a semi-transparent range circle for towers.
 
 var circle_radius: float = 150.0
-var circle_color: Color = Color(0.3, 0.6, 1.0, 0.15)
-var border_color: Color = Color(0.3, 0.6, 1.0, 0.4)
+var circle_color: Color = Color(0.3, 0.6, 1.0, 0.2)
+var border_color: Color = Color(0.4, 0.7, 1.0, 0.6)
 
 
 func set_radius(r: float) -> void:

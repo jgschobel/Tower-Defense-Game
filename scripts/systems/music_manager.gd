@@ -63,6 +63,14 @@ func stop_music() -> void:
 	_player.stop()
 
 
+func pause_music() -> void:
+	_player.stream_paused = true
+
+
+func resume_music() -> void:
+	_player.stream_paused = false
+
+
 func set_volume(vol: float) -> void:
 	_volume = vol
 	_player.volume_db = linear_to_db(vol)

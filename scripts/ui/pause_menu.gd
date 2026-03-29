@@ -10,11 +10,13 @@ func show_pause() -> void:
 	fade.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	fade.tween_property(self, "modulate:a", 1.0, 0.2)
 	get_tree().paused = true
+	MusicManager.pause_music()
 
 
 func hide_pause() -> void:
 	visible = false
 	get_tree().paused = false
+	MusicManager.resume_music()
 
 
 func _on_resume_button_pressed() -> void:
