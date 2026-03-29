@@ -1,12 +1,12 @@
 # Affoltern Banani Raubzug
 
 ## Project Overview
-A mobile tower defense game built in **Godot 4.6** using GDScript. Set in Migros Affoltern (Zürich), players control Lemurius (banana-throwing lemur) and Amösius (tongue-stunning gecko) to fight cursed supermarket products controlled by Der M-Teufel. Features bananas as currency, friend photos as characters, procedural chiptune music, AI image generation integration, and a lore system with story cutscenes.
+A **landscape** (1280x720) tower defense game built in **Godot 4.6** using GDScript. Set in Migros Affoltern, Zürich. 5 tower characters (Lemurius, Kühne, JoJo, Cordula, Amösius) fight cursed vegan products controlled by De Vegan-Tüüfel. All text in Swiss German. Procedural chiptune music + SFX, AI-generated art, story cutscenes, 3 levels with 10 waves each.
 
 ## Tech Stack
 - **Engine**: Godot 4.6 (GL Compatibility renderer for mobile)
 - **Language**: GDScript
-- **Target**: Mobile (portrait 720x1280), touch controls
+- **Target**: Mobile (landscape 1280x720), touch controls
 - **Renderer**: GL Compatibility (not Vulkan) for max device support
 
 ## Project Structure
