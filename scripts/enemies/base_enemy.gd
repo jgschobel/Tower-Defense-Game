@@ -65,8 +65,6 @@ func _process(delta: float) -> void:
 		_reached_end()
 		return
 
-	_update_health_bar()
-
 
 func take_damage(amount: float, _damage_type: String = "physical") -> void:
 	if is_dead:
@@ -74,9 +72,13 @@ func take_damage(amount: float, _damage_type: String = "physical") -> void:
 
 	var actual_damage := maxf(1.0, amount - armor)
 	health -= actual_damage
+	_update_health_bar()
+
+	# Show floating damage number
+	_show_damage_number(actual_damage)
 
 	# Flash white on hit, then restore
-	modulate = Color(2.0, 2.0, 2.0)  # bright flash
+	modulate = Color(2.0, 2.0, 2.0)
 	var tween := create_tween()
 	var restore_color := Color(0.6, 0.7, 1.0) if slow_factor < 1.0 else Color.WHITE
 	tween.tween_property(self, "modulate", restore_color, 0.15)
@@ -116,6 +118,8 @@ func die() -> void:
 		return
 	is_dead = true
 	CurrencyManager.add_gold(gold_reward)
+	_show_gold_earned()
+	SfxManager.play_death()
 
 	# Spawn children on death if configured
 	if data and data.spawns_on_death != "" and data.spawn_count > 0:
@@ -329,6 +333,42 @@ func _spawn_children() -> void:
 		child.add_to_group("enemies")
 		parent_path.add_child(child)
 		child.progress = progress + (i * 20.0)
+
+
+func _show_damage_number(amount: float) -> void:
+	var label := Label.new()
+	label.text = "-%d" % int(amount)
+	label.add_theme_font_size_override("font_size", 14)
+	label.add_theme_color_override("font_color", Color(1, 0.3, 0.2))
+	label.add_theme_color_override("font_outline_color", Color.BLACK)
+	label.add_theme_constant_override("outline_size", 2)
+	label.position = Vector2(randf_range(-15, 15), -40)
+	label.z_index = 20
+	add_child(label)
+	var tween := create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(label, "position:y", -75.0, 0.6)
+	tween.tween_property(label, "modulate:a", 0.0, 0.6)
+	tween.chain().tween_callback(label.queue_free)
+
+
+func _show_gold_earned() -> void:
+	var label := Label.new()
+	label.text = "+%d" % gold_reward
+	label.add_theme_font_size_override("font_size", 16)
+	label.add_theme_color_override("font_color", Color(1, 0.9, 0.2))
+	label.add_theme_color_override("font_outline_color", Color.BLACK)
+	label.add_theme_constant_override("outline_size", 3)
+	label.position = Vector2(0, -50)
+	label.z_index = 20
+	# Add to parent so it persists after enemy freed
+	get_parent().add_child(label)
+	label.global_position = global_position + Vector2(0, -30)
+	var tween := create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(label, "position:y", label.position.y - 50.0, 0.8)
+	tween.tween_property(label, "modulate:a", 0.0, 0.8)
+	tween.chain().tween_callback(label.queue_free)
 
 
 func _on_heal_timer_timeout() -> void:

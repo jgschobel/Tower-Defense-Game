@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="TowerData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/towers/tower_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "cordula"
+display_name = "Cordula"
+description = "D'Fasnachts-Piratin! Schmeisst Volleyball mit ihrem Hook-Arm. Schnell und lustig."
+friend_character_id = "friend_cordula"
+buy_cost = 150
+sell_return_pct = 0.6
+damage = 35.0
+attack_speed = 1.0
+attack_range = 180.0
+damage_type = 0
+target_mode = 0
+is_splash = false
+splash_radius = 0.0
+splash_damage_pct = 0.5
+slow_amount = 0.0
+slow_duration = 0.0
+can_target_flying = true
+buff_range = 0.0
+buff_damage_pct = 0.0
+buff_speed_pct = 0.0
+base_color = Color(0.8, 0.2, 0.6, 1)
+projectile_color = Color(1.0, 0.9, 0.7, 1)
+upgrade_costs = Array[int]([200, 400, 800])
+upgrade_damage_bonus = Array[float]([15.0, 30.0, 60.0])
+upgrade_range_bonus = Array[float]([20.0, 35.0, 50.0])
+upgrade_speed_bonus = Array[float]([0.15, 0.25, 0.4])
+upgrade_names = Array[String](["Volleyball-Hagel", "Ankerhake", "Party-Kanone"])

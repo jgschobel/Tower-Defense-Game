@@ -5,16 +5,21 @@
 [resource]
 script = ExtResource("1")
 level_id = 1
-level_name = "Migros Affoltern - Aisle of Doom"
-description = "The cursed groceries have taken over aisle 3. Fight through the bread rolls and chocolate bars!"
-starting_gold = 250
-starting_lives = 20
+level_name = "Migros Affoltern - Gang vom Verhängnis"
+description = "D'verfluechte Lääbesmittel händ Gang 3 übernoh. Kämpf dich dure d'Brötli und Schoggi!"
+starting_gold = 300
+starting_lives = 25
 waves = [
-	{"groups": [{"enemy_id": "basic", "count": 6, "spawn_delay": 1.0}]},
-	{"groups": [{"enemy_id": "basic", "count": 10, "spawn_delay": 0.8}]},
-	{"groups": [{"enemy_id": "basic", "count": 6, "spawn_delay": 0.8}, {"enemy_id": "fast", "count": 3, "spawn_delay": 0.5}]},
-	{"groups": [{"enemy_id": "fast", "count": 6, "spawn_delay": 0.5}, {"enemy_id": "basic", "count": 8, "spawn_delay": 0.7}]},
-	{"groups": [{"enemy_id": "tank", "count": 2, "spawn_delay": 2.0}, {"enemy_id": "basic", "count": 10, "spawn_delay": 0.6}]}
+	{"groups": [{"enemy_id": "basic", "count": 6, "spawn_delay": 1.2}]},
+	{"groups": [{"enemy_id": "basic", "count": 10, "spawn_delay": 0.9}]},
+	{"groups": [{"enemy_id": "basic", "count": 8, "spawn_delay": 0.8}, {"enemy_id": "fast", "count": 3, "spawn_delay": 0.6}]},
+	{"groups": [{"enemy_id": "fast", "count": 6, "spawn_delay": 0.5}]},
+	{"groups": [{"enemy_id": "basic", "count": 12, "spawn_delay": 0.7}, {"enemy_id": "fast", "count": 4, "spawn_delay": 0.5}]},
+	{"groups": [{"enemy_id": "tank", "count": 2, "spawn_delay": 2.0}, {"enemy_id": "basic", "count": 8, "spawn_delay": 0.7}]},
+	{"groups": [{"enemy_id": "fast", "count": 8, "spawn_delay": 0.4}, {"enemy_id": "basic", "count": 6, "spawn_delay": 0.6}]},
+	{"groups": [{"enemy_id": "tank", "count": 3, "spawn_delay": 1.5}, {"enemy_id": "fast", "count": 5, "spawn_delay": 0.5}]},
+	{"groups": [{"enemy_id": "basic", "count": 15, "spawn_delay": 0.5}, {"enemy_id": "tank", "count": 2, "spawn_delay": 1.2}]},
+	{"groups": [{"enemy_id": "tank", "count": 4, "spawn_delay": 1.2}, {"enemy_id": "fast", "count": 10, "spawn_delay": 0.4}, {"enemy_id": "basic", "count": 10, "spawn_delay": 0.5}]}
 ]
 background_color = Color(0.85, 0.82, 0.75, 1)
 path_color = Color(0.6, 0.6, 0.55, 1)

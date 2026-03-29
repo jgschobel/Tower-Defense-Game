@@ -166,6 +166,13 @@ func _attack() -> void:
 	else:
 		origin_pos = global_position
 
+	SfxManager.play_shoot()
+	# Attack animation — bounce/pulse
+	if sprite:
+		var atk_tween := create_tween()
+		atk_tween.tween_property(sprite, "scale", sprite.scale * 1.2, 0.08)
+		atk_tween.tween_property(sprite, "scale", sprite.scale, 0.12)
+
 	var projectile = _projectile_scene.instantiate()
 	projectile.setup(
 		origin_pos,
@@ -195,6 +202,37 @@ func upgrade() -> bool:
 	_update_range_collider()
 	_update_visual()
 	tower_upgraded.emit(self, upgrade_level)
+
+	SfxManager.play_upgrade()
+	# Upgrade celebration animation
+	if sprite:
+		var upg_tween := create_tween()
+		upg_tween.tween_property(sprite, "scale", sprite.scale * 1.5, 0.15)
+		upg_tween.tween_property(sprite, "scale", sprite.scale, 0.2)
+		# Flash gold
+		upg_tween.parallel().tween_property(sprite, "modulate", Color(1.5, 1.3, 0.5), 0.15)
+		upg_tween.tween_property(sprite, "modulate", Color.WHITE, 0.2)
+
+	# Floating upgrade text
+	var upg_label := Label.new()
+	if upgrade_level <= data.upgrade_names.size():
+		upg_label.text = data.upgrade_names[upgrade_level - 1]
+	else:
+		upg_label.text = "UPGRADE!"
+	upg_label.add_theme_font_size_override("font_size", 16)
+	upg_label.add_theme_color_override("font_color", Color(1, 0.85, 0.1))
+	upg_label.add_theme_color_override("font_outline_color", Color.BLACK)
+	upg_label.add_theme_constant_override("outline_size", 3)
+	upg_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	upg_label.position = Vector2(-50, -60)
+	upg_label.z_index = 20
+	add_child(upg_label)
+	var lbl_tween := create_tween()
+	lbl_tween.set_parallel(true)
+	lbl_tween.tween_property(upg_label, "position:y", -100.0, 1.0)
+	lbl_tween.tween_property(upg_label, "modulate:a", 0.0, 1.0)
+	lbl_tween.chain().tween_callback(upg_label.queue_free)
+
 	return true
 
 
@@ -202,7 +240,11 @@ func sell() -> void:
 	var refund := data.get_sell_value(upgrade_level)
 	CurrencyManager.add_gold(refund)
 	tower_sold.emit(self)
-	queue_free()
+	is_placed = false  # stop attacking
+	# Shrink animation before removing
+	var sell_tween := create_tween()
+	sell_tween.tween_property(self, "scale", Vector2.ZERO, 0.3).set_ease(Tween.EASE_IN)
+	sell_tween.tween_callback(queue_free)
 
 
 func can_upgrade() -> bool:

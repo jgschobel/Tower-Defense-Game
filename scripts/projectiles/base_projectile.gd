@@ -103,10 +103,10 @@ func _draw() -> void:
 func _hit() -> void:
 	if is_instance_valid(target) and not target.is_dead:
 		target.take_damage(damage)
+		target.show_hit_reaction()
 
 		if slow_amount > 0.0 and slow_duration > 0.0:
 			target.apply_slow(1.0 - slow_amount, slow_duration)
-			target.show_hit_reaction()
 
 	if is_splash and splash_radius > 0.0:
 		var enemies := get_tree().get_nodes_in_group("enemies")

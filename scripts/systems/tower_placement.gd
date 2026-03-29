@@ -140,7 +140,9 @@ func _can_place_at(pos: Vector2) -> bool:
 			return false
 
 	# Keep within screen bounds (with margin)
-	if pos.x < 30 or pos.x > 690 or pos.y < 60 or pos.y > 1100:
+	# Dynamic bounds based on viewport
+	var vp_size := get_viewport_rect().size
+	if pos.x < 30 or pos.x > vp_size.x - 30 or pos.y < 55 or pos.y > vp_size.y - 160:
 		return false
 
 	return true

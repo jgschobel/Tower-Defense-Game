@@ -5,6 +5,10 @@ extends Control
 
 func show_pause() -> void:
 	visible = true
+	modulate = Color(1, 1, 1, 0)
+	var fade := create_tween()
+	fade.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	fade.tween_property(self, "modulate:a", 1.0, 0.2)
 	get_tree().paused = true
 
 

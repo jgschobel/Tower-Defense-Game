@@ -24,7 +24,7 @@ var _game_speed: float = 1.0
 var _selected_tower: BaseTower = null
 var _is_placing: bool = false
 
-var _shop_tower_ids: Array = ["basic", "sniper", "splash", "slow"]
+var _shop_tower_ids: Array = ["basic", "sniper", "splash", "cordula", "slow"]
 
 
 func _ready() -> void:
@@ -94,7 +94,10 @@ func _populate_tower_shop() -> void:
 
 func update_wave_info(current: int, total: int) -> void:
 	if wave_label:
-		wave_label.text = "Welle %d/%d" % [current, total]
+		if current == 0:
+			wave_label.text = "Bereit"
+		else:
+			wave_label.text = "Welle %d/%d" % [current, total]
 
 
 func show_next_wave_button(visible_flag: bool) -> void:
@@ -162,7 +165,7 @@ func _refresh_tower_info() -> void:
 
 func _on_gold_changed(amount: int) -> void:
 	if gold_label:
-		gold_label.text = " %d" % amount
+		gold_label.text = "%d" % amount
 	for i in tower_shop.get_child_count():
 		if i < tower_data_list.size():
 			var btn: Button = tower_shop.get_child(i)

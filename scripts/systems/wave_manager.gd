@@ -92,6 +92,11 @@ func _spawn_enemy(enemy_id: String) -> void:
 	var data_path := "res://resources/enemy_data/%s.tres" % enemy_id
 	if ResourceLoader.exists(data_path):
 		enemy_instance.data = load(data_path)
+	else:
+		push_warning("WaveManager: Enemy data '%s' not found, using basic" % enemy_id)
+		var fallback := "res://resources/enemy_data/basic.tres"
+		if ResourceLoader.exists(fallback):
+			enemy_instance.data = load(fallback)
 
 	enemy_instance.add_to_group("enemies")
 	enemy_instance.enemy_died.connect(_on_enemy_died)

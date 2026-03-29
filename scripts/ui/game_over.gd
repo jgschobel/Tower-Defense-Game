@@ -31,6 +31,10 @@ var _defeat_messages := [
 
 func show_victory(stars: int) -> void:
 	visible = true
+	# Fade in animation
+	modulate = Color(1, 1, 1, 0)
+	var fade := create_tween()
+	fade.tween_property(self, "modulate:a", 1.0, 0.4)
 	if title_label:
 		title_label.text = "SIEG!"
 	if stars_label:
@@ -54,6 +58,9 @@ func show_victory(stars: int) -> void:
 
 func show_defeat() -> void:
 	visible = true
+	modulate = Color(1, 1, 1, 0)
+	var fade := create_tween()
+	fade.tween_property(self, "modulate:a", 1.0, 0.4)
 	if title_label:
 		title_label.text = "VERLORE!"
 	if stars_label:

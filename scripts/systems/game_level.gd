@@ -72,6 +72,7 @@ func _default_waves() -> Array:
 func _on_wave_started(wave_num: int, total: int) -> void:
 	hud.update_wave_info(wave_num, total)
 	hud.show_next_wave_button(false)
+	SfxManager.play_wave_start()
 
 
 func _on_wave_completed(_wave_num: int) -> void:
@@ -81,11 +82,13 @@ func _on_wave_completed(_wave_num: int) -> void:
 
 func _on_all_waves_completed() -> void:
 	GameManager.complete_level()
+	hud.hide_tower_info()
 	var stars: int = GameManager.level_stars.get(level_id, 1)
 	game_over_screen.show_victory(stars)
 
 
 func _on_game_over(won: bool) -> void:
+	hud.hide_tower_info()
 	if not won:
 		game_over_screen.show_defeat()
 
