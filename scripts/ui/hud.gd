@@ -103,7 +103,7 @@ func update_wave_info(current: int, total: int) -> void:
 			_show_wave_announcement(current, total)
 
 
-func _show_wave_announcement(current: int, total: int) -> void:
+func _show_wave_announcement(current: int, _total: int) -> void:
 	var announce := Label.new()
 	announce.text = "WELLE %d!" % current
 	announce.add_theme_font_size_override("font_size", 52)

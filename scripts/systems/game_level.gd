@@ -9,7 +9,7 @@ extends Node2D
 @onready var wave_manager: WaveManager = $WaveManager
 @onready var tower_placement: TowerPlacement = $TowerPlacement
 @onready var hud: CanvasLayer = $HUD
-@onready var game_over_screen: Control = $GameOverScreen
+@onready var game_over_screen: Node = $GameOverScreen/Overlay
 @onready var pause_menu: Control = $PauseMenu
 
 var wave_definitions: Array = []
