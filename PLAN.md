@@ -1,149 +1,136 @@
-# Affoltern Banani Raubzug — Development Plan
+# Affoltern Banani Raubzug — Master Development Plan (60+ Items)
 
 ## Workflow
-Tasks are executed using the agent architecture defined in `AGENTS.md`:
-- **Conductor (Opus)** handles bug fixes, game logic, creative decisions
-- **Art Factory (Sonnet)** runs image generation in background while Conductor codes
-- **Code Scout (Sonnet)** explores codebase when Conductor needs info
-- **Build Tester (Sonnet)** validates everything before git push
+Tasks executed using agent architecture from `AGENTS.md`:
+- **Conductor (Opus)** — bug fixes, game logic, creative, git
+- **Art Factory (Sonnet, background)** — image generation, background removal
+- **Code Scout (Sonnet)** — codebase exploration, validation
+- **Build Tester (Sonnet)** — pre-push validation
 
-## Critical Bugs (Must Fix First)
+---
 
-- [ ] **All levels play as Level 1** — `game.tscn` hardcodes `level_id = 1`. Need to read from `GameManager.current_level` in `_ready()`
-- [ ] **Boss spawn_children() is empty** — Der M-Teufel should spawn 4 Brötli on death, currently does nothing
-- [ ] **Starting gold/lives ignored from LevelData** — CurrencyManager uses hardcoded dict instead of .tres values
-- [ ] **Splash projectile vanishes if target dies mid-flight** — should continue to position and explode
-- [ ] **DJ Booth buff is stale** — buff only calculated on placement, not when nearby towers change
-- [ ] **Game speed not reset on menu return** — add `Engine.time_scale = 1.0` safety net in MainMenu._ready()
-- [ ] **Level star JSON key mismatch** — int vs string keys after save/load round-trip
+## PHASE 1: CRITICAL BUGS (Must fix, game broken without these)
 
-## Gameplay Balance
+- [ ] 1. **AutoButton signal not connected** — hud.tscn missing `toggled` connection to `_on_auto_button_toggled`
+- [ ] 2. **Hit reactions only for slow towers** — `show_hit_reaction()` only called when slow > 0, should trigger for all damage
+- [ ] 3. **Game speed not reset on menu** — add `Engine.time_scale = 1.0` to MainMenu._ready()
+- [ ] 4. **Tower info panel not cleared on game over** — can show behind defeat screen
+- [ ] 5. **Gold label has leading space** — hud.tscn text " 200" should be "200"
+- [ ] 6. **Wave counter shows "Welle 0/5" at start** — confusing, should show "Welle —" or "Bereit"
+- [ ] 7. **Enemy spawn with missing data crashes** — wave_manager spawns enemy even if .tres missing, null errors
+- [ ] 8. **Health bar updates every frame** — wasteful, should only update on health change
 
-- [ ] **Nerf Amösius** — reduce from 25 dmg/2.0 atk/75% slow 4s to 15 dmg/1.0 atk (keep slow, reduce DPS)
-- [ ] **Buff Bomber** — increase splash radius 60→80 or reduce cost 175→150
-- [ ] **DJ Booth recalculation** — trigger `_recalculate_stats()` on all towers when any tower placed/sold
-- [ ] **Economy review** — fix starting gold from LevelData (250/300/350 instead of 200/250/300)
+## PHASE 2: GAMEPLAY BALANCE
 
-## Visual & Art Tasks
+- [ ] 9. **Buff Healer enemies** — heal_amount 8→15, heal_radius 80→120
+- [ ] 10. **Buff Tank armor** — armor 5→15 to actually matter
+- [ ] 11. **Nerf Amösius slow** — slow_amount 0.75→0.5, duration 4→2.5
+- [ ] 12. **Fix Splash tower vs flying** — set can_target_flying = true
+- [ ] 13. **Balance economy** — basic tower cost 100→80 to give more early options
+- [ ] 14. **Smoother difficulty curve** — level 2 starting lives 20→22
+- [ ] 15. **Boss spawns fewer children** — spawn_count 4→3
+- [ ] 16. **DamageType enum actually used** — magic damage ignores armor, physical reduced by armor
 
-### Tower Art (need images for each)
-- [x] Lemurius — has custom art (lemur character)
-- [x] Amösius — has custom art (gecko character)
-- [ ] **Sniper tower** — needs character art (currently colored square)
-- [ ] **Bomber tower** — needs character art
-- [ ] **DJ Booth tower** — needs character art
+## PHASE 3: CHARACTER ART (User provides Gemini icons, we process)
 
-### Enemy Art (currently drawn as shapes, need proper sprites)
-- [ ] **Angry Brötli** — bread roll with angry face
-- [ ] **Turbo Toblerone** — triangular chocolate bar running
-- [ ] **Beefy Cervelat** — giant Swiss sausage with armor
-- [ ] **Dr. Rivella** — healing bottle with a stethoscope
-- [ ] **Fliegende Fondue** — flying cheese pot
-- [ ] **Der M-Teufel** — the Migros devil boss (big, scary, orange M logo)
+- [ ] 17. **Kühne icon** — user generates in Gemini with flower theme, we process + integrate
+- [ ] 18. **JoJo icon** — user generates in Gemini with chemist theme, we process + integrate
+- [ ] 19. **Cordula icon** — user generates in Gemini with pirate carnival theme, we process + integrate
+- [ ] 20. **Cordula tower data** — pirate carnival, hook arm, throws volleyballs, 150 cost
+- [ ] 21. **Cordula upgrade path** — Volleyball → Cannonball → Party Bomb
+- [ ] 22. **Tower upgrade visual changes** — icon slightly changes per upgrade level (tint, glow, border)
 
-### UI Art
-- [ ] **App icon** — Lemurius & Amösius with bananas
-- [ ] **Banana currency icon** — replace money.png with banana
-- [ ] **Star icons** — proper stars for victory screen
-- [ ] **Level thumbnails** — small preview images for level select
+## PHASE 4: UI/UX IMPROVEMENTS
 
-### Map Backgrounds
-- [ ] **Level 1: Migros Affoltern** — supermarket floor tiles, shelves
-- [ ] **Level 2: Frozen Section** — ice blue floor, freezer cabinets
-- [ ] **Level 3: Bakery of Horrors** — warm wood floor, oven glow
+- [ ] 23. **Auto/Speed buttons look pro** — proper toggle styling, highlight when active
+- [ ] 24. **Tower placement invalid feedback** — show text "Z'nöch am Wäg!" or "Z'nöch am Turm!"
+- [ ] 25. **Floating gold text on kill** — "+10" rises from dead enemy
+- [ ] 26. **Enemy count on HUD** — "12 übrig" next to wave counter
+- [ ] 27. **Tutorial/help overlay** — first-time-play explanation of mechanics
+- [ ] 28. **Tower cost highlighting** — yellow/gold color for affordable, red for too expensive
+- [ ] 29. **Tower range preview in shop** — show range stat below cost
+- [ ] 30. **Move tower info panel** — position above shop bar, not overlapping placement area
+- [ ] 31. **Level select background** — use generated levelselect_bg.png
+- [ ] 32. **Story screen readable** — small centered portraits, dark overlay, clear text
+- [ ] 33. **Main menu buttons visible** — proper panel behind buttons over artwork
+- [ ] 34. **HUD buttons bigger for mobile** — minimum 50px touch targets
+- [ ] 35. **Pause button bigger** — 45px→60px minimum
+- [ ] 36. **Safe area margins** — handle phone notches and status bars
 
-### Effects & Particles
-- [ ] Banana splat on projectile hit
-- [ ] Cheese drip from Fondue enemies
-- [ ] Sparkle on tower placement
-- [ ] Explosion for Bomber splash
-- [ ] Death poof when enemies die
+## PHASE 5: ANIMATIONS & JUICE
 
-## UI Improvements
+- [ ] 37. **Tower attack animation** — bounce/pulse when firing (tween scale 1.0→1.15→1.0)
+- [ ] 38. **Tower upgrade celebration** — particle burst + flash on upgrade
+- [ ] 39. **Enemy death particles** — poof/splat on kill
+- [ ] 40. **Enemy damage flash** — already exists but improve (0.15s flash → proper hit stop)
+- [ ] 41. **Health bar smooth tween** — animate value change over 0.2s
+- [ ] 42. **Screen shake on boss spawn** — camera shake when M-Tüüfel appears
+- [ ] 43. **Wave start announcement** — "WELLE 3!" text flies across screen
+- [ ] 44. **Next wave button pulse** — glowing pulse animation when available
+- [ ] 45. **Sell tower shrink animation** — scale to zero over 0.3s before free
+- [ ] 46. **Game over entrance** — fade in with dramatic tween
+- [ ] 47. **Pause menu fade** — 0.2s fade-in instead of instant appear
+- [ ] 48. **Selected tower glow** — pulsing outline when tower is tapped/selected
 
-- [ ] **Floating gold text** — "+10" on enemy kill
-- [ ] **Enemy count display** — "12 enemies remaining" on HUD
-- [ ] **Tower DPS in info panel** — show calculated DPS alongside raw stats
-- [ ] **Wave preview** — show what enemies are coming next
-- [ ] **Banana currency label** — use banana icon instead of money icon
-- [ ] **Lore-flavored victory** — "Your banana discount is SAFE!" etc.
-- [ ] **Tower shop scrollable** — wrap in ScrollContainer for more towers
-- [ ] **Bigger tap zones on mobile** — 50px → 70-80px for tower selection
+## PHASE 6: AUDIO
 
-## Content Expansion
+- [ ] 49. **Tower fire SFX** — procedural beep/pop per tower type (different pitch)
+- [ ] 50. **Enemy death SFX** — short splat sound
+- [ ] 51. **Wave start SFX** — alarm/horn sound
+- [ ] 52. **UI click SFX** — button press feedback
+- [ ] 53. **Upgrade SFX** — ascending chime
+- [ ] 54. **Boss entrance SFX** — dramatic low rumble
+- [ ] 55. **Music improvements** — add drum pattern, vary between levels
+- [ ] 56. **Music pauses during pause menu** — respect tree.paused
 
-### Levels 4-10
-| Level | Name | Theme | New Mechanic |
-|-------|------|-------|-------------|
-| 4 | The Cheese Counter | Raclette zone | Shield enemies |
-| 5 | The Drink Aisle | Bottles everywhere | Split path |
-| 6 | The Self-Checkout | Beeping machines | Fast lane (second shorter path) |
-| 7 | The Warehouse | Behind-the-scenes | Boss: Mega Cervelat |
-| 8 | The Parking Garage | Underground | Dark map, limited visibility |
-| 9 | Cumulus Points Vault | M-Teufel's lair | All enemy types, heavy waves |
-| 10 | Der M-Teufel's Throne | Final battle | Multi-phase boss |
+## PHASE 7: LEVEL CONTENT
 
-### New Tower Ideas
-- [ ] **Cumulus Cannon** — fires expired Cumulus cards, bonus damage to bosses
-- [ ] **Migros Bag Launcher** — AoE pushback, swings reusable bags
-- [ ] **Käserei (Cheese Station)** — creates slow zone puddle instead of targeting
+- [ ] 57. **Level 2 scene** — unique ice-blue path, frozen section background
+- [ ] 58. **Level 3 scene** — unique bakery path, warm brown background
+- [ ] 59. **Levels 4-10 data** — wave definitions, enemy compositions, difficulty scaling
+- [ ] 60. **Levels 4-10 lore** — Swiss German story intros for each chapter
+- [ ] 61. **Katzensee level** — outdoor lake map using saved photo reference
+- [ ] 62. **Migros entrance level** — self-scan area using saved photo reference
 
-### New Enemy Ideas
-- [ ] **Frozen Pizza Frisbee** — fast, deflects some projectiles
-- [ ] **Kamikaze Gipfeli** — flies to nearest tower and explodes (tower HP mechanic)
-- [ ] **Shopping Cart** — slow, armored, carries 3 smaller enemies inside
+## PHASE 8: PERFORMANCE (Mobile)
 
-## Per-Level Scenes
-- [ ] Create `level_2.tscn` — unique ice-blue path, frozen section background
-- [ ] Create `level_3.tscn` — unique bakery path, warm brown background
-- [ ] Each level needs unique Curve2D, Line2D, and background
+- [ ] 63. **Object pooling for projectiles** — reuse instead of create/free
+- [ ] 64. **Object pooling for enemies** — reuse instead of create/free
+- [ ] 65. **Health bar update only on change** — not every frame
+- [ ] 66. **Viewport scaling** — proper handling for different phone sizes
+- [ ] 67. **Battery optimization** — stop music gen when backgrounded
 
-## Mobile Readiness
+## PHASE 9: POLISH & EXTRAS
 
-- [ ] Improve placement UX: place on finger-release, not finger-down
-- [ ] Increase tower tap zones to 70-80px
-- [ ] Add safe area margins for notches/status bars
-- [ ] Test procedural music performance on low-end devices
-- [ ] Replace FileDialog with native gallery picker for friend photos
-- [ ] Create proper app icon
-- [ ] Configure Android export template
-- [ ] Build and test APK on Samsung Galaxy
+- [ ] 68. **Lore panel in Swiss German** — main_menu backstory still partially English
+- [ ] 69. **Enemy preview icons in story** — show actual sprites not just text
+- [ ] 70. **Star display** — proper star icons instead of * and -
+- [ ] 71. **App icon** — custom icon featuring Lemurius & Amösius
+- [ ] 72. **Upgrade path system** — 2 choices per upgrade:
+  - Lemurius: Schnelli Banane (fast) vs Scharfi Banane (damage) → Explosivi Khaki
+  - Amösius: Längeri Zunge (range) vs Chläbrigeri Zunge (slow) → Insta-Reel Attacke
+  - Kühne: Giftige Pollen (poison DoT) vs Iis-Blüete (freeze) → Füür-Lilie (AoE fire)
+  - JoJo: Stärcheri Formel (damage) vs Chaos-Chemie (random effects) → Lotter JoJo
+  - Cordula: Volleyball Hagel (multi-shot) vs Ankerhake (stun) → Party Kanone (AoE)
+- [ ] 73. **Random Lotter JoJo effects** — 5% heal nearby, black poison DoT, Pups (AoE slow + funny), golden ticket (2x gold from kills)
+- [ ] 74. **Android export preset** — configure for Samsung Galaxy testing
+- [ ] 75. **Web export** — HTML5 for quick testing on any device
 
-## Testing Checklist
+## PHASE 10: FUTURE IDEAS
 
-### Core Loop
-- [ ] Menu → Level Select → Story → Game (full flow)
-- [ ] Level 2 loads correct waves (not level 1's)
-- [ ] Place tower, gold decreases
-- [ ] Towers shoot, enemies lose HP
-- [ ] Amösius stun: blue tint, slow, reaction text
-- [ ] Enemy reaches end → lose life
-- [ ] 0 lives → defeat screen
-- [ ] All waves cleared → victory with stars
-- [ ] Retry/Next level buttons work
+- [ ] 76. **Endless mode** — infinite waves with scaling difficulty after level 10
+- [ ] 77. **Friend photo gallery** — view all friends as their characters
+- [ ] 78. **Achievement system** — "Killed 100 Tofu-Würschtli", "Won without losing a life"
+- [ ] 79. **Daily challenge** — random tower/enemy restrictions
+- [ ] 80. **Leaderboard** — compare scores with friends
 
-### Towers
-- [ ] Can't place on path
-- [ ] Can't overlap towers
-- [ ] Cancel placement
-- [ ] Upgrade increases stats
-- [ ] Sell returns 60% gold
-- [ ] Sniper targets strongest
-- [ ] Bomber splash hits group
-- [ ] Bomber ignores flying
-- [ ] DJ Booth buffs neighbors
-- [ ] Tower info on tap
-- [ ] Deselect on empty tap
+---
 
-### Enemies
-- [ ] Boss spawns 4 Brötli on death
-- [ ] Healer heals nearby
-- [ ] Flying ignored by Bomber
-- [ ] Boss bigger than normals
-- [ ] Hit reaction text on stun
-- [ ] Health bar on damage
-
-### Save/Load
-- [ ] Stars persist across sessions
-- [ ] Level unlock persists
-- [ ] Stars only improve, never decrease
+## EXECUTION ORDER
+1. Phase 1 (bugs) — Conductor fixes directly, ~15 min
+2. Phase 4+5 (UI/animations) — Conductor codes while Art Factory generates backgrounds
+3. Phase 3 (characters) — User provides Gemini icons, Art Factory processes
+4. Phase 2 (balance) — Conductor adjusts .tres values
+5. Phase 6 (audio) — Conductor adds procedural SFX
+6. Phase 7 (content) — Conductor + Art Factory create levels
+7. Phase 8-10 — Polish and future features
