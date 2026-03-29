@@ -280,14 +280,24 @@ func _update_visual() -> void:
 
 	if tex:
 		sprite.texture = tex
-		# Auto-scale to fit nicely on the map — big and recognizable
+		# Auto-scale to fit nicely on the map
 		var max_dim := maxf(tex.get_width(), tex.get_height())
-		var target_size := 140.0
+		var target_size := 120.0
 		var s := target_size / max_dim
 		sprite.scale = Vector2(s, s)
 		sprite.modulate = Color.WHITE
 	else:
 		sprite.modulate = data.base_color
+	# Draw base pedestal under tower
+	queue_redraw()
+
+
+func _draw() -> void:
+	if not is_placed:
+		return
+	# Stone pedestal under tower
+	draw_circle(Vector2.ZERO, 35.0, Color(0.35, 0.3, 0.25, 0.5))
+	draw_circle(Vector2.ZERO, 32.0, Color(0.45, 0.4, 0.35, 0.4))
 
 
 func _update_range_collider() -> void:

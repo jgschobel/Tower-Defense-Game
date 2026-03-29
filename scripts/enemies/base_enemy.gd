@@ -127,10 +127,13 @@ func die() -> void:
 
 	enemy_died.emit(self)
 
-	# Death animation
+	# Death animation with spin and pop
 	var tween := create_tween()
-	tween.tween_property(self, "scale", Vector2.ZERO, 0.3)
-	tween.tween_callback(queue_free)
+	tween.set_parallel(true)
+	tween.tween_property(self, "scale", Vector2.ZERO, 0.35).set_ease(Tween.EASE_IN)
+	tween.tween_property(self, "rotation", randf_range(-1.5, 1.5), 0.35)
+	tween.tween_property(self, "modulate:a", 0.0, 0.35)
+	tween.chain().tween_callback(queue_free)
 
 
 func _reached_end() -> void:

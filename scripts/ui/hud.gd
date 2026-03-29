@@ -120,6 +120,10 @@ func _show_wave_announcement(current: int, total: int) -> void:
 	announce.offset_right = 150
 	announce.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	add_child(announce)
+	# For later waves (7+), make the text red and bigger
+	if current >= 7:
+		announce.add_theme_color_override("font_color", Color(1, 0.3, 0.2))
+		announce.add_theme_font_size_override("font_size", 60)
 	var tween := announce.create_tween()
 	tween.tween_property(announce, "modulate:a", 0.0, 1.5).set_delay(0.5)
 	tween.tween_callback(announce.queue_free)
