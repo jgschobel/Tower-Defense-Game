@@ -11,24 +11,24 @@ Tasks executed using agent architecture from `AGENTS.md`:
 
 ## PHASE 1: CRITICAL BUGS (Must fix, game broken without these)
 
-- [ ] 1. **AutoButton signal not connected** — hud.tscn missing `toggled` connection to `_on_auto_button_toggled`
-- [ ] 2. **Hit reactions only for slow towers** — `show_hit_reaction()` only called when slow > 0, should trigger for all damage
-- [ ] 3. **Game speed not reset on menu** — add `Engine.time_scale = 1.0` to MainMenu._ready()
-- [ ] 4. **Tower info panel not cleared on game over** — can show behind defeat screen
-- [ ] 5. **Gold label has leading space** — hud.tscn text " 200" should be "200"
-- [ ] 6. **Wave counter shows "Welle 0/5" at start** — confusing, should show "Welle —" or "Bereit"
-- [ ] 7. **Enemy spawn with missing data crashes** — wave_manager spawns enemy even if .tres missing, null errors
-- [ ] 8. **Health bar updates every frame** — wasteful, should only update on health change
+- [x] 1. **AutoButton signal not connected** — hud.tscn missing `toggled` connection to `_on_auto_button_toggled`
+- [x] 2. **Hit reactions only for slow towers** — `show_hit_reaction()` only called when slow > 0, should trigger for all damage
+- [x] 3. **Game speed not reset on menu** — add `Engine.time_scale = 1.0` to MainMenu._ready()
+- [x] 4. **Tower info panel not cleared on game over** — can show behind defeat screen
+- [x] 5. **Gold label has leading space** — hud.tscn text " 200" should be "200"
+- [x] 6. **Wave counter shows "Welle 0/5" at start** — confusing, should show "Welle —" or "Bereit"
+- [x] 7. **Enemy spawn with missing data crashes** — wave_manager spawns enemy even if .tres missing, null errors
+- [x] 8. **Health bar updates every frame** — wasteful, should only update on health change
 
 ## PHASE 2: GAMEPLAY BALANCE
 
-- [ ] 9. **Buff Healer enemies** — heal_amount 8→15, heal_radius 80→120
-- [ ] 10. **Buff Tank armor** — armor 5→15 to actually matter
-- [ ] 11. **Nerf Amösius slow** — slow_amount 0.75→0.5, duration 4→2.5
+- [x] 9. **Buff Healer enemies** — heal_amount 8→15, heal_radius 80→120
+- [x] 10. **Buff Tank armor** — armor 5→15 to actually matter
+- [x] 11. **Nerf Amösius slow** — slow_amount 0.75→0.5, duration 4→2.5
 - [ ] 12. **Fix Splash tower vs flying** — set can_target_flying = true
-- [ ] 13. **Balance economy** — basic tower cost 100→80 to give more early options
+- [x] 13. **Balance economy** — basic tower cost 100→80 to give more early options
 - [ ] 14. **Smoother difficulty curve** — level 2 starting lives 20→22
-- [ ] 15. **Boss spawns fewer children** — spawn_count 4→3
+- [x] 15. **Boss spawns fewer children** — spawn_count 4→3
 - [ ] 16. **DamageType enum actually used** — magic damage ignores armor, physical reduced by armor
 
 ## PHASE 3: CHARACTER ART (User provides Gemini icons, we process)
@@ -36,7 +36,7 @@ Tasks executed using agent architecture from `AGENTS.md`:
 - [ ] 17. **Kühne icon** — user generates in Gemini with flower theme, we process + integrate
 - [ ] 18. **JoJo icon** — user generates in Gemini with chemist theme, we process + integrate
 - [ ] 19. **Cordula icon** — user generates in Gemini with pirate carnival theme, we process + integrate
-- [ ] 20. **Cordula tower data** — pirate carnival, hook arm, throws volleyballs, 150 cost
+- [x] 20. **Cordula tower data** — pirate carnival, hook arm, throws volleyballs, 150 cost
 - [ ] 21. **Cordula upgrade path** — Volleyball → Cannonball → Party Bomb
 - [ ] 22. **Tower upgrade visual changes** — icon slightly changes per upgrade level (tint, glow, border)
 
@@ -44,7 +44,7 @@ Tasks executed using agent architecture from `AGENTS.md`:
 
 - [ ] 23. **Auto/Speed buttons look pro** — proper toggle styling, highlight when active
 - [ ] 24. **Tower placement invalid feedback** — show text "Z'nöch am Wäg!" or "Z'nöch am Turm!"
-- [ ] 25. **Floating gold text on kill** — "+10" rises from dead enemy
+- [x] 25. **Floating gold text on kill** — "+10" rises from dead enemy
 - [ ] 26. **Enemy count on HUD** — "12 übrig" next to wave counter
 - [ ] 27. **Tutorial/help overlay** — first-time-play explanation of mechanics
 - [ ] 28. **Tower cost highlighting** — yellow/gold color for affordable, red for too expensive
@@ -59,34 +59,34 @@ Tasks executed using agent architecture from `AGENTS.md`:
 
 ## PHASE 5: ANIMATIONS & JUICE
 
-- [ ] 37. **Tower attack animation** — bounce/pulse when firing (tween scale 1.0→1.15→1.0)
-- [ ] 38. **Tower upgrade celebration** — particle burst + flash on upgrade
-- [ ] 39. **Enemy death particles** — poof/splat on kill
-- [ ] 40. **Enemy damage flash** — already exists but improve (0.15s flash → proper hit stop)
+- [x] 37. **Tower attack animation** — bounce/pulse when firing (tween scale 1.0→1.15→1.0)
+- [x] 38. **Tower upgrade celebration** — particle burst + flash on upgrade
+- [x] 39. **Enemy death particles** — poof/splat on kill
+- [x] 40. **Enemy damage flash** — already exists but improve (0.15s flash → proper hit stop)
 - [ ] 41. **Health bar smooth tween** — animate value change over 0.2s
 - [ ] 42. **Screen shake on boss spawn** — camera shake when M-Tüüfel appears
 - [ ] 43. **Wave start announcement** — "WELLE 3!" text flies across screen
-- [ ] 44. **Next wave button pulse** — glowing pulse animation when available
-- [ ] 45. **Sell tower shrink animation** — scale to zero over 0.3s before free
-- [ ] 46. **Game over entrance** — fade in with dramatic tween
-- [ ] 47. **Pause menu fade** — 0.2s fade-in instead of instant appear
-- [ ] 48. **Selected tower glow** — pulsing outline when tower is tapped/selected
+- [x] 44. **Next wave button pulse** — glowing pulse animation when available
+- [x] 45. **Sell tower shrink animation** — scale to zero over 0.3s before free
+- [x] 46. **Game over entrance** — fade in with dramatic tween
+- [x] 47. **Pause menu fade** — 0.2s fade-in instead of instant appear
+- [x] 48. **Selected tower glow** — pulsing outline when tower is tapped/selected
 
 ## PHASE 6: AUDIO
 
-- [ ] 49. **Tower fire SFX** — procedural beep/pop per tower type (different pitch)
-- [ ] 50. **Enemy death SFX** — short splat sound
-- [ ] 51. **Wave start SFX** — alarm/horn sound
+- [x] 49. **Tower fire SFX** — procedural beep/pop per tower type (different pitch)
+- [x] 50. **Enemy death SFX** — short splat sound
+- [x] 51. **Wave start SFX** — alarm/horn sound
 - [ ] 52. **UI click SFX** — button press feedback
-- [ ] 53. **Upgrade SFX** — ascending chime
+- [x] 53. **Upgrade SFX** — ascending chime
 - [ ] 54. **Boss entrance SFX** — dramatic low rumble
 - [ ] 55. **Music improvements** — add drum pattern, vary between levels
-- [ ] 56. **Music pauses during pause menu** — respect tree.paused
+- [x] 56. **Music pauses during pause menu** — respect tree.paused
 
 ## PHASE 7: LEVEL CONTENT
 
-- [ ] 57. **Level 2 scene** — unique ice-blue path, frozen section background
-- [ ] 58. **Level 3 scene** — unique bakery path, warm brown background
+- [x] 57. **Level 2 scene** — unique ice-blue path, frozen section background
+- [x] 58. **Level 3 scene** — unique bakery path, warm brown background
 - [ ] 59. **Levels 4-10 data** — wave definitions, enemy compositions, difficulty scaling
 - [ ] 60. **Levels 4-10 lore** — Swiss German story intros for each chapter
 - [ ] 61. **Katzensee level** — outdoor lake map using saved photo reference

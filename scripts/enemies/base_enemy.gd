@@ -97,7 +97,7 @@ func apply_slow(factor: float, duration: float) -> void:
 func show_hit_reaction() -> void:
 	# Show a floating angry/sad label above the enemy
 	var reaction := Label.new()
-	var reactions := [">:(", "!!!", "grr", "ugh", "NO!", "why?!"]
+	var reactions := [">:(", "AUA!", "HEY!", "STOPP!", "NEI!", "WÄÄH!", "AUTSCH!", "GOPF!"]
 	reaction.text = reactions[randi() % reactions.size()]
 	reaction.add_theme_font_size_override("font_size", 18)
 	reaction.add_theme_color_override("font_color", Color(1, 0.2, 0.2))

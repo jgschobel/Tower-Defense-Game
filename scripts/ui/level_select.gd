@@ -37,8 +37,11 @@ func _populate_levels() -> void:
 
 		if unlocked:
 			btn.pressed.connect(_on_level_pressed.bind(i))
+			# Color hint per level theme
+			var level_colors := {1: Color(0.9, 0.85, 0.7), 2: Color(0.7, 0.85, 1.0), 3: Color(0.95, 0.8, 0.6)}
+			btn.modulate = level_colors.get(i, Color.WHITE)
 		else:
-			btn.modulate = Color(0.5, 0.5, 0.5, 0.8)
+			btn.modulate = Color(0.4, 0.4, 0.4, 0.6)
 
 		level_grid.add_child(btn)
 

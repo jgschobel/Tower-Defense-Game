@@ -15,3 +15,7 @@ Thumbs.db
 .vscode/
 *.swp
 *.swo
+
+# Generated scripts
+art_gen.py
+*.pyc
