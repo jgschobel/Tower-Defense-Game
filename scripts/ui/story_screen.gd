@@ -22,8 +22,13 @@ func _ready() -> void:
 	_level_id = GameManager.current_level
 	var intro := Lore.get_level_intro(_level_id)
 
-	# Load story background
-	var bg_path := "res://assets/textures/ui/story_bg.png"
+	# Load level-specific story background
+	var bg_paths := {
+		1: "res://assets/textures/maps/migros_entrance.png",
+		2: "res://assets/textures/maps/level2_bg.png",
+		3: "res://assets/textures/maps/level3_bg.png",
+	}
+	var bg_path: String = bg_paths.get(_level_id, "res://assets/textures/ui/story_bg.png")
 	if bg and ResourceLoader.exists(bg_path):
 		bg.texture = load(bg_path)
 
@@ -64,13 +69,20 @@ func _process(delta: float) -> void:
 
 
 func _on_continue_button_pressed() -> void:
+	SfxManager.play_click()
 	if _typing:
+		# Skip typewriter, show all text
 		_typing = false
 		_char_index = _full_text.length()
 		if story_label:
 			story_label.text = _full_text
 		continue_button.text = "LOS GAHT'S!"
+		# Pulse the button to show it's now actionable
+		var pulse := continue_button.create_tween()
+		pulse.tween_property(continue_button, "modulate", Color(1.3, 1.2, 0.8), 0.3)
+		pulse.tween_property(continue_button, "modulate", Color.WHITE, 0.3)
 	else:
+		# Start the level
 		var level_path := "res://scenes/game/level_%d.tscn" % _level_id
 		if ResourceLoader.exists(level_path):
 			get_tree().change_scene_to_file(level_path)

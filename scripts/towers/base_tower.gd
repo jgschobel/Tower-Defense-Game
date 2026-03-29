@@ -218,7 +218,7 @@ func upgrade() -> bool:
 	if upgrade_level <= data.upgrade_names.size():
 		upg_label.text = data.upgrade_names[upgrade_level - 1]
 	else:
-		upg_label.text = "UPGRADE!"
+		upg_label.text = "UPGRÄDET!"
 	upg_label.add_theme_font_size_override("font_size", 16)
 	upg_label.add_theme_color_override("font_color", Color(1, 0.85, 0.1))
 	upg_label.add_theme_color_override("font_outline_color", Color.BLACK)

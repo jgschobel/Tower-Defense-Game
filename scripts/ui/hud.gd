@@ -106,7 +106,7 @@ func update_wave_info(current: int, total: int) -> void:
 func _show_wave_announcement(current: int, total: int) -> void:
 	var announce := Label.new()
 	announce.text = "WELLE %d!" % current
-	announce.add_theme_font_size_override("font_size", 40)
+	announce.add_theme_font_size_override("font_size", 52)
 	announce.add_theme_color_override("font_color", Color(1, 0.9, 0.2))
 	announce.add_theme_color_override("font_outline_color", Color(0.2, 0.1, 0))
 	announce.add_theme_constant_override("outline_size", 5)
@@ -193,7 +193,7 @@ func _refresh_tower_info() -> void:
 	if name_lbl:
 		name_lbl.text = "%s (Lv %d)" % [td.display_name, _selected_tower.upgrade_level + 1]
 	if stats_lbl:
-		stats_lbl.text = "DMG: %.0f  SPD: %.1f  RNG: %.0f" % [
+		stats_lbl.text = "Schade: %.0f  Tempo: %.1f  Riichwiiti: %.0f" % [
 			_selected_tower.effective_damage,
 			_selected_tower.effective_speed,
 			_selected_tower.effective_range,
@@ -201,10 +201,10 @@ func _refresh_tower_info() -> void:
 	if upgrade_btn:
 		var cost := _selected_tower.get_upgrade_cost()
 		if cost < 0:
-			upgrade_btn.text = "MAX"
+			upgrade_btn.text = "MAXIMUM"
 			upgrade_btn.disabled = true
 		else:
-			upgrade_btn.text = "Upgrade %d" % cost
+			upgrade_btn.text = "Verbessere %d" % cost
 			upgrade_btn.disabled = not _selected_tower.can_upgrade()
 	if sell_btn:
 		var sell_val := td.get_sell_value(_selected_tower.upgrade_level)

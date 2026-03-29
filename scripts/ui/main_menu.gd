@@ -55,22 +55,22 @@ func _create_lore_panel() -> Control:
 	scroll.add_child(vbox)
 
 	var title := Label.new()
-	title.text = "THE SACRED LORE"
+	title.text = "D'HEILIGI GSCHICHT"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(title)
 
 	var backstory := Label.new()
-	backstory.text = """In the quiet suburb of Affoltern, Zürich, two unlikely heroes share a flat above the Migros on Wehntalerstrasse.
+	backstory.text = """Im ruhige Vorort Affoltern, Züri, teiled sich zwei unglaubliche Helde en Wohnig über de Migros a de Wehntalerstrass.
 
-One fateful Tuesday evening, they returned from Apéro at Biergarten Affoltern to find the Migros in CHAOS. The shelves were alive. The Cervelats were marching. The Brötli were screaming.
+Eimol, an eme schicksalhafte Ziischtig-Abe, sind sie vom Apéro im Biergarten Affoltern zrugg cho und händ ihri gliebti Migros im totale CHAOS gfunde. D'Regäl sind läbig gsi. D'Cervelats sind marschiert. D'Brötli händ gschrien.
 
-Floating above the self-checkout machines was DER M-TEUFEL — a demonic entity made of expired Cumulus points and broken shopping cart wheels.
+Über de Sälf-Tscheckout-Maschine isch DE M-TÜÜFEL gschwebt — en dämonischi Entität gmacht us abglaufene Cumulus-Punkte und kaputte Iichaufswage-Rädli.
 
-"Your banana discount is REVOKED!" he screamed.
+\"Din Banane-Rabatt isch WIDERUEFE!\" het er gschrien.
 
-Lemurius dropped her Alnatura smoothie. Amösius's tongue went dry.
+D'Lemurius het ihri Alnatura Smoothie la falle. Em Amösius sini Zunge isch trochne worde.
 
-This was personal."""
+Das isch persönlich gsi."""
 	backstory.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	vbox.add_child(backstory)
 
@@ -82,7 +82,7 @@ This was personal."""
 		vbox.add_child(bio_label)
 
 	var enemy_title := Label.new()
-	enemy_title.text = "\n--- THE CURSED PRODUCTS ---"
+	enemy_title.text = "\n--- D'VERFLUECHTE PRODUKT ---"
 	enemy_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(enemy_title)
 
@@ -93,7 +93,7 @@ This was personal."""
 		vbox.add_child(enemy_label)
 
 	var close_btn := Button.new()
-	close_btn.text = "Close the Sacred Texts"
+	close_btn.text = "Heiligi Texte zuemache"
 	close_btn.anchors_preset = Control.PRESET_BOTTOM_WIDE
 	close_btn.anchor_top = 1.0
 	close_btn.anchor_bottom = 1.0
