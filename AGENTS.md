@@ -1,5 +1,10 @@
 # Agent Architecture — Affoltern Banani Raubzug
 
+> **READ THIS AT THE START OF EVERY NEW CONVERSATION.**
+> This file + PLAN.md + CLAUDE.md define how to work on this project.
+> Always use sub-agents for parallel work. Never ask the user questions you can answer yourself.
+> API keys at `C:/Users/josef/.api_keys/keys.json`. Generate art when needed.
+
 ## Philosophy
 Opus (conductor) delegates to specialized sub-agents only when tasks can genuinely run in parallel or when isolation protects the main context from noise. We don't create agents for the sake of having agents — we use them when they're faster than doing it ourselves.
 
