@@ -21,7 +21,9 @@ Pick ONE of the following:
 
 ## Hard Rules
 
-- **Do NOT refactor more than 2 files in one PR.**
+- **Scope**: one coherent refactor goal per PR. A full subsystem
+  refactor (e.g. extracting a whole targeting module) is fine if it's
+  cohesive. A grab-bag of 10 unrelated changes is not.
 - **Do NOT rename public classes or signals** — that breaks scene files.
 - **Do NOT change `.tres` resource schemas** — existing data files break.
 - **Do NOT introduce new patterns or frameworks.**
@@ -29,6 +31,9 @@ Pick ONE of the following:
    revert the change.
 - If you aren't 100% sure the change is safe, **pick a different task
    from another mode** or open the PR as `Draft` with a note in the body.
+- Max-turns is 200 — use them to verify the change actually improves
+  things. Read every file that calls the refactored code. Prove the
+  refactor works end-to-end.
 
 ## Example good PRs in this mode
 

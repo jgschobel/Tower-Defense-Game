@@ -154,7 +154,7 @@ jobs:
           prompt: ${{ steps.prompt.outputs.prompt }}
           branch_prefix: claude/auto/
           claude_args: |
-            --max-turns 50
+            --max-turns 200
             --model ${{ needs.preflight.outputs.model }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
