@@ -21,6 +21,7 @@ signal auto_wave_toggled(enabled: bool)
 @onready var tower_info: PanelContainer = $TowerInfo
 
 var tower_data_list: Array = []
+var _cost_labels: Array = []
 var _game_speed: float = 1.0
 var _selected_tower: BaseTower = null
 var _is_placing: bool = false
@@ -88,6 +89,7 @@ func _populate_tower_shop() -> void:
 		cost_label.add_theme_color_override("font_color", Color(1, 0.9, 0.3))
 		cost_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		vbox.add_child(cost_label)
+		_cost_labels.append(cost_label)
 
 		btn.add_child(vbox)
 		tower_shop.add_child(btn)
@@ -221,7 +223,11 @@ func _on_gold_changed(amount: int) -> void:
 	for i in tower_shop.get_child_count():
 		if i < tower_data_list.size():
 			var btn: Button = tower_shop.get_child(i)
-			btn.disabled = not CurrencyManager.can_afford(tower_data_list[i].buy_cost)
+			var affordable: bool = CurrencyManager.can_afford(tower_data_list[i].buy_cost)
+			btn.disabled = not affordable
+			if i < _cost_labels.size():
+				var col := Color(1, 0.9, 0.3) if affordable else Color(1, 0.3, 0.2)
+				_cost_labels[i].add_theme_color_override("font_color", col)
 	if _selected_tower:
 		_refresh_tower_info()
 
