@@ -20,11 +20,17 @@ Focus on **small, safe improvements**. Pick ONE of the following:
 
 ## Constraints
 
-- **1-3 files changed max.**
+- **Scope**: one coherent polish effort. Could be 1 file, could be 5 —
+  whatever it takes to finish the polish *well*. Don't split a single
+  polish pass across multiple runs artificially.
 - **No new dependencies.**
-- **No refactors** — save those for `self-improve` mode.
+- **No architecture refactors** — save those for `self-improve` mode.
 - **Test the change** — describe in the PR body how you verified it (parse
    check, visual description, etc.).
+- **Go deep** where it adds value: if you're coloring tower cost labels
+  red/gold, also consider tower-icon grayscale when unaffordable, tooltip
+  messaging, and any related affordance cues. Polish is an aesthetic pass,
+  not a mechanical one-line change.
 
 ## Example good PRs in this mode
 
