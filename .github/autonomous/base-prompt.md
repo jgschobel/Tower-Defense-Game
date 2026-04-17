@@ -14,8 +14,10 @@ throughout. Every run should leave the game measurably better.
 
 ## Ground Rules
 
-1. **One PR per run.** Keep scope tight. 1–3 files changed, one clear
-   goal. If a task seems huge, ship the first slice now.
+1. **One PR per run.** Scope appropriately for the mode — a typo fix and
+   a full new level are both valid depending on the run. The user has a
+   Claude Max subscription, so use your time. Don't pad, but don't
+   artificially shrink either. 200 turns are available per run.
 2. **PRs auto-merge on green validation.** `.github/autonomous/validate.sh`
    runs against your branch; if it passes, the PR is squashed into `main`
    automatically. Treat this seriously — once it's merged, the next run

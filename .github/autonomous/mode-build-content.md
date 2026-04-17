@@ -2,13 +2,21 @@
 
 Focus on **extending the game world**. Pick ONE of the following:
 
-1. **New level** (if levels 4-10 are unfinished in ROADMAP.md):
-   - Create `resources/level_data/level_N.tres` with 10 wave definitions
-   - Create `scenes/game/level_N.tscn` (copy structure from level_3.tscn,
-     draw a new path)
-   - Add a Swiss German story intro in `scripts/systems/lore.gd`
-   - Do NOT generate background art in this PR — leave a TODO note, the art
-     can be added in a separate run or by the user.
+1. **Complete new level** (if levels 4-10 are unfinished):
+   - Create `resources/level_data/level_N.tres` with 10 balanced waves
+     — study wave progressions in existing levels so difficulty scales
+     properly
+   - Create `scenes/game/level_N.tscn` with a unique, interesting path
+     (copy structure from level_3.tscn but draw a *different* curve —
+     avoid copying the same shape)
+   - Add Swiss German story intro in `scripts/systems/lore.gd`
+     — write 3-5 paragraphs of real flavor, not a one-liner
+   - Wire the level into `GameManager.MAX_LEVELS` and any level-select
+     metadata (colors, unlock order)
+   - If art generation is needed, leave a TODO note with a specific
+     Stability prompt description — the next `generate-art` run picks
+     it up. Do NOT generate art in this mode.
+   - **Ship all of this in ONE PR**. A "half level" isn't useful.
 
 2. **New enemy type** — a new `.tres` in `resources/enemy_data/` with a
    distinctive mechanic (e.g., splits on death, shielded, teleporter).
@@ -28,6 +36,10 @@ Focus on **extending the game world**. Pick ONE of the following:
 - **Reuse existing enemy types** if adding a level — don't require new art.
 - **New content must be wired** — a new level must be referenced in the
    level_select flow, a new enemy must appear in at least one wave.
+- **Complete the content** — half-finished features are worse than
+   nothing. If you start a level, finish it: data, scene, story, wiring.
+- **Go deep**, not wide. Better to ship one complete level than stub
+   three. Max-turns is 200 — use it.
 
 ## Example good PRs in this mode
 
