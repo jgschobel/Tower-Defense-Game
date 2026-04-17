@@ -1,5 +1,28 @@
 # Affoltern Banani Raubzug
 
+## User Directives (Durable)
+
+These are the user's standing preferences — persist across all sessions,
+autonomous or manual. Update only when the user explicitly changes them.
+
+- **Scope target**: Bloons TD-style depth, in a small Swiss-German
+  package. No scope is "too big" if justified — ship it in slices.
+- **Subscription**: Claude Max → use parallel Sonnet subagents freely,
+  use Opus 4.7 for planning and architecture, Sonnet 4.6 for execution.
+- **Review appetite**: none. Do not ask the user to review PRs. The
+  autonomous loop auto-merges validated changes. User manages from
+  phone via GitHub mobile.
+- **Feedback rhythm**: user plays the deployed HTML5 build
+  (`jgschobel.github.io/Tower-Defense-Game/`) and edits `ROADMAP.md`
+  when they want to redirect priorities. Otherwise: zero input required.
+- **Language**: game content in Swiss German (Züridütsch), code and
+  commit messages in English.
+- **Platform**: mobile landscape 1280×720, touch-first, GL Compatibility
+  renderer. Also deploys to web via GitHub Pages for on-phone testing.
+- **Aesthetic**: friends' faces as towers (Lemurius, Kühne, JoJo,
+  Cordula, Amösius), vegan food enemies, De Vegan-Tüüfel as the
+  antagonist. Migros Affoltern as world.
+
 ## Project Overview
 A **landscape** (1280x720) tower defense game built in **Godot 4.6** using GDScript. Set in Migros Affoltern, Zürich. 5 tower characters (Lemurius, Kühne, JoJo, Cordula, Amösius) fight cursed vegan products controlled by De Vegan-Tüüfel. All text in Swiss German. Procedural chiptune music + SFX, AI-generated art, story cutscenes, 3 levels with 10 waves each.
 
