@@ -29,6 +29,8 @@ permissions:
   contents: write
   pull-requests: write
   issues: write
+  id-token: write
+  actions: read
 
 concurrency:
   group: autonomous-dev
