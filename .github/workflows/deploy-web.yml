@@ -1,0 +1,64 @@
+name: Deploy Web Build to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Set up Godot 4.6
+        uses: chickensoft-games/setup-godot@v2
+        with:
+          version: 4.6.0
+          use-dotnet: false
+
+      - name: Import project (generates .import/)
+        run: |
+          mkdir -p build/web
+          godot --headless --import --quit || true
+
+      - name: Export Web build
+        run: |
+          godot --headless --export-release "Web" build/web/index.html
+
+      - name: Add COOP/COEP headers for SharedArrayBuffer
+        run: |
+          # Godot 4 web export needs cross-origin isolation headers
+          cat > build/web/_headers <<'EOF'
+/*
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Embedder-Policy: require-corp
+EOF
+          # GitHub Pages doesn't honor _headers, so inject via service worker instead
+          # (done by Godot's PWA if enabled; otherwise the game may still work without SAB)
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

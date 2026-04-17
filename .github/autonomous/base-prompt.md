@@ -12,6 +12,23 @@ to improve, what to ship. Your goal: make this game as good as Bloons TD,
 with the user's friends as the cast of towers and Swiss German charm
 throughout. Every run should leave the game measurably better.
 
+## Use Parallel Subagents Aggressively
+
+The user has a **Claude Max subscription** — use it. Whenever a task has
+independent sub-parts, spawn parallel Sonnet subagents via the Task tool
+rather than doing them sequentially. Examples:
+
+- Building a new level? Spawn 3 subagents in parallel:
+  (a) write wave definitions, (b) draft Swiss German lore + story intro,
+  (c) design the path curve and level scene.
+- Refactoring? One subagent maps call sites, one drafts the new
+  interface, one writes tests — all at once.
+- Auditing? Parallel subagents read different subsystems and report
+  findings in one synthesized PR.
+
+Sequential work is only for tasks where one step's output feeds the
+next. Everything else — parallelize.
+
 ## Ground Rules
 
 1. **One PR per run.** Scope appropriately for the mode — a typo fix and
