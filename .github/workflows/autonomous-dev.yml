@@ -1,0 +1,228 @@
+name: Autonomous Development Loop
+
+on:
+  schedule:
+    # Every 4 hours, UTC — 6 runs per day, one per mode
+    # 00=validate, 04=polish, 08=ideate, 12=content, 16=refactor, 20=art
+    - cron: '0 */4 * * *'
+  workflow_dispatch:
+    inputs:
+      task_mode:
+        description: 'Override task mode (leave blank to auto-rotate)'
+        required: false
+        default: ''
+        type: choice
+        options:
+          - ''
+          - test-validate
+          - audit-polish
+          - ideate
+          - build-content
+          - self-improve
+          - generate-art
+      extra_instructions:
+        description: 'Optional extra instructions for this run'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: autonomous-dev
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    outputs:
+      paused: ${{ steps.check.outputs.paused }}
+      mode: ${{ steps.rotate.outputs.mode }}
+      art_enabled: ${{ steps.rotate.outputs.art_enabled }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: check
+        name: Check for PAUSE file
+        run: |
+          if [ -f .github/autonomous/PAUSE ]; then
+            echo "Loop is paused via .github/autonomous/PAUSE — skipping run."
+            echo "paused=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "paused=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - id: rotate
+        name: Pick task mode (6-way rotation)
+        if: steps.check.outputs.paused == 'false'
+        env:
+          STABILITY_KEY: ${{ secrets.STABILITY_API_KEY }}
+        run: |
+          set -e
+          ART_ENABLED="false"
+          if [ -n "$STABILITY_KEY" ]; then
+            ART_ENABLED="true"
+          fi
+          echo "art_enabled=$ART_ENABLED" >> "$GITHUB_OUTPUT"
+
+          if [ -n "${{ inputs.task_mode }}" ]; then
+            MODE="${{ inputs.task_mode }}"
+          else
+            HOUR=$(date -u +%H)
+            case "$HOUR" in
+              00) MODE=test-validate ;;
+              04) MODE=audit-polish ;;
+              08) MODE=ideate ;;
+              12) MODE=build-content ;;
+              16) MODE=self-improve ;;
+              20) MODE=generate-art ;;
+              *)  MODE=audit-polish ;;
+            esac
+          fi
+
+          # If art mode picked but no Stability key, fall back to audit-polish
+          if [ "$MODE" = "generate-art" ] && [ "$ART_ENABLED" != "true" ]; then
+            echo "Stability API key not configured — falling back to audit-polish."
+            MODE=audit-polish
+          fi
+
+          echo "mode=$MODE" >> "$GITHUB_OUTPUT"
+          echo "Selected mode: $MODE"
+
+  run-claude:
+    needs: preflight
+    if: needs.preflight.outputs.paused == 'false'
+    runs-on: ubuntu-latest
+    outputs:
+      branch: ${{ steps.capture.outputs.branch }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build mode-specific prompt
+        id: prompt
+        env:
+          MODE: ${{ needs.preflight.outputs.mode }}
+          ART_ENABLED: ${{ needs.preflight.outputs.art_enabled }}
+          EXTRA: ${{ inputs.extra_instructions }}
+        run: |
+          set -e
+          {
+            echo 'prompt<<EOF_PROMPT'
+            cat .github/autonomous/base-prompt.md
+            echo ''
+            echo '---'
+            echo ''
+            echo "## THIS RUN'S MODE: $MODE"
+            echo ''
+            cat ".github/autonomous/mode-$MODE.md"
+            echo ''
+            echo '---'
+            echo ''
+            echo '## RECENT CHANGELOG (last 30 lines)'
+            tail -n 30 CHANGELOG.md 2>/dev/null || echo '(no changelog yet)'
+            echo ''
+            echo "## ART GENERATION AVAILABLE: $ART_ENABLED"
+            if [ -n "$EXTRA" ]; then
+              echo ''
+              echo '## EXTRA INSTRUCTIONS FOR THIS RUN'
+              echo "$EXTRA"
+            fi
+            echo 'EOF_PROMPT'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Run Claude Code
+        id: claude
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: ${{ steps.prompt.outputs.prompt }}
+          branch_prefix: claude/auto/
+          claude_args: |
+            --max-turns 50
+            --model claude-sonnet-4-6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          STABILITY_API_KEY: ${{ secrets.STABILITY_API_KEY }}
+
+      - name: Capture PR branch
+        id: capture
+        run: |
+          set -e
+          # Find the most recent PR opened on a claude/auto/* branch
+          BRANCH=$(gh pr list --state open --json headRefName,createdAt --limit 20 \
+            | jq -r '[.[] | select(.headRefName | startswith("claude/auto/"))] | sort_by(.createdAt) | reverse | .[0].headRefName // empty')
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+          if [ -z "$BRANCH" ]; then
+            echo "No PR created this run."
+          else
+            echo "Latest autonomous PR branch: $BRANCH"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  validate-and-merge:
+    needs: [preflight, run-claude]
+    if: needs.preflight.outputs.paused == 'false' && needs.run-claude.outputs.branch != ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.run-claude.outputs.branch }}
+          fetch-depth: 0
+
+      - name: Set up Godot headless
+        id: godot
+        uses: chickensoft-games/setup-godot@v2
+        with:
+          version: 4.6.0
+          use-dotnet: false
+        continue-on-error: true
+
+      - name: Validate project
+        id: validate
+        run: |
+          set -e
+          chmod +x .github/autonomous/validate.sh
+          if .github/autonomous/validate.sh; then
+            echo "result=pass" >> "$GITHUB_OUTPUT"
+          else
+            echo "result=fail" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+
+      - name: Auto-merge PR (squash)
+        if: steps.validate.outputs.result == 'pass'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ needs.run-claude.outputs.branch }}
+        run: |
+          set -e
+          PR_NUM=$(gh pr list --head "$BRANCH" --state open --json number --limit 1 | jq -r '.[0].number // empty')
+          if [ -z "$PR_NUM" ]; then
+            echo "No open PR found for branch $BRANCH"
+            exit 0
+          fi
+          echo "Auto-merging PR #$PR_NUM (branch: $BRANCH)"
+          gh pr merge "$PR_NUM" --squash --delete-branch --admin || \
+            gh pr merge "$PR_NUM" --squash --delete-branch
+
+      - name: Close PR on validation failure
+        if: failure() && steps.validate.outputs.result == 'fail'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ needs.run-claude.outputs.branch }}
+        run: |
+          set -e
+          PR_NUM=$(gh pr list --head "$BRANCH" --state open --json number --limit 1 | jq -r '.[0].number // empty')
+          if [ -n "$PR_NUM" ]; then
+            gh pr comment "$PR_NUM" --body "Auto-merge blocked: Godot validation failed. The next test-validate run will attempt to fix or retire this branch."
+            gh pr close "$PR_NUM" --delete-branch
+            gh issue create --title "Autonomous run produced broken PR (#$PR_NUM)" \
+              --body "Branch $BRANCH failed validation and was auto-closed. Next test-validate run should investigate." \
+              --label "autonomous,validation-failure" || true
+          fi
