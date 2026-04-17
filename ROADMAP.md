@@ -63,6 +63,27 @@ Within a priority, top-of-list wins.
 - [ ] Viewport scaling across phone sizes — PLAN #66
 - [ ] Battery optimization: stop music gen when backgrounded — PLAN #67
 
+## 💡 Ideas To Explore
+
+*Added by the `ideate` mode runs. The loop mines this section for bigger
+creative swings. Lift to P1 when ready to ship.*
+
+- [ ] **Glace-Schlag tower** — Migros ice-cream themed, freezes all
+  enemies in 200px radius for 3s, 15s cooldown, 400 gold.
+- [ ] **MOAB-class boss: "De Grossi Coop-Güggel"** — rival supermarket
+  mega-boss in Level 10 / endless, 8000 HP, spawns 4 soja_steak on death,
+  gives 800 gold.
+- [ ] **Camo enemies** (invisible unless a sniper tower is within range)
+  — thematic fit: "Schatte-Tofu", sneaky ninja tofu.
+- [ ] **Combo multiplier** — rapid kills within 2s build a combo that
+  gives bonus gold and a tiny UI streak counter.
+- [ ] **Sandbox mode** — unlimited gold, unlock all towers, any level,
+  for experimenting. One extra button on level-select.
+
+## 🔎 Architecture Notes
+
+*Observations added during ideate runs, useful for future refactors.*
+
 ## 🎯 P2 — Polish & Extras
 
 - [ ] Upgrade visual path (tint/glow per upgrade level) — PLAN #22
