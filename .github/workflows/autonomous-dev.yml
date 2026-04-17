@@ -1,0 +1,108 @@
+name: Autonomous Development Loop
+
+on:
+  schedule:
+    # Every 6 hours: 00:00, 06:00, 12:00, 18:00 UTC
+    # UTC 00=CEST 02, UTC 06=CEST 08, UTC 12=CEST 14, UTC 18=CEST 20
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+    inputs:
+      task_mode:
+        description: 'Override task mode (leave blank to auto-rotate)'
+        required: false
+        default: ''
+        type: choice
+        options:
+          - ''
+          - audit-polish
+          - build-content
+          - self-improve
+          - test-validate
+      extra_instructions:
+        description: 'Optional extra instructions for this run'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: autonomous-dev
+  cancel-in-progress: false
+
+jobs:
+  pick-mode:
+    runs-on: ubuntu-latest
+    outputs:
+      mode: ${{ steps.rotate.outputs.mode }}
+    steps:
+      - id: rotate
+        name: Pick task mode (rotates every 6h)
+        run: |
+          set -e
+          if [ -n "${{ inputs.task_mode }}" ]; then
+            echo "mode=${{ inputs.task_mode }}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          HOUR=$(date -u +%H)
+          case "$HOUR" in
+            00) MODE=audit-polish ;;
+            06) MODE=build-content ;;
+            12) MODE=self-improve ;;
+            18) MODE=test-validate ;;
+            *)  MODE=audit-polish ;;
+          esac
+          echo "mode=$MODE" >> "$GITHUB_OUTPUT"
+          echo "Selected task mode: $MODE"
+
+  run-claude:
+    needs: pick-mode
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Godot (headless, for validation)
+        uses: chickensoft-games/setup-godot@v2
+        with:
+          version: 4.6.0
+          use-dotnet: false
+        continue-on-error: true
+
+      - name: Build mode-specific prompt
+        id: prompt
+        run: |
+          set -e
+          MODE="${{ needs.pick-mode.outputs.mode }}"
+          EXTRA="${{ inputs.extra_instructions }}"
+          {
+            echo 'prompt<<EOF_PROMPT'
+            cat .github/autonomous/base-prompt.md
+            echo ''
+            echo '---'
+            echo ''
+            echo "## THIS RUN'S MODE: $MODE"
+            echo ''
+            cat ".github/autonomous/mode-$MODE.md"
+            if [ -n "$EXTRA" ]; then
+              echo ''
+              echo '## EXTRA INSTRUCTIONS FOR THIS RUN'
+              echo "$EXTRA"
+            fi
+            echo 'EOF_PROMPT'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Run Claude Code
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: ${{ steps.prompt.outputs.prompt }}
+          branch_prefix: claude/auto/
+          claude_args: |
+            --max-turns 40
+            --model claude-sonnet-4-6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
