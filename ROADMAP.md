@@ -13,7 +13,7 @@ Within a priority, top-of-list wins.
 - [x] Fix JoJo splash tower `can_target_flying = true` (PLAN #12)
 - [ ] DamageType enum actually applied in base_enemy.gd (magic ignores armor, physical reduced by armor) — PLAN #16
 - [ ] Show feedback text on invalid tower placement ("Z'nöch am Wäg!" / "Z'nöch am Turm!") — PLAN #24
-- [ ] Tower cost affordability color (yellow/gold affordable, red unaffordable) — PLAN #28
+- [x] Tower cost affordability color (yellow/gold affordable, red unaffordable) — PLAN #28
 
 ## ⚡ P1 — Important (Polish & UX)
 
