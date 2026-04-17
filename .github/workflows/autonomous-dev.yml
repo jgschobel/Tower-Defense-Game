@@ -42,6 +42,7 @@ jobs:
     outputs:
       paused: ${{ steps.check.outputs.paused }}
       mode: ${{ steps.rotate.outputs.mode }}
+      model: ${{ steps.rotate.outputs.model }}
       art_enabled: ${{ steps.rotate.outputs.art_enabled }}
     steps:
       - uses: actions/checkout@v4
@@ -90,8 +91,16 @@ jobs:
             MODE=audit-polish
           fi
 
+          # Model selection: Opus for planning/architecture, Sonnet for execution
+          case "$MODE" in
+            ideate|self-improve|build-content) MODEL=claude-opus-4-7 ;;
+            audit-polish|test-validate|generate-art) MODEL=claude-sonnet-4-6 ;;
+            *) MODEL=claude-sonnet-4-6 ;;
+          esac
+
           echo "mode=$MODE" >> "$GITHUB_OUTPUT"
-          echo "Selected mode: $MODE"
+          echo "model=$MODEL" >> "$GITHUB_OUTPUT"
+          echo "Selected mode: $MODE (model: $MODEL)"
 
   run-claude:
     needs: preflight
@@ -146,7 +155,7 @@ jobs:
           branch_prefix: claude/auto/
           claude_args: |
             --max-turns 50
-            --model claude-sonnet-4-6
+            --model ${{ needs.preflight.outputs.model }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           STABILITY_API_KEY: ${{ secrets.STABILITY_API_KEY }}
