@@ -25,7 +25,7 @@ Tasks executed using agent architecture from `AGENTS.md`:
 - [x] 9. **Buff Healer enemies** — heal_amount 8→15, heal_radius 80→120
 - [x] 10. **Buff Tank armor** — armor 5→15 to actually matter
 - [x] 11. **Nerf Amösius slow** — slow_amount 0.75→0.5, duration 4→2.5
-- [ ] 12. **Fix Splash tower vs flying** — set can_target_flying = true
+- [x] 12. **Fix Splash tower vs flying** — set can_target_flying = true
 - [x] 13. **Balance economy** — basic tower cost 100→80 to give more early options
 - [ ] 14. **Smoother difficulty curve** — level 2 starting lives 20→22
 - [x] 15. **Boss spawns fewer children** — spawn_count 4→3
