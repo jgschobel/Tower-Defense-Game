@@ -4,13 +4,12 @@ Focus on **catching breakage before the user does**. This mode produces
 either a "everything's fine" no-op report OR a fix PR for something
 discovered.
 
-## Step 0 — Triage open CI failures FIRST
+## Step 0 — Triage CI failures (per base-prompt Priority Order #1)
 
-Run `gh issue list --label ci-failure --state open --limit 5`. Every
-issue is an automated CI log tail from a failed workflow. Read the
-top one, diagnose the root cause from the log, and ship a fix PR.
-Close the issue with `Closes #N` in the PR body. Only move to the
-rest of the steps if no ci-failure issues are open.
+`gh issue list --label ci-failure --state open --limit 5`. Each issue
+is an automated CI log tail. Diagnose root cause from the log, ship a
+fix PR, close with `Closes #N`. Only move on if no ci-failure issues
+are open.
 
 ## Steps
 

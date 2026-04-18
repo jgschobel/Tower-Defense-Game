@@ -226,9 +226,49 @@ func _run_bug_hunt() -> void:
 # --- Helpers ---
 
 func _placements_for_level(level_id: int) -> Array:
-	# Tuned roughly per level layout. If path geometry changes these may
-	# need re-tuning — the test-validate mode should flag persistent
-	# failures here.
+	# Auto-detect placements by sampling the level's Path2D curve.
+	# We pick N points along the path then offset perpendicular by ~80px
+	# to land beside the path (not on it). Falls back to hardcoded if
+	# path can't be found.
+	var game_root := get_tree().current_scene
+	var path := game_root.get_node_or_null("EnemyPath") as Path2D if game_root else null
+	if path and path.curve and path.curve.get_baked_length() > 100:
+		var ids: Array
+		match level_id:
+			1: ids = ["basic", "basic", "sniper", "splash"]
+			2: ids = ["basic", "slow", "sniper", "splash"]
+			3: ids = ["basic", "cordula", "sniper", "splash", "slow"]
+			_: ids = ["basic", "sniper", "splash"]
+		return _sample_placements_along(path, ids)
+	# Fallback (path missing or degenerate)
+	push_warning("[playtest] no path found for level %d — using hardcoded fallback" % level_id)
+	return _hardcoded_placements(level_id)
+
+
+func _sample_placements_along(path: Path2D, ids: Array) -> Array:
+	var curve := path.curve
+	var length := curve.get_baked_length()
+	var placements: Array = []
+	for i in ids.size():
+		# Sample at evenly-spaced fractions of the path length, skipping
+		# the very ends (0 and 1) which are spawn/exit areas.
+		var t := float(i + 1) / float(ids.size() + 1)
+		var dist := length * t
+		var on_path: Vector2 = path.to_global(curve.sample_baked(dist))
+		# Perpendicular offset: alternate sides for spread, 90px out
+		var ahead: Vector2 = path.to_global(curve.sample_baked(min(dist + 10.0, length)))
+		var tangent: Vector2 = (ahead - on_path).normalized() if (ahead - on_path).length() > 0.1 else Vector2(1, 0)
+		var perp: Vector2 = Vector2(-tangent.y, tangent.x)
+		var sign_alt: float = 1.0 if (i % 2 == 0) else -1.0
+		var off: Vector2 = on_path + perp * 90.0 * sign_alt
+		# Clamp into screen (1280x720 with margins for tower size)
+		off.x = clampf(off.x, 80.0, 1200.0)
+		off.y = clampf(off.y, 80.0, 640.0)
+		placements.append({ "id": ids[i], "pos": off })
+	return placements
+
+
+func _hardcoded_placements(level_id: int) -> Array:
 	match level_id:
 		1: return [
 			{ "id": "basic",   "pos": Vector2(320, 430) },
