@@ -207,8 +207,14 @@ jobs:
           gh pr checkout "$PR_NUM"
           chmod +x .github/autonomous/validate.sh
           if .github/autonomous/validate.sh; then
-            echo "Validation passed — auto-merging PR #$PR_NUM"
-            gh pr merge "$PR_NUM" --squash --delete-branch
+            echo "Validation passed — queuing auto-merge on PR #$PR_NUM"
+            # --auto: tells GitHub to merge once required checks (if any)
+            # pass. Works immediately if no branch protection. Previous
+            # plain --squash was racing with sim-gate / gitleaks / deploy
+            # workflows that hadn't finished when this step ran, leaving
+            # PRs #44 and #49 stuck open.
+            gh pr merge "$PR_NUM" --squash --delete-branch --auto \
+              || gh pr merge "$PR_NUM" --squash --delete-branch
           else
             echo "Validation FAILED — closing PR #$PR_NUM"
             gh pr comment "$PR_NUM" --body "Auto-merge blocked: validation failed. Next test-validate run will investigate."
