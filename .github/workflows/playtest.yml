@@ -36,21 +36,19 @@ jobs:
       - name: Install Xvfb + audio deps + ffmpeg
         run: sudo apt-get update && sudo apt-get install -y xvfb libxcursor1 libxinerama1 libxi6 libxrandr2 ffmpeg imagemagick
 
-      - name: Pick Godot version (pinned + validated)
+      - name: Pick Godot version (single source of truth)
         id: godot
         run: |
           set -e
-          # PINNED — same version as deploy-web.yml. Bump manually.
-          PINNED="4.6.2-stable"
+          PINNED=$(cat .github/godot-version.txt | tr -d '[:space:]')
+          if [ -z "$PINNED" ]; then
+            echo "ERROR: .github/godot-version.txt is empty"; exit 1
+          fi
           if curl -fsSL --head "https://github.com/godotengine/godot/releases/download/${PINNED}/Godot_v${PINNED}_linux.x86_64.zip" > /dev/null 2>&1; then
             TAG="$PINNED"
           else
-            TAG=$(curl -fsSL https://api.github.com/repos/godotengine/godot/releases \
-              | jq -r '[.[] | select(.prerelease == false) | .tag_name] | map(select(endswith("-stable"))) | first')
-            if [ -z "$TAG" ] || [ "$TAG" = "null" ]; then
-              TAG="4.3-stable"
-            fi
-            echo "WARN: pinned $PINNED not found, falling back to $TAG"
+            echo "ERROR: pinned Godot version $PINNED not downloadable." >&2
+            exit 1
           fi
           echo "Using Godot tag: $TAG"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"

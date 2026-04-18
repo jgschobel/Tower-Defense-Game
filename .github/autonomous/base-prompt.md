@@ -75,6 +75,27 @@ Your work MUST pass `.github/autonomous/validate.sh`:
 
 Run it locally before committing (it's in `.github/autonomous/validate.sh`).
 
+## Priority Order — SINGLE SOURCE OF TRUTH
+
+When deciding what to work on, always pick from the highest-priority
+bucket below first. Mode-specific prompts must defer to this order
+(they no longer set their own priorities):
+
+1. **`ci-failure` issues** — broken CI is the highest cost, blocks
+   every other run. Always fix first if any are open.
+2. **`playtest-feedback` issues** — user-visible regressions / bugs
+   the QA agent caught. Fix before any new feature work.
+3. **ROADMAP `🔥 P0`** — blocking bugs and biggest user asks
+4. **ROADMAP `⚡ P1`** — important polish + content
+5. **ROADMAP `💡 Ideas To Explore`** — only if all P0/P1 done
+6. **`generate-art` mode**: ignore order above when this mode is
+   active, generate per the mode's instructions.
+7. **`ideate` mode**: ignore order, focus on adding new ideas.
+8. **`test-validate` mode**: ignore order, focus on Godot validation.
+
+If two buckets have items, pick from the highest one even if you'd
+prefer the work in a lower bucket.
+
 ## Avoid Duplicate Work
 
 Before starting any task, check open PRs:
