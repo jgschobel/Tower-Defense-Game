@@ -12,6 +12,8 @@ Emits GitHub Actions output:
 """
 from __future__ import annotations
 
+import base64
+import json
 import os
 import pathlib
 import re
@@ -27,6 +29,8 @@ except ImportError:
 
 
 STABILITY_URL = "https://api.stability.ai/v2beta/stable-image/generate/sd3"
+GEMINI_MODEL = "gemini-2.5-flash-image-preview"
+GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent"
 INBOX_DIR = pathlib.Path(".github/friend_photos_inbox")
 OUT_DIR = pathlib.Path("assets/textures/towers")
 
@@ -58,6 +62,49 @@ def emit_output(key: str, value: str) -> None:
 def slugify(name: str) -> str:
     slug = re.sub(r"[^a-z0-9]+", "_", name.lower().strip()).strip("_")
     return slug or "friend"
+
+
+def call_gemini_img2img(photo: pathlib.Path, prompt: str, out: pathlib.Path) -> bool:
+    """Use Gemini 2.5 Flash Image (Nano Banana) for image-to-image transform.
+    Free tier available — see aistudio.google.com for limits."""
+    api_key = os.environ.get("GEMINI_API_KEY")
+    if not api_key:
+        return False
+    log(f"gemini img2img {out.name}: {prompt[:120]}...")
+    img_bytes = photo.read_bytes()
+    mime = "image/png" if photo.suffix.lower() == ".png" else "image/jpeg"
+    body = {
+        "contents": [{
+            "parts": [
+                {"text": f"Transform this photo into a chibi cartoon tower defense game character icon. Keep the face likeness recognizable but stylize heavily. Transparent background, centered, 1:1 aspect ratio. {prompt}"},
+                {"inline_data": {"mime_type": mime, "data": base64.b64encode(img_bytes).decode("ascii")}},
+            ]
+        }],
+        "generationConfig": {
+            "responseModalities": ["IMAGE", "TEXT"],
+        },
+    }
+    r = requests.post(
+        f"{GEMINI_URL}?key={api_key}",
+        json=body,
+        headers={"Content-Type": "application/json"},
+        timeout=180,
+    )
+    if r.status_code != 200:
+        log(f"Gemini API returned {r.status_code}: {r.text[:500]}")
+        return False
+    data = r.json()
+    try:
+        for part in data["candidates"][0]["content"]["parts"]:
+            if "inlineData" in part or "inline_data" in part:
+                inline = part.get("inlineData") or part.get("inline_data")
+                png_bytes = base64.b64decode(inline["data"])
+                out.write_bytes(png_bytes)
+                log(f"wrote {out} ({len(png_bytes)} bytes)")
+                return True
+    except (KeyError, IndexError) as e:
+        log(f"Gemini response shape unexpected: {e}; payload: {json.dumps(data)[:500]}")
+    return False
 
 
 def call_stability_img2img(photo: pathlib.Path, prompt: str, out: pathlib.Path) -> bool:
@@ -153,11 +200,25 @@ def main() -> int:
         prompt = build_prompt(meta)
         replace = bool(meta.get("replace_existing", False))
         existing = OUT_DIR / f"{slug}.png"
-        if replace and existing.exists():
-            out_path = existing
+        out_path = existing if (replace and existing.exists()) else OUT_DIR / f"friend_{slug}.png"
+
+        # Generator selection: sidecar override > GEMINI key > STABILITY key
+        requested: str = (meta.get("generator") or "").strip().lower()
+        ok = False
+        if requested == "stability":
+            ok = call_stability_img2img(photo, prompt, out_path)
+        elif requested == "gemini":
+            ok = call_gemini_img2img(photo, prompt, out_path)
         else:
-            out_path = OUT_DIR / f"friend_{slug}.png"
-        ok = call_stability_img2img(photo, prompt, out_path)
+            # Default order: try Gemini (free tier, often better quality),
+            # fall back to Stability if Gemini fails or isn't configured.
+            if os.environ.get("GEMINI_API_KEY"):
+                ok = call_gemini_img2img(photo, prompt, out_path)
+                if not ok:
+                    log(f"gemini failed for {photo.name} — falling back to stability")
+            if not ok and os.environ.get("STABILITY_API_KEY"):
+                ok = call_stability_img2img(photo, prompt, out_path)
+
         if ok:
             any_success = True
             photo.unlink()
