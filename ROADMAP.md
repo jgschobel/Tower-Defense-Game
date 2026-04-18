@@ -15,6 +15,30 @@ Within a priority, top-of-list wins.
 - [x] Show feedback text on invalid tower placement ("Z'nöch am Wäg!" / "Z'nöch am Turm!") — PLAN #24
 - [x] Tower cost affordability color (yellow/gold affordable, red unaffordable) — PLAN #28
 - [x] Floating `+gold` labels don't disappear when monster dies (tween was self-bound to freed enemy)
+- [x] Death SFX was grating noise burst — replaced with soft 180→70Hz sweep at 0.15 volume
+- [ ] Story screen rework — multi-page dialogue boxes instead of one cramped panel. User reports text is too small to read and skips show immediately. Bloons/Monaco-style typewriter across 3-5 pages with big tap-to-advance buttons. Swiss German content unchanged, presentation rebuilt.
+- [ ] **Options menu** (music volume, SFX volume, master volume) accessible from main menu AND pause menu. Use AudioServer buses: add "Music" and "SFX" buses, route MusicManager/SfxManager players through them, expose sliders that call `AudioServer.set_bus_volume_db`.
+- [ ] Enemy pathing bug: at level 2+, enemies stack up at spawn in a long vertical line before moving. Visible in screenshot — 10+ tofu-würschtli piled on top of each other at the top-left corner. Likely a spawn cadence/path-follow issue in `wave_manager.gd` or `base_enemy.gd`.
+
+## 🎨 P0 — Map Backgrounds (each level needs real personality)
+
+The current level backgrounds are a single static image that feels flat.
+Each level should have: a bespoke parallax layer, thematic foreground
+props, ambient particles, and time-of-day atmosphere. Use `generate-art`
+mode to produce tier-2 quality assets; wire them in during `build-content`.
+
+- [ ] **Level 1 — Migros Affoltern Eingang**: parallax sliding-doors,
+  shopping carts in background, self-scan area props, midday bright
+  neon-fluorescent lighting, Migros-orange color accents.
+- [ ] **Level 2 — D'Tiefchüel-Abteilig (Freezer Aisle)**: dripping
+  icicles (animated), frost-fog particle layer, vertical freezer doors
+  as parallax columns, cold blue lighting, occasional breath-mist from
+  towers.
+- [ ] **Level 3 — D'Bäckerei vom Gruse**: warm oven glow, flour
+  particle drift, baguette/gipfeli props, warm amber lighting, bread
+  racks in background.
+- [ ] Level 4+ pending — see Content section. Each needs the same
+  bespoke treatment: props, parallax, particles, lighting.
 
 ## 🔥 P0 — The Big Feature: Bloons-TD-5-style branching upgrades
 

@@ -66,6 +66,11 @@ custom_minimum_size = Vector2(0, 45)
 layout_mode = 2
 text = "D'HEILIGI GSCHICHT"
 
+[node name="OptionsButton" type="Button" parent="HBox/MenuPanel/VBox"]
+custom_minimum_size = Vector2(0, 45)
+layout_mode = 2
+text = "IISTELLIGE"
+
 [node name="QuitButton" type="Button" parent="HBox/MenuPanel/VBox" unique_id=1913364721]
 custom_minimum_size = Vector2(0, 45)
 layout_mode = 2
@@ -73,4 +78,5 @@ text = "ABHAUE (QUIT)"
 
 [connection signal="pressed" from="HBox/MenuPanel/VBox/PlayButton" to="." method="_on_play_button_pressed"]
 [connection signal="pressed" from="HBox/MenuPanel/VBox/LoreButton" to="." method="_on_lore_button_pressed"]
+[connection signal="pressed" from="HBox/MenuPanel/VBox/OptionsButton" to="." method="_on_options_button_pressed"]
 [connection signal="pressed" from="HBox/MenuPanel/VBox/QuitButton" to="." method="_on_quit_button_pressed"]

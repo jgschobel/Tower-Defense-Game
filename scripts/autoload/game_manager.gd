@@ -23,9 +23,23 @@ var level_stars: Dictionary = {}
 
 var friend_photos: Dictionary = {}
 
+# Audio settings — 0.0 = muted, 1.0 = full volume. Persisted in save file.
+var music_volume: float = 0.7
+var sfx_volume: float = 0.8
+
 
 func _ready() -> void:
 	load_game()
+
+
+func set_music_volume(v: float) -> void:
+	music_volume = clampf(v, 0.0, 1.0)
+	save_game()
+
+
+func set_sfx_volume(v: float) -> void:
+	sfx_volume = clampf(v, 0.0, 1.0)
+	save_game()
 
 
 func start_level(level_id: int) -> void:
@@ -100,6 +114,8 @@ func save_game() -> void:
 		"total_stars": total_stars,
 		"currency_total": CurrencyManager.total_gold_earned,
 		"friend_photos": friend_photos,
+		"music_volume": music_volume,
+		"sfx_volume": sfx_volume,
 	}
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file:
@@ -119,6 +135,8 @@ func load_game() -> void:
 		level_stars = save_data.get("level_stars", {})
 		total_stars = save_data.get("total_stars", 0)
 		friend_photos = save_data.get("friend_photos", {})
+		music_volume = save_data.get("music_volume", 0.7)
+		sfx_volume = save_data.get("sfx_volume", 0.8)
 
 
 func assign_friend_photo(character_id: String, texture_path: String) -> void:
