@@ -2,12 +2,12 @@ name: Autonomous Development Loop
 
 on:
   schedule:
-    # Every 3 hours UTC — 8 ticks per day, each tick runs 2 modes in parallel (16 PRs/day max)
-    - cron: '0 */3 * * *'
+    # Every 4 hours UTC — 6 runs per day, one per mode
+    - cron: '0 */4 * * *'
   workflow_dispatch:
     inputs:
       task_mode:
-        description: 'Override task mode (leave blank to auto-rotate). Only runs a single mode.'
+        description: 'Override task mode (leave blank to auto-rotate)'
         required: false
         default: ''
         type: choice
@@ -31,12 +31,17 @@ permissions:
   id-token: write
   actions: read
 
+concurrency:
+  group: autonomous-dev
+  cancel-in-progress: false
+
 jobs:
   preflight:
     runs-on: ubuntu-latest
     outputs:
       paused: ${{ steps.check.outputs.paused }}
-      modes: ${{ steps.rotate.outputs.modes }}
+      mode: ${{ steps.rotate.outputs.mode }}
+      model: ${{ steps.rotate.outputs.model }}
       art_enabled: ${{ steps.rotate.outputs.art_enabled }}
     steps:
       - uses: actions/checkout@v4
@@ -52,7 +57,7 @@ jobs:
           fi
 
       - id: rotate
-        name: Pick parallel mode pair
+        name: Pick task mode + model
         if: steps.check.outputs.paused == 'false'
         env:
           STABILITY_KEY: ${{ secrets.STABILITY_API_KEY }}
@@ -65,66 +70,47 @@ jobs:
           echo "art_enabled=$ART_ENABLED" >> "$GITHUB_OUTPUT"
 
           if [ -n "${{ inputs.task_mode }}" ]; then
-            # Manual dispatch — run single mode
-            MODES_JSON="[\"${{ inputs.task_mode }}\"]"
+            MODE="${{ inputs.task_mode }}"
           else
-            # Auto-rotate: 8 ticks/day, each runs 2 complementary modes in parallel
             HOUR=$(date -u +%H)
             case "$HOUR" in
-              00) PAIR='["test-validate","audit-polish"]' ;;   # safety net
-              03) PAIR='["ideate","build-content"]' ;;          # plan + build
-              06) PAIR='["audit-polish","generate-art"]' ;;     # polish + art
-              09) PAIR='["self-improve","build-content"]' ;;    # refactor + build
-              12) PAIR='["ideate","generate-art"]' ;;           # plan + art
-              15) PAIR='["audit-polish","build-content"]' ;;    # polish + build
-              18) PAIR='["self-improve","test-validate"]' ;;    # refactor + validate
-              21) PAIR='["ideate","audit-polish"]' ;;           # plan + polish
-              *)  PAIR='["audit-polish","test-validate"]' ;;
+              00) MODE=test-validate ;;
+              04) MODE=audit-polish ;;
+              08) MODE=ideate ;;
+              12) MODE=build-content ;;
+              16) MODE=self-improve ;;
+              20) MODE=generate-art ;;
+              *)  MODE=audit-polish ;;
             esac
-            MODES_JSON="$PAIR"
           fi
 
-          # Drop generate-art from the pair if Stability key missing
-          if [ "$ART_ENABLED" != "true" ]; then
-            MODES_JSON=$(echo "$MODES_JSON" | sed 's/"generate-art"/"audit-polish"/g')
+          if [ "$MODE" = "generate-art" ] && [ "$ART_ENABLED" != "true" ]; then
+            MODE=audit-polish
           fi
 
-          echo "modes=$MODES_JSON" >> "$GITHUB_OUTPUT"
-          echo "Modes this tick: $MODES_JSON"
+          case "$MODE" in
+            ideate|self-improve|build-content) MODEL=claude-opus-4-7 ;;
+            *) MODEL=claude-sonnet-4-6 ;;
+          esac
+
+          echo "mode=$MODE" >> "$GITHUB_OUTPUT"
+          echo "model=$MODEL" >> "$GITHUB_OUTPUT"
+          echo "Selected: mode=$MODE model=$MODEL"
 
   run-claude:
     needs: preflight
     if: needs.preflight.outputs.paused == 'false'
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      max-parallel: 2
-      matrix:
-        mode: ${{ fromJson(needs.preflight.outputs.modes) }}
-    outputs:
-      branches: ${{ toJson(matrix.mode) }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Pick model for this mode
-        id: model
-        env:
-          MODE: ${{ matrix.mode }}
-        run: |
-          case "$MODE" in
-            ideate|self-improve|build-content) MODEL=claude-opus-4-7 ;;
-            audit-polish|test-validate|generate-art) MODEL=claude-sonnet-4-6 ;;
-            *) MODEL=claude-sonnet-4-6 ;;
-          esac
-          echo "model=$MODEL" >> "$GITHUB_OUTPUT"
-
       - name: Build mode-specific prompt
         id: prompt
         env:
-          MODE: ${{ matrix.mode }}
+          MODE: ${{ needs.preflight.outputs.mode }}
           ART_ENABLED: ${{ needs.preflight.outputs.art_enabled }}
           EXTRA: ${{ inputs.extra_instructions }}
         run: |
@@ -154,7 +140,6 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Run Claude Code
-        id: claude
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -162,45 +147,36 @@ jobs:
           branch_prefix: claude/auto/
           claude_args: |
             --max-turns 200
-            --model ${{ steps.model.outputs.model }}
+            --model ${{ needs.preflight.outputs.model }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           STABILITY_API_KEY: ${{ secrets.STABILITY_API_KEY }}
 
-      - name: Validate and auto-merge latest PR for this mode
+      - name: Validate and auto-merge the PR
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          MODE: ${{ matrix.mode }}
         run: |
           set -e
-          # Find the newest open PR on a claude/auto/<mode>-* branch
+          # Find the newest claude/auto/* PR opened in the last 15 minutes
           PR_NUM=$(gh pr list --state open --json number,headRefName,createdAt --limit 30 \
-            | jq -r --arg m "$MODE" '[.[] | select(.headRefName | startswith("claude/auto/" + $m))] | sort_by(.createdAt) | reverse | .[0].number // empty')
+            | jq -r '[.[] | select(.headRefName | startswith("claude/auto/"))] | sort_by(.createdAt) | reverse | .[0].number // empty')
           if [ -z "$PR_NUM" ]; then
-            # Fallback: any claude/auto/* PR created in the last 10 minutes
-            PR_NUM=$(gh pr list --state open --json number,headRefName,createdAt --limit 30 \
-              | jq -r '[.[] | select(.headRefName | startswith("claude/auto/"))] | sort_by(.createdAt) | reverse | .[0].number // empty')
-          fi
-          if [ -z "$PR_NUM" ]; then
-            echo "No PR produced by this run (mode=$MODE). Nothing to validate."
+            echo "No autonomous PR produced this run. Nothing to validate."
             exit 0
           fi
           BRANCH=$(gh pr view "$PR_NUM" --json headRefName -q '.headRefName')
           echo "Validating PR #$PR_NUM on branch $BRANCH"
-
-          # Checkout the branch and run validation
           git fetch origin "$BRANCH"
           git checkout "$BRANCH"
           chmod +x .github/autonomous/validate.sh
           if .github/autonomous/validate.sh; then
             echo "Validation passed — auto-merging PR #$PR_NUM"
-            gh pr merge "$PR_NUM" --squash --delete-branch --admin || \
-              gh pr merge "$PR_NUM" --squash --delete-branch
+            gh pr merge "$PR_NUM" --squash --delete-branch
           else
-            echo "Validation FAILED — closing PR #$PR_NUM and filing issue"
-            gh pr comment "$PR_NUM" --body "Auto-merge blocked: validation failed. The next test-validate run will investigate."
+            echo "Validation FAILED — closing PR #$PR_NUM"
+            gh pr comment "$PR_NUM" --body "Auto-merge blocked: validation failed. Next test-validate run will investigate."
             gh pr close "$PR_NUM" --delete-branch
-            gh issue create --title "Autonomous run produced broken PR (#$PR_NUM, mode=$MODE)" \
-              --body "Branch $BRANCH failed validation and was auto-closed. Next test-validate run should investigate." \
+            gh issue create --title "Autonomous run produced broken PR (#$PR_NUM)" \
+              --body "Branch $BRANCH failed validation. Next test-validate run should investigate." \
               --label "autonomous" || true
           fi
