@@ -2,20 +2,30 @@ name: Autonomous Playtester
 
 on:
   schedule:
-    # Every 3 hours, offset by 90 min so it doesn't collide with the
-    # main autonomous-dev loop (which runs on 00/04/08/...).
-    - cron: '30 */3 * * *'
+    # Every 6 hours (was 3h). Private repo = 2000 free GitHub Actions
+    # minutes/month. Each playtest run ~6 min. At 8 cron/day + push-
+    # triggered we'd burn through quota in a week. 4 cron/day is the
+    # sustainable rate.
+    - cron: '30 */6 * * *'
   workflow_dispatch:
-  # Also run whenever substantive code lands on main — so every merged
-  # PR is playtested within ~5 min without the user triggering anything.
+  # Push-triggered: only fires on changes that could affect gameplay
+  # visually. Trims out ROADMAP / docs / workflow churn from triggering
+  # 6-min Godot runs. Saves ~30% of push-triggered minutes.
   push:
     branches: [main]
     paths:
-      - 'scripts/**'
+      - 'scripts/towers/**'
+      - 'scripts/enemies/**'
+      - 'scripts/projectiles/**'
+      - 'scripts/systems/**'
+      - 'scripts/ui/**'
       - 'scenes/**'
-      - 'resources/**'
+      - 'resources/tower_data/**'
+      - 'resources/enemy_data/**'
+      - 'resources/level_data/**'
       - 'project.godot'
       - 'export_presets.cfg'
+      - 'assets/textures/**'
 
 permissions:
   contents: read

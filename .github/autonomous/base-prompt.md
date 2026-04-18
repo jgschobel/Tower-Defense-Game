@@ -85,16 +85,25 @@ bucket below first. Mode-specific prompts must defer to this order
    every other run. Always fix first if any are open.
 2. **`playtest-feedback` issues** — user-visible regressions / bugs
    the QA agent caught. Fix before any new feature work.
-3. **ROADMAP `🔥 P0`** — blocking bugs and biggest user asks
-4. **ROADMAP `⚡ P1`** — important polish + content
-5. **ROADMAP `💡 Ideas To Explore`** — only if all P0/P1 done
-6. **`generate-art` mode**: ignore order above when this mode is
+3. **ROADMAP `🔥 P0` items unchecked > 7 days** — these are stale.
+   The audit has shown the loop drifts toward fresh ideas instead of
+   shipping old P0 work. **Force yourself**: if any P0 item has been
+   `[ ]` for over a week, it MUST be your pick this run, even if your
+   mode is "ideate" or "self-improve". Switch your mode to whatever
+   ships that item (usually audit-polish or build-content). Adding
+   more ideas while old P0s rot is failure mode #1.
+4. **ROADMAP `🔥 P0`** (any age) — blocking bugs and biggest user asks
+5. **ROADMAP `⚡ P1`** — important polish + content
+6. **ROADMAP `💡 Ideas To Explore`** — only if all P0/P1 done
+7. **`generate-art` mode**: ignore order above when this mode is
    active, generate per the mode's instructions.
-7. **`ideate` mode**: ignore order, focus on adding new ideas.
-8. **`test-validate` mode**: ignore order, focus on Godot validation.
+8. **`ideate` mode**: ignore order, focus on adding new ideas — but
+   only after rule #3 is satisfied (no stale P0s).
+9. **`test-validate` mode**: ignore order, focus on Godot validation.
 
 If two buckets have items, pick from the highest one even if you'd
-prefer the work in a lower bucket.
+prefer the work in a lower bucket. Aging P0 items (rule #3) override
+your assigned mode — that's intentional.
 
 ## Avoid Duplicate Work
 
