@@ -31,18 +31,58 @@ var _menu_bass: Array = [
 	146.83, 146.83, 146.83, 146.83, 130.81, 130.81, 130.81, 130.81,
 ]
 
-# --- GAME TRACK: upbeat supermarket-chase (C major pentatonic, 130 BPM) ---
+# --- GAME TRACK: TD-style 4-section chase motif (128 steps, 130 BPM).
+# Structure: A(intro-hook) B(build-tension) A'(return) C(payoff-release)
+# Key: C minor pentatonic feel with major-5 lifts — cat-and-mouse vibe
+# rather than pure cheer. 0 = rest. ~30s loop at 130 BPM eighth notes.
 var _game_melody: Array = [
-	523.25, 587.33, 659.25, 783.99, 880.0, 783.99, 659.25, 587.33,
-	523.25, 659.25, 783.99, 880.0, 1046.5, 880.0, 783.99, 659.25,
-	523.25, 0,      659.25, 0,      783.99, 783.99, 659.25, 523.25,
-	880.0,  783.99, 659.25, 587.33, 523.25, 587.33, 659.25, 523.25,
+	# --- A: intro hook (main motif) ---
+	523.25, 622.25, 698.46, 0,      622.25, 523.25, 466.16, 0,
+	523.25, 622.25, 698.46, 830.61, 698.46, 622.25, 523.25, 0,
+	# --- A repeat (octave-up final note for hook memorability) ---
+	523.25, 622.25, 698.46, 0,      622.25, 523.25, 466.16, 0,
+	523.25, 622.25, 698.46, 830.61, 932.33, 830.61, 698.46, 622.25,
+	# --- B: tension rise ---
+	622.25, 698.46, 830.61, 932.33, 1046.5, 932.33, 830.61, 698.46,
+	622.25, 0,      698.46, 0,      830.61, 0,      932.33, 0,
+	1046.5, 932.33, 830.61, 698.46, 830.61, 698.46, 622.25, 0,
+	622.25, 698.46, 830.61, 932.33, 1046.5, 1244.5, 1046.5, 932.33,
+	# --- A': return to hook (sligtly embellished) ---
+	523.25, 622.25, 698.46, 622.25, 523.25, 466.16, 523.25, 0,
+	523.25, 622.25, 698.46, 830.61, 698.46, 622.25, 523.25, 466.16,
+	# --- C: payoff-release, descending ---
+	830.61, 698.46, 622.25, 523.25, 466.16, 523.25, 622.25, 523.25,
+	698.46, 622.25, 523.25, 466.16, 391.99, 466.16, 523.25, 0,
+	# Tail with rest for breathing room
+	0,      0,      523.25, 0,      622.25, 0,      698.46, 0,
+	830.61, 698.46, 622.25, 523.25, 466.16, 0,      0,      0,
+	523.25, 523.25, 622.25, 622.25, 698.46, 698.46, 523.25, 0,
+	523.25, 0,      622.25, 0,      698.46, 0,      523.25, 0,
 ]
+# Bass follows root motion — simple 4-bar loop that repeats per section
 var _game_bass: Array = [
-	130.81, 130.81, 146.83, 146.83, 164.81, 164.81, 146.83, 146.83,
-	130.81, 130.81, 164.81, 164.81, 196.0,  196.0,  164.81, 164.81,
-	130.81, 0,      164.81, 0,      196.0,  196.0,  164.81, 130.81,
-	220.0,  196.0,  164.81, 146.83, 130.81, 146.83, 164.81, 130.81,
+	# A: root-5 pattern (Cm-ish)
+	130.81, 0, 130.81, 0, 174.61, 0, 174.61, 0,
+	130.81, 0, 130.81, 0, 196.00, 0, 196.00, 0,
+	# A repeat
+	130.81, 0, 130.81, 0, 174.61, 0, 174.61, 0,
+	130.81, 0, 130.81, 0, 196.00, 0, 196.00, 0,
+	# B: tension walk up
+	174.61, 0, 196.00, 0, 220.00, 0, 233.08, 0,
+	174.61, 0, 196.00, 0, 220.00, 0, 233.08, 0,
+	174.61, 0, 196.00, 0, 220.00, 0, 261.63, 0,
+	174.61, 0, 196.00, 0, 220.00, 0, 261.63, 0,
+	# A': return
+	130.81, 0, 130.81, 0, 174.61, 0, 174.61, 0,
+	130.81, 0, 130.81, 0, 196.00, 0, 196.00, 0,
+	# C: descent to tonic
+	196.00, 0, 174.61, 0, 146.83, 0, 130.81, 0,
+	146.83, 0, 130.81, 0, 116.54, 0, 130.81, 0,
+	# Tail
+	130.81, 0, 130.81, 0, 130.81, 0, 130.81, 0,
+	174.61, 0, 130.81, 0, 196.00, 0, 130.81, 0,
+	130.81, 130.81, 130.81, 130.81, 174.61, 174.61, 130.81, 130.81,
+	130.81, 0, 130.81, 0, 174.61, 0, 130.81, 0,
 ]
 
 
@@ -186,6 +226,25 @@ func _fill_buffer() -> void:
 			var bass_phase := fmod(_time * bass_freq, 1.0)
 			var bass_val := (absf(bass_phase * 4.0 - 2.0) - 1.0) * 0.18
 			sample += bass_val
+
+		# Simple drum layer for the game track — kick on 1/3, hat on 2/4,
+		# snare on 3. Makes the loop feel like a song instead of a motif.
+		if _current_track == "game":
+			var beat_pos_now := _note_time / _beat_duration
+			var step: int = idx % 4
+			# Kick: first quarter of beats 0 and 2 — short tonal thump
+			if (step == 0 or step == 2) and beat_pos_now < 0.12:
+				var kick_env := 1.0 - (beat_pos_now / 0.12)
+				var kick := sin(_time * 70.0 * TAU) * 0.35 * kick_env
+				sample += kick
+			# Snare: short noise burst on step 2
+			if step == 2 and beat_pos_now < 0.08:
+				var snare_env := 1.0 - (beat_pos_now / 0.08)
+				sample += (randf() * 2.0 - 1.0) * 0.15 * snare_env
+			# Hi-hat: noise tick on steps 1 and 3
+			if (step == 1 or step == 3) and beat_pos_now < 0.05:
+				var hat_env := 1.0 - (beat_pos_now / 0.05)
+				sample += (randf() * 2.0 - 1.0) * 0.08 * hat_env
 
 		sample = clampf(sample, -1.0, 1.0)
 		_playback.push_frame(Vector2(sample, sample))
