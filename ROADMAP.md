@@ -116,7 +116,49 @@ run project:
 - [ ] Viewport scaling across phone sizes — PLAN #66
 - [ ] Battery optimization: stop music gen when backgrounded — PLAN #67
 
-## 💡 Ideas To Explore
+## 🔥 P0 — Just Added (Live Gameplay Feedback)
+
+- [ ] **First-appearance monster intro animation** — when a new enemy type
+  spawns for the first time in a level (not every wave), trigger a
+  brief animated reveal: enemy zooms in at 2× scale from bottom
+  center, portrait slides in with name label and short Swiss German
+  taunt in speech bubble, music ducks briefly, then enemy flies to
+  path start. 2s total. Track `seen_enemies: Array[String]` in
+  `wave_manager.gd`; fire `enemy_introduced(enemy_id, data)` signal
+  first time each id appears. HUD listens and plays animation.
+- [ ] **Better music** — current procedural chiptune is "cheap".
+  Upgrade `music_manager.gd`:
+  - Add drum pattern (kick + snare + hi-hat procedural)
+  - Vary melody + bass per level (Level 1 happy, Level 2 dark/cold,
+    Level 3 fast/urgent, boss wave dramatic minor key)
+  - Smooth between sections instead of hard loops
+  - Lower master volume by default; users can bump via options
+
+## 💡 Ideas To Explore (Proactively Generated)
+
+- [ ] **Active Powers** (BTD5 "agents" / "abilities") — 3 single-use
+  items purchased with gold, with per-game cooldowns:
+  - **Banana-Räge**: drops +500 gold immediately (cost 300g, 120s cd)
+  - **Gfrüüri-Puls**: freezes all enemies on screen for 3s (cost 200g, 90s cd)
+  - **Gipfeli-Airstrike**: spawn a 150-damage AoE blast at tapped position (cost 250g, 60s cd)
+  Icon row above the tower shop, tap to arm, tap target to fire.
+- [ ] **Adjacency synergies** — towers placed within 100px of certain
+  other towers get a visual glow + stat boost:
+  - Lemurius + Kühne: Lemurius bananas deal +20% damage (nature theme)
+  - Amösius + JoJo: Amösius slow applies an extra 1s (sticky acid)
+  - Cordula + Kühne: Cordula attack speed +15% (pirate flower crew)
+  Shown as a faint gold line between synergy pairs.
+- [ ] **Combo multiplier** — rapid kills (within 2s of each other)
+  build a combo counter. x1.5 gold at 5 combo, x2 at 10, x3 at 20.
+  On-screen streak badge top-center, fades when broken.
+- [ ] **Leaderboard/ghosts** — record player's best run per level (wave
+  reached, time, gold earned). Compare to best ever. "Deini beschti
+  Runde" panel on level select.
+- [ ] **Daily challenge** — one seeded level per day with modifiers
+  (no Kühne, double enemy speed, etc.). Shared seed so every player
+  worldwide gets the same challenge — basis for future leaderboard.
+
+## 💡 Legacy Ideas
 
 *Added by the `ideate` mode runs. The loop mines this section for bigger
 creative swings. Lift to P1 when ready to ship.*
