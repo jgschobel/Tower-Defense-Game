@@ -366,18 +366,17 @@ func upgrade_path(path_letter: String) -> bool:
 func _apply_path_tint() -> void:
 	if not sprite or not data or not data.has_branching_upgrades():
 		return
-	# Blend path-A and path-B tints by their tier ratios (3 = full tint)
-	var a_weight: float = float(path_a_tier) / 3.0
-	var b_weight: float = float(path_b_tier) / 3.0
-	var total: float = a_weight + b_weight
-	if total <= 0.01:
+	var max_tier: int = maxi(path_a_tier, path_b_tier)
+	if max_tier == 0:
 		sprite.modulate = Color.WHITE
 		return
-	var a_norm := a_weight / total
-	var b_norm := b_weight / total
-	var strength: float = clampf(max(a_weight, b_weight), 0.0, 1.0)
-	var blended := data.path_a_tint * a_norm + data.path_b_tint * b_norm
-	sprite.modulate = Color.WHITE.lerp(blended, strength * 0.6)
+	var a_w := float(path_a_tier)
+	var b_w := float(path_b_tier)
+	var blended := data.path_a_tint * (a_w / (a_w + b_w)) + data.path_b_tint * (b_w / (a_w + b_w))
+	# Strength ramp: T1=0.55, T2=0.80, T3=1.00. Earlier curve peaked at 0.60,
+	# which multiplied into sprite.modulate leaves towers near-white at every tier.
+	var strength := 0.30 + 0.25 * float(max_tier)
+	sprite.modulate = Color.WHITE.lerp(blended, strength)
 
 
 func show_range(visible_flag: bool) -> void:
