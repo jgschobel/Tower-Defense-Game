@@ -7,7 +7,7 @@ script = ExtResource("1")
 level_id = 1
 level_name = "Migros Affoltern - Gang vom Verhängnis"
 description = "D'verfluechte Lääbesmittel händ Gang 3 übernoh. Kämpf dich dure d'Brötli und Schoggi!"
-starting_gold = 300
+starting_gold = 450
 starting_lives = 25
 waves = [
 	{"groups": [{"enemy_id": "basic", "count": 6, "spawn_delay": 1.2}]},
