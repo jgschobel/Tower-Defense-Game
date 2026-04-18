@@ -373,7 +373,9 @@ func _show_gold_earned() -> void:
 	# Add to parent so it persists after enemy freed
 	get_parent().add_child(label)
 	label.global_position = global_position + Vector2(0, -30)
-	var tween := create_tween()
+	# Bind tween to the tree (not self) — enemy is about to queue_free
+	# and a self-bound tween would die with it, leaving the label stranded.
+	var tween := get_tree().create_tween()
 	tween.set_parallel(true)
 	tween.tween_property(label, "position:y", label.position.y - 50.0, 0.8)
 	tween.tween_property(label, "modulate:a", 0.0, 0.8)

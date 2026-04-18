@@ -14,6 +14,35 @@ Within a priority, top-of-list wins.
 - [ ] DamageType enum actually applied in base_enemy.gd (magic ignores armor, physical reduced by armor) — PLAN #16
 - [x] Show feedback text on invalid tower placement ("Z'nöch am Wäg!" / "Z'nöch am Turm!") — PLAN #24
 - [x] Tower cost affordability color (yellow/gold affordable, red unaffordable) — PLAN #28
+- [x] Floating `+gold` labels don't disappear when monster dies (tween was self-bound to freed enemy)
+
+## 🔥 P0 — The Big Feature: Bloons-TD-5-style branching upgrades
+
+The single biggest gap to Bloons TD. Each tower should have **two upgrade
+paths**, visually distinct at each tier, with meaningfully different
+mechanics. This is the core progression loop of BTD. Attack as a multi-
+run project:
+
+- [ ] **Data model**: extend `tower_data.gd` with `upgrade_path_a` and
+  `upgrade_path_b` arrays (each has 3 tiers), plus `current_path_a_tier`
+  and `current_path_b_tier` runtime state per tower. Max 2/0 or 0/2 per
+  tier rule (one path must stay at tier 2 before the other can reach 3).
+- [ ] **UI**: tower info panel shows two upgrade columns instead of one
+  linear button. Icons + cost + Swiss German name per tier.
+- [ ] **Visual feedback**: tower texture swaps per tier (use
+  `generate-art` mode to produce tier-2 and tier-3 variants for each
+  character; while art is pending, tint/outline/particle effects
+  indicate tier).
+- [ ] **Lemurius paths**: Schnelli Banane (attack speed) vs. Scharfi Banane
+  (damage) → tier-3 merger: Explosivi Khaki (AoE bomb)
+- [ ] **Kühne paths**: Giftige Pollen (poison DoT) vs. Iis-Blüete (freeze)
+  → Füür-Lilie (AoE fire over time)
+- [ ] **JoJo paths**: Stärcheri Formel (damage) vs. Chaos-Chemie
+  (random effects) → Lotter JoJo (random legendary)
+- [ ] **Cordula paths**: Volleyball Hagel (multi-shot) vs. Ankerhake
+  (stun) → Party Kanone (massive AoE)
+- [ ] **Amösius paths**: Längeri Zunge (range) vs. Chläbrigeri Zunge
+  (stronger slow) → Insta-Reel Attacke (pull-and-hold)
 
 ## ⚡ P1 — Important (Polish & UX)
 
