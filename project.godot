@@ -23,6 +23,7 @@ MusicManager="*res://scripts/systems/music_manager.gd"
 SfxManager="*res://scripts/systems/sfx_manager.gd"
 AutoPlaytest="*res://scripts/playtest/auto_playtest.gd"
 WaveSimulator="*res://scripts/playtest/wave_simulator.gd"
+ProjectilePool="*res://scripts/systems/projectile_pool.gd"
 
 [display]
 
