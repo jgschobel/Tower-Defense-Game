@@ -215,6 +215,17 @@ func reset_for_pool() -> void:
 	h_offset = randf_range(-6.0, 6.0)
 	_base_v_offset = v_offset
 	_walk_phase = randf() * TAU  # desync bobs across enemies
+	# Kill any in-flight float labels from the previous life — their
+	# tweens were bound to this node and would otherwise keep stale
+	# damage numbers / reactions stuck over the reused enemy
+	# (observed as "blurry empty text box" during pool reuse).
+	for child in get_children():
+		if child is Label:
+			child.queue_free()
+	# Reset health bar visuals
+	if health_bar:
+		health_bar.visible = false
+		health_bar.value = 100.0
 
 
 func _update_visual() -> void:
@@ -238,32 +249,14 @@ func _update_visual() -> void:
 		var target_size := 50.0 * data.scale_factor
 		var s := target_size / max_dim
 		sprite.scale = Vector2(s, s)
-		# Add name label above sprite
-		var label := Label.new()
-		label.text = data.display_name
-		label.add_theme_font_size_override("font_size", 11)
-		label.add_theme_color_override("font_color", Color.WHITE)
-		label.add_theme_color_override("font_outline_color", Color.BLACK)
-		label.add_theme_constant_override("outline_size", 3)
-		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		label.position = Vector2(-45, -target_size * 0.6 - 15)
-		add_child(label)
 		return
 
 	# Hide the default icon sprite — we draw food shapes instead
 	sprite.visible = false
-
-	# Add a name label
-	if data:
-		var label := Label.new()
-		label.text = data.display_name
-		label.add_theme_font_size_override("font_size", 11)
-		label.add_theme_color_override("font_color", Color.WHITE)
-		label.add_theme_color_override("font_outline_color", Color.BLACK)
-		label.add_theme_constant_override("outline_size", 3)
-		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		label.position = Vector2(-45, -65)
-		add_child(label)
+	# Note: per-enemy name labels were removed — the HUD enemy-intro
+	# overlay announces each new enemy type the first time it spawns.
+	# Persistent labels were cluttering the map and, after a recent
+	# refactor, rendered as empty blurry text boxes.
 
 	queue_redraw()
 
