@@ -1,6 +1,6 @@
 extends Node
 
-## Autonomous playtester v3.1. Activated when Godot is launched with --playtest.
+## Autonomous playtester v3.2. Activated when Godot is launched with --playtest.
 ## Runs 6 scenarios across all 3 levels, upgrade flow, stress test, bug hunt.
 ## Captures regular screenshots plus dense "anim_*" frames for GIF stitching.
 ## Writes per-scenario metrics to summary.md.
