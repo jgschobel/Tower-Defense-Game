@@ -22,6 +22,13 @@ func _on_lore_button_pressed() -> void:
 	_lore_panel.visible = true
 
 
+func _on_options_button_pressed() -> void:
+	SfxManager.play_click()
+	var opts_scene := load("res://scenes/ui/options_menu.tscn") as PackedScene
+	if opts_scene:
+		add_child(opts_scene.instantiate())
+
+
 func _on_quit_button_pressed() -> void:
 	get_tree().quit()
 

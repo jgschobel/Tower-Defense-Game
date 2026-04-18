@@ -14,7 +14,10 @@ func play_hit() -> void:
 
 
 func play_death() -> void:
-	_play_tone(220.0, 0.12, 0.4, true)
+	# Soft downward sweep — old noise-burst was grating when many enemies
+	# died at once. Lower volume + shorter duration + tonal = much less
+	# fatiguing in fast waves.
+	_play_sweep(180.0, 70.0, 0.08, 0.15)
 
 
 func play_wave_start() -> void:
@@ -58,10 +61,20 @@ func _play_tone(freq: float, duration: float, volume: float, noise: bool = false
 
 	var player := AudioStreamPlayer.new()
 	player.stream = audio
-	player.volume_db = -6.0
+	player.volume_db = _db_with_user_volume(-6.0)
 	add_child(player)
 	player.play()
 	player.finished.connect(player.queue_free)
+
+
+func _db_with_user_volume(base_db: float) -> float:
+	# Scale base_db by the user's SFX volume setting (0.0 = muted, 1.0 = full).
+	var vol: float = 1.0
+	if Engine.has_singleton("GameManager") or GameManager:
+		vol = GameManager.sfx_volume
+	if vol <= 0.0001:
+		return -80.0
+	return base_db + linear_to_db(vol)
 
 
 func _play_sweep(freq_start: float, freq_end: float, duration: float, volume: float) -> void:
@@ -85,7 +98,7 @@ func _play_sweep(freq_start: float, freq_end: float, duration: float, volume: fl
 
 	var player := AudioStreamPlayer.new()
 	player.stream = audio
-	player.volume_db = -6.0
+	player.volume_db = _db_with_user_volume(-6.0)
 	add_child(player)
 	player.play()
 	player.finished.connect(player.queue_free)
