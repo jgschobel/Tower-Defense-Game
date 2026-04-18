@@ -37,6 +37,30 @@ jobs:
           python3 -m pip install --upgrade pip
           python3 -m pip install requests
 
+      - name: Diagnostic — API key presence + issue body preview
+        env:
+          STABILITY_API_KEY: ${{ secrets.STABILITY_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          ISSUE_BODY: |
+            ${{ github.event.issue.body }}
+            ${{ github.event.comment.body }}
+        run: |
+          echo "== Photo pipeline diagnostic =="
+          if [ -n "$STABILITY_API_KEY" ]; then
+            echo "STABILITY_API_KEY: SET (length=${#STABILITY_API_KEY})"
+          else
+            echo "STABILITY_API_KEY: UNSET"
+          fi
+          if [ -n "$GEMINI_API_KEY" ]; then
+            echo "GEMINI_API_KEY: SET (length=${#GEMINI_API_KEY})"
+          else
+            echo "GEMINI_API_KEY: UNSET"
+          fi
+          echo "Issue body first 400 chars:"
+          echo "$ISSUE_BODY" | head -c 400
+          echo ""
+          echo "== End diagnostic =="
+
       - name: Extract + generate icon
         id: gen
         env:
