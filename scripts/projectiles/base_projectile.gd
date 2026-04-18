@@ -70,6 +70,22 @@ func setup(
 
 	_is_tongue = style == "tongue"
 
+	# Refresh sprite visibility based on current style — pooled projectiles
+	# only run _ready() once (at pool prewarm with style=banana), so on
+	# reuse we need to update here or the default sprite leaks through on
+	# styles that draw themselves.
+	var drawn_styles := ["tongue", "volleyball", "flask", "pollen"]
+	if has_node("Sprite2D"):
+		$Sprite2D.visible = not (style in drawn_styles)
+
+	# Reset spin per style
+	match style:
+		"tongue":   _spin_speed = 0.0
+		"flask":    _spin_speed = 8.0
+		"pollen":   _spin_speed = 0.0
+		"volleyball": _spin_speed = 10.0
+		_:          _spin_speed = 12.0
+
 
 func _ready() -> void:
 	# Hide the default sprite for styles that draw themselves via _draw()
@@ -97,7 +113,13 @@ func _process(delta: float) -> void:
 				_hit()
 			return
 		else:
-			queue_free()
+			# Return to pool instead of freeing — was causing freed-ref
+			# crashes when the same pooled slot was reacquired (pool's
+			# _free array kept a stale reference to a queue_freed node).
+			if ProjectilePool:
+				ProjectilePool.release(self)
+			else:
+				queue_free()
 			return
 
 	_last_target_pos = target.global_position
@@ -199,14 +221,24 @@ func _hit() -> void:
 		queue_free()
 
 
+const _ACID_POOL_SCRIPT := preload("res://scripts/projectiles/acid_pool.gd")
+
 func _spawn_acid_pool() -> void:
-	var pool := AcidPool.new()
+	# Defensive: class_name resolution can be flaky, use preload.
+	# Also guard against current_scene being null mid-transition.
+	var tree := get_tree()
+	if tree == null:
+		return
+	var host: Node = tree.current_scene
+	if host == null:
+		return
+	var pool: Node2D = _ACID_POOL_SCRIPT.new()
 	pool.global_position = global_position
 	pool.duration = pool_duration
 	pool.damage_per_tick = pool_dmg_per_tick
 	pool.radius = pool_radius
 	pool.damage_type = damage_type
-	get_tree().current_scene.add_child(pool)
+	host.add_child(pool)
 
 
 func reset_for_pool() -> void:
