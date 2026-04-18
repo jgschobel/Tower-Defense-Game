@@ -13,11 +13,14 @@ func play_hit() -> void:
 	_play_tone(440.0, 0.04, 0.2)
 
 
-func play_death() -> void:
-	# Soft downward sweep — old noise-burst was grating when many enemies
-	# died at once. Lower volume + shorter duration + tonal = much less
-	# fatiguing in fast waves.
-	_play_sweep(180.0, 70.0, 0.08, 0.15)
+func play_death(enemy_health: float = 100.0) -> void:
+	# Soft downward sweep with pitch modulated by enemy size.
+	# Small enemies (low health) = higher pitch "pop", big enemies =
+	# deep "thump". Adds rhythm as waves progress from tofu to boss.
+	var size_factor: float = clampf(enemy_health / 100.0, 0.4, 3.0)
+	var base_freq: float = 220.0 / sqrt(size_factor)  # bigger → lower
+	var end_freq: float = base_freq * 0.4
+	_play_sweep(base_freq, end_freq, 0.08, 0.15)
 
 
 func play_wave_start() -> void:

@@ -67,16 +67,32 @@ func _process(delta: float) -> void:
 		return
 
 
-func take_damage(amount: float, _damage_type: String = "physical") -> void:
+func take_damage(amount: float, damage_type: int = 0) -> void:
 	if is_dead:
 		return
 
-	var actual_damage := maxf(1.0, amount - armor)
+	# Damage-type enum (mirrors TowerData.DamageType):
+	# 0 = PHYSICAL — full armor reduction
+	# 1 = MAGIC    — 70% armor bypass (30% applied)
+	# 2 = PURE     — ignore armor entirely
+	var effective_armor: float = armor
+	match damage_type:
+		1: effective_armor = armor * 0.3
+		2: effective_armor = 0.0
+		_: effective_armor = armor
+
+	var actual_damage := maxf(1.0, amount - effective_armor)
 	health -= actual_damage
 	_update_health_bar()
 
-	# Show floating damage number
-	_show_damage_number(actual_damage)
+	# Show floating damage number, color-coded by type
+	_show_damage_number(actual_damage, damage_type)
+
+	# Juice: tiny +1 gold floater on every non-killing hit. Adds dopamine
+	# drip between kills. Actual gold is only awarded on kill (_on_killed)
+	# — this is purely visual/audio feedback, no economy change.
+	if health > 0 and amount > 0:
+		_show_mini_pop()
 
 	# Flash white on hit, then restore
 	modulate = Color(2.0, 2.0, 2.0)
@@ -120,7 +136,7 @@ func die() -> void:
 	is_dead = true
 	CurrencyManager.add_gold(gold_reward)
 	_show_gold_earned()
-	SfxManager.play_death()
+	SfxManager.play_death(data.health if data else 100.0)
 
 	# Spawn children on death if configured
 	if data and data.spawns_on_death != "" and data.spawn_count > 0:
@@ -344,11 +360,16 @@ func _spawn_children() -> void:
 		child.progress = progress + (i * 20.0)
 
 
-func _show_damage_number(amount: float) -> void:
+func _show_damage_number(amount: float, damage_type: int = 0) -> void:
 	var label := Label.new()
 	label.text = "-%d" % int(amount)
 	label.add_theme_font_size_override("font_size", 14)
-	label.add_theme_color_override("font_color", Color(1, 0.3, 0.2))
+	# Color-code by damage type for visual feedback
+	var col := Color(1, 0.3, 0.2)  # physical red
+	match damage_type:
+		1: col = Color(0.7, 0.3, 1)  # magic purple
+		2: col = Color(1, 0.85, 0.2) # pure gold
+	label.add_theme_color_override("font_color", col)
 	label.add_theme_color_override("font_outline_color", Color.BLACK)
 	label.add_theme_constant_override("outline_size", 2)
 	label.position = Vector2(randf_range(-15, 15), -40)
@@ -358,6 +379,22 @@ func _show_damage_number(amount: float) -> void:
 	tween.set_parallel(true)
 	tween.tween_property(label, "position:y", -75.0, 0.6)
 	tween.tween_property(label, "modulate:a", 0.0, 0.6)
+	tween.chain().tween_callback(label.queue_free)
+
+
+func _show_mini_pop() -> void:
+	# Tiny "✦" particle on damage (non-kill). Very cheap, lots of dopamine.
+	var label := Label.new()
+	label.text = "✦"
+	label.add_theme_font_size_override("font_size", 12)
+	label.add_theme_color_override("font_color", Color(1, 0.95, 0.5, 0.9))
+	label.position = Vector2(randf_range(-18, 18), randf_range(-20, -30))
+	label.z_index = 15
+	add_child(label)
+	var tween := create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(label, "position:y", label.position.y - 20.0, 0.4)
+	tween.tween_property(label, "modulate:a", 0.0, 0.4)
 	tween.chain().tween_callback(label.queue_free)
 
 
