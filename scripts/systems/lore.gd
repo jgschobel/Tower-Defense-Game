@@ -8,33 +8,34 @@ const GAME_TITLE := "Affoltern Banani Raubzug"
 const GAME_SUBTITLE := "De Grooss Banane-Raubzug vo Züri-Affoltern"
 
 static func get_level_intro(level_id: int) -> Dictionary:
+	# Kept tight per user feedback — no fluff, one punchy beat per page.
 	match level_id:
 		1:
 			return {
 				"title": "Kapitel 1: Migros Affoltern",
-				"subtitle": "Jonas Furrer-Strasse 25, 8046 Züri",
-				"text": "Ziischtig, 19:47. D'Lemurius und de Amösius chömed vom Apéro zrugg und finded ihri gliebti Migros im totale Chaos. D'Regäl sind läbig, de Sälf-Tscheckout isch bsässe, und öpper het d'Banane id TIEFCHÜEL-ABTEILIG gstellt. Das gaht gar nöd.\n\nDi erschti Welle vo verfluechtne Lääbesmittel chunnt vom Igang...\n\n\"Amösius, gsehsch du das au?\"\n\"Ja, Lemurius. Die Brötli händ jetzt Auge.\"\n\"...und Zähn.\"\n\"Mir bruuched meh Banane.\"",
+				"subtitle": "19:47. Chaos im Laden.",
+				"text": "D'Regäl sind läbig. D'Banane isch ide Tiefchüel-Abteilig. Das gaht gar nöd.\n\n\"Amösius — die Brötli händ Auge.\"\n\"...und Zähn.\"\n\"Mir bruuched meh Banane.\"",
 				"enemy_preview": "Bösi Brötli • Turbo Toblerone • Beefy Cervelat",
 			}
 		2:
 			return {
 				"title": "Kapitel 2: D'Tiefchüel-Abteilig",
-				"subtitle": "Temperatur: -18°C. Moral: Au -18°C.",
-				"text": "Tüüf ide Tiefchüel-Abteilig sind d'verfluechte Produkt schnäller — d'Chelti macht sie AGGRESSIV. Gfrorni Pizza rutschet über de Bode wie Hockey-Pucks. Fischstäbli händ es Militär bildet.\n\nEm Amösius sini Zunge bliibt immer a de Regäl härige.\n\n\"Mini Zunge isch scho wieder fescht!\"\n\"Hör uf d'Gfrüürer-Türe z'schlecke, Amösius!\"\n\"Ich chan nüt defür! Ich bi en Gecko! Chalti Oberfläche sind mini Schwächi!\"",
+				"subtitle": "-18°C. Produkt aggressiv.",
+				"text": "Gfrorni Pizza rutschet wie Hockey-Pucks. Fischstäbli händ es Militär.\n\n\"Mini Zunge isch a de Gfrüürer-Türe fescht!\"\n\"Hör uf z'schlecke, Amösius!\"",
 				"enemy_preview": "Gfrorni Pizza • Fischstäbli-Militär • Glacé-Golem",
 			}
 		3:
 			return {
 				"title": "Kapitel 3: D'Bäckerei vom Gruse",
-				"subtitle": "Frischs Brot. Frischi Alpträum.",
-				"text": "D'Migros-Bäckerei isch zur Festig worde. De Zopf het sich sälber zu Barrikade gflochte. Gipfeli mached Sturzflüg vo de Decki. Und de Suurteig... er LÄBT. Also, no meh als süsch.\n\nD'Lemurius gseht en Chischte Bio-Banane hinder de feindliche Linie.\n\n\"Das sind MINI Banane. Fairtrade. Bio. CHF 2.95 s'Kilo.\"\n\"Lemurius, jetzt isch nöd de Moment—\"\n\"ES ISCH IMMER DE MOMENT FÜR GÜNSTIGI BIO-BANANE.\"",
+				"subtitle": "De Suurteig läbt.",
+				"text": "Zopf-Barrikade. Kamikaze-Gipfeli. De Suurteig LÄBT.\n\n\"Bio-Banane hinder de Feind. CHF 2.95 s'Kilo.\"\n\"Lemurius, jetzt isch nöd—\"\n\"ES ISCH IMMER DE MOMENT FÜR BIO-BANANE.\"",
 				"enemy_preview": "Kamikaze-Gipfeli • Zopf-Barrikade • Dr. Rivella • De Suurteig",
 			}
 		_:
 			return {
 				"title": "Kapitel %d: Tüüfer id Migros" % level_id,
-				"subtitle": "De M-Tüüfel wird stärcher...",
-				"text": "D'verfluechte Produkt höred nöd uf cho. Aber d'Lemurius und de Amösius kämpfed sich dure, eini Banane uf einisch.\n\n\"Wieviel Gäng het die Migros EIGENTLICH?!\"\n\"S'isch Schwiizer Detailhandel, Amösius. Das gaht ewig wiiter.\"",
+				"subtitle": "De M-Tüüfel wird stärcher.",
+				"text": "D'verfluechte Produkt chömed nöd zum ufhöre.\n\n\"Wieviel Gäng het die Migros?!\"\n\"S'isch Schwiizer Detailhandel. Das gaht ewig.\"",
 				"enemy_preview": "???",
 			}
 

@@ -92,5 +92,6 @@ func _on_next_button_pressed() -> void:
 
 func _on_menu_button_pressed() -> void:
 	Engine.time_scale = 1.0
-	MusicManager.stop_music()
+	# Don't stop music — MusicManager auto-switches to menu track on
+	# state change via GameManager.game_state_changed.
 	get_tree().change_scene_to_file("res://scenes/ui/main_menu.tscn")

@@ -34,7 +34,10 @@ func play_upgrade() -> void:
 
 
 func play_click() -> void:
-	_play_tone(660.0, 0.03, 0.2)
+	# User reported the old 660Hz square tone hurt in the ear — the harsh
+	# harmonics at short duration were piercing. Softer: gentle downward
+	# sweep 380→220 Hz at low volume, more "tap" than "beep".
+	_play_sweep(380.0, 220.0, 0.04, 0.08)
 
 
 func play_sell() -> void:
