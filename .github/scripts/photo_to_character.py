@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """
-Extract a photo attachment from the friend-photo issue body, send it to
-Stability AI image-to-image, and save the resulting chibi cartoon icon
-under assets/textures/towers/friend_<slug>.png.
+Extract a photo attachment from the friend-photo issue body, send it
+through our image-to-image pipeline (Gemini 2.5 Flash Image with
+Stability fallback — see generators.py), and save the resulting chibi
+cartoon icon under assets/textures/towers/friend_<slug>.png.
 
 Emits GitHub Actions outputs:
     asset_path=assets/textures/towers/friend_<slug>.png
@@ -19,8 +20,9 @@ from typing import Optional
 
 import requests
 
-
-STABILITY_URL = "https://api.stability.ai/v2beta/stable-image/generate/sd3"
+# Ensure we can import the sibling generators module
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from generators import generate_icon  # noqa: E402
 
 
 def log(msg: str) -> None:
@@ -190,13 +192,19 @@ def main() -> int:
 
     out_dir = pathlib.Path("assets/textures/towers")
     out_dir.mkdir(parents=True, exist_ok=True)
-    out_path = out_dir / f"friend_{slug}.png"
+    # If a tower with that slug already exists, overwrite so the new icon
+    # flows directly into the existing .tres wiring.
+    existing = out_dir / f"{slug}.png"
+    out_path = existing if existing.exists() else out_dir / f"friend_{slug}.png"
 
     prompt = style_prompt
     if description:
         prompt = f"{style_prompt}. Character notes: {description.strip()[:400]}"
 
-    call_stability(photo_path, prompt, out_path)
+    ok = generate_icon(photo_path, prompt, out_path)
+    if not ok:
+        log("all generators failed")
+        return 1
 
     emit_output("asset_path", str(out_path))
     emit_output("character_name", slug)
