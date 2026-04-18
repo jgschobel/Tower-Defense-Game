@@ -31,6 +31,12 @@ func _ready() -> void:
 	if data:
 		_apply_data()
 	_update_visual()
+	# Visual-only offset so enemies that visually catch up at path bends
+	# don't collapse into an indistinguishable blob (issue #48). Applied
+	# to PathFollow2D's v_offset so each enemy is drawn ~±8px
+	# perpendicular to the path without affecting gameplay progress.
+	v_offset = randf_range(-10.0, 10.0)
+	h_offset = randf_range(-6.0, 6.0)
 
 
 func _apply_data() -> void:
