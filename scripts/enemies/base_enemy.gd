@@ -46,9 +46,14 @@ func _apply_data() -> void:
 	armor = data.armor
 	gold_reward = data.gold_reward
 
-	if data.heals_nearby and heal_timer_node:
-		heal_timer_node.wait_time = 1.0
-		heal_timer_node.start()
+	if heal_timer_node:
+		# Always stop first — if this enemy was reused from pool, the
+		# timer may still be live from its previous life. For non-
+		# healer reuse we want it OFF entirely.
+		heal_timer_node.stop()
+		if data.heals_nearby:
+			heal_timer_node.wait_time = 1.0
+			heal_timer_node.start()
 
 
 func _process(delta: float) -> void:
@@ -140,6 +145,10 @@ func die() -> void:
 	if is_dead:
 		return
 	is_dead = true
+	# Stop heal timer immediately — previously ran through the 0.35s
+	# death animation, wasting cycles (audit #14)
+	if heal_timer_node:
+		heal_timer_node.stop()
 	CurrencyManager.add_gold(gold_reward)
 	_show_gold_earned()
 	SfxManager.play_death(data.health if data else 100.0)
@@ -361,35 +370,52 @@ func _update_health_bar() -> void:
 
 
 func _heal_nearby() -> void:
-	if not data or not data.heals_nearby:
+	if not data or not data.heals_nearby or is_dead:
 		return
 	var enemies := get_tree().get_nodes_in_group("enemies")
 	for enemy_node in enemies:
 		if enemy_node == self:
 			continue
 		var enemy := enemy_node as BaseEnemy
-		if enemy and not enemy.is_dead:
-			if global_position.distance_to(enemy.global_position) <= data.heal_radius:
-				enemy.health = minf(enemy.max_health, enemy.health + data.heal_amount)
+		if enemy == null or enemy.is_dead:
+			continue
+		# Use path-progress distance, not global — v_offset randomization
+		# for visual separation (#48) means global_position is ±10px off
+		# the true path position. Progress-distance is the gameplay
+		# distance along the shared path (audit #7).
+		var progress_delta: float = absf(enemy.progress - progress)
+		if progress_delta <= data.heal_radius:
+			enemy.health = minf(enemy.max_health, enemy.health + data.heal_amount)
 
 
 func _spawn_children() -> void:
 	if not data or data.spawns_on_death == "" or data.spawn_count <= 0:
 		return
 	var parent_path := get_parent() as Path2D
-	if not parent_path:
+	if not parent_path or not parent_path.curve:
 		return
-	var enemy_scene := preload("res://scenes/enemies/base_enemy.tscn")
 	var data_path := "res://resources/enemy_data/%s.tres" % data.spawns_on_death
 	if not ResourceLoader.exists(data_path):
+		push_warning("[base_enemy] spawns_on_death data missing: %s (skipped)" % data_path)
 		return
 	var child_data = load(data_path)
+	# Bounds-check: if parent died past the end of the path (progress
+	# edge cases), spawn children BEHIND current position instead of
+	# ahead-off-path where they'd be invisible/unreachable. Audit #4.
+	var curve_length: float = parent_path.curve.get_baked_length()
+	var base_progress: float = clampf(progress, 0.0, curve_length - 40.0)
 	for i in data.spawn_count:
-		var child = enemy_scene.instantiate()
-		child.data = child_data
+		var child: Node = null
+		if EnemyPool and EnemyPool.has_method("acquire"):
+			child = EnemyPool.acquire(child_data, parent_path)
+		if child == null:
+			child = preload("res://scenes/enemies/base_enemy.tscn").instantiate()
+			child.data = child_data
+			parent_path.add_child(child)
 		child.add_to_group("enemies")
-		parent_path.add_child(child)
-		child.progress = progress + (i * 20.0)
+		# Stagger backward along the path so children don't stack at
+		# the parent's death point — spread over ~60 progress units
+		child.progress = max(0.0, base_progress - float(i + 1) * 20.0)
 
 
 func _show_damage_number(amount: float, damage_type: int = 0) -> void:
