@@ -75,6 +75,16 @@ Your work MUST pass `.github/autonomous/validate.sh`:
 
 Run it locally before committing (it's in `.github/autonomous/validate.sh`).
 
+## Avoid Duplicate Work
+
+Before starting any task, check open PRs:
+`gh pr list --state open --limit 30 --json number,title,headRefName`
+
+If an open PR is already addressing your intended scope (e.g.
+another `audit-polish` branch on the same file), pick a different
+ROADMAP item — don't ship a competing PR. Two crons producing
+overlapping work caused merge conflicts in the past.
+
 ## When You Get Stuck
 
 - Can't find a safe task? Fall back to a tiny polish fix — a typo, a
