@@ -1,0 +1,118 @@
+name: Autonomous Playtester
+
+on:
+  schedule:
+    # Every 3 hours, offset by 90 min so it doesn't collide with the
+    # main autonomous-dev loop (which runs on 00/04/08/...).
+    - cron: '30 */3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  id-token: write
+  actions: read
+
+concurrency:
+  group: playtest
+  cancel-in-progress: false
+
+jobs:
+  playtest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Xvfb + audio deps
+        run: sudo apt-get update && sudo apt-get install -y xvfb libxcursor1 libxinerama1 libxi6 libxrandr2
+
+      - name: Pick latest stable Godot tag
+        id: godot
+        run: |
+          set -e
+          TAG=$(curl -fsSL https://api.github.com/repos/godotengine/godot/releases \
+            | jq -r '[.[] | select(.prerelease == false) | .tag_name] | map(select(endswith("-stable"))) | first')
+          if [ -z "$TAG" ] || [ "$TAG" = "null" ]; then
+            TAG="4.3-stable"
+          fi
+          echo "Using Godot tag: $TAG"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Install Godot binary
+        env:
+          GODOT_TAG: ${{ steps.godot.outputs.tag }}
+        run: |
+          set -e
+          BASE="https://github.com/godotengine/godot/releases/download/${GODOT_TAG}"
+          curl -fsSL -o godot.zip "${BASE}/Godot_v${GODOT_TAG}_linux.x86_64.zip"
+          unzip -q godot.zip
+          mv "Godot_v${GODOT_TAG}_linux.x86_64" /usr/local/bin/godot
+          chmod +x /usr/local/bin/godot
+          godot --version
+
+      - name: Import project resources
+        run: |
+          set +e
+          xvfb-run -a -s "-screen 0 1280x720x24" timeout 120 godot --headless --path . --import
+          xvfb-run -a -s "-screen 0 1280x720x24" timeout 60  godot --headless --path . --import
+          exit 0
+
+      - name: Run playtest bot (renders to Xvfb)
+        run: |
+          set +e
+          # Xvfb gives us a virtual X display so Godot can actually render
+          # pixels. --playtest is sniffed by AutoPlaytest autoload.
+          xvfb-run -a -s "-screen 0 1280x720x24" \
+            timeout 120 godot --path . --playtest
+          echo "bot exit=$?"
+
+      - name: Collect screenshots
+        id: collect
+        run: |
+          set -e
+          SRC="$HOME/.local/share/godot/app_userdata/Affoltern Banani Raubzug/playtest"
+          OUT="playtest_output"
+          mkdir -p "$OUT"
+          if [ -d "$SRC" ]; then
+            cp "$SRC"/*.png "$OUT"/ 2>/dev/null || true
+          fi
+          COUNT=$(ls -1 "$OUT"/*.png 2>/dev/null | wc -l | tr -d ' ')
+          echo "Captured $COUNT screenshots"
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+          ls -la "$OUT/" || true
+
+      - name: Upload screenshots as workflow artifact
+        if: steps.collect.outputs.count != '0'
+        uses: actions/upload-artifact@v4
+        with:
+          name: playtest-screenshots-${{ github.run_number }}
+          path: playtest_output/
+          retention-days: 14
+
+      - name: Run Claude vision analysis
+        if: steps.collect.outputs.count != '0'
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            $(cat .github/playtest/analyze-prompt.md)
+
+            ## Screenshots captured this run
+
+            Read every PNG file in ./playtest_output/ using the Read tool —
+            you can see images directly. Then file feedback issues as
+            instructed in the prompt above.
+
+            The `gh` CLI is preconfigured with GH_TOKEN.
+          claude_args: |
+            --max-turns 40
+            --model claude-sonnet-4-6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: No screenshots notice
+        if: steps.collect.outputs.count == '0'
+        run: |
+          echo "No screenshots produced — bot may have crashed or hung."
+          echo "Check the 'Run playtest bot' step logs."
+          exit 1
