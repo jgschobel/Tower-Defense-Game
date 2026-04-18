@@ -36,10 +36,32 @@ func _ready() -> void:
 	_on_gold_changed(CurrencyManager.gold)
 	_on_lives_changed(GameManager.lives)
 	_populate_tower_shop()
+	_apply_safe_area()
 
 	if tower_info:
 		tower_info.visible = false
 	cancel_button.visible = false
+
+
+func _apply_safe_area() -> void:
+	var safe_rect := DisplayServer.get_display_safe_area()
+	var screen_size := DisplayServer.window_get_size()
+	var inset_left := safe_rect.position.x
+	var inset_right := screen_size.x - (safe_rect.position.x + safe_rect.size.x)
+	var inset_top := safe_rect.position.y
+	var inset_bottom := screen_size.y - (safe_rect.position.y + safe_rect.size.y)
+	if inset_left == 0 and inset_right == 0 and inset_top == 0 and inset_bottom == 0:
+		return
+	var top_bar: PanelContainer = $TopBar
+	top_bar.offset_left = float(inset_left)
+	top_bar.offset_right = float(-inset_right)
+	top_bar.offset_top = float(inset_top)
+	top_bar.offset_bottom = float(inset_top) + 65.0
+	var bottom_panel: PanelContainer = $BottomPanel
+	bottom_panel.offset_left = float(inset_left)
+	bottom_panel.offset_right = float(-inset_right)
+	bottom_panel.offset_top = -220.0 - float(inset_bottom)
+	bottom_panel.offset_bottom = float(-inset_bottom)
 
 
 func _populate_tower_shop() -> void:

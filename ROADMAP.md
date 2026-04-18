@@ -212,19 +212,19 @@ identity perfectly.
 Tiny individually, transformative together. Per Bloons-veteran research:
 the difference between "prototype" and "real game" lives here.
 
-- [ ] **Pop SFX pitch by enemy size**: in `sfx_manager.play_death(enemy_data)`
+- [x] **Pop SFX pitch by enemy size**: in `sfx_manager.play_death(enemy_data)`
   modulate base sweep frequency by `enemy_data.health` (small enemies =
   higher pitch, big enemies = deep thump). Single line change.
-- [ ] **Generous starting cash +50%**: bump `level_data.starting_gold` by
+- [x] **Generous starting cash +50%**: bump `level_data.starting_gold` by
   ~50% across all 3 level data files. Testing playtests already show
   early game is gold-starved.
-- [ ] **Tower sprite rotates toward target**: in `base_tower._process` set
+- [x] **Tower sprite rotates toward target**: in `base_tower._process` set
   `sprite.rotation = (current_target.global_position - global_position).angle()`
   when targeting, with `lerp` smoothing for snappy feel. Skip if no
   target.
-- [ ] **Victory screen 2s hold**: in `game_over.gd` defer score reveal
+- [x] **Victory screen 2s hold**: in `game_over.gd` defer score reveal
   by 2s after `level_completed` signal — gives the final pop air time.
-- [ ] **+gold floater on EVERY enemy hit (not just kill)**: tiny "+1"
+- [x] **+gold floater on EVERY enemy hit (not just kill)**: tiny "+1"
   floater on damage, "+%d" big floater on kill. Existing label
   infrastructure works; just add a smaller variant on damage events
   in `base_enemy.take_damage`.
@@ -274,14 +274,14 @@ than 5 more levels because it fixes "why play again" not "what to play".
 ## 🔥 P0 — Blocking / Bugs
 
 - [x] Fix JoJo splash tower `can_target_flying = true` (PLAN #12)
-- [ ] DamageType enum actually applied in base_enemy.gd (magic ignores armor, physical reduced by armor) — PLAN #16
+- [x] DamageType enum actually applied in base_enemy.gd (magic ignores armor, physical reduced by armor) — PLAN #16
 - [x] Show feedback text on invalid tower placement ("Z'nöch am Wäg!" / "Z'nöch am Turm!") — PLAN #24
 - [x] Tower cost affordability color (yellow/gold affordable, red unaffordable) — PLAN #28
 - [x] Floating `+gold` labels don't disappear when monster dies (tween was self-bound to freed enemy)
 - [x] Death SFX was grating noise burst — replaced with soft 180→70Hz sweep at 0.15 volume
 - [ ] Story screen rework — multi-page dialogue boxes instead of one cramped panel. User reports text is too small to read and skips show immediately. Bloons/Monaco-style typewriter across 3-5 pages with big tap-to-advance buttons. Swiss German content unchanged, presentation rebuilt.
 - [ ] **Options menu** (music volume, SFX volume, master volume) accessible from main menu AND pause menu. Use AudioServer buses: add "Music" and "SFX" buses, route MusicManager/SfxManager players through them, expose sliders that call `AudioServer.set_bus_volume_db`.
-- [ ] Enemy pathing bug: at level 2+, enemies stack up at spawn in a long vertical line before moving. Visible in screenshot — 10+ tofu-würschtli piled on top of each other at the top-left corner. Likely a spawn cadence/path-follow issue in `wave_manager.gd` or `base_enemy.gd`.
+- [x] Enemy pathing bug: at level 2+, enemies stack up at spawn — fixed in #43 with MIN_DELAY=0.35s floor in wave_manager spawn queue builder.
 
 ## 🎨 P0 — Map Backgrounds (each level needs real personality)
 
@@ -333,15 +333,15 @@ run project:
 
 ## ⚡ P1 — Important (Polish & UX)
 
-- [ ] Enemy count on HUD ("12 übrig" next to wave counter) — PLAN #26
+- [x] Enemy count on HUD ("12 übrig" next to wave counter) — PLAN #26
 - [ ] Tower range preview stat in shop buttons — PLAN #29
 - [ ] Reposition tower info panel so it doesn't overlap map — PLAN #30
-- [ ] HUD buttons ≥ 50px for mobile touch — PLAN #34
-- [ ] Pause button 60px minimum — PLAN #35
-- [ ] Safe area margins for notches/status bars — PLAN #36
+- [x] HUD buttons ≥ 50px for mobile touch — PLAN #34
+- [x] Pause button 60px minimum — PLAN #35
+- [x] Safe area margins for notches/status bars — PLAN #36
 - [x] Health bar smooth tween over 0.2s — PLAN #41
 - [ ] Screen shake on boss spawn (level 3 wave 10) — PLAN #42
-- [ ] Wave start announcement flies across screen — PLAN #43
+- [x] Wave start announcement flies across screen — PLAN #43
 - [ ] UI click SFX wired to every button press — PLAN #52
 - [ ] Boss entrance SFX (low rumble) — PLAN #54
 - [ ] Tutorial overlay for first-time play — PLAN #27
