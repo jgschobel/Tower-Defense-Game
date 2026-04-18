@@ -203,26 +203,40 @@ func _attack() -> void:
 	var projectile: Node = null
 	if ProjectilePool and ProjectilePool.has_method("acquire"):
 		projectile = ProjectilePool.acquire()
-	if projectile == null:
+	if projectile == null or not is_instance_valid(projectile):
 		projectile = _projectile_scene.instantiate()
-		get_tree().current_scene.add_child(projectile)
-	projectile.setup(
-		origin_pos,
-		current_target,
-		effective_damage,
-		data.damage_type,
-		data.projectile_color,
-		data.is_splash,
-		data.splash_radius,
-		data.splash_damage_pct,
-		data.slow_amount,
-		data.slow_duration,
-		data.projectile_style,
-		data.leaves_ground_pool,
-		data.ground_pool_duration,
-		data.ground_pool_damage_per_tick,
-		data.ground_pool_radius
-	)
+		var scene_root := get_tree().current_scene
+		if scene_root:
+			scene_root.add_child(projectile)
+		else:
+			# Pathological case — no current scene. Bail rather than crash.
+			projectile.queue_free()
+			return
+	# setup() must not throw. If it does, quietly release the projectile.
+	if projectile.has_method("setup"):
+		projectile.setup(
+			origin_pos,
+			current_target,
+			effective_damage,
+			data.damage_type,
+			data.projectile_color,
+			data.is_splash,
+			data.splash_radius,
+			data.splash_damage_pct,
+			data.slow_amount,
+			data.slow_duration,
+			data.projectile_style,
+			data.leaves_ground_pool,
+			data.ground_pool_duration,
+			data.ground_pool_damage_per_tick,
+			data.ground_pool_radius
+		)
+	else:
+		push_warning("[tower] projectile has no setup() — releasing")
+		if ProjectilePool:
+			ProjectilePool.release(projectile)
+		else:
+			projectile.queue_free()
 
 
 func upgrade() -> bool:

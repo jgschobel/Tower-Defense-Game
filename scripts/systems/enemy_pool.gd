@@ -37,17 +37,21 @@ func _prewarm() -> void:
 
 
 func acquire(data, path_node) -> Node:
-	var e: Node
+	var e: Node = null
 	var from_pool := false
-	if _free.is_empty():
+	# Pop first VALID slot — skip any freed refs that leaked in
+	while not _free.is_empty():
+		var candidate = _free.pop_back()
+		if candidate != null and is_instance_valid(candidate):
+			e = candidate
+			if e.get_parent() == _container:
+				_container.remove_child(e)
+			from_pool = true
+			break
+	if e == null:
 		if _scene == null:
 			return null
 		e = _scene.instantiate()
-	else:
-		e = _free.pop_back()
-		if e.get_parent() == _container:
-			_container.remove_child(e)
-		from_pool = true
 	# Mark origin so release() knows whether to pool-park or queue_free.
 	# Mixing pool + non-pool instances was audit finding #5.
 	e.set_meta("pooled", from_pool)

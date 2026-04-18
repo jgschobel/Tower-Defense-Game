@@ -38,21 +38,24 @@ func _prewarm() -> void:
 
 
 func acquire() -> Node2D:
-	if _free.is_empty():
-		# Pool exhausted — instantiate a fresh one (still better than
-		# throwing away an active projectile). Mark it as NOT pooled
-		# so future release calls queue_free instead of pool-parking.
-		if _scene:
-			var p = _scene.instantiate()
-			if _container:
-				_container.add_child(p)
-			p.set_meta("pooled", false)
-			return p
-		return null
-	var p = _free.pop_back()
-	p.set_meta("pooled", true)
-	_activate(p)
-	return p
+	# Pop the first VALID projectile from _free. Older versions trusted
+	# every slot; if any projectile had been queue_freed externally the
+	# next acquire would crash (freed-ref → set_meta). Skip dead slots.
+	while not _free.is_empty():
+		var candidate = _free.pop_back()
+		if candidate != null and is_instance_valid(candidate):
+			candidate.set_meta("pooled", true)
+			_activate(candidate)
+			return candidate
+	# Pool exhausted (or all slots stale) — instantiate a fresh one.
+	# Mark it as NOT pooled so release() queue_frees instead of parking.
+	if _scene:
+		var p = _scene.instantiate()
+		if _container:
+			_container.add_child(p)
+		p.set_meta("pooled", false)
+		return p
+	return null
 
 
 func release(p: Node) -> void:
