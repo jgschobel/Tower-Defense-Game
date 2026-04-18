@@ -3,7 +3,7 @@
 Focus on **code quality improvements**. This mode is the riskiest — be
 extra careful and keep changes small.
 
-Pick ONE of the following:
+Pick ONE of the following (or combine if Option 6 is picked):
 
 1. **Reduce duplication** — find 3+ identical code blocks and extract a
    helper. Only do this if the abstraction is obvious and well-named.
@@ -18,6 +18,25 @@ Pick ONE of the following:
    branches, or commented-out code blocks.
 
 5. **Typed-ness** — add missing type annotations per CLAUDE.md conventions.
+
+6. **Full codebase audit** (pick this every ~3rd self-improve run to
+   prevent chaos accumulation):
+   - Scan `scripts/**/*.gd` for unused functions (grep for definitions
+     that appear only once in the codebase)
+   - Scan `scenes/**/*.tscn` for orphaned scene files (no references
+     elsewhere)
+   - Scan `resources/**/*.tres` for orphaned data files
+   - Check for divergent duplicate implementations (e.g., same logic
+     in two places that has drifted)
+   - Check consistency: tower_data has path_a/path_b for some towers
+     but not others; HUD handles both — verify all paths tested
+   - Check that ROADMAP `[x]` checked items actually delivered their
+     spec in code (spot-check 5 random ones)
+   - Report findings in a single PR. If the audit PR is small (just
+     a few cleanups), ship it. If findings are large, split into
+     multiple commits in the same PR with a summary table at the top.
+   - Always leave a `AUDIT-<date>.md` trace under `docs/audits/` so
+     future runs can see the last audit date.
 
 ## Hard Rules
 

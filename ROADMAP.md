@@ -116,7 +116,32 @@ run project:
 - [ ] Viewport scaling across phone sizes — PLAN #66
 - [ ] Battery optimization: stop music gen when backgrounded — PLAN #67
 
-## 🔥 P0 — Just Added (Live Gameplay Feedback)
+## 🔥 P0 — Just Added (Latest Live Feedback)
+
+- [ ] **Empty space left/right in landscape**: partially fixed by setting
+  `window/stretch/aspect=expand`. Follow-up: audit every scene to ensure
+  root Controls use PRESET_FULL_RECT with anchors (not fixed positions)
+  so layout flexes on 20:9 phones. Biggest offenders: game.tscn +
+  level_N.tscn map nodes which may still assume 1280×720.
+- [ ] **Compact tower shop**: current bottom bar takes too much vertical
+  space and is always visible → distracting. Redesign: small circular
+  "+" FAB in bottom-right opens a radial/popup picker with the 5 tower
+  icons. Stays out of the way until player wants to place.
+  Alternative: collapse bar to a thin handle when no tower selected,
+  expands on tap.
+- [ ] **Richer maps — each level gets bespoke visual identity**:
+  - Level 1 Migros Eingang: animated auto-doors sliding, shopping-cart
+    props, Migros-orange accent color, fluorescent neon flicker shader
+    overlay
+  - Level 2 Tiefchüel: dripping icicles (particle system), frost-mist
+    layer with blue tint post-processing, breath-fog when towers fire
+  - Level 3 Bäckerei: warm oven glow, drifting flour particles, amber
+    light gradient, heat-haze shader on path
+  Use Imagen 4 text-to-image (`generate_background` helper) for richer
+  static backgrounds; use Godot CPUParticles2D + CanvasModulate for
+  the animated layers.
+
+## 🔥 P0 — Live Gameplay Feedback (earlier)
 
 - [ ] **First-appearance monster intro animation** — when a new enemy type
   spawns for the first time in a level (not every wave), trigger a
