@@ -117,4 +117,28 @@ func _hit() -> void:
 			if global_position.distance_to(enemy.global_position) <= splash_radius:
 				enemy.take_damage(damage * splash_damage_pct, damage_type)
 
-	queue_free()
+	# Return to pool instead of freeing. Pool no-ops gracefully if this
+	# projectile wasn't originally acquired from it.
+	if ProjectilePool:
+		ProjectilePool.release(self)
+	else:
+		queue_free()
+
+
+func reset_for_pool() -> void:
+	# Called by ProjectilePool when this projectile is returned to the
+	# pool, so the next acquisition starts clean.
+	target = null
+	damage = 0.0
+	damage_type = 0
+	is_splash = false
+	splash_radius = 0.0
+	splash_damage_pct = 0.5
+	slow_amount = 0.0
+	slow_duration = 0.0
+	_direction = Vector2.ZERO
+	_last_target_pos = Vector2.ZERO
+	_is_tongue = false
+	_origin_pos = Vector2.ZERO
+	global_position = Vector2.ZERO
+	rotation = 0.0
