@@ -157,17 +157,17 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -e
-          # Find the newest claude/auto/* PR opened in the last 15 minutes
           PR_NUM=$(gh pr list --state open --json number,headRefName,createdAt --limit 30 \
             | jq -r '[.[] | select(.headRefName | startswith("claude/auto/"))] | sort_by(.createdAt) | reverse | .[0].number // empty')
           if [ -z "$PR_NUM" ]; then
             echo "No autonomous PR produced this run. Nothing to validate."
             exit 0
           fi
-          BRANCH=$(gh pr view "$PR_NUM" --json headRefName -q '.headRefName')
-          echo "Validating PR #$PR_NUM on branch $BRANCH"
-          git fetch origin "$BRANCH"
-          git checkout "$BRANCH"
+          echo "Validating PR #$PR_NUM"
+          # Use gh pr checkout — it uses GH_TOKEN directly and avoids the
+          # stale git-credential issue that breaks `git fetch origin` after
+          # the Claude action runs.
+          gh pr checkout "$PR_NUM"
           chmod +x .github/autonomous/validate.sh
           if .github/autonomous/validate.sh; then
             echo "Validation passed — auto-merging PR #$PR_NUM"
@@ -177,6 +177,6 @@ jobs:
             gh pr comment "$PR_NUM" --body "Auto-merge blocked: validation failed. Next test-validate run will investigate."
             gh pr close "$PR_NUM" --delete-branch
             gh issue create --title "Autonomous run produced broken PR (#$PR_NUM)" \
-              --body "Branch $BRANCH failed validation. Next test-validate run should investigate." \
+              --body "Branch failed validation. Next test-validate run should investigate." \
               --label "autonomous" || true
           fi
