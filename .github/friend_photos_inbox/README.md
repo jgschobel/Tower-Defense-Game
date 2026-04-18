@@ -2,6 +2,13 @@
 
 This directory is watched by `.github/workflows/photo-inbox.yml`.
 
+## ⚠️ Hard rule: image-to-image only
+
+Friend character icons must always be generated from a real photo via
+Stability AI image-to-image. Text-only sidecars are **rejected** — the
+processor will log a warning and skip them. Likeness matters too much
+to let text-to-image guess faces.
+
 ## How it works
 
 When a chat-session Claude receives a photo from the user, it commits
