@@ -53,14 +53,17 @@ jobs:
           chmod +x /usr/local/bin/godot
           godot --version
 
-          # Export templates — installed under ~/.local/share/godot/export_templates/<version>/
+          # Export templates — Godot expects the folder name with DOT
+          # separator (e.g. "4.6.2.stable") not the tag's DASH form
+          # ("4.6.2-stable"). This is a long-standing Godot quirk.
           curl -fsSL -o templates.tpz "${BASE}/Godot_v${GODOT_TAG}_export_templates.tpz"
-          VER_DIR="${GODOT_TAG}"
+          VER_DIR="$(echo "${GODOT_TAG}" | sed 's/-/./g')"
+          echo "Installing templates to ~/.local/share/godot/export_templates/${VER_DIR}/"
           mkdir -p "$HOME/.local/share/godot/export_templates/${VER_DIR}"
           unzip -q templates.tpz -d /tmp/templates
           mv /tmp/templates/templates/* "$HOME/.local/share/godot/export_templates/${VER_DIR}/"
           echo "Export templates installed:"
-          ls "$HOME/.local/share/godot/export_templates/${VER_DIR}/" | head -5
+          ls "$HOME/.local/share/godot/export_templates/${VER_DIR}/" | head -10
 
       - name: Import project resources (two passes)
         run: |
