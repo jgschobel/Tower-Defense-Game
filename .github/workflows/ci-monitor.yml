@@ -1,0 +1,81 @@
+name: CI Failure Auto-Issue
+
+# Watches every other workflow. When one fails, download the logs,
+# extract the last 200 lines, and file a GitHub Issue so the
+# in-session Claude (or next autonomous loop run) can read it via
+# the GitHub MCP tools and fix the underlying bug.
+
+on:
+  workflow_run:
+    workflows:
+      - "Autonomous Development Loop"
+      - "Deploy Web Build to GitHub Pages"
+      - "Autonomous Playtester"
+    types: [completed]
+
+permissions:
+  actions: read
+  contents: read
+  issues: write
+
+jobs:
+  on-failure:
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch failed run logs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+        run: |
+          set +e
+          mkdir -p logs
+          # gh CLI on the runner can download the full logs zip
+          gh api -H "Accept: application/vnd.github+json" \
+            "/repos/${{ github.repository }}/actions/runs/$RUN_ID/logs" \
+            > logs.zip
+          if [ -s logs.zip ]; then
+            unzip -q logs.zip -d logs
+          fi
+          # Concatenate all step logs, strip ANSI escapes, tail to last 250 lines
+          find logs -type f -name '*.txt' -print0 \
+            | xargs -0 cat 2>/dev/null \
+            | sed -r 's/\x1B\[[0-9;]*[a-zA-Z]//g' \
+            | tail -n 250 > log_tail.txt
+          wc -l log_tail.txt || true
+          head -c 200 log_tail.txt || true
+
+      - name: Create failure issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WF_NAME: ${{ github.event.workflow_run.name }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+          RUN_NUM: ${{ github.event.workflow_run.run_number }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+        run: |
+          set -e
+          {
+            echo "Workflow **${WF_NAME}** failed on branch \`${HEAD_BRANCH}\` at commit \`${HEAD_SHA:0:7}\`."
+            echo ""
+            echo "Run: ${RUN_URL}"
+            echo ""
+            echo "### Last ~250 lines of step logs"
+            echo ""
+            echo '```'
+            if [ -s log_tail.txt ]; then
+              cat log_tail.txt
+            else
+              echo "(no logs could be fetched — check the run URL manually)"
+            fi
+            echo '```'
+            echo ""
+            echo "---"
+            echo "_Filed automatically by \`.github/workflows/ci-monitor.yml\`. Close this issue once fixed._"
+          } > issue_body.md
+
+          gh issue create \
+            --repo "${{ github.repository }}" \
+            --title "[ci-failure] ${WF_NAME} run #${RUN_NUM}" \
+            --body-file issue_body.md \
+            --label "ci-failure,autonomous"
