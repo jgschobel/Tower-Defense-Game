@@ -186,13 +186,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Commit observability artifact (for chat-session visibility)
+      - name: Commit observability artifact + KEY SCREENSHOTS
         if: always()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set +e
-          mkdir -p docs/observability
+          mkdir -p docs/observability/screenshots
           STATUS="ok"
           if [ "${{ job.status }}" != "success" ]; then STATUS="fail"; fi
           TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
@@ -200,34 +200,58 @@ jobs:
           if [ -d playtest_output ]; then
             SHOT_COUNT=$(ls -1 playtest_output/*.png 2>/dev/null | wc -l | tr -d ' ')
           fi
-          # Full summary if available
+
+          # --- Copy 7 KEY screenshots into the repo so chat-session
+          # Claude can Read them directly as multimodal images. Same
+          # filenames each run → repo size stays bounded.
+          copy_key_shot() {
+            local pattern="$1"; local dest="docs/observability/screenshots/$2"
+            local src
+            src=$(ls playtest_output/${pattern} 2>/dev/null | head -1)
+            if [ -n "$src" ]; then cp "$src" "$dest"; echo "  $dest"; fi
+          }
+          echo "== Copying key screenshots =="
+          copy_key_shot "*00_menu*.png" "00_menu.png"
+          copy_key_shot "*L1_healthy_final*.png" "L1_healthy_final.png"
+          copy_key_shot "*L2_healthy_final*.png" "L2_healthy_final.png"
+          copy_key_shot "*L3_healthy_final*.png" "L3_healthy_final.png"
+          copy_key_shot "*upgrades_tier_A3_B2*.png" "upgrades_tier_A3_B2.png"
+          copy_key_shot "*stress_t03*.png" "stress_t03.png"
+          copy_key_shot "*bughunt_after_cancel*.png" "bughunt_after_cancel.png"
+
           {
             echo "# Playtest Latest"
             echo ""
-            echo "Run: ${{ github.run_id }} @ $TS · Status: **$STATUS** · Screenshots: $SHOT_COUNT"
+            echo "Run: ${{ github.run_id }} @ $TS · Status: **$STATUS** · Screenshots: $SHOT_COUNT total, 7 key shots committed below"
+            echo ""
+            echo "## Key screenshots (Read these for visual audit)"
+            echo ""
+            for f in 00_menu.png L1_healthy_final.png L2_healthy_final.png L3_healthy_final.png upgrades_tier_A3_B2.png stress_t03.png bughunt_after_cancel.png; do
+              if [ -f "docs/observability/screenshots/$f" ]; then
+                echo "- \`docs/observability/screenshots/$f\`"
+              fi
+            done
             echo ""
             echo "## Summary"
             echo ""
             if [ -f playtest_output/summary.md ]; then
               cat playtest_output/summary.md
             else
-              echo "(no summary.md produced — bot likely did not reach the write-summary step)"
+              echo "(no summary.md — bot did not reach write-summary)"
             fi
             echo ""
-            echo "## Artifact link"
-            echo ""
+            echo "## Full artifact"
             echo "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           } > docs/observability/playtest_latest.md
-          # Ledger append
-          echo "- $TS · playtest · $STATUS · run=${{ github.run_id }} · shots=$SHOT_COUNT" >> docs/observability/ledger.md
-          # Keep ledger bounded: last 150 entries only (head stays, most
-          # recent entries at top due to prepend-on-rotation in cleanup.yml)
+
+          echo "- $TS · playtest · $STATUS · run=${{ github.run_id }} · shots=$SHOT_COUNT · key=7" >> docs/observability/ledger.md
           tail -n 150 docs/observability/ledger.md > /tmp/ledger.trim
           mv /tmp/ledger.trim docs/observability/ledger.md
+
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout main
           git pull origin main --rebase || true
           git add docs/observability/
-          git commit -m "chore(observability): playtest run ${{ github.run_id }} ($STATUS)" || echo "no changes"
+          git commit -m "chore(observability): playtest ${{ github.run_id }} ($STATUS) + 7 key screenshots" || echo "no changes"
           git push origin main || echo "push failed — non-fatal"

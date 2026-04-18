@@ -41,6 +41,49 @@ Game feel (1% Juice Pass):
 
 ---
 
+## 🔥 P0 — Placement + Shop UX Overhaul (live feedback)
+
+User playtests have identified the current tap-to-place + bottom-bar shop
+as the biggest UX friction. BTD6-style drag-and-drop from a side shop is
+the target. These are large but self-contained features — each one
+worth a dedicated PR.
+
+- [ ] **Drag-and-drop tower placement**: replace tap-button → tap-map
+  flow with press-and-drag from the shop button directly onto the map.
+  Implementation: tower shop button gets `_gui_input` handler that
+  captures press, then `_unhandled_input` tracks drag position and
+  shows the ghost tower following the touch. Drop on valid map position
+  instantiates; drop on invalid (path, off-screen, too close to tower)
+  plays the placement-invalid toast and refunds. Must still support
+  tap-to-preview in options menu (accessibility).
+- [ ] **Scrollable side-widget tower shop (BTD-style)**: replace the
+  full-width `HBoxContainer` at bottom with a vertical `ScrollContainer`
+  anchored to the right edge, ~140px wide. Five tower icons stacked
+  with cost + name. Tap opens detail tooltip, drag initiates placement.
+  Collapses to thin handle when not in use. hud.tscn restructure needed:
+  - Remove `$BottomPanel/BottomBar/TowerShop` HBox
+  - Add `$SideShop` PanelContainer (anchor right, top 20%, height 60%)
+  - Containing a VBox ScrollContainer with tower buttons
+  - `_populate_tower_shop()` populates the VBox instead
+- [ ] **Monster first-appearance intro animation**: when a new enemy
+  type spawns for the first time in a session (track via GameManager.
+  seen_enemy_ids Set[String]), freeze the wave for 1.2s and play a
+  big reveal animation: enemy zooms in from offscreen to 2× scale at
+  center, portrait slides in with name label + Swiss-German taunt
+  speech bubble, music ducks 50% briefly, screen flashes. After first
+  reveal, enemies never show name labels again (removes the constant
+  floating text over every enemy). Spec:
+  - `GameManager.seen_enemy_ids: Array[String] = []`
+  - On wave_manager.\_spawn_enemy, check if enemy_id NOT in seen_enemy_ids
+  - If new: emit enemy_introduced(id, data) signal, add to seen
+  - HUD listens, builds an EnemyIntroOverlay, animates 1.2s, frees
+  - base_enemy removes its persistent name label; only the intro shows it
+- [ ] **Enemy movement polish**: add bobbing walk cycle to
+  base_enemy.\_physics_process — sine-wave y-offset ±3px at speed-
+  proportional frequency. Plus dust-puff particles on each "step"
+  (every 0.4s at normal speed). Makes enemies feel alive, not static
+  sprites sliding on a track.
+
 ## 🔥 P0 — Long-Term Retention System (NEWLY ADDED — BTD-grade)
 
 User ask: "Spezial-Münzen, Forschig-Menü, Mission-Challenges per Level,

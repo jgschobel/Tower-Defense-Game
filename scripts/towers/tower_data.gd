@@ -33,6 +33,23 @@ enum DamageType { PHYSICAL, MAGIC, PURE }
 @export var buff_damage_pct: float = 0.0
 @export var buff_speed_pct: float = 0.0
 
+# Visual projectile style — how the base_projectile draws itself.
+# Each tower is thematically distinct: only Lemurius throws actual bananas.
+# Options: "banana" (default), "volleyball", "flask", "pollen", "tongue"
+@export var projectile_style: String = "banana"
+
+# Per-tower offset from tower center where projectiles spawn. Lets
+# Amösius's tongue emanate from his mouth instead of center, etc.
+@export var projectile_origin_offset: Vector2 = Vector2.ZERO
+
+# If true (JoJo-style chem splash), projectile leaves a lingering
+# acid/ground pool on impact that ticks DoT for `ground_pool_duration`
+# seconds at `ground_pool_damage_per_tick` damage per 0.5s.
+@export var leaves_ground_pool: bool = false
+@export var ground_pool_duration: float = 3.0
+@export var ground_pool_damage_per_tick: float = 4.0
+@export var ground_pool_radius: float = 70.0
+
 # Visual
 @export var base_color: Color = Color.BLUE
 @export var projectile_color: Color = Color.YELLOW
