@@ -1,0 +1,55 @@
+name: "🎨 Friend Photo → Character"
+description: "Attach a photo of a friend and a workflow generates a chibi cartoon tower icon for them."
+title: "[friend-photo] <character name>"
+labels: ["friend-photo"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form to turn a photo of a friend into a tower icon for the game.
+        The photo is sent to Stability AI image-to-image which produces a chibi
+        cartoon version with transparent background. Opens a PR with the new
+        asset automatically.
+
+  - type: input
+    id: character_name
+    attributes:
+      label: "Character name (Swiss German welcome)"
+      description: "The display name — e.g. 'Baschi', 'Fränzi', 'Dr. Tönu'. Will also be used as the filename slug (lowercased, spaces → underscores)."
+      placeholder: "Baschi"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: "Character description / vibe"
+      description: "A few sentences describing personality, signature item, weapon, or vibe. The more specific, the better the icon. Can be Swiss German, German, or English."
+      placeholder: "En gmüetlichi Kaffi-Trinkere mit rundi Brüle und immer es Buech in de Händ. Waffe: scharfi Zitate."
+    validations:
+      required: true
+
+  - type: textarea
+    id: photo
+    attributes:
+      label: "Photo"
+      description: "Drop or paste the photo directly into the text box below. Make sure the face is clearly visible. JPEG or PNG."
+      placeholder: "(drag photo here)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: style
+    attributes:
+      label: "Style"
+      description: "Which art style fits this character?"
+      options:
+        - "default (chibi cartoon, matches existing tower art)"
+        - "warrior (armored, heroic)"
+        - "scholar (robes, books, glasses)"
+        - "pirate (tricorn, eyepatch, cutlass)"
+        - "pixie/nature (flowers, wings, leaves)"
+        - "punk (leather, mohawk, shades)"
+      default: 0
+    validations:
+      required: true

@@ -56,3 +56,25 @@ next few runs have interesting, creative work to pick from.
 - Co-op future idea (would be hard, just note it)
 
 Remix these into Swiss German / Migros themed equivalents. Be creative.
+
+## Creative prompts — force yourself to think wilder
+
+Before finalizing your ideas list, answer these in scratch space (not
+shipped) to loosen up:
+
+- **What would a 5-year-old want added?** They don't care about balance;
+  they want spectacle. What's the most over-the-top cool thing?
+- **What would surprise a BTD veteran?** They've seen it all — what's a
+  mechanic that's specific to THIS game's setting (Migros, Swiss
+  German, friends-as-towers) that BTD doesn't have?
+- **What's the one feature that would make someone screenshot and
+  share?** A moment worth a viral TikTok. Emote system? Absurd boss
+  names? A tower that deletes enemies with a Swiss-German insult?
+- **What's the laziest player fantasy?** Beat the level without
+  playing. Auto-battle mode. Watch mode. Ghost run of a previous win.
+- **What would hurt to remove?** If you ship 1 idea and it sticks, the
+  game is worse without it — that's the one to ship.
+
+Lift 3-5 of the winners into the ROADMAP's "Ideas To Explore" section
+with concrete specs (costs, mechanics, Swiss German names, rough impl
+hints). Specs, not vibes. The next build-content run picks them up.
