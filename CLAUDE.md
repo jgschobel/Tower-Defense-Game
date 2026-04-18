@@ -12,6 +12,21 @@ autonomous or manual. Update only when the user explicitly changes them.
 - **Review appetite**: none. Do not ask the user to review PRs. The
   autonomous loop auto-merges validated changes. User manages from
   phone via GitHub mobile.
+- **Do NOT ask the user to trigger workflow runs manually.** They
+  hate that. Make workflows trigger themselves on push, or daisy-chain
+  via `workflow_run` events, or use `repository_dispatch`. If something
+  needs a one-shot execution, do it yourself (push a dummy commit,
+  open a PR, etc). Never say "please click Run workflow on your phone".
+- **Be maximally productive and proactive every session.** Ship as
+  much as fits. Generate new ideas, don't wait for the user to ask.
+  When you finish one fix, immediately pick up the next meaningful
+  thing from ROADMAP or CI-failure issues and keep going. Write code,
+  don't ask permission. The user prefers too much progress over too
+  little ceremony.
+- **Read your own CI failures.** The `ci-monitor.yml` workflow files
+  a GitHub Issue with log tails whenever any workflow fails. Before
+  starting new work, check `mcp__github__list_issues` with label
+  `ci-failure` and fix those first. Close the issue when fixed.
 - **Feedback rhythm**: user plays the deployed HTML5 build
   (`jgschobel.github.io/Tower-Defense-Game/`) and edits `ROADMAP.md`
   when they want to redirect priorities. Otherwise: zero input required.

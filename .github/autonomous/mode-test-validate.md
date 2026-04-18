@@ -4,6 +4,14 @@ Focus on **catching breakage before the user does**. This mode produces
 either a "everything's fine" no-op report OR a fix PR for something
 discovered.
 
+## Step 0 — Triage open CI failures FIRST
+
+Run `gh issue list --label ci-failure --state open --limit 5`. Every
+issue is an automated CI log tail from a failed workflow. Read the
+top one, diagnose the root cause from the log, and ship a fix PR.
+Close the issue with `Closes #N` in the PR body. Only move to the
+rest of the steps if no ci-failure issues are open.
+
 ## Steps
 
 1. **Run a headless Godot parse check** if available on the runner:
