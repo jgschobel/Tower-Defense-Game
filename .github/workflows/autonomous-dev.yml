@@ -58,22 +58,37 @@ jobs:
           fi
 
       - id: rate
-        name: Cron rate-limit (24h budget)
+        name: Cron rate-limit (Claude Max-aware)
         if: steps.check.outputs.paused == 'false'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -e
-          # Circuit breaker: count autonomous-dev merges in the last 24h.
-          # If > 8 (one per 3h, generous budget) skip — likely cron is
-          # spiraling. User can tune this knob if they want more.
+          # User has Claude Max → € cost is 0. Two real limits matter:
+          # (1) Max's 5h-window quota — if loop hammers Opus, blocks
+          #     user's own chat sessions
+          # (2) Velocity sanity — runaway cron should still fail loud
           DAY_AGO=$(date -u -d '24 hours ago' +%Y-%m-%dT%H:%M:%SZ)
-          COUNT=$(gh pr list --state merged --search "merged:>=$DAY_AGO" --limit 100 \
+          FIVE_HOURS_AGO=$(date -u -d '5 hours ago' +%Y-%m-%dT%H:%M:%SZ)
+
+          # Total merges in last 24h
+          TOTAL=$(gh pr list --state merged --search "merged:>=$DAY_AGO" --limit 100 \
             --json headRefName \
             | jq '[.[] | select(.headRefName | startswith("claude/auto/"))] | length' || echo 0)
-          echo "Autonomous merges in last 24h: $COUNT (budget: 8)"
-          if [ "$COUNT" -gt 8 ]; then
+
+          # Opus-mode merges in last 5h (ideate / self-improve / build-content)
+          OPUS_RECENT=$(gh pr list --state merged --search "merged:>=$FIVE_HOURS_AGO" --limit 100 \
+            --json headRefName \
+            | jq '[.[] | select(.headRefName | test("claude/auto/(ideate|self-improve|build-content)"))] | length' || echo 0)
+
+          echo "Autonomous merges last 24h: $TOTAL (cap: 25)"
+          echo "Opus-mode merges last 5h:  $OPUS_RECENT (cap: 4 to protect user's Max quota)"
+          if [ "$TOTAL" -gt 25 ]; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "Reason: 24h velocity cap reached"
+          elif [ "$OPUS_RECENT" -gt 4 ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "Reason: 5h Opus quota guard (protect user's Max session)"
           else
             echo "skip=false" >> "$GITHUB_OUTPUT"
           fi
