@@ -27,6 +27,12 @@ autonomous or manual. Update only when the user explicitly changes them.
   a GitHub Issue with log tails whenever any workflow fails. Before
   starting new work, check `mcp__github__list_issues` with label
   `ci-failure` and fix those first. Close the issue when fixed.
+- **Regular codebase audit to prevent chaos.** Every ~3rd self-improve
+  run should pick Option 6 in `mode-self-improve.md` — scan for
+  unused code, orphaned files, divergent duplicates, drift between
+  ROADMAP ticks and actual implementation, and leave a dated audit
+  note under `docs/audits/`. If chaos accumulates the game becomes
+  unmaintainable — this is non-negotiable hygiene.
 - **Friend character icons: image-to-image ONLY. HARD RULE.** Never use
   text-to-image for friend icons — likeness matters. If the user drops
   a photo in chat and you cannot save its bytes to disk (common: chat
