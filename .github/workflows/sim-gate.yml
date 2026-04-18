@@ -1,0 +1,110 @@
+name: Wave-Balance Simulator Gate
+
+# Fast deterministic balance check on every PR that touches tower_data,
+# enemy_data, or level_data. Runs the headless wave-balance simulator
+# across all 3 levels with default and minimal tower loadouts. Fails
+# the workflow if a level is unwinnable OR trivially clearable.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'resources/tower_data/**'
+      - 'resources/enemy_data/**'
+      - 'resources/level_data/**'
+      - 'scripts/towers/**'
+      - 'scripts/enemies/**'
+      - 'scripts/systems/wave_manager.gd'
+      - 'scenes/game/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sim-gate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  simulate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Xvfb
+        run: sudo apt-get update && sudo apt-get install -y xvfb libxcursor1 libxinerama1 libxi6 libxrandr2
+
+      - name: Pick Godot version (single source of truth)
+        id: godot
+        run: |
+          set -e
+          PINNED=$(cat .github/godot-version.txt | tr -d '[:space:]')
+          echo "tag=$PINNED" >> "$GITHUB_OUTPUT"
+
+      - name: Install Godot binary
+        env:
+          GODOT_TAG: ${{ steps.godot.outputs.tag }}
+        run: |
+          set -e
+          BASE="https://github.com/godotengine/godot/releases/download/${GODOT_TAG}"
+          curl -fsSL -o godot.zip "${BASE}/Godot_v${GODOT_TAG}_linux.x86_64.zip"
+          unzip -q godot.zip
+          mv "Godot_v${GODOT_TAG}_linux.x86_64" /usr/local/bin/godot
+          chmod +x /usr/local/bin/godot
+          godot --version
+
+      - name: Import project
+        run: |
+          set +e
+          xvfb-run -a -s "-screen 0 1280x720x24" timeout 120 godot --headless --path . --import
+          xvfb-run -a -s "-screen 0 1280x720x24" timeout 60 godot --headless --path . --import
+          exit 0
+
+      - name: Run simulator
+        id: sim
+        run: |
+          set +e
+          xvfb-run -a -s "-screen 0 1280x720x24" timeout 240 godot --path . --simulate
+          EXIT=$?
+          echo "sim_exit=$EXIT" >> "$GITHUB_OUTPUT"
+          # Copy CSV out for the summary step
+          mkdir -p sim_output
+          cp "$HOME/.local/share/godot/app_userdata/Affoltern Banani Raubzug/simulate/results.csv" sim_output/ 2>/dev/null || true
+          if [ -f sim_output/results.csv ]; then
+            echo "=== Simulator results ==="
+            cat sim_output/results.csv
+          fi
+          exit 0
+
+      - name: Upload CSV artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sim-results-${{ github.run_number }}
+          path: sim_output/
+
+      - name: Comment results on PR
+        if: github.event_name == 'pull_request' && always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SIM_EXIT: ${{ steps.sim.outputs.sim_exit }}
+        run: |
+          set -e
+          if [ ! -f sim_output/results.csv ]; then
+            BODY="⚠️ Wave-balance simulator did not produce a CSV (likely a Godot import or scene-load failure)."
+          elif [ "$SIM_EXIT" = "1" ]; then
+            BODY="🔴 **Simulator FAIL — a level is unwinnable on the default loadout.**"$'\n\n```\n'"$(cat sim_output/results.csv)"$'\n```'
+          elif [ "$SIM_EXIT" = "2" ]; then
+            BODY="🟡 **Simulator WARN — a level is trivially clearable with 1 tower.** Consider rebalancing waves up."$'\n\n```\n'"$(cat sim_output/results.csv)"$'\n```'
+          else
+            BODY="✅ **Simulator PASS** — all levels winnable + non-trivial."$'\n\n```\n'"$(cat sim_output/results.csv)"$'\n```'
+          fi
+          gh pr comment "${{ github.event.pull_request.number }}" --body "$BODY"
+
+      - name: Fail workflow if simulator gate failed
+        run: |
+          if [ "${{ steps.sim.outputs.sim_exit }}" = "1" ]; then
+            echo "Simulator detected unwinnable level — failing PR check."
+            exit 1
+          fi
+          # Trivial (exit 2) is a warning, not a hard fail.

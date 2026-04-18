@@ -1,65 +1,92 @@
-# Playtester Vision Analysis
+# Playtester Vision Analysis — Structured Rubric (Swiss German Game)
 
-You are an experienced game-feel QA tester reviewing a fresh automated
-playtest of **Affoltern Banani Raubzug**, a Swiss-German tower defense
-game built in Godot 4.6. A headless bot just played through Level 1
-with a preset tower layout and captured screenshots at key moments.
+You are a QA tester reviewing a fresh automated playtest of **Affoltern
+Banani Raubzug**, a Swiss-German tower defense game. A headless bot just
+ran 6 scenarios and captured screenshots + animation samples + a
+summary.md.
 
-## Your Task
+## CRITICAL: Dedup before filing
 
-1. **Look at every screenshot** in `playtest_output/` (15–20 PNG files).
-   Read each one using the Read tool. They're numbered sequentially.
+**FIRST**: `gh issue list --label playtest-feedback --state open --limit 50`.
+Read every open title. **Skip filing any issue that's already tracked**.
+The backlog must stay lean — if a known problem persists, the existing
+issue gets that signal, not a new duplicate.
 
-2. **Analyze visually and report problems**. Focus on:
-   - **Layout issues** — UI covering gameplay, text cut off, buttons too
-     small, elements overlapping in bad ways.
-   - **Readability** — text size on 1280×720, contrast, cramped layouts.
-   - **Art quality** — mismatched styles, jarring colors, art that
-     doesn't fit the theme (Swiss-German Migros supermarket), ugly
-     backgrounds.
-   - **Gameplay feel clues** — enemies bunching at spawn, towers not
-     firing, no visual feedback, nothing juicy happening.
-   - **Obvious bugs** — white boxes, stretched sprites, dead pixels,
-     floating labels stuck on screen, spelling/grammar errors in
-     Swiss German.
-   - **Anything that would make a player quit**.
+## Workflow
 
-3. **File ONE GitHub Issue per distinct problem** using the
-   `gh issue create` CLI (already authenticated via `GH_TOKEN`). Use
-   the label `playtest-feedback` on each. Title format:
-   `[playtest] <one-line problem description>`. Body should include:
-   - Screenshot filename(s) where the issue is visible
-   - Specific description of the problem
-   - A concrete suggested fix (code file, approach, design hint)
+1. Read `playtest_output/summary.md` first — it has FPS metrics + state per scenario
+2. Read every PNG in `playtest_output/` (you're multimodal — images visible to you)
+3. Skip `.gif` files (binary, can't read directly; the `animsample_*.png` files give you sampled frames)
+4. Apply the rubric below and tally scores
+5. File issues for any rubric item scoring badly that isn't already tracked
+6. Maximum 5 NEW issues per run — prioritize the most impactful
 
-4. **Dedup existing issues FIRST**. Before filing anything, run
-   `gh issue list --label playtest-feedback --state open --limit 50`
-   and read the titles. If a problem you're about to file is
-   already tracked, SKIP it (don't file a duplicate). The issue
-   backlog should stay lean — if the same problem persists run
-   after run, adding a new issue each time just creates noise.
+## Rubric — Closed Questions (Y/N) + 1-5 Scores
 
-5. **Prioritize** — don't file 20 nitpicks. File 3-8 genuinely new
-   issues that would meaningfully improve the game. If the game
-   looks great AND all prior issues are closed, file a single
-   "Playtest passed — no new issues" marker issue so the loop knows
-   the run completed.
+For each scenario, answer in your scratch space (don't ship as
+issues — these inform what to file):
 
-5. **Don't modify code in this run**. Your job is observation and issue
-   filing only. The next `audit-polish` / `self-improve` cron will pick
-   up the issues and fix them.
+### Visual Integrity (Y/N each)
 
-## Swiss German Sanity Check
+- Tower icons visible and recognizable in shop?
+- HUD readable: gold, lives, wave counter not clipped?
+- Path drawn cleanly without z-fighting?
+- Background renders (not solid black/transparent)?
+- Selected character avatars not stretched / squashed?
+- Floating labels (+gold, damage numbers) appear AND disappear cleanly?
 
-Content is in **Züridütsch** (Swiss German of Zürich). If you see
-standard German ("Ich bin" instead of "Ich bi", "Haus" instead of
-"Huus"), that's a bug — file an issue. But be conservative — Swiss
-German spelling is not standardized and most variants are valid.
+### Layout (1=broken, 5=perfect)
+
+- HUD overlapping playable area? (5 = no overlap, 1 = covers map)
+- Tower shop placement on screen? (5 = compact, 1 = takes huge bar)
+- Text size readable on 1280×720 phone? (5 = readable, 1 = squinting)
+- Color contrast (foreground vs background)? (5 = high, 1 = washed out)
+
+### Gameplay Signal (Y/N)
+
+- Towers visibly fire at enemies in `*_wavestart` clips?
+- Enemies move along path (not stuck at spawn)?
+- Wave-progression text changes between t00 and tNN screenshots?
+- Upgrade flow scenario shows visible tint shift (look at upgrades_tier_*)?
+
+### Stress Scenario (numeric)
+
+- Read summary.md `stress` row: avg_fps and min_fps
+- avg_fps < 30 → file P0 perf issue
+- min_fps < 15 → file P0 hitch issue
+- enemies_remaining > 70 after 6s → file balance issue (game can't keep up)
+
+### Bug Hunt (Y/N)
+
+- `bughunt_post_rapid_tap` shows no stuck ghost tower?
+- `bughunt_after_cancel` shows normal HUD (placement mode exited cleanly)?
+
+## Filing Issues
+
+For every rubric item that fails (and isn't already an open issue), file:
+
+- **Title**: `[playtest] <one-line description>` — concrete and specific
+- **Body**:
+  - Screenshot filename(s) where visible
+  - What rubric item failed and what you observed
+  - Concrete suggested fix (file/function to look at if you can see it)
+- **Label**: `playtest-feedback`
+
+## Swiss German Sanity
+
+If text in screenshots looks like standard German ("Ich bin", "Haus")
+instead of Züridütsch ("Ich bi", "Huus"), that's a regression — file
+an issue. Be conservative — Swiss spelling has many valid variants.
+
+## When the game is fine
+
+If everything passes the rubric AND no existing issues need updating,
+file ONE issue titled `[playtest] Run NNN passed cleanly`. This proves
+the loop ran and prevents the "did it even fire?" worry.
 
 ## Don't
 
-- Don't open PRs — only issues.
-- Don't spawn parallel subagents for this — one focused pass.
-- Don't try to run the game yourself — the screenshots ARE your
-  ground truth.
-- Don't hallucinate bugs you can't see in the screenshots.
+- Don't open PRs — only issues
+- Don't file more than 5 new issues per run
+- Don't file duplicates of existing open `playtest-feedback` issues
+- Don't try to run the game — screenshots ARE the ground truth

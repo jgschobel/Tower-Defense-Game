@@ -40,6 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       paused: ${{ steps.check.outputs.paused }}
+      skip: ${{ steps.rate.outputs.skip }}
       mode: ${{ steps.rotate.outputs.mode }}
       model: ${{ steps.rotate.outputs.model }}
       art_enabled: ${{ steps.rotate.outputs.art_enabled }}
@@ -56,9 +57,30 @@ jobs:
             echo "paused=false" >> "$GITHUB_OUTPUT"
           fi
 
+      - id: rate
+        name: Cron rate-limit (24h budget)
+        if: steps.check.outputs.paused == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          # Circuit breaker: count autonomous-dev merges in the last 24h.
+          # If > 8 (one per 3h, generous budget) skip — likely cron is
+          # spiraling. User can tune this knob if they want more.
+          DAY_AGO=$(date -u -d '24 hours ago' +%Y-%m-%dT%H:%M:%SZ)
+          COUNT=$(gh pr list --state merged --search "merged:>=$DAY_AGO" --limit 100 \
+            --json headRefName \
+            | jq '[.[] | select(.headRefName | startswith("claude/auto/"))] | length' || echo 0)
+          echo "Autonomous merges in last 24h: $COUNT (budget: 8)"
+          if [ "$COUNT" -gt 8 ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - id: rotate
         name: Pick task mode + model
-        if: steps.check.outputs.paused == 'false'
+        if: steps.check.outputs.paused == 'false' && steps.rate.outputs.skip == 'false'
         env:
           STABILITY_KEY: ${{ secrets.STABILITY_API_KEY }}
         run: |
@@ -99,7 +121,7 @@ jobs:
 
   run-claude:
     needs: preflight
-    if: needs.preflight.outputs.paused == 'false'
+    if: needs.preflight.outputs.paused == 'false' && needs.preflight.outputs.skip == 'false'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
