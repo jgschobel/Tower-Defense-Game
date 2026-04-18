@@ -16,6 +16,8 @@ on:
       - "Art Request Generator"
       - "Daily Cleanup"
       - "Weekly Digest"
+      - "Wave-Balance Simulator Gate"
+      - "PR Preview Deploy"
     types: [completed]
 
 permissions:

@@ -1,0 +1,100 @@
+name: PR Preview Deploy
+
+# Builds the HTML5 export for any open PR and pushes it to a per-PR
+# subdirectory on the gh-pages branch (e.g. /pr-42/). User can then
+# play the candidate build alongside main at:
+#   jgschobel.github.io/Tower-Defense-Game/pr-42/
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/**'
+      - 'scenes/**'
+      - 'resources/**'
+      - 'project.godot'
+      - 'export_presets.cfg'
+      - 'assets/**'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: pr-preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pick Godot version
+        id: godot
+        run: |
+          set -e
+          PINNED=$(cat .github/godot-version.txt | tr -d '[:space:]')
+          echo "tag=$PINNED" >> "$GITHUB_OUTPUT"
+
+      - name: Install Godot binary + templates
+        env:
+          GODOT_TAG: ${{ steps.godot.outputs.tag }}
+        run: |
+          set -e
+          BASE="https://github.com/godotengine/godot/releases/download/${GODOT_TAG}"
+          curl -fsSL -o godot.zip "${BASE}/Godot_v${GODOT_TAG}_linux.x86_64.zip"
+          unzip -q godot.zip
+          mv "Godot_v${GODOT_TAG}_linux.x86_64" /usr/local/bin/godot
+          chmod +x /usr/local/bin/godot
+
+          curl -fsSL -o templates.tpz "${BASE}/Godot_v${GODOT_TAG}_export_templates.tpz"
+          VER_DIR="$(echo "${GODOT_TAG}" | sed 's/-/./g')"
+          mkdir -p "$HOME/.local/share/godot/export_templates/${VER_DIR}"
+          unzip -q templates.tpz -d /tmp/templates
+          mv /tmp/templates/templates/* "$HOME/.local/share/godot/export_templates/${VER_DIR}/"
+
+      - name: Import + export
+        run: |
+          set +e
+          mkdir -p build/web
+          timeout 120 godot --headless --path . --import
+          timeout 60  godot --headless --path . --import
+          set -e
+          godot --headless --path . --export-release "Web" build/web/index.html
+
+      - name: Push to gh-pages under pr-N/
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUM: ${{ github.event.pull_request.number }}
+        run: |
+          set -e
+          # Clone gh-pages branch (or create empty if missing)
+          git clone --branch gh-pages --depth 1 "https://x-access-token:$GH_TOKEN@github.com/${{ github.repository }}.git" gh-pages 2>/dev/null \
+            || git clone --depth 1 "https://x-access-token:$GH_TOKEN@github.com/${{ github.repository }}.git" gh-pages
+          cd gh-pages
+          # If we cloned default branch (no gh-pages yet), create orphan
+          if [ ! -d ".git" ] || ! git rev-parse --abbrev-ref HEAD | grep -q gh-pages; then
+            git checkout --orphan gh-pages
+            git rm -rf . 2>/dev/null || true
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm -rf "pr-${PR_NUM}"
+          mkdir -p "pr-${PR_NUM}"
+          cp -r ../build/web/* "pr-${PR_NUM}/"
+          # Add a small index landing page if missing at root
+          if [ ! -f index.html ]; then
+            echo "<h1>Tower Defense Game — PR Previews</h1><p>Visit /pr-N/ for a specific PR build.</p>" > index.html
+          fi
+          git add "pr-${PR_NUM}" index.html
+          git commit -m "preview: PR #${PR_NUM}" || echo "no changes"
+          git push origin gh-pages
+
+      - name: Comment preview link on PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUM: ${{ github.event.pull_request.number }}
+        run: |
+          URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/pr-${PR_NUM}/"
+          gh pr comment "${PR_NUM}" --body "🎮 **Preview build** for this PR: $URL — refresh after a minute for the latest commit."
