@@ -14,6 +14,10 @@ concurrency:
   group: pages
   cancel-in-progress: true
 
+env:
+  GODOT_VERSION: 4.6.0
+  GODOT_VERSION_TYPE: stable
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -22,31 +26,41 @@ jobs:
         with:
           lfs: true
 
-      - name: Set up Godot 4.6
-        uses: chickensoft-games/setup-godot@v2
-        with:
-          version: 4.6.0
-          use-dotnet: false
+      - name: Install Godot + export templates (manual, version-exact)
+        run: |
+          set -e
+          GODOT_VER="${GODOT_VERSION}-${GODOT_VERSION_TYPE}"
+          echo "Installing Godot ${GODOT_VER}"
 
-      - name: Import project (generates .import/)
+          # Download Godot headless binary
+          curl -sSL -o godot.zip \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-${GODOT_VERSION_TYPE}/Godot_v${GODOT_VERSION}-${GODOT_VERSION_TYPE}_linux.x86_64.zip"
+          unzip -q godot.zip
+          mv "Godot_v${GODOT_VERSION}-${GODOT_VERSION_TYPE}_linux.x86_64" /usr/local/bin/godot
+          chmod +x /usr/local/bin/godot
+          godot --version
+
+          # Download matching export templates
+          curl -sSL -o templates.tpz \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-${GODOT_VERSION_TYPE}/Godot_v${GODOT_VERSION}-${GODOT_VERSION_TYPE}_export_templates.tpz"
+          mkdir -p "$HOME/.local/share/godot/export_templates/${GODOT_VER}"
+          unzip -q templates.tpz -d /tmp/templates
+          mv /tmp/templates/templates/* "$HOME/.local/share/godot/export_templates/${GODOT_VER}/"
+          ls "$HOME/.local/share/godot/export_templates/${GODOT_VER}/" | head -5
+
+      - name: Import project resources (first pass)
         run: |
           mkdir -p build/web
-          godot --headless --import --quit || true
+          # Godot 4 import: open the project, import, then exit via timeout
+          timeout 180 godot --headless --path . --import || true
+          # Second pass in case first pass had to generate some .import files
+          timeout 60 godot --headless --path . --import || true
 
       - name: Export Web build
         run: |
-          godot --headless --export-release "Web" build/web/index.html
-
-      - name: Add COOP/COEP headers for SharedArrayBuffer
-        run: |
-          # Godot 4 web export needs cross-origin isolation headers
-          cat > build/web/_headers <<'EOF'
-/*
-  Cross-Origin-Opener-Policy: same-origin
-  Cross-Origin-Embedder-Policy: require-corp
-EOF
-          # GitHub Pages doesn't honor _headers, so inject via service worker instead
-          # (done by Godot's PWA if enabled; otherwise the game may still work without SAB)
+          set -e
+          godot --headless --path . --export-release "Web" build/web/index.html
+          ls -la build/web/
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
