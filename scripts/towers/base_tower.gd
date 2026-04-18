@@ -8,7 +8,9 @@ signal tower_upgraded(tower: Node2D, new_level: int)
 
 @export var data: TowerData
 
-var upgrade_level: int = 0
+var upgrade_level: int = 0          # legacy linear
+var path_a_tier: int = 0            # branching, 0-3
+var path_b_tier: int = 0            # branching, 0-3
 var current_target: BaseEnemy = null
 var attack_timer: float = 0.0
 var is_placed: bool = false
@@ -46,13 +48,29 @@ func _recalculate_stats() -> void:
 	effective_range = data.attack_range
 	effective_speed = data.attack_speed
 
-	for i in upgrade_level:
-		if i < data.upgrade_damage_bonus.size():
-			effective_damage += data.upgrade_damage_bonus[i]
-		if i < data.upgrade_range_bonus.size():
-			effective_range += data.upgrade_range_bonus[i]
-		if i < data.upgrade_speed_bonus.size():
-			effective_speed += data.upgrade_speed_bonus[i]
+	if data.has_branching_upgrades():
+		for i in path_a_tier:
+			if i < data.path_a_damage_bonus.size():
+				effective_damage += data.path_a_damage_bonus[i]
+			if i < data.path_a_range_bonus.size():
+				effective_range += data.path_a_range_bonus[i]
+			if i < data.path_a_speed_bonus.size():
+				effective_speed += data.path_a_speed_bonus[i]
+		for i in path_b_tier:
+			if i < data.path_b_damage_bonus.size():
+				effective_damage += data.path_b_damage_bonus[i]
+			if i < data.path_b_range_bonus.size():
+				effective_range += data.path_b_range_bonus[i]
+			if i < data.path_b_speed_bonus.size():
+				effective_speed += data.path_b_speed_bonus[i]
+	else:
+		for i in upgrade_level:
+			if i < data.upgrade_damage_bonus.size():
+				effective_damage += data.upgrade_damage_bonus[i]
+			if i < data.upgrade_range_bonus.size():
+				effective_range += data.upgrade_range_bonus[i]
+			if i < data.upgrade_speed_bonus.size():
+				effective_speed += data.upgrade_speed_bonus[i]
 
 	# Apply buff from nearby support towers
 	var buff_damage := 0.0
@@ -237,7 +255,11 @@ func upgrade() -> bool:
 
 
 func sell() -> void:
-	var refund := data.get_sell_value(upgrade_level)
+	var refund: int
+	if data.has_branching_upgrades():
+		refund = data.get_sell_value_branched(path_a_tier, path_b_tier)
+	else:
+		refund = data.get_sell_value(upgrade_level)
 	CurrencyManager.add_gold(refund)
 	tower_sold.emit(self)
 	is_placed = false  # stop attacking
@@ -257,6 +279,100 @@ func get_upgrade_cost() -> int:
 	if upgrade_level >= data.upgrade_costs.size():
 		return -1
 	return data.upgrade_costs[upgrade_level]
+
+
+# -- Branching upgrades (BTD5-style) --
+
+func can_upgrade_path(path_letter: String) -> bool:
+	if not data or not data.has_branching_upgrades():
+		return false
+	var tier := path_a_tier if path_letter == "a" else path_b_tier
+	var costs: Array[int] = data.path_a_costs if path_letter == "a" else data.path_b_costs
+	if tier >= costs.size():
+		return false
+	return CurrencyManager.can_afford(costs[tier])
+
+
+func get_path_upgrade_cost(path_letter: String) -> int:
+	if not data or not data.has_branching_upgrades():
+		return -1
+	var tier := path_a_tier if path_letter == "a" else path_b_tier
+	var costs: Array[int] = data.path_a_costs if path_letter == "a" else data.path_b_costs
+	if tier >= costs.size():
+		return -1
+	return costs[tier]
+
+
+func get_path_next_tier_name(path_letter: String) -> String:
+	if not data or not data.has_branching_upgrades():
+		return ""
+	var tier := path_a_tier if path_letter == "a" else path_b_tier
+	var names: Array[String] = data.path_a_tier_names if path_letter == "a" else data.path_b_tier_names
+	if tier >= names.size():
+		return ""
+	return names[tier]
+
+
+func upgrade_path(path_letter: String) -> bool:
+	if not can_upgrade_path(path_letter):
+		return false
+	var cost := get_path_upgrade_cost(path_letter)
+	if not CurrencyManager.spend_gold(cost):
+		return false
+	if path_letter == "a":
+		path_a_tier += 1
+	else:
+		path_b_tier += 1
+	upgrade_level = path_a_tier + path_b_tier  # keep legacy counter in sync for sell_value, etc.
+	_recalculate_stats()
+	_update_range_collider()
+	_apply_path_tint()
+	tower_upgraded.emit(self, upgrade_level)
+	SfxManager.play_upgrade()
+
+	if sprite:
+		var upg_tween := create_tween()
+		upg_tween.tween_property(sprite, "scale", sprite.scale * 1.3, 0.15)
+		upg_tween.tween_property(sprite, "scale", sprite.scale, 0.2)
+
+	var upg_label := Label.new()
+	var tier_name := ""
+	if path_letter == "a" and path_a_tier > 0 and path_a_tier - 1 < data.path_a_tier_names.size():
+		tier_name = data.path_a_tier_names[path_a_tier - 1]
+	elif path_letter == "b" and path_b_tier > 0 and path_b_tier - 1 < data.path_b_tier_names.size():
+		tier_name = data.path_b_tier_names[path_b_tier - 1]
+	upg_label.text = tier_name if tier_name != "" else "UPGRÄDET!"
+	upg_label.add_theme_font_size_override("font_size", 18)
+	upg_label.add_theme_color_override("font_color", Color(1, 0.85, 0.1))
+	upg_label.add_theme_color_override("font_outline_color", Color.BLACK)
+	upg_label.add_theme_constant_override("outline_size", 3)
+	upg_label.position = Vector2(-80, -60)
+	upg_label.z_index = 20
+	add_child(upg_label)
+	var lbl_tween := create_tween()
+	lbl_tween.set_parallel(true)
+	lbl_tween.tween_property(upg_label, "position:y", -100.0, 1.0)
+	lbl_tween.tween_property(upg_label, "modulate:a", 0.0, 1.0)
+	lbl_tween.chain().tween_callback(upg_label.queue_free)
+
+	return true
+
+
+func _apply_path_tint() -> void:
+	if not sprite or not data or not data.has_branching_upgrades():
+		return
+	# Blend path-A and path-B tints by their tier ratios (3 = full tint)
+	var a_weight: float = float(path_a_tier) / 3.0
+	var b_weight: float = float(path_b_tier) / 3.0
+	var total: float = a_weight + b_weight
+	if total <= 0.01:
+		sprite.modulate = Color.WHITE
+		return
+	var a_norm := a_weight / total
+	var b_norm := b_weight / total
+	var strength: float = clampf(max(a_weight, b_weight), 0.0, 1.0)
+	var blended := data.path_a_tint * a_norm + data.path_b_tint * b_norm
+	sprite.modulate = Color.WHITE.lerp(blended, strength * 0.6)
 
 
 func show_range(visible_flag: bool) -> void:
