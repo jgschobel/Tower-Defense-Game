@@ -11,6 +11,8 @@ on:
       - "Autonomous Development Loop"
       - "Deploy Web Build to GitHub Pages"
       - "Autonomous Playtester"
+      - "Photo → Character Icon"
+      - "Photo Inbox Processor"
     types: [completed]
 
 permissions:
