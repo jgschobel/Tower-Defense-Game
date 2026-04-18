@@ -156,7 +156,7 @@ func die() -> void:
 	tween.tween_property(self, "scale", Vector2.ZERO, 0.35).set_ease(Tween.EASE_IN)
 	tween.tween_property(self, "rotation", randf_range(-1.5, 1.5), 0.35)
 	tween.tween_property(self, "modulate:a", 0.0, 0.35)
-	tween.chain().tween_callback(queue_free)
+	tween.chain().tween_callback(_return_to_pool_or_free)
 
 
 func _reached_end() -> void:
@@ -165,7 +165,33 @@ func _reached_end() -> void:
 	is_dead = true
 	GameManager.lose_life()
 	enemy_reached_end.emit(self)
-	queue_free()
+	_return_to_pool_or_free()
+
+
+func _return_to_pool_or_free() -> void:
+	# Pool release if available — falls back to queue_free otherwise
+	if EnemyPool and EnemyPool.has_method("release"):
+		EnemyPool.release(self)
+	else:
+		queue_free()
+
+
+func reset_for_pool() -> void:
+	# Called by EnemyPool when this enemy is about to be reused.
+	# Resets all transient runtime state so the next spawn is clean.
+	if data:
+		_apply_data()
+	is_dead = false
+	progress = 0.0
+	progress_ratio = 0.0
+	slow_factor = 1.0
+	slow_timer = 0.0
+	modulate = Color.WHITE
+	scale = Vector2.ONE
+	rotation = 0.0
+	# Reapply visual offset for path-bend separation (#48)
+	v_offset = randf_range(-10.0, 10.0)
+	h_offset = randf_range(-6.0, 6.0)
 
 
 func _update_visual() -> void:

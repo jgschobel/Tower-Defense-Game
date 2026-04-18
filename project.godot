@@ -24,6 +24,7 @@ SfxManager="*res://scripts/systems/sfx_manager.gd"
 AutoPlaytest="*res://scripts/playtest/auto_playtest.gd"
 WaveSimulator="*res://scripts/playtest/wave_simulator.gd"
 ProjectilePool="*res://scripts/systems/projectile_pool.gd"
+EnemyPool="*res://scripts/systems/enemy_pool.gd"
 
 [display]
 
