@@ -39,6 +39,7 @@ func _ready() -> void:
 	hud.auto_wave_toggled.connect(_on_auto_wave_toggled)
 
 	tower_placement.tower_placed.connect(_on_tower_placed)
+	tower_placement.placement_invalid.connect(_on_placement_invalid)
 
 	GameManager.game_over.connect(_on_game_over)
 
@@ -105,6 +106,10 @@ func _on_placement_cancelled() -> void:
 
 func _on_tower_placed(_tower: Node2D) -> void:
 	hud.set_placing(false)
+
+
+func _on_placement_invalid(reason: String) -> void:
+	hud.show_toast(reason)
 
 
 func _on_next_wave_requested() -> void:

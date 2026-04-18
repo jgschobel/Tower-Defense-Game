@@ -17,6 +17,7 @@ var gold_reward: int = 10
 var slow_factor: float = 1.0
 var slow_timer: float = 0.0
 var is_dead: bool = false
+var _health_bar_tween: Tween = null
 
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var health_bar: ProgressBar = $HealthBar
@@ -301,9 +302,14 @@ func _get_base_color() -> Color:
 
 
 func _update_health_bar() -> void:
-	if health_bar:
-		health_bar.value = (health / max_health) * 100.0
-		health_bar.visible = health < max_health
+	if not health_bar:
+		return
+	health_bar.visible = health < max_health
+	var target := (health / max_health) * 100.0
+	if _health_bar_tween:
+		_health_bar_tween.kill()
+	_health_bar_tween = create_tween()
+	_health_bar_tween.tween_property(health_bar, "value", target, 0.2)
 
 
 func _heal_nearby() -> void:

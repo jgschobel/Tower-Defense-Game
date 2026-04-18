@@ -6,6 +6,7 @@ extends Node2D
 
 signal tower_placed(tower: Node2D)
 signal placement_cancelled
+signal placement_invalid(reason: String)
 
 @export var min_tower_spacing: float = 60.0
 @export var min_path_distance: float = 45.0
@@ -107,7 +108,9 @@ func _update_ghost_position(screen_pos: Vector2) -> void:
 func _try_place(screen_pos: Vector2) -> void:
 	var world_pos := get_canvas_transform().affine_inverse() * screen_pos
 
-	if not _can_place_at(world_pos):
+	var error := _get_placement_error(world_pos)
+	if error != "":
+		placement_invalid.emit(error)
 		return
 
 	if not CurrencyManager.spend_gold(selected_tower_data.buy_cost):
@@ -128,24 +131,24 @@ func _try_place(screen_pos: Vector2) -> void:
 
 
 func _can_place_at(pos: Vector2) -> bool:
-	# Check distance to other towers
+	return _get_placement_error(pos) == ""
+
+
+func _get_placement_error(pos: Vector2) -> String:
 	for tower_node in placed_towers:
 		if is_instance_valid(tower_node):
 			if pos.distance_to(tower_node.global_position) < min_tower_spacing:
-				return false
+				return "Z'nöch am Turm!"
 
-	# Check distance to enemy path
 	for path_point in _path_points:
 		if pos.distance_to(path_point) < min_path_distance:
-			return false
+			return "Z'nöch am Wäg!"
 
-	# Keep within screen bounds (with margin)
-	# Dynamic bounds based on viewport
 	var vp_size := get_viewport_rect().size
 	if pos.x < 30 or pos.x > vp_size.x - 30 or pos.y < 55 or pos.y > vp_size.y - 160:
-		return false
+		return "Am Rand bleibe!"
 
-	return true
+	return ""
 
 
 func _on_tower_sold(tower: Node2D) -> void:
