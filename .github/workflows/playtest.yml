@@ -33,8 +33,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Xvfb + audio deps
-        run: sudo apt-get update && sudo apt-get install -y xvfb libxcursor1 libxinerama1 libxi6 libxrandr2
+      - name: Install Xvfb + audio deps + ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y xvfb libxcursor1 libxinerama1 libxi6 libxrandr2 ffmpeg imagemagick
 
       - name: Pick latest stable Godot tag
         id: godot
@@ -76,7 +76,7 @@ jobs:
             timeout 120 godot --path . --playtest
           echo "bot exit=$?"
 
-      - name: Collect screenshots + summary
+      - name: Collect screenshots + summary + stitch GIFs
         id: collect
         run: |
           set -e
@@ -88,10 +88,30 @@ jobs:
             cp "$SRC"/*.md "$OUT"/ 2>/dev/null || true
             cp "$SRC"/*.log "$OUT"/ 2>/dev/null || true
           fi
+
+          # Stitch each anim_<tag>_*.png group into a GIF for animation-quality
+          # review. The vision agent can't see GIFs natively, but the workflow
+          # extracts a few sampled frames into the same directory so it can.
+          for tag_full in $(ls "$OUT"/anim_*_000.png 2>/dev/null | sed 's|.*anim_||; s|_000\.png$||'); do
+            echo "Stitching GIF: $tag_full"
+            ffmpeg -y -framerate 8 -i "$OUT/anim_${tag_full}_%03d.png" \
+              -vf 'fps=8,scale=640:-1:flags=lanczos' \
+              "$OUT/anim_${tag_full}.gif" 2>&1 | tail -3 || true
+            # Also extract 4 evenly-spaced sample frames for the vision agent
+            # to inspect as PNGs (since it can't see GIFs directly)
+            for frame in 000 007 015 023; do
+              cp "$OUT/anim_${tag_full}_${frame}.png" \
+                 "$OUT/animsample_${tag_full}_f${frame}.png" 2>/dev/null || true
+            done
+            # Clean up the raw frames — keep only the GIF + sample frames
+            rm -f "$OUT/anim_${tag_full}"_*.png 2>/dev/null || true
+          done
+
           COUNT=$(ls -1 "$OUT"/*.png 2>/dev/null | wc -l | tr -d ' ')
-          echo "Captured $COUNT screenshots"
+          GIFS=$(ls -1 "$OUT"/*.gif 2>/dev/null | wc -l | tr -d ' ')
+          echo "Captured $COUNT PNGs, $GIFS GIFs"
           echo "count=$COUNT" >> "$GITHUB_OUTPUT"
-          ls -la "$OUT/" || true
+          ls -la "$OUT/" | head -60 || true
           if [ -f "$OUT/summary.md" ]; then
             echo "=== playtest summary ==="
             cat "$OUT/summary.md"
@@ -113,19 +133,36 @@ jobs:
           prompt: |
             $(cat .github/playtest/analyze-prompt.md)
 
-            ## Artifacts this run
+            ## Artifacts this run (playtester v3)
 
-            - All PNG screenshots in ./playtest_output/ (3 scenarios:
-              healthy / sparse / empty — each captures menu, level-load,
-              towers-placed, then 8 in-wave shots + final)
-            - ./playtest_output/summary.md — per-scenario metrics
-              (avg/min FPS, final lives, state, duration)
-            - ./playtest_output/fps.log — per-frame FPS samples if present
+            Six scenarios ran:
+            - **L1/L2/L3_healthy**: a sensible tower comp on each of the
+              3 levels. Screenshots show menu → load → placed → wave
+              progression → final.
+            - **upgrades**: buys Lemurius, walks Path A tiers 1-3 then
+              adds Path B tiers. Each state screenshotted — inspect
+              tint shifts and overall tower look.
+            - **stress**: spawns 80 enemies at once. Watch FPS in
+              summary.md (< 30 = perf regression).
+            - **bughunt**: rapid invalid-placement taps. Should fire
+              placement toasts, no crashes or stuck ghosts.
 
-            Read the summary.md first to understand what the three
-            scenarios did, then read every PNG using the Read tool (you
-            are multimodal — images are visible to you). File issues as
-            instructed.
+            Files in ./playtest_output/:
+            - `shot_NNN_<tag>.png` — regular snapshots (read each one)
+            - `animsample_<tag>_fNNN.png` — 4 sampled frames from each
+              animation clip (you can't see GIFs natively, but these
+              let you inspect motion quality)
+            - `anim_<tag>.gif` — the full animated clip (human-viewable
+              in the workflow artifact; skip reading these, they're
+              binary)
+            - `summary.md` — per-scenario metrics table + interpretation
+              hints. READ THIS FIRST.
+            - `fps.log` — per-frame FPS samples
+
+            File one GitHub Issue per distinct problem with label
+            `playtest-feedback`. Keep it tight — 3-8 real issues, not
+            20 nitpicks. Check the FPS numbers in summary.md; if the
+            stress scenario is under 30 FPS, that's a P0 perf issue.
 
             The `gh` CLI is preconfigured with GH_TOKEN.
           claude_args: |

@@ -1,63 +1,39 @@
 extends Node
 
-## Autonomous playtester. Activated when Godot is launched with --playtest.
-## Drives the game through multiple scripted scenarios, captures screenshots
-## every N seconds, logs FPS each frame, writes a summary text file, then
-## exits.
+## Autonomous playtester v3. Activated when Godot is launched with --playtest.
+## Runs 6 scenarios across all 3 levels, upgrade flow, stress test, bug hunt.
+## Captures regular screenshots plus dense "anim_*" frames for GIF stitching.
+## Writes per-scenario metrics to summary.md.
 ##
-## Screenshots + logs go to user://playtest/ and are picked up by the
-## playtest GitHub Actions workflow, which passes them to a vision agent
-## that files feedback issues.
+## Output: user://playtest/*.png, anim_*.png (GIF source), summary.md, fps.log
+## Picked up by .github/workflows/playtest.yml and passed to the vision agent.
 
 const SHOT_DIR := "user://playtest/"
-const FPS_LOG := "user://playtest/fps.log"
 const SUMMARY_FILE := "user://playtest/summary.md"
+const FPS_LOG := "user://playtest/fps.log"
 const SHOT_INTERVAL := 2.5
-const MAX_SHOTS_PER_SCENARIO := 8
-
-# Three scenarios exercise different paths through the game.
-# Scenario 1: healthy play — good tower comp, expected to survive
-# Scenario 2: sparse play — one tower only, expected to struggle
-# Scenario 3: empty play — no towers placed, prove enemies reach the end
-const SCENARIOS: Array = [
-	{
-		"name": "healthy",
-		"level": 1,
-		"towers": [
-			{ "id": "basic",  "pos": Vector2(320, 430) },
-			{ "id": "basic",  "pos": Vector2(620, 260) },
-			{ "id": "sniper", "pos": Vector2(900, 430) },
-			{ "id": "splash", "pos": Vector2(460, 520) },
-		],
-	},
-	{
-		"name": "sparse",
-		"level": 1,
-		"towers": [
-			{ "id": "basic", "pos": Vector2(600, 400) },
-		],
-	},
-	{
-		"name": "empty",
-		"level": 1,
-		"towers": [],
-	},
-]
+const ANIM_INTERVAL := 0.12     # ~8 FPS for GIF
+const MAX_SHOTS_PER_SCENARIO := 6
+const ANIM_FRAMES := 24          # ~3s animation clip
+const STRESS_ENEMY_COUNT := 80
 
 var _active: bool = false
 var _shot_count: int = 0
+var _anim_count: int = 0
 var _scenario_name: String = ""
 var _fps_samples: Array[float] = []
 var _scenario_summaries: Array[Dictionary] = []
+var _start_ms: int = 0
 
 
 func _ready() -> void:
 	var args := OS.get_cmdline_args()
 	if "--playtest" in args or "--headless-playtest" in args:
 		_active = true
-		print("[playtest] bot activated — 3 scenarios")
+		_start_ms = Time.get_ticks_msec()
+		print("[playtest v3] bot activated — 6 scenarios")
 		DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(SHOT_DIR))
-		call_deferred("_run_all_scenarios")
+		call_deferred("_run_all")
 
 
 func _process(_delta: float) -> void:
@@ -65,102 +41,245 @@ func _process(_delta: float) -> void:
 		_fps_samples.append(Engine.get_frames_per_second())
 
 
-func _run_all_scenarios() -> void:
+func _run_all() -> void:
 	await get_tree().process_frame
 	_snapshot("00_menu")
 
-	for scen in SCENARIOS:
-		_scenario_name = scen.name
-		_fps_samples.clear()
-		var start_time := Time.get_ticks_msec()
-		await _run_scenario(scen)
-		var elapsed_ms: int = Time.get_ticks_msec() - start_time
-		var avg_fps: float = 0.0
-		if _fps_samples.size() > 0:
-			var sum := 0.0
-			for v in _fps_samples:
-				sum += v
-			avg_fps = sum / _fps_samples.size()
-		var min_fps: float = 9999.0
-		for v in _fps_samples:
-			if v > 0.0 and v < min_fps:
-				min_fps = v
-		_scenario_summaries.append({
-			"name": scen.name,
-			"level": scen.level,
-			"towers": scen.towers.size(),
-			"elapsed_ms": elapsed_ms,
-			"avg_fps": avg_fps,
-			"min_fps": min_fps,
-			"final_lives": GameManager.lives,
-			"final_gold": CurrencyManager.gold,
-			"final_state": GameManager.current_state,
-			"enemies_remaining": _count_enemies_remaining(),
-		})
-		# Clean slate between scenarios
-		_cleanup_scene()
-		await get_tree().create_timer(0.3).timeout
+	await _run_healthy_level(1)
+	await _run_healthy_level(2)
+	await _run_healthy_level(3)
+	await _run_upgrade_flow()
+	await _run_stress_test()
+	await _run_bug_hunt()
 
 	_write_summary()
-	print("[playtest] done — %d screenshots across %d scenarios" % [_shot_count, SCENARIOS.size()])
-	await get_tree().create_timer(0.5).timeout
+	print("[playtest v3] done — %d snapshots, %d anim frames in %.1fs" % [
+		_shot_count, _anim_count, _elapsed()
+	])
+	await get_tree().create_timer(0.4).timeout
 	get_tree().quit(0)
 
 
-func _run_scenario(scen: Dictionary) -> void:
-	print("[playtest] starting scenario: %s" % scen.name)
-	GameManager.current_level = scen.level
-	GameManager.start_level(scen.level)
-	var level_path := "res://scenes/game/level_%d.tscn" % scen.level
-	get_tree().change_scene_to_file(level_path)
+# --- Scenario 1-3: Healthy play at each level ---
 
+func _run_healthy_level(level_id: int) -> void:
+	_scenario_name = "L%d_healthy" % level_id
+	_fps_samples.clear()
+	var t0 := Time.get_ticks_msec()
+
+	GameManager.current_level = level_id
+	GameManager.start_level(level_id)
+	get_tree().change_scene_to_file("res://scenes/game/level_%d.tscn" % level_id)
 	await get_tree().create_timer(1.5).timeout
-	_snapshot("%s_level_loaded" % scen.name)
+	_snapshot("%s_load" % _scenario_name)
 
 	var game_root := get_tree().current_scene
-	for entry in scen.towers:
+	var placements := _placements_for_level(level_id)
+	for entry in placements:
 		var data_path := "res://resources/tower_data/%s.tres" % entry.id
 		if ResourceLoader.exists(data_path):
-			var tower_data = load(data_path)
-			if CurrencyManager.can_afford(tower_data.buy_cost):
-				_instantiate_tower(game_root, tower_data, entry.pos)
+			var td = load(data_path)
+			if CurrencyManager.can_afford(td.buy_cost):
+				_instantiate_tower(game_root, td, entry.pos)
 				await get_tree().create_timer(0.15).timeout
 
 	await get_tree().create_timer(0.4).timeout
-	_snapshot("%s_towers_placed" % scen.name)
+	_snapshot("%s_placed" % _scenario_name)
 
-	var wave_manager := game_root.get_node_or_null("WaveManager") as Node
-	if wave_manager and wave_manager.has_method("start_next_wave"):
-		wave_manager.start_next_wave()
+	var wm := game_root.get_node_or_null("WaveManager") as Node
+	if wm and wm.has_method("start_next_wave"):
+		wm.start_next_wave()
+
+	# Capture a dense animation clip at the wave start (3s at ~8 FPS)
+	await _capture_anim_clip("%s_wavestart" % _scenario_name)
 
 	for i in MAX_SHOTS_PER_SCENARIO:
 		await get_tree().create_timer(SHOT_INTERVAL).timeout
-		_snapshot("%s_wave_t%02d" % [scen.name, i])
+		_snapshot("%s_t%02d" % [_scenario_name, i])
 		if GameManager.current_state == GameManager.GameState.LOST \
 		or GameManager.current_state == GameManager.GameState.WON:
 			break
 
-	_snapshot("%s_final" % scen.name)
+	_snapshot("%s_final" % _scenario_name)
+	_record_scenario(t0)
+	_cleanup_scene()
+	await get_tree().create_timer(0.3).timeout
 
 
-func _cleanup_scene() -> void:
-	# Clear the current level so the next scenario starts fresh
-	for e in get_tree().get_nodes_in_group("enemies"):
-		e.queue_free()
-	for t in get_tree().get_nodes_in_group("towers"):
-		t.queue_free()
-	GameManager.set_state(GameManager.GameState.MENU)
+# --- Scenario 4: Upgrade flow (buy Lemurius, walk path A to tier 3) ---
+
+func _run_upgrade_flow() -> void:
+	_scenario_name = "upgrades"
+	_fps_samples.clear()
+	var t0 := Time.get_ticks_msec()
+
+	GameManager.current_level = 1
+	GameManager.start_level(1)
+	CurrencyManager.gold = 5000  # Plenty for upgrades
+	get_tree().change_scene_to_file("res://scenes/game/level_1.tscn")
+	await get_tree().create_timer(1.5).timeout
+
+	var game_root := get_tree().current_scene
+	var td = load("res://resources/tower_data/basic.tres")
+	var tower: BaseTower = _instantiate_tower(game_root, td, Vector2(640, 400))
+	await get_tree().create_timer(0.5).timeout
+	_snapshot("upgrades_tier_0_0")
+
+	# Walk Path A: tiers 1 → 2 → 3
+	for i in 3:
+		if tower and is_instance_valid(tower):
+			tower.upgrade_path("a")
+			await get_tree().create_timer(0.4).timeout
+			_snapshot("upgrades_tier_A%d" % (i + 1))
+
+	# Then add path B tiers to test blend tint
+	for i in 2:
+		if tower and is_instance_valid(tower):
+			tower.upgrade_path("b")
+			await get_tree().create_timer(0.4).timeout
+			_snapshot("upgrades_tier_A3_B%d" % (i + 1))
+
+	_record_scenario(t0)
+	_cleanup_scene()
+	await get_tree().create_timer(0.3).timeout
 
 
-func _count_enemies_remaining() -> int:
-	return get_tree().get_nodes_in_group("enemies").size()
+# --- Scenario 5: Performance stress — spawn many enemies at once ---
+
+func _run_stress_test() -> void:
+	_scenario_name = "stress"
+	_fps_samples.clear()
+	var t0 := Time.get_ticks_msec()
+
+	GameManager.current_level = 1
+	GameManager.start_level(1)
+	get_tree().change_scene_to_file("res://scenes/game/level_1.tscn")
+	await get_tree().create_timer(1.5).timeout
+
+	var game_root := get_tree().current_scene
+	var wm := game_root.get_node_or_null("WaveManager") as Node
+	var path := game_root.get_node_or_null("EnemyPath") as Path2D
+	if wm and path:
+		# Bypass wave queue — directly spawn STRESS_ENEMY_COUNT enemies
+		var enemy_scene: PackedScene = load("res://scenes/enemies/base_enemy.tscn") as PackedScene
+		var enemy_data = load("res://resources/enemy_data/basic.tres")
+		for i in STRESS_ENEMY_COUNT:
+			var e = enemy_scene.instantiate()
+			e.data = enemy_data
+			e.add_to_group("enemies")
+			path.add_child(e)
+
+	_snapshot("stress_spawned")
+	# Let them march for a bit, sampling FPS
+	for i in 6:
+		await get_tree().create_timer(1.0).timeout
+		_snapshot("stress_t%d" % i)
+
+	_record_scenario(t0)
+	_cleanup_scene()
+	await get_tree().create_timer(0.3).timeout
+
+
+# --- Scenario 6: Bug hunt — rapid tap in tower placement mode ---
+
+func _run_bug_hunt() -> void:
+	_scenario_name = "bughunt"
+	_fps_samples.clear()
+	var t0 := Time.get_ticks_msec()
+
+	GameManager.current_level = 1
+	GameManager.start_level(1)
+	get_tree().change_scene_to_file("res://scenes/game/level_1.tscn")
+	await get_tree().create_timer(1.5).timeout
+
+	var game_root := get_tree().current_scene
+	var placement := game_root.get_node_or_null("TowerPlacement")
+
+	# Rapid-tap invalid placements — right on the path (should trigger toast)
+	if placement and placement.has_method("start_placement"):
+		var td = load("res://resources/tower_data/basic.tres")
+		placement.start_placement(td)
+		await get_tree().create_timer(0.3).timeout
+		_snapshot("bughunt_placement_mode")
+		# Synthesize 5 rapid clicks at path-center points
+		var bad_positions := [
+			Vector2(300, 300), Vector2(400, 320), Vector2(500, 340),
+			Vector2(600, 320), Vector2(700, 300),
+		]
+		for p in bad_positions:
+			if placement.has_method("_try_place"):
+				placement.call("_try_place", p)
+			await get_tree().create_timer(0.15).timeout
+		_snapshot("bughunt_post_rapid_tap")
+
+	# Also: cancel placement, should return cleanly
+	if placement and placement.has_method("cancel_placement"):
+		placement.cancel_placement()
+		await get_tree().create_timer(0.2).timeout
+	_snapshot("bughunt_after_cancel")
+
+	_record_scenario(t0)
+	_cleanup_scene()
+	await get_tree().create_timer(0.3).timeout
+
+
+# --- Helpers ---
+
+func _placements_for_level(level_id: int) -> Array:
+	# Tuned roughly per level layout. If path geometry changes these may
+	# need re-tuning — the test-validate mode should flag persistent
+	# failures here.
+	match level_id:
+		1: return [
+			{ "id": "basic",   "pos": Vector2(320, 430) },
+			{ "id": "basic",   "pos": Vector2(620, 260) },
+			{ "id": "sniper",  "pos": Vector2(900, 430) },
+			{ "id": "splash",  "pos": Vector2(460, 520) },
+		]
+		2: return [
+			{ "id": "basic",   "pos": Vector2(380, 420) },
+			{ "id": "slow",    "pos": Vector2(620, 300) },
+			{ "id": "sniper",  "pos": Vector2(880, 420) },
+			{ "id": "splash",  "pos": Vector2(520, 520) },
+		]
+		3: return [
+			{ "id": "basic",   "pos": Vector2(340, 440) },
+			{ "id": "cordula", "pos": Vector2(580, 280) },
+			{ "id": "sniper",  "pos": Vector2(880, 440) },
+			{ "id": "splash",  "pos": Vector2(500, 520) },
+			{ "id": "slow",    "pos": Vector2(740, 380) },
+		]
+		_: return []
+
+
+func _instantiate_tower(parent: Node, tower_data, pos: Vector2) -> BaseTower:
+	var tower_scene: PackedScene = load("res://scenes/towers/base_tower.tscn") as PackedScene
+	if tower_scene == null:
+		return null
+	var tower: BaseTower = tower_scene.instantiate()
+	tower.data = tower_data
+	tower.is_placed = true
+	tower.global_position = pos
+	parent.add_child(tower)
+	CurrencyManager.spend_gold(tower_data.buy_cost)
+	return tower
+
+
+func _capture_anim_clip(tag: String) -> void:
+	for i in ANIM_FRAMES:
+		var img: Image = get_viewport().get_texture().get_image()
+		if img:
+			var filename := "%sanim_%s_%03d.png" % [SHOT_DIR, tag, i]
+			img.save_png(filename)
+			_anim_count += 1
+		await get_tree().create_timer(ANIM_INTERVAL).timeout
 
 
 func _snapshot(tag: String) -> void:
 	var img: Image = get_viewport().get_texture().get_image()
 	if img == null:
 		return
-	var filename := "%sshot_%02d_%s.png" % [SHOT_DIR, _shot_count, tag]
+	var filename := "%sshot_%03d_%s.png" % [SHOT_DIR, _shot_count, tag]
 	var err := img.save_png(filename)
 	if err != OK:
 		print("[playtest] screenshot failed: %s (err=%d)" % [filename, err])
@@ -169,45 +288,64 @@ func _snapshot(tag: String) -> void:
 	_shot_count += 1
 
 
-func _instantiate_tower(parent: Node, tower_data, pos: Vector2) -> void:
-	var tower_scene: PackedScene = load("res://scenes/towers/base_tower.tscn") as PackedScene
-	if tower_scene == null:
-		return
-	var tower = tower_scene.instantiate()
-	tower.data = tower_data
-	tower.is_placed = true
-	tower.global_position = pos
-	parent.add_child(tower)
-	CurrencyManager.spend_gold(tower_data.buy_cost)
+func _cleanup_scene() -> void:
+	for e in get_tree().get_nodes_in_group("enemies"):
+		e.queue_free()
+	for t in get_tree().get_nodes_in_group("towers"):
+		t.queue_free()
+	GameManager.set_state(GameManager.GameState.MENU)
+
+
+func _record_scenario(start_ms: int) -> void:
+	var avg_fps: float = 0.0
+	if _fps_samples.size() > 0:
+		var sum := 0.0
+		for v in _fps_samples:
+			sum += v
+		avg_fps = sum / _fps_samples.size()
+	var min_fps: float = 9999.0
+	for v in _fps_samples:
+		if v > 0.0 and v < min_fps:
+			min_fps = v
+	_scenario_summaries.append({
+		"name": _scenario_name,
+		"elapsed_ms": Time.get_ticks_msec() - start_ms,
+		"avg_fps": avg_fps,
+		"min_fps": min_fps if min_fps < 9999.0 else 0.0,
+		"final_lives": GameManager.lives,
+		"final_gold": CurrencyManager.gold,
+		"final_state": _state_name(GameManager.current_state),
+		"enemies_remaining": get_tree().get_nodes_in_group("enemies").size(),
+	})
 
 
 func _write_summary() -> void:
 	var f := FileAccess.open(SUMMARY_FILE, FileAccess.WRITE)
 	if f == null:
 		return
-	f.store_string("# Playtest Summary\n\n")
-	f.store_string("Timestamp: %s\n\n" % Time.get_datetime_string_from_system(true))
-	f.store_string("| Scenario | Level | Towers | Duration (s) | Avg FPS | Min FPS | Final Lives | Final State | Enemies Remaining |\n")
-	f.store_string("|---|---|---|---|---|---|---|---|---|\n")
+	f.store_string("# Playtest v3 Summary\n\n")
+	f.store_string("Timestamp: %s\n" % Time.get_datetime_string_from_system(true))
+	f.store_string("Total duration: %.1fs\n\n" % _elapsed())
+	f.store_string("| Scenario | Duration (s) | Avg FPS | Min FPS | Final Lives | State | Enemies Remaining |\n")
+	f.store_string("|---|---|---|---|---|---|---|\n")
 	for s in _scenario_summaries:
-		f.store_string("| %s | %d | %d | %.1f | %.1f | %.1f | %d | %s | %d |\n" % [
-			s.name,
-			s.level,
-			s.towers,
-			float(s.elapsed_ms) / 1000.0,
-			s.avg_fps,
-			s.min_fps,
-			s.final_lives,
-			_state_name(s.final_state),
-			s.enemies_remaining,
+		f.store_string("| %s | %.1f | %.1f | %.1f | %d | %s | %d |\n" % [
+			s.name, float(s.elapsed_ms) / 1000.0,
+			s.avg_fps, s.min_fps,
+			s.final_lives, s.final_state, s.enemies_remaining,
 		])
-	f.store_string("\n## Interpretation hints for the vision agent\n\n")
-	f.store_string("- `healthy` scenario should result in WON state with lives > 0.\n")
-	f.store_string("- `sparse` scenario may lose but should NOT crash; check final screenshots.\n")
-	f.store_string("- `empty` scenario should result in LOST state (enemies reach end).\n")
-	f.store_string("- Avg FPS < 30 is a performance red flag. Min FPS < 15 is a hitch.\n")
+	f.store_string("\n## Interpretation hints\n\n")
+	f.store_string("- **L1/L2/L3_healthy**: should end WON, lives > 0. LOST here means the scenario tower placements no longer counter the waves (rebalance or retune placements).\n")
+	f.store_string("- **upgrades**: screenshots walk Lemurius from tier-0 through path-A then path-B. Tints should shift noticeably between states — if they look identical, the _apply_path_tint blend is broken.\n")
+	f.store_string("- **stress**: 80 simultaneous enemies. Avg FPS < 30 = performance regression; projectile / pathfollow scaling needs attention (object pooling overdue).\n")
+	f.store_string("- **bughunt**: rapid invalid placements. Expect placement toasts firing and no crashes. shot `bughunt_after_cancel` should show the normal HUD, no stuck ghost tower.\n")
+	f.store_string("- **anim_*** frames are GIF source — ffmpeg stitches them in the workflow.\n")
 	f.close()
-	print("[playtest] summary written to %s" % SUMMARY_FILE)
+	print("[playtest v3] summary → %s" % SUMMARY_FILE)
+
+
+func _elapsed() -> float:
+	return float(Time.get_ticks_msec() - _start_ms) / 1000.0
 
 
 func _state_name(s: int) -> String:
@@ -217,4 +355,4 @@ func _state_name(s: int) -> String:
 		GameManager.GameState.PAUSED: return "PAUSED"
 		GameManager.GameState.WON: return "WON"
 		GameManager.GameState.LOST: return "LOST"
-		_: return "UNKNOWN"
+		_: return "?"
