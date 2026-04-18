@@ -101,6 +101,49 @@ jobs:
           fi
           gh pr comment "${{ github.event.pull_request.number }}" --body "$BODY"
 
+      - name: Commit observability artifact
+        if: always() && github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set +e
+          mkdir -p docs/observability
+          TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          EXIT="${{ steps.sim.outputs.sim_exit }}"
+          STATUS="unknown"
+          case "$EXIT" in
+            0) STATUS="pass" ;;
+            1) STATUS="unwinnable" ;;
+            2) STATUS="trivial" ;;
+          esac
+          {
+            echo "# Sim-Gate Latest"
+            echo ""
+            echo "Run: ${{ github.run_id }} @ $TS · Status: **$STATUS** (exit $EXIT)"
+            echo ""
+            echo "## Results CSV"
+            echo ""
+            if [ -f sim_output/results.csv ]; then
+              echo '```csv'
+              cat sim_output/results.csv
+              echo '```'
+            else
+              echo "(no CSV — simulator may have crashed before writing)"
+            fi
+            echo ""
+            echo "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          } > docs/observability/sim_latest.md
+          echo "- $TS · sim-gate · $STATUS · run=${{ github.run_id }}" >> docs/observability/ledger.md
+          tail -n 150 docs/observability/ledger.md > /tmp/ledger.trim
+          mv /tmp/ledger.trim docs/observability/ledger.md
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout main
+          git pull origin main --rebase || true
+          git add docs/observability/
+          git commit -m "chore(observability): sim-gate run ${{ github.run_id }} ($STATUS)" || echo "no changes"
+          git push origin main || echo "push failed — non-fatal"
+
       - name: Fail workflow if simulator gate failed
         run: |
           if [ "${{ steps.sim.outputs.sim_exit }}" = "1" ]; then

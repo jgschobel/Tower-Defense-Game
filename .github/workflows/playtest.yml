@@ -186,9 +186,48 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: No screenshots notice
-        if: steps.collect.outputs.count == '0'
+      - name: Commit observability artifact (for chat-session visibility)
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "No screenshots produced — bot may have crashed or hung."
-          echo "Check the 'Run playtest bot' step logs."
-          exit 1
+          set +e
+          mkdir -p docs/observability
+          STATUS="ok"
+          if [ "${{ job.status }}" != "success" ]; then STATUS="fail"; fi
+          TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          SHOT_COUNT=0
+          if [ -d playtest_output ]; then
+            SHOT_COUNT=$(ls -1 playtest_output/*.png 2>/dev/null | wc -l | tr -d ' ')
+          fi
+          # Full summary if available
+          {
+            echo "# Playtest Latest"
+            echo ""
+            echo "Run: ${{ github.run_id }} @ $TS · Status: **$STATUS** · Screenshots: $SHOT_COUNT"
+            echo ""
+            echo "## Summary"
+            echo ""
+            if [ -f playtest_output/summary.md ]; then
+              cat playtest_output/summary.md
+            else
+              echo "(no summary.md produced — bot likely did not reach the write-summary step)"
+            fi
+            echo ""
+            echo "## Artifact link"
+            echo ""
+            echo "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          } > docs/observability/playtest_latest.md
+          # Ledger append
+          echo "- $TS · playtest · $STATUS · run=${{ github.run_id }} · shots=$SHOT_COUNT" >> docs/observability/ledger.md
+          # Keep ledger bounded: last 150 entries only (head stays, most
+          # recent entries at top due to prepend-on-rotation in cleanup.yml)
+          tail -n 150 docs/observability/ledger.md > /tmp/ledger.trim
+          mv /tmp/ledger.trim docs/observability/ledger.md
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout main
+          git pull origin main --rebase || true
+          git add docs/observability/
+          git commit -m "chore(observability): playtest run ${{ github.run_id }} ($STATUS)" || echo "no changes"
+          git push origin main || echo "push failed — non-fatal"

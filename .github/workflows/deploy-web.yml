@@ -3,10 +3,16 @@ name: Deploy Web Build to GitHub Pages
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - 'docs/observability/**'
+      - 'CHANGELOG.md'
+      - 'ROADMAP.md'
+      - 'docs/audits/**'
+      - '.github/friend_photos_inbox/README.md'
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -94,6 +100,44 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+
+      - uses: actions/checkout@v4
+        if: always()
+
+      - name: Commit observability artifact
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set +e
+          mkdir -p docs/observability
+          TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          STATUS="ok"
+          if [ -z "${{ steps.deployment.outputs.page_url }}" ]; then STATUS="fail"; fi
+          {
+            echo "# Deploy Latest"
+            echo ""
+            echo "Run: ${{ github.run_id }} @ $TS · Status: **$STATUS**"
+            echo ""
+            echo "URL: ${{ steps.deployment.outputs.page_url }}"
+            echo ""
+            echo "Commit: ${{ github.sha }}"
+            echo ""
+            echo "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          } > docs/observability/deploy_latest.md
+          echo "- $TS · deploy-web · $STATUS · run=${{ github.run_id }} · sha=${GITHUB_SHA:0:7}" >> docs/observability/ledger.md
+          tail -n 150 docs/observability/ledger.md > /tmp/ledger.trim
+          mv /tmp/ledger.trim docs/observability/ledger.md
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull origin main --rebase || true
+          git add docs/observability/
+          git commit -m "chore(observability): deploy run ${{ github.run_id }} ($STATUS)" || echo "no changes"
+          git push origin main || echo "push failed — non-fatal"
