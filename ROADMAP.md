@@ -8,6 +8,39 @@ Within a priority, top-of-list wins.
 
 ---
 
+## ✅ Shipped 2026-04-18 (big day — 14 PRs)
+
+Infrastructure:
+- Photo pipeline robust + Gemini fallback + diagnostic (PR #42/#59)
+- Auto-merge with `--auto` flag (PR #55)
+- Workflow observability — runs commit results to `docs/observability/` (PR #62)
+- Playtester v3.1: 60s window, 4× time_scale, proper stress spawn, 3 scenarios × all 3 levels (PR #55)
+- L1 preload — texture warmup on menu (PR #55)
+- Pool race + double-release guards (PR #60)
+
+Game correctness:
+- DamageType enum actually applied (PHYSICAL / MAGIC / PURE armor rules) (PR #43)
+- Spawn-stacking fix — MIN_DELAY floor + per-enemy v_offset (PR #43/#54)
+- Healer signal leak on pool reuse (PR #60)
+- Healer heal-radius uses progress-distance not global (PR #60)
+- Spawn-children bounds check + EnemyPool usage (PR #60)
+- Safe-area idempotency guard (PR #60)
+- Tower-info panel auto-hide on tap-outside (PR #60)
+
+Perf:
+- Projectile object pool (PR #56)
+- Enemy object pool (PR #57)
+
+Game feel (1% Juice Pass):
+- Pop SFX pitch by enemy size (PR #43)
+- Starting gold +50% all levels (PR #43)
+- Tower sprite rotates toward target ±35° (PR #43)
+- Victory screen 2s hold (PR #43)
+- ✦ mini-floater on every non-killing hit (PR #43)
+- Mobile touch targets ≥52px + safe-area (PR #44, from loop)
+
+---
+
 ## 🔥 P0 — Long-Term Retention System (NEWLY ADDED — BTD-grade)
 
 User ask: "Spezial-Münzen, Forschig-Menü, Mission-Challenges per Level,
@@ -335,7 +368,7 @@ run project:
 
 - [x] Enemy count on HUD ("12 übrig" next to wave counter) — PLAN #26
 - [ ] Tower range preview stat in shop buttons — PLAN #29
-- [ ] Reposition tower info panel so it doesn't overlap map — PLAN #30
+- [x] Reposition tower info panel so it doesn't overlap map — PLAN #30 (auto-hide on tap-outside, PR #60)
 - [x] HUD buttons ≥ 50px for mobile touch — PLAN #34
 - [x] Pause button 60px minimum — PLAN #35
 - [x] Safe area margins for notches/status bars — PLAN #36
@@ -383,9 +416,9 @@ run project:
 
 ## 🏎 P2 — Performance
 
-- [ ] Object pooling for projectiles — PLAN #63
-- [ ] Object pooling for enemies — PLAN #64
-- [ ] Viewport scaling across phone sizes — PLAN #66
+- [x] Object pooling for projectiles — PLAN #63 (PR #56, 2026-04-18)
+- [x] Object pooling for enemies — PLAN #64 (PR #57, 2026-04-18)
+- [x] Viewport scaling across phone sizes — PLAN #66 (stretch=expand + safe-area insets, PRs #44/#60)
 - [ ] Battery optimization: stop music gen when backgrounded — PLAN #67
 
 ## 🔥 P0 — Creative Upgrade Pipeline (Live Feedback)
@@ -425,11 +458,9 @@ bumps. Each tier must look different; projectiles must evolve.
 
 ## 🔥 P0 — Just Added (Latest Live Feedback)
 
-- [ ] **Empty space left/right in landscape**: partially fixed by setting
-  `window/stretch/aspect=expand`. Follow-up: audit every scene to ensure
-  root Controls use PRESET_FULL_RECT with anchors (not fixed positions)
-  so layout flexes on 20:9 phones. Biggest offenders: game.tscn +
-  level_N.tscn map nodes which may still assume 1280×720.
+- [x] **Empty space left/right in landscape**: fixed via
+  `window/stretch/aspect=expand` + DisplayServer safe-area insets
+  in hud.gd. Layout flexes on 20:9 phones. Shipped PR #44/#60.
 - [ ] **Compact tower shop**: current bottom bar takes too much vertical
   space and is always visible → distracting. Redesign: small circular
   "+" FAB in bottom-right opens a radial/popup picker with the 5 tower
@@ -588,7 +619,7 @@ creative swings. Lift to P1 when ready to ship.*
 
 ## 🎯 P2 — Polish & Extras
 
-- [ ] Upgrade visual path (tint/glow per upgrade level) — PLAN #22
+- [x] Upgrade visual path (tint/glow per upgrade level) — PLAN #22 (PR #54/#60, 2026-04-18)
 - [ ] Enemy preview icons in story (actual sprites) — PLAN #69
 - [ ] Custom app icon featuring Lemurius & Amösius — PLAN #71
 - [ ] Android export preset — PLAN #74
