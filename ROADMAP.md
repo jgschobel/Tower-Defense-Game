@@ -218,6 +218,58 @@ bumps. Each tier must look different; projectiles must evolve.
   (no Kühne, double enemy speed, etc.). Shared seed so every player
   worldwide gets the same challenge — basis for future leaderboard.
 
+## 💡 Ideate 2026-04-18 — Swiss-German Spectacle & Retention Hooks
+
+Five concrete ideas from today's ideate run. Each has a spec, a Swiss
+German name, and a rough implementation hint so the next `build-content`
+or `feature` run can pick it up without re-designing.
+
+- [ ] **Migros-Cumulus meta-progression** — persistent loyalty points
+  earned across runs (1 Cumulus per 100 gold banked at level-end, +50
+  for a perfect no-life-lost clear). Spend in a "Cumulus-Laade" shop on
+  permanent account-wide boosts: *Start-Bonus* (+50g start, 200 Cml),
+  *Extra Läbe* (+1 starting life, 400 Cml), *Rabatt-Charte* (-10% tower
+  cost, 600 Cml, capped 3 stacks), *Express-Kasse* (waves start 20%
+  faster, 500 Cml). Save to `user://cumulus.save` via GameManager.
+  Shop button on main_menu + post-level summary shows Cml earned. This
+  is the *hurts-to-remove* retention hook — ties Migros theme directly
+  to progression, not in BTD.
+- [ ] **"De Chef!" finisher (boss-only cameo slayer)** — when a boss's
+  HP drops below 10%, a Migros-orange **"DE CHEF CHUNT!"** button
+  flashes top-center for 4s. Tap to spawn a cameo slayer (Michi /
+  optional user-photo) who arcs across screen with a Migros-Budget
+  hammer, screen-shakes on impact, instant-kills the boss and awards
+  +300g bonus. One use per boss fight. Implementation: new
+  `systems/finisher.gd` autoload listens to enemy health; HUD shows
+  button; on tap, play a 1.2s Tween on a Sprite2D across the viewport +
+  screenshake + a sharp chiptune sting. Screenshot-worthy moment,
+  fulfils "viral TikTok" brief.
+- [ ] **Rausch-Modus (frenzy combo)** — kill streaks within 2.5s of each
+  other build a combo counter. At 10 combo trigger **"RUUSCH!"**:
+  0.25s slow-mo zoom (Engine.time_scale = 0.4 tweened back to 1.0),
+  golden vignette overlay, +2× damage for 3s, +1.5× gold for the next
+  5 kills. Badge top-center ("x12 Rausch · 3.1s"). Extends existing
+  "combo multiplier" idea with concrete numbers + spectacle. Hook
+  into `base_enemy.enemy_died` from a new `systems/combo_tracker.gd`
+  autoload.
+- [ ] **Züri-Tram MOAB-boss ("De 11er Tram vom Tüüfel")** — Line 11
+  Zürich-tram-shaped mega-boss for Level 10 / endless, VBZ-blue long
+  sprite (3× width of normal enemies), 12000 HP, move_speed 0.4×,
+  immune to slow. On death splits into 3 individual tram-carriages
+  (2000 HP each, normal speed) that keep advancing. 1500g total
+  reward. New `enemy_data/tram_11.tres` + `enemy_data/tram_carriage.tres`
+  + boolean `splits_on_death: Array[String]` (enemy ids) field on
+  EnemyData. Thematic Swiss spectacle — BTD has MOABs, we have trams.
+- [ ] **Wagli-Räge active power (Shopping-Cart Rain)** — slots into the
+  P0 "Active Powers" row. Cost 250g, 75s cooldown, 1 charge per level.
+  On fire: 5 runaway Migros shopping carts spawn off-screen-top and
+  roll diagonally across the play area over 1.5s, each dealing 60
+  physical damage to every enemy they touch (pierce). CPUParticles2D
+  for debris + cart Sprite2Ds tweened on straight-line paths. Icon:
+  small chrome-cart PNG via Imagen 4. Satisfies the "laziest player
+  fantasy" of solving a wave with one tap and is specific to this
+  setting in a way BTD's bomb-drop isn't.
+
 ## 💡 Legacy Ideas
 
 *Added by the `ideate` mode runs. The loop mines this section for bigger
@@ -238,6 +290,29 @@ creative swings. Lift to P1 when ready to ship.*
 ## 🔎 Architecture Notes
 
 *Observations added during ideate runs, useful for future refactors.*
+
+- **2026-04-18 — Spawn stacking root cause (ties to P0 "enemies stack up
+  at spawn" bug).** `scripts/systems/wave_manager.gd` `_build_spawn_queue`
+  flattens every `count` in a group into individual queue entries but
+  reads `delay` from the *same* group dict — so if a wave defines
+  `{enemy_id: "tofu_wuerschtli", count: 12, spawn_delay: 0.3}`, all 12
+  spawn 0.3s apart and each enters `enemy_path` at `progress = 0`. With
+  a tofu sprite ~64px tall, the first ~3s of spawning visually stacks
+  10+ enemies at the start of the path. Fix direction: either (a) give
+  each newly-spawned `PathFollow2D` a tiny negative `progress` offset
+  based on its index (e.g. `-0.2 * i * move_speed`) so they start
+  staggered behind the spawn point, or (b) raise the per-group minimum
+  `spawn_delay` floor from 0.3s to ~0.6s for slower enemies. (a) is the
+  cleaner fix; (b) is the one-line safety net. Do both — cap and
+  stagger — and the visual stacking disappears without changing wave
+  difficulty.
+- **2026-04-18 — Reprioritization note.** Leaving P0 ordering as-is.
+  The **spawn-stacking bug** and **story screen rework** are the two
+  most visible issues in screenshots; next `fix` mode should take the
+  spawn bug (now that the root cause is documented above) before
+  anything else. Branching-upgrades work already has Lemurius shipped
+  (PR #20) + 4 other towers in PR #31 — mark the P0 branching header
+  as "in-progress, per-tower tickets still open" rather than bumping.
 
 ## 🎯 P2 — Polish & Extras
 
