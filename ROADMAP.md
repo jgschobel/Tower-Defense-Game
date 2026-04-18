@@ -8,7 +8,35 @@ Within a priority, top-of-list wins.
 
 ---
 
-## ✅ Shipped 2026-04-18 (big day — 14 PRs)
+## 📋 Autonomous Loop — overnight work queue (user asleep 2026-04-18 22:00Z)
+
+Priority for the 6-hour loop while user sleeps. Pick one, ship it, auto-merge:
+
+1. **Level 4 content** — `resources/level_data/level_4.tres` + `scenes/game/level_4.tscn` (reuse level_3.tscn as base, new path, 10 waves escalating from tank+basic mix through flying+boss). Include new Lore entry in `scripts/systems/lore.gd`. Unlock via GameManager level progression.
+2. **Strike animations** — particles/muzzle flash on tower attack + impact effects on projectile hit. `scenes/effects/muzzle_flash.tscn` + `scenes/effects/impact_spark.tscn`. Spawn via `base_tower._attack` and `base_projectile._hit`. Keeps the 4× time_scale playtest running smooth (CPU-cheap particle2D).
+3. **Price-popup edge-fix** — the tower-info panel anchor math for towers placed far right/left of screen. Clamp `tower_info.offset_left/right` within viewport bounds.
+4. **Design polish P1** — `docs/design_polish.md` spec: replace "teenager garage" look with pro art brief (color palette, shadow/highlight rules, typography tokens). No code, just spec so subsequent PRs follow consistent direction.
+5. **PAT-based user-attachment fetch** — in `photo_to_character.py`, try `USER_ATTACHMENT_PAT` secret before `GITHUB_TOKEN`. If PAT set and valid, 404 would go away. Add docs on how to create the PAT. Optional — user needs to set the secret.
+6. **More levels** — level_5 through level_10 stubbed out with progressively harder wave defs. Even stub resources make the level-select feel full.
+
+**Circuit breaker**: 25 merges / 24h, 4 Opus 4.7 runs / 5h. Don't exceed. If rate-limited, stop and log to `docs/observability/ledger.md`.
+
+**Do NOT do**: anything requiring user input. No new issue-template changes, no secrets, no PR reviews. Auto-merge everything validated by sim-gate + playtest.
+
+---
+
+## ✅ Shipped 2026-04-18 evening — wrap-up session
+
+- **Crash/freeze on first attack** (PR #68) — pool stale-ref elimination in both ProjectilePool and EnemyPool; `acquire()` skips invalid slots; projectile invalid-target now routes through `release()` instead of `queue_free`
+- **Blurry-empty-text-box fix** (PR #68) — `reset_for_pool` cleans orphaned Label children (damage numbers / hit reactions that outlived their tweens); persistent enemy name labels removed entirely since intro overlay covers naming
+- **Photo pipeline root-cause documented** (PR #68) — `github.com/user-attachments/assets/*` URLs return 404 to workflow clients; inbox is now the canonical path; README rewritten with mobile walkthrough; failure comment on issue links to inbox
+- **Per-tower projectiles** (PR #66) — Lemurius bananas, Cordula volleyball, JoJo flask, Kühne pollen, Amösius tongue-from-mouth; per-style `_draw()` + style refresh on pool reuse
+- **JoJo acid pool** (PR #66) — flask impact spawns lingering `AcidPool` that DoT ticks on any enemy that walks through
+- **Music uplift** (PR #66) — triangle wave instead of square; menu vs game track bank; drums on game track (kick/snare/hat)
+- **Monster intro animation** (PR #67) — `enemy_introduced` signal + 1.2s zoom-fade overlay on first spawn of each type
+- **Enemy bobbing walk** (PR #67) — sine-wave `v_offset` driven by `_walk_phase` so enemies visibly step instead of slide
+
+## ✅ Shipped 2026-04-18 afternoon (big day — 14 PRs)
 
 Infrastructure:
 - Photo pipeline robust + Gemini fallback + diagnostic (PR #42/#59)
