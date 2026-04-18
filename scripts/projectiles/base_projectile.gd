@@ -2,6 +2,8 @@ class_name BaseProjectile
 extends Area2D
 
 ## Projectile fired by towers. Tracks a target enemy and deals damage on hit.
+## `style` drives the visual: each tower gets a distinct look (only Lemurius
+## throws bananas). `leaves_ground_pool` spawns a lingering acid pool (JoJo).
 
 var target: BaseEnemy = null
 var damage: float = 0.0
@@ -13,6 +15,14 @@ var splash_damage_pct: float = 0.5
 var slow_amount: float = 0.0
 var slow_duration: float = 0.0
 var color: Color = Color.YELLOW
+
+# Projectile style (banana / volleyball / flask / pollen / tongue)
+var style: String = "banana"
+# Whether to spawn an AcidPool on impact (JoJo)
+var leaves_pool: bool = false
+var pool_duration: float = 3.0
+var pool_dmg_per_tick: float = 4.0
+var pool_radius: float = 70.0
 
 var _direction: Vector2 = Vector2.ZERO
 var _last_target_pos: Vector2 = Vector2.ZERO
@@ -31,7 +41,12 @@ func setup(
 	p_splash_radius: float = 0.0,
 	p_splash_damage_pct: float = 0.5,
 	p_slow_amount: float = 0.0,
-	p_slow_duration: float = 0.0
+	p_slow_duration: float = 0.0,
+	p_style: String = "banana",
+	p_leaves_pool: bool = false,
+	p_pool_duration: float = 3.0,
+	p_pool_dmg: float = 4.0,
+	p_pool_radius: float = 70.0
 ) -> void:
 	global_position = origin
 	_origin_pos = origin
@@ -44,19 +59,31 @@ func setup(
 	splash_damage_pct = p_splash_damage_pct
 	slow_amount = p_slow_amount
 	slow_duration = p_slow_duration
+	style = p_style
+	leaves_pool = p_leaves_pool
+	pool_duration = p_pool_duration
+	pool_dmg_per_tick = p_pool_dmg
+	pool_radius = p_pool_radius
 
 	if target:
 		_last_target_pos = target.global_position
 
-	_is_tongue = slow_amount > 0.0 and slow_duration > 0.0
+	_is_tongue = style == "tongue"
 
 
 func _ready() -> void:
+	# Hide the default sprite for styles that draw themselves via _draw()
+	var drawn_styles := ["tongue", "volleyball", "flask", "pollen"]
+	if style in drawn_styles:
+		if has_node("Sprite2D"):
+			$Sprite2D.visible = false
 	if _is_tongue:
 		_spin_speed = 0.0
 		speed = 800.0
-		if has_node("Sprite2D"):
-			$Sprite2D.visible = false
+	elif style == "flask":
+		_spin_speed = 8.0  # chem flask tumbles
+	elif style == "pollen":
+		_spin_speed = 0.0  # pollen sphere pulses instead
 
 
 func _process(delta: float) -> void:
@@ -77,7 +104,9 @@ func _process(delta: float) -> void:
 	_direction = (_last_target_pos - global_position).normalized()
 	global_position += _direction * speed * delta
 
-	if _is_tongue:
+	# Styles that draw themselves redraw every frame; spinners spin their sprite
+	var drawn_styles := ["tongue", "volleyball", "flask", "pollen"]
+	if style in drawn_styles:
 		queue_redraw()
 	else:
 		if has_node("Sprite2D"):
@@ -88,16 +117,56 @@ func _process(delta: float) -> void:
 
 
 func _draw() -> void:
-	if not _is_tongue:
-		return
-	# Draw hot pink tongue from tower face to projectile tip
-	var local_origin := to_local(_origin_pos)
-	# Thick tongue line
-	draw_line(local_origin, Vector2.ZERO, Color(1.0, 0.1, 0.45, 1.0), 10.0)
-	# Thinner highlight stripe down the middle
-	draw_line(local_origin, Vector2.ZERO, Color(1.0, 0.4, 0.6, 0.7), 4.0)
-	# Round sticky tip
-	draw_circle(Vector2.ZERO, 12.0, Color(1.0, 0.05, 0.35, 1.0))
+	match style:
+		"tongue":
+			# Hot pink tongue from tower's mouth to tip
+			var local_origin := to_local(_origin_pos)
+			draw_line(local_origin, Vector2.ZERO, Color(1.0, 0.1, 0.45, 1.0), 10.0)
+			draw_line(local_origin, Vector2.ZERO, Color(1.0, 0.4, 0.6, 0.7), 4.0)
+			draw_circle(Vector2.ZERO, 12.0, Color(1.0, 0.05, 0.35, 1.0))
+		"volleyball":
+			# Cordula's fasnachts-volleyball — white with colorful stripes
+			draw_circle(Vector2.ZERO, 12.0, Color(1.0, 1.0, 1.0, 1.0))
+			draw_arc(Vector2.ZERO, 12.0, 0.0, TAU, 20, Color(0.15, 0.15, 0.2, 1), 2.0)
+			# Three curved stripes for volleyball pattern
+			var t: float = float(Time.get_ticks_msec()) / 1000.0
+			for i in 3:
+				var a: float = (float(i) / 3.0) * TAU + t * 4.0
+				var p: Vector2 = Vector2(cos(a), sin(a)) * 8.0
+				draw_circle(p, 2.5, Color(0.9, 0.2, 0.5, 1))
+		"flask":
+			# JoJo's chemical erlenmeyer-flask projectile — green liquid
+			# in a glass body that tumbles
+			var t: float = float(Time.get_ticks_msec()) / 1000.0
+			var spin: float = t * _spin_speed
+			draw_set_transform(Vector2.ZERO, spin, Vector2.ONE)
+			# Glass body (downward triangle)
+			var glass := PackedVector2Array([
+				Vector2(-8, -10), Vector2(8, -10),
+				Vector2(10, 6), Vector2(0, 12), Vector2(-10, 6)
+			])
+			draw_colored_polygon(glass, Color(0.85, 0.95, 1.0, 0.5))
+			# Bubbling green liquid inside
+			draw_colored_polygon(PackedVector2Array([
+				Vector2(-7, 0), Vector2(7, 0),
+				Vector2(8, 5), Vector2(0, 11), Vector2(-8, 5)
+			]), Color(0.3, 1.0, 0.4, 0.9))
+			# Neck
+			draw_line(Vector2(-3, -10), Vector2(-3, -15), Color(0.5, 0.7, 0.8, 1), 1.5)
+			draw_line(Vector2(3, -10), Vector2(3, -15), Color(0.5, 0.7, 0.8, 1), 1.5)
+			draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+		"pollen":
+			# Kühne's magical pollen cluster — pulsing violet/gold spheres
+			var t2: float = float(Time.get_ticks_msec()) / 1000.0
+			var pulse: float = 1.0 + 0.2 * sin(t2 * 10.0)
+			draw_circle(Vector2.ZERO, 8.0 * pulse, Color(0.95, 0.85, 0.3, 0.6))
+			draw_circle(Vector2.ZERO, 5.0 * pulse, Color(1.0, 0.95, 0.5, 1.0))
+			for i in 4:
+				var a2: float = (float(i) / 4.0) * TAU + t2 * 3.0
+				var p2: Vector2 = Vector2(cos(a2), sin(a2)) * 11.0
+				draw_circle(p2, 2.5, Color(0.7, 0.3, 0.9, 0.8))
+		_:
+			pass  # "banana" uses default sprite2d (already textured)
 
 
 func _hit() -> void:
@@ -117,6 +186,11 @@ func _hit() -> void:
 			if global_position.distance_to(enemy.global_position) <= splash_radius:
 				enemy.take_damage(damage * splash_damage_pct, damage_type)
 
+	# Spawn a lingering acid pool for JoJo-style projectiles — continues
+	# damaging enemies that walk over it for `pool_duration` seconds.
+	if leaves_pool:
+		_spawn_acid_pool()
+
 	# Return to pool instead of freeing. Pool no-ops gracefully if this
 	# projectile wasn't originally acquired from it.
 	if ProjectilePool:
@@ -125,9 +199,17 @@ func _hit() -> void:
 		queue_free()
 
 
+func _spawn_acid_pool() -> void:
+	var pool := AcidPool.new()
+	pool.global_position = global_position
+	pool.duration = pool_duration
+	pool.damage_per_tick = pool_dmg_per_tick
+	pool.radius = pool_radius
+	pool.damage_type = damage_type
+	get_tree().current_scene.add_child(pool)
+
+
 func reset_for_pool() -> void:
-	# Called by ProjectilePool when this projectile is returned to the
-	# pool, so the next acquisition starts clean.
 	target = null
 	damage = 0.0
 	damage_type = 0
@@ -136,6 +218,11 @@ func reset_for_pool() -> void:
 	splash_damage_pct = 0.5
 	slow_amount = 0.0
 	slow_duration = 0.0
+	style = "banana"
+	leaves_pool = false
+	pool_duration = 3.0
+	pool_dmg_per_tick = 4.0
+	pool_radius = 70.0
 	_direction = Vector2.ZERO
 	_last_target_pos = Vector2.ZERO
 	_is_tongue = false

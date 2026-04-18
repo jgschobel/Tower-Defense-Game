@@ -180,10 +180,12 @@ func _attack() -> void:
 		current_target = null
 		return
 
-	# Tongue starts from tower center (face), bananas from attack origin
+	# Projectile spawns from per-tower offset (Amösius tongue from mouth,
+	# Lemurius bananas from hand, etc). Falls back to attack_origin marker
+	# then to tower center.
 	var origin_pos: Vector2
-	if data.slow_amount > 0.0:
-		origin_pos = global_position
+	if data.projectile_origin_offset != Vector2.ZERO:
+		origin_pos = global_position + data.projectile_origin_offset
 	elif attack_origin:
 		origin_pos = attack_origin.global_position
 	else:
@@ -214,7 +216,12 @@ func _attack() -> void:
 		data.splash_radius,
 		data.splash_damage_pct,
 		data.slow_amount,
-		data.slow_duration
+		data.slow_duration,
+		data.projectile_style,
+		data.leaves_ground_pool,
+		data.ground_pool_duration,
+		data.ground_pool_damage_per_tick,
+		data.ground_pool_radius
 	)
 
 
