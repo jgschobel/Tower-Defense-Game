@@ -7,6 +7,11 @@ signal wave_started(wave_number: int, total_waves: int)
 signal wave_completed(wave_number: int)
 signal all_waves_completed
 signal enemies_remaining_changed(count: int)
+# First time each enemy type shows up in this level — HUD builds an intro
+signal enemy_introduced(enemy_id: String, enemy_data: Resource)
+
+# Track which types have been seen this level
+var _seen_enemy_ids: Array[String] = []
 
 @export var enemy_path: Path2D
 @export var auto_start_waves: bool = false
@@ -122,6 +127,11 @@ func _spawn_enemy(enemy_id: String) -> void:
 		enemy_instance.enemy_died.connect(_on_enemy_died)
 	if not enemy_instance.enemy_reached_end.is_connected(_on_enemy_reached_end):
 		enemy_instance.enemy_reached_end.connect(_on_enemy_reached_end)
+
+	# First-appearance: fire signal for HUD to show a big intro
+	if enemy_id not in _seen_enemy_ids:
+		_seen_enemy_ids.append(enemy_id)
+		enemy_introduced.emit(enemy_id, enemy_data)
 
 	enemies_alive += 1
 	enemies_remaining_changed.emit(enemies_alive)

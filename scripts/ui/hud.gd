@@ -125,6 +125,58 @@ func _populate_tower_shop() -> void:
 		tower_shop.add_child(btn)
 
 
+func show_enemy_intro(enemy_id: String, enemy_data: Resource) -> void:
+	# Big first-appearance reveal per enemy type. 1.2s animation that
+	# eats the middle of the screen. After this, no more persistent
+	# name labels float over enemies of this type (handled in
+	# base_enemy by checking `GameLevel.seen_enemy_ids`).
+	var overlay := PanelContainer.new()
+	overlay.modulate = Color(1, 1, 1, 0)
+	overlay.anchors_preset = Control.PRESET_CENTER
+	overlay.anchor_left = 0.5
+	overlay.anchor_top = 0.5
+	overlay.anchor_right = 0.5
+	overlay.anchor_bottom = 0.5
+	overlay.offset_left = -280
+	overlay.offset_right = 280
+	overlay.offset_top = -90
+	overlay.offset_bottom = 90
+	overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	var vbox := VBoxContainer.new()
+	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_theme_constant_override("separation", 8)
+
+	var warning := Label.new()
+	warning.text = "⚠ NÖÖI BEDROHIG"
+	warning.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	warning.add_theme_font_size_override("font_size", 22)
+	warning.add_theme_color_override("font_color", Color(1, 0.6, 0.2))
+	vbox.add_child(warning)
+
+	var name_lbl := Label.new()
+	name_lbl.text = enemy_data.display_name if enemy_data and "display_name" in enemy_data else enemy_id
+	name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	name_lbl.add_theme_font_size_override("font_size", 42)
+	name_lbl.add_theme_color_override("font_color", Color(1, 0.95, 0.7))
+	name_lbl.add_theme_color_override("font_outline_color", Color.BLACK)
+	name_lbl.add_theme_constant_override("outline_size", 5)
+	vbox.add_child(name_lbl)
+
+	overlay.add_child(vbox)
+	add_child(overlay)
+
+	# Zoom-in + fade — 0.25s in, 0.7s hold, 0.25s out
+	overlay.scale = Vector2(2.0, 2.0)
+	var tw := overlay.create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(overlay, "modulate:a", 1.0, 0.25)
+	tw.tween_property(overlay, "scale", Vector2.ONE, 0.25).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.chain().tween_interval(0.7)
+	tw.chain().tween_property(overlay, "modulate:a", 0.0, 0.25)
+	tw.chain().tween_callback(overlay.queue_free)
+
+
 func update_wave_info(current: int, total: int) -> void:
 	if wave_label:
 		if current == 0:

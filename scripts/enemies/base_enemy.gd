@@ -15,6 +15,8 @@ var move_speed: float = 80.0
 var armor: float = 0.0
 var gold_reward: int = 10
 var slow_factor: float = 1.0
+var _walk_phase: float = 0.0
+var _base_v_offset: float = 0.0
 var slow_timer: float = 0.0
 var is_dead: bool = false
 var _health_bar_tween: Tween = null
@@ -37,6 +39,8 @@ func _ready() -> void:
 	# perpendicular to the path without affecting gameplay progress.
 	v_offset = randf_range(-10.0, 10.0)
 	h_offset = randf_range(-6.0, 6.0)
+	_base_v_offset = v_offset
+	_walk_phase = randf() * TAU  # desync bobs across enemies
 
 
 func _apply_data() -> void:
@@ -71,6 +75,14 @@ func _process(delta: float) -> void:
 	# Move along path
 	var speed := move_speed * slow_factor
 	progress += speed * delta
+
+	# Bobbing walk: sine-wave vertical offset gives enemies a "step" feel
+	# instead of sliding rigidly along the path. Frequency scales with
+	# speed so slow enemies bob slow, fast enemies bob fast.
+	_walk_phase += delta * (speed * 0.04)
+	# Keep the base v_offset (set at spawn for visual separation) as the
+	# midpoint and add the bob on top
+	v_offset = _base_v_offset + sin(_walk_phase) * 4.0
 
 	# Check if reached end of path
 	if progress_ratio >= 1.0:
@@ -201,6 +213,8 @@ func reset_for_pool() -> void:
 	# Reapply visual offset for path-bend separation (#48)
 	v_offset = randf_range(-10.0, 10.0)
 	h_offset = randf_range(-6.0, 6.0)
+	_base_v_offset = v_offset
+	_walk_phase = randf() * TAU  # desync bobs across enemies
 
 
 func _update_visual() -> void:
