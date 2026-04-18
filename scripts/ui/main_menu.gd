@@ -7,7 +7,8 @@ var _lore_panel: Control = null
 
 func _ready() -> void:
 	Engine.time_scale = 1.0
-	MusicManager.stop_music()
+	# Continuous music — don't stop on menu entry. MusicManager auto-
+	# switches to the "menu" track via GameManager.game_state_changed.
 	GameManager.set_state(GameManager.GameState.MENU)
 
 
