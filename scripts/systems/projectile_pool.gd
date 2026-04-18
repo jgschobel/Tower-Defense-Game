@@ -40,14 +40,17 @@ func _prewarm() -> void:
 func acquire() -> Node2D:
 	if _free.is_empty():
 		# Pool exhausted — instantiate a fresh one (still better than
-		# throwing away an active projectile)
+		# throwing away an active projectile). Mark it as NOT pooled
+		# so future release calls queue_free instead of pool-parking.
 		if _scene:
 			var p = _scene.instantiate()
 			if _container:
 				_container.add_child(p)
+			p.set_meta("pooled", false)
 			return p
 		return null
 	var p = _free.pop_back()
+	p.set_meta("pooled", true)
 	_activate(p)
 	return p
 
@@ -55,15 +58,20 @@ func acquire() -> Node2D:
 func release(p: Node) -> void:
 	if p == null or not is_instance_valid(p):
 		return
-	# If caller parented it somewhere (e.g. current_scene), reparent back
-	# to the pool container so it doesn't follow the scene tree's
-	# cleanup lifecycle
+	# Guard against double-release (audit #6): if already back in pool
+	# (in _free or already deactivated), bail silently.
+	if p in _free:
+		return
+	# Only genuinely pooled instances should return to the pool.
+	# Non-pooled (lazy-instantiated when pool was exhausted) just free.
+	if not p.has_meta("pooled") or not p.get_meta("pooled"):
+		p.queue_free()
+		return
 	if p.get_parent() != _container and _container != null:
 		p.get_parent().remove_child(p)
 		_container.add_child(p)
 	_deactivate(p)
-	if p not in _free:
-		_free.append(p)
+	_free.append(p)
 
 
 func _activate(p: Node) -> void:

@@ -43,7 +43,13 @@ func _ready() -> void:
 	cancel_button.visible = false
 
 
+var _safe_area_applied: bool = false
+
 func _apply_safe_area() -> void:
+	# Idempotent guard: without this, running twice (rotation, re-init)
+	# stacks offsets and pushes the UI off-screen. Audit #2.
+	if _safe_area_applied:
+		return
 	var safe_rect := DisplayServer.get_display_safe_area()
 	var screen_size := DisplayServer.window_get_size()
 	var inset_left := safe_rect.position.x
@@ -51,6 +57,7 @@ func _apply_safe_area() -> void:
 	var inset_top := safe_rect.position.y
 	var inset_bottom := screen_size.y - (safe_rect.position.y + safe_rect.size.y)
 	if inset_left == 0 and inset_right == 0 and inset_top == 0 and inset_bottom == 0:
+		_safe_area_applied = true
 		return
 	var top_bar: PanelContainer = $TopBar
 	top_bar.offset_left = float(inset_left)
@@ -62,6 +69,7 @@ func _apply_safe_area() -> void:
 	bottom_panel.offset_right = float(-inset_right)
 	bottom_panel.offset_top = -220.0 - float(inset_bottom)
 	bottom_panel.offset_bottom = float(-inset_bottom)
+	_safe_area_applied = true
 
 
 func _populate_tower_shop() -> void:
@@ -206,6 +214,22 @@ func hide_tower_info() -> void:
 		_selected_tower = null
 	if tower_info:
 		tower_info.visible = false
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	# Auto-hide tower info panel when user taps on empty map area. Audit
+	# #3: the panel occludes the middle band of the map and towers
+	# behind it can't be clicked. Tap-outside-to-close is BTD-style.
+	if not tower_info or not tower_info.visible:
+		return
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		var panel_rect: Rect2 = Rect2(tower_info.global_position, tower_info.size)
+		if not panel_rect.has_point(event.global_position):
+			hide_tower_info()
+	elif event is InputEventScreenTouch and event.pressed:
+		var panel_rect_touch: Rect2 = Rect2(tower_info.global_position, tower_info.size)
+		if not panel_rect_touch.has_point(event.position):
+			hide_tower_info()
 
 
 func _refresh_tower_info() -> void:
