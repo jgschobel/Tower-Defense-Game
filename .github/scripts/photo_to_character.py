@@ -164,7 +164,18 @@ def main() -> int:
         download(image_url, photo_path)
     except Exception as e:
         log(f"download failed: {e}")
-        _write_reason(f"Photo download failed: {e}. The URL may require auth or be expired.")
+        _write_reason(
+            f"Photo download failed: {e}.\n\n"
+            "**Known GitHub issue**: user-attachment URLs return 404 to "
+            "workflow clients (auth scope limitation on GitHub's side — "
+            "the GITHUB_TOKEN can't fetch images the browser can).\n\n"
+            "**Workaround**: upload the photo directly to "
+            "`.github/friend_photos_inbox/<slug>.jpg` via GitHub mobile "
+            "(Add file → Upload files). The `photo-inbox.yml` workflow "
+            "will then process it reliably. See "
+            "`.github/friend_photos_inbox/README.md` for the 30-second "
+            "phone walkthrough."
+        )
         return 1
 
     out_dir = pathlib.Path("assets/textures/towers")
