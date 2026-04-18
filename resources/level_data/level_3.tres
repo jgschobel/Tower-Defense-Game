@@ -7,7 +7,7 @@ script = ExtResource("1")
 level_id = 3
 level_name = "D'Bäckerei vom Gruse"
 description = "D'Migros-Bäckerei isch zur Festig worde. Gipfeli mached Sturzflüg."
-starting_gold = 400
+starting_gold = 600
 starting_lives = 22
 waves = [
 	{"groups": [{"enemy_id": "basic", "count": 15, "spawn_delay": 0.7}]},

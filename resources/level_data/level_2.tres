@@ -7,7 +7,7 @@ script = ExtResource("1")
 level_id = 2
 level_name = "D'Tiefchüel-Abteilig"
 description = "Alles isch chalt und aggressiv. Fischstäbli händ es Militär bildet."
-starting_gold = 350
+starting_gold = 525
 starting_lives = 25
 waves = [
 	{"groups": [{"enemy_id": "basic", "count": 12, "spawn_delay": 0.8}]},

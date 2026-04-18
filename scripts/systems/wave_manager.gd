@@ -53,11 +53,19 @@ func _build_spawn_queue(wave: Dictionary) -> void:
 	_spawn_queue.clear()
 	var groups: Array = wave.get("groups", [])
 
+	# Enforce a minimum spawn delay floor to prevent visual stacking.
+	# Previously: if spawn_delay was set to 0.1s with move_speed 80 px/s,
+	# consecutive enemies entered the path only 8px apart and visually
+	# piled up at the spawn point. Floor at 0.35s guarantees at least
+	# ~28px gap at base speed — enough to read as a conga line.
+	const MIN_DELAY: float = 0.35
+
 	for group in groups:
 		var group_dict: Dictionary = group
 		var enemy_id: String = group_dict.get("enemy_id", "basic")
 		var count: int = group_dict.get("count", 1)
-		var delay: float = group_dict.get("spawn_delay", 1.0)
+		var raw_delay: float = group_dict.get("spawn_delay", 1.0)
+		var delay: float = maxf(raw_delay, MIN_DELAY)
 
 		for i in count:
 			_spawn_queue.append({
