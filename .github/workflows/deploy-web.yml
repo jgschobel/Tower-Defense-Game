@@ -22,25 +22,22 @@ jobs:
         with:
           lfs: true
 
-      - name: Pick Godot version (pinned + validated)
+      - name: Pick Godot version (single source of truth)
         id: godot
         run: |
           set -e
-          # PINNED version. Previously auto-latest, which risks breaking
-          # when Godot ships 4.7 with API changes. Bump manually after
-          # local verification.
-          PINNED="4.6.2-stable"
-          # Verify the pinned release exists. If not (unlikely), fall
-          # back to latest stable.
+          # SoT: .github/godot-version.txt. Bump that one file when you
+          # want to migrate. deploy-web AND playtest read the same value
+          # so they're never on different engines.
+          PINNED=$(cat .github/godot-version.txt | tr -d '[:space:]')
+          if [ -z "$PINNED" ]; then
+            echo "ERROR: .github/godot-version.txt is empty"; exit 1
+          fi
           if curl -fsSL --head "https://github.com/godotengine/godot/releases/download/${PINNED}/Godot_v${PINNED}_linux.x86_64.zip" > /dev/null 2>&1; then
             TAG="$PINNED"
           else
-            TAG=$(curl -fsSL https://api.github.com/repos/godotengine/godot/releases \
-              | jq -r '[.[] | select(.prerelease == false) | .tag_name] | map(select(endswith("-stable"))) | first')
-            if [ -z "$TAG" ] || [ "$TAG" = "null" ]; then
-              TAG="4.3-stable"
-            fi
-            echo "WARN: pinned $PINNED not found, falling back to $TAG"
+            echo "ERROR: pinned Godot version $PINNED not downloadable. Update .github/godot-version.txt." >&2
+            exit 1
           fi
           echo "Using Godot tag: $TAG"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"

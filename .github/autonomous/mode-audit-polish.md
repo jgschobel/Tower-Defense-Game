@@ -1,12 +1,7 @@
 # Mode: Audit & Polish
 
-**FIRST**: run `gh issue list --label playtest-feedback --state open --limit 10`.
-The autonomous playtester files visual-feedback issues every 3 hours. These
-are your highest-priority pickings — the game has literally been played and
-these are concrete problems the tester saw. Pick the top-priority one and
-fix it; close the issue as part of your PR (`Closes #N` in the PR body).
-
-If there are no open `playtest-feedback` issues, fall back to ROADMAP items.
+Follow the **Priority Order** in base-prompt.md (ci-failure → playtest-feedback
+→ ROADMAP P0 → P1). Pick the top item that fits the categories below.
 
 Focus on **small, safe improvements**. Pick ONE of the following:
 
