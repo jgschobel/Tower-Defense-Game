@@ -1,0 +1,57 @@
+name: "🖼 Art Request (Backgrounds, Enemies, UI)"
+description: "Request a new art asset (level backgrounds, new enemy concepts, UI frames, props). Uses Imagen 4 text-to-image — NOT for friend character icons."
+title: "[art-request] <short description>"
+labels: ["art-request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For non-character art: level backgrounds, new monster concepts,
+        UI frames, props, promo art. Uses Imagen 4 text-to-image.
+        For **friend character icons**, use the "Friend Photo → Character"
+        template instead (different rule: img2img only).
+
+  - type: dropdown
+    id: asset_type
+    attributes:
+      label: "Asset type"
+      options:
+        - "background (level map, 16:9)"
+        - "enemy (new monster concept, 1:1)"
+        - "ui frame / panel / button (1:1)"
+        - "prop / item (1:1)"
+        - "promo / title card (16:9)"
+      default: 0
+    validations:
+      required: true
+
+  - type: input
+    id: filename
+    attributes:
+      label: "Filename slug"
+      description: "Saved as assets/textures/{category}/{slug}.png. No spaces, lowercase."
+      placeholder: "level4_kasse_bg"
+    validations:
+      required: true
+
+  - type: textarea
+    id: prompt
+    attributes:
+      label: "Prompt / description"
+      description: "Detailed description. Swiss-German or English. The more specific the better."
+      placeholder: "Migros cash register aisle at night, dim fluorescent lighting, conveyor belt, empty lanes, receipt roll debris on floor, cyberpunk-tinged shadows, cinematic, video game background, no text"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: aspect_ratio
+    attributes:
+      label: "Aspect ratio"
+      options:
+        - "16:9 (landscape — backgrounds, promo)"
+        - "1:1 (square — enemies, UI, props)"
+        - "9:16 (portrait)"
+        - "4:3"
+      default: 1
+    validations:
+      required: true

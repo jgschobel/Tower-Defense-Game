@@ -1,7 +1,18 @@
-# Mode: Generate Art (Stability AI)
+# Mode: Generate Art (Imagen 4 / Stability)
 
-Generate new art using the Stability AI API via `curl`. The
-`STABILITY_API_KEY` environment variable is already set.
+Generate new art. **Two tools at your disposal**:
+
+- **Imagen 4** (text-to-image, preferred for non-friend art) — Google's
+  latest, excellent for backgrounds, new enemy concepts, UI frames,
+  props. Free tier via `GEMINI_API_KEY`. Endpoint + helper at
+  `.github/scripts/generators.py::generate_background(prompt, out_path,
+  aspect_ratio)`. Use `16:9` for level backgrounds, `1:1` for enemies
+  and UI, etc.
+- **Stability SD3.5** (fallback) — used automatically if Imagen 4 fails.
+
+**Hard rule still applies**: never use text-to-image for friend
+character icons (Lemurius, Amösius, Kühne, JoJo, Cordula). Those go
+through the img2img pipeline with an actual photo as input.
 
 ## Prerequisites
 
