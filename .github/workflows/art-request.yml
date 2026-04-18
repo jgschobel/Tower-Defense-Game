@@ -1,0 +1,74 @@
+name: Art Request Generator
+
+# Handles "art-request" labeled issues for NON-FRIEND art: backgrounds,
+# enemies, UI frames, props. Uses Imagen 4 text-to-image (Stability
+# fallback).
+
+on:
+  issues:
+    types: [opened, labeled]
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  generate:
+    if: contains(github.event.issue.labels.*.name, 'art-request')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Python deps
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install requests
+
+      - name: Generate art
+        id: gen
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          STABILITY_API_KEY: ${{ secrets.STABILITY_API_KEY }}
+          ISSUE_BODY: |
+            ${{ github.event.issue.body }}
+            ${{ github.event.comment.body }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          set -e
+          python3 .github/scripts/process_art_request.py
+
+      - name: Open PR
+        if: steps.gen.outputs.asset_path != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ASSET: ${{ steps.gen.outputs.asset_path }}
+          SLUG: ${{ steps.gen.outputs.slug }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          BRANCH="art-request/${SLUG}-$(date +%s)"
+          git checkout -b "$BRANCH"
+          git add "$ASSET"
+          git commit -m "art: add ${SLUG} (closes #$ISSUE_NUMBER)"
+          git push -u origin "$BRANCH"
+          gh pr create \
+            --title "art: ${SLUG}" \
+            --body "Generated via Imagen 4 from issue #$ISSUE_NUMBER.\n\nAsset: \`$ASSET\`" \
+            --base main \
+            --head "$BRANCH"
+
+      - name: Comment on issue
+        if: steps.gen.outputs.asset_path != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ASSET: ${{ steps.gen.outputs.asset_path }}
+        run: |
+          gh issue comment "${{ github.event.issue.number }}" \
+            --body "Art generated: \`$ASSET\`. PR opened to merge it."
