@@ -8,6 +8,169 @@ Within a priority, top-of-list wins.
 
 ---
 
+## 🔥 P0 — Long-Term Retention System (NEWLY ADDED — BTD-grade)
+
+User ask: "Spezial-Münzen, Forschig-Menü, Mission-Challenges per Level,
+Difficulty-Modes, extra coole Levels — sodass man nach durchspielen
+nicht aufhört". This is the **active, mission-driven** layer that sits
+above the passive Cumulus tree below. Two currencies, two trees, two
+loops — like BTD6's Cash + Monkey Money + Knowledge.
+
+Ship in this order — each item is a self-contained PR:
+
+### A) Spezial-Münzen Currency
+
+A second currency separate from in-run gold and from passive Cumulus.
+Earned only by completing **specific challenges**, not just playing.
+
+- [ ] **`scripts/autoload/spezial_currency.gd`** new singleton, persists
+  via `user://spezial.save` JSON (`{ "balance": int, "earned_total": int,
+  "history": Array[{source, amount, timestamp}] }`)
+- [ ] Display at top of HUD next to gold (small Migros-themed coin icon
+  with star). Animated pulse on earn.
+- [ ] Earning sources:
+  - 5 per mission completed (see B below)
+  - 10 per difficulty tier beaten (Hert) per level
+  - 25 per difficulty tier beaten (Brutal) per level
+  - 50 per first 3-star clear of any level
+  - 100 per extra-bonus-level cleared
+
+### B) Mission System per Level
+
+Three missions per level, BTD-style: "Beat with X constraint or do Y
+thing". Visible from level-select before starting. Progress tracked
+per save. Each completion = 5 Spezial-Münzen + a checkmark icon next
+to the level.
+
+- [ ] **`resources/missions/level_N.tres`** per level, schema:
+  ```
+  missions: Array[{
+    id: String,            # "no_amosius", "perfect_run"
+    name_de: String,       # "Ohni Amösius gwinne"
+    description_de: String,
+    type: enum(NO_TOWER_USE, NO_LIFE_LOST, MAX_GOLD_LIMIT, KILL_COUNT,
+               TIME_LIMIT, ONLY_TOWER_TYPE, NO_HERO),
+    constraint_value: Variant,  # tower id, gold cap, time seconds, etc.
+    reward_spezial: int = 5,
+  }]
+  ```
+- [ ] **GameLevel tracks mission state** during run. On level complete,
+  evaluates each mission and awards Spezial-Münzen for newly-completed
+  ones. Save state.
+- [ ] **Level-select UI** shows 3 small mission icons per level
+  (locked / available / completed). Tap one before starting → loads
+  that constraint into the level.
+- [ ] **Initial missions to spec** (autonomous loop fills the rest):
+  - Level 1: "Ohni Amösius", "Ohni Läbe verlüre", "Mit max 200 Gold start"
+  - Level 2: "Nur Sniper-Türm", "Unter 5 Minute durche", "Ohni Hero"
+  - Level 3: "Alli 3 Päd-Tier-3 Upgrades", "Boss überlebe ohni Schade",
+    "Mit nur 1 Tower-Typ"
+
+### C) Forschig (Research) Menu
+
+The destination for Spezial-Münzen — a permanent unlock tree that
+makes the game DEEPER, not just easier. Three branches:
+
+**Branch 1 — Tower Forschig** (advanced tower modifications)
+- [ ] Lemurius: "Doppel-Banane-Wurf" — 25% chance of 2nd banana per
+  shot. (50 Münzen)
+- [ ] Kühne: "Pollen-Wolke" — sniper hits leave 2s poison cloud at impact
+  point. (75 Münzen)
+- [ ] JoJo: "Säure-Splash" — splash damage now also slows by 30%.
+  (75 Münzen)
+- [ ] Cordula: "Volley-Feuerei" — first attack each wave is a triple-shot.
+  (50 Münzen)
+- [ ] Amösius: "Brennendi Zunge" — slow now also deals DoT 2/sec.
+  (75 Münzen)
+- [ ] Hero: "Doppel-Banani-Wurf-Cooldown" — ability cooldown -15s.
+  (100 Münzen)
+
+**Branch 2 — Krieger-Forschig** (combat advantages)
+- [ ] "Schade-Stack +5%" against all enemies. (40 Münzen, repeatable 5×)
+- [ ] "Boss-Tüüfel-Hass +15% damage" specifically on boss enemies.
+  (60 Münzen)
+- [ ] "Krit-Chance 5%" — 5% of all hits do 2× damage. (80 Münzen)
+- [ ] "Last-Stand" — at 1 life, all towers fire 30% faster. (100 Münzen)
+- [ ] "Pop-Echo" — 10% chance pop spawns a small banana that does 5
+  damage to next enemy. (90 Münzen)
+
+**Branch 3 — Wirtschafts-Forschig** (economy)
+- [ ] "Cumulus-Vermehrer" — 1.5× Cumulus earn rate. (80 Münzen)
+- [ ] "Spezial-Boost" — 1.25× Spezial-Münzen earn rate. (120 Münzen,
+  end-game node)
+- [ ] "Wave-Rabatt" — between waves, 1 random tower gets -50% upgrade
+  cost. (60 Münzen)
+- [ ] "Sell-Bonus" — selling refunds 80% instead of 60%. (50 Münzen)
+- [ ] "Wave-Skip-Token" — earn 1 token per 5 waves cleared, spend for
+  +200g instant. (100 Münzen)
+
+- [ ] **`scenes/ui/forschig_menu.tscn`** — 3-tab menu (Tower/Krieger/
+  Wirtschaft), each tab has a node graph with cost/locked-by/owned
+  state. Navigated from main menu and pause menu.
+- [ ] **`GameManager.apply_forschig_modifiers()`** called on level start —
+  reads unlocked nodes and modifies tower data, hero data, currency
+  earn rates accordingly.
+
+### D) Difficulty Modes per Level
+
+Each level beatable in 3 modes: **Eifach / Normal / Hert / Brutal**.
+Higher difficulties = more enemies, faster speed, fewer starting lives,
+but more Spezial-Münzen on clear. Lock progression: must beat Normal
+to unlock Hert, etc.
+
+- [ ] Extend `level_data.tres` with arrays:
+  ```
+  enemy_count_multiplier: Array[float] = [0.7, 1.0, 1.3, 1.7]
+  enemy_speed_multiplier: Array[float] = [0.85, 1.0, 1.15, 1.35]
+  starting_lives_per_diff: Array[int] = [25, 20, 15, 10]
+  spezial_reward_per_diff: Array[int] = [0, 5, 15, 30]
+  ```
+- [ ] WaveManager + BaseEnemy multiply count/speed by difficulty
+  multiplier on spawn.
+- [ ] Level-select UI shows 4 difficulty buttons per level, locked icon
+  on locked tiers, gold star icon on cleared.
+- [ ] Save format extended: `level_clears: { N: { eifach: bool, normal:
+  bool, hert: bool, brutal: bool } }`
+
+### E) Extra Bonus Levels (cool maps + special rules)
+
+Unlocked by hitting Spezial-Münzen milestones. These are NOT in the
+main story progression — they exist as standalone challenges with
+unique mechanics that don't appear in main levels.
+
+- [ ] **"Self-Scan-Hölli"** (unlock at 100 Spezial): 1 wave only, but
+  500 enemies all at once. Stress test. Reward: 30 Spezial.
+- [ ] **"Banani-Träume"** (200 Spezial): all enemies are Tofu-
+  Würschtli, but they're 3× faster. Speedrun map. Reward: 40 Spezial.
+- [ ] **"De Tüüfel kommt heim"** (400 Spezial): only the boss, but it
+  spawns every 30s for 10 minutes. Tank/sustain test. Reward: 100 Spezial.
+- [ ] **"Cumulus-Bingo"** (300 Spezial): random map each play, random
+  tower restrictions, random enemy comp. Pure variety mode. Reward:
+  20-80 Spezial depending on roll.
+- [ ] **"Affoltern bei Nacht"** (500 Spezial): all maps in dark mode
+  with limited tower visibility (60% range). Cool aesthetic + skill
+  challenge. Reward: 50 Spezial.
+
+Each bonus level has its own .tres + .tscn + entry on a separate
+"Bonus" tab in level-select.
+
+### Dependencies + Order Hint
+
+The autonomous loop should ship A and D first (foundation), then B
+(uses A), then C (uses A), then E (uses all). Approximate sequence
+(7-10 cron build-content runs):
+
+1. Spezial-Münzen currency + display
+2. Difficulty modes data + UI
+3. Mission system data + per-level evaluation
+4. Forschig menu UI shell + Tower-Forschig branch
+5. Krieger-Forschig + Wirtschafts-Forschig branches
+6-10. Bonus levels one at a time
+
+Sim-gate must run on each — bonus levels especially need balance check.
+
+---
+
 ## 🔥 P0 — Game-Identity Levers (NEWLY ADDED — pick these next)
 
 These three are the highest-ROI gameplay additions per BTD design
