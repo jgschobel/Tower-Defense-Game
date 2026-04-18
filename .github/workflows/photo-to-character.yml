@@ -37,6 +37,7 @@ jobs:
         id: gen
         env:
           STABILITY_API_KEY: ${{ secrets.STABILITY_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Combine both — photos can live in either the original issue
           # body (template form) or a follow-up comment. Python picks
