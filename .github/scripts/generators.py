@@ -26,6 +26,8 @@ import requests
 STABILITY_URL = "https://api.stability.ai/v2beta/stable-image/generate/sd3"
 GEMINI_MODEL = "gemini-2.5-flash-image-preview"
 GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent"
+IMAGEN_MODEL = "imagen-4.0-generate-001"
+IMAGEN_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{IMAGEN_MODEL}:predict"
 
 NEGATIVE_PROMPT = (
     "photorealistic, photograph, realistic skin, nsfw, nude, text, watermark, logo, "
@@ -110,6 +112,88 @@ def call_stability_img2img(photo: pathlib.Path, prompt: str, out: pathlib.Path) 
     out.write_bytes(r.content)
     _log(f"wrote {out} ({len(r.content)} bytes)")
     return True
+
+
+def call_imagen4_text2img(prompt: str, out: pathlib.Path, aspect_ratio: str = "1:1") -> bool:
+    """Pure text-to-image via Imagen 4. Use for backgrounds, new monster
+    concepts, UI frames, props — NEVER for friend character icons (those
+    must go through img2img, hard rule).
+
+    aspect_ratio: "1:1" (default), "16:9" (landscape backgrounds), "9:16",
+    "4:3", "3:4".
+    """
+    api_key = os.environ.get("GEMINI_API_KEY")
+    if not api_key:
+        return False
+    _log(f"imagen4 text2img {out.name} [{aspect_ratio}]: {prompt[:120]}...")
+    body = {
+        "instances": [{"prompt": prompt}],
+        "parameters": {
+            "sampleCount": 1,
+            "aspectRatio": aspect_ratio,
+            "personGeneration": "allow_adult",
+        },
+    }
+    r = requests.post(
+        f"{IMAGEN_URL}?key={api_key}",
+        json=body,
+        headers={"Content-Type": "application/json"},
+        timeout=180,
+    )
+    if r.status_code != 200:
+        _log(f"Imagen 4 API returned {r.status_code}: {r.text[:500]}")
+        return False
+    data = r.json()
+    try:
+        preds = data.get("predictions", [])
+        if not preds:
+            _log(f"Imagen 4 empty predictions: {json.dumps(data)[:300]}")
+            return False
+        b64 = preds[0].get("bytesBase64Encoded")
+        if not b64:
+            _log(f"Imagen 4 response missing bytes: {json.dumps(preds[0])[:300]}")
+            return False
+        png_bytes = base64.b64decode(b64)
+        out.write_bytes(png_bytes)
+        _log(f"wrote {out} ({len(png_bytes)} bytes)")
+        return True
+    except Exception as e:
+        _log(f"Imagen 4 parse error: {e}")
+    return False
+
+
+def generate_background(prompt: str, out: pathlib.Path, aspect_ratio: str = "16:9") -> bool:
+    """Text-to-image for non-friend art. Prefers Imagen 4, falls back to
+    Stability (text-to-image mode)."""
+    if os.environ.get("GEMINI_API_KEY"):
+        if call_imagen4_text2img(prompt, out, aspect_ratio):
+            return True
+        _log("imagen4 failed — trying stability text2img")
+    # Stability SD3 text-to-image fallback
+    if os.environ.get("STABILITY_API_KEY"):
+        api_key = os.environ["STABILITY_API_KEY"]
+        _log(f"stability text2img {out.name}: {prompt[:120]}...")
+        data = {
+            "prompt": prompt,
+            "negative_prompt": NEGATIVE_PROMPT,
+            "output_format": "png",
+            "aspect_ratio": aspect_ratio,
+            "model": "sd3.5-large",
+        }
+        files = {"none": ("", "", "application/octet-stream")}
+        r = requests.post(
+            STABILITY_URL,
+            headers={"Authorization": f"Bearer {api_key}", "Accept": "image/*"},
+            files=files,
+            data=data,
+            timeout=180,
+        )
+        if r.status_code == 200:
+            out.write_bytes(r.content)
+            _log(f"wrote {out} ({len(r.content)} bytes)")
+            return True
+        _log(f"stability text2img returned {r.status_code}: {r.text[:300]}")
+    return False
 
 
 def generate_icon(
