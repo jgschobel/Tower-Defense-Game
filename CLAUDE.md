@@ -27,13 +27,15 @@ autonomous or manual. Update only when the user explicitly changes them.
   a GitHub Issue with log tails whenever any workflow fails. Before
   starting new work, check `mcp__github__list_issues` with label
   `ci-failure` and fix those first. Close the issue when fixed.
-- **When the user drops a photo in chat for a new character icon**,
-  DO NOT ask them to open a GitHub Issue. Save the photo directly to
-  `.github/friend_photos_inbox/<slug>.jpg` (pick a short slug from any
-  name they mention), optionally write a sidecar `<slug>.yml` with
-  `name`, `description`, `style` (default / warrior / scholar / pirate
-  / pixie / punk). Commit + push. The `photo-inbox.yml` workflow
-  handles the rest (Stability AI img2img → new asset → PR).
+- **Friend character icons: image-to-image ONLY. HARD RULE.** Never use
+  text-to-image for friend icons — likeness matters. If the user drops
+  a photo in chat and you cannot save its bytes to disk (common: chat
+  attachments aren't accessible as files in this environment), DO NOT
+  fall back to text-to-image. Instead, guide the user to upload the
+  photo themselves — either via the `friend-photo` issue template or
+  directly into `.github/friend_photos_inbox/<slug>.jpg` using GitHub
+  mobile's file upload. Only if you actually have image bytes on disk
+  do you commit them to the inbox and let the workflow run img2img.
 - **Feedback rhythm**: user plays the deployed HTML5 build
   (`jgschobel.github.io/Tower-Defense-Game/`) and edits `ROADMAP.md`
   when they want to redirect priorities. Otherwise: zero input required.
