@@ -22,73 +22,111 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0, 0, 0, 0.75)
+color = Color(0, 0, 0, 0.78)
 
 [node name="Panel" type="MarginContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-theme_override_constants/margin_left = 25
-theme_override_constants/margin_top = 30
-theme_override_constants/margin_right = 25
-theme_override_constants/margin_bottom = 20
+theme_override_constants/margin_left = 60
+theme_override_constants/margin_top = 40
+theme_override_constants/margin_right = 60
+theme_override_constants/margin_bottom = 30
 
 [node name="VBox" type="VBoxContainer" parent="Panel"]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 14
 
 [node name="TitleLabel" type="Label" parent="Panel/VBox"]
 layout_mode = 2
+theme_override_font_sizes/font_size = 44
+theme_override_colors/font_color = Color(1, 0.95, 0.7, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 6
 text = "Kapitel 1"
 horizontal_alignment = 1
 
 [node name="SubtitleLabel" type="Label" parent="Panel/VBox"]
 layout_mode = 2
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_color = Color(0.85, 0.85, 0.85, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
 text = "Subtitle"
 horizontal_alignment = 1
 
 [node name="PortraitRow" type="HBoxContainer" parent="Panel/VBox"]
 layout_mode = 2
 alignment = 1
-theme_override_constants/separation = 30
+theme_override_constants/separation = 40
 
 [node name="LeftPortrait" type="TextureRect" parent="Panel/VBox/PortraitRow"]
 layout_mode = 2
-custom_minimum_size = Vector2(100, 100)
+custom_minimum_size = Vector2(140, 140)
 expand_mode = 3
 stretch_mode = 5
 
 [node name="VsLabel" type="Label" parent="Panel/VBox/PortraitRow"]
 layout_mode = 2
+theme_override_font_sizes/font_size = 36
+theme_override_colors/font_color = Color(1, 0.3, 0.3, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 5
 text = "VS"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="RightPortrait" type="TextureRect" parent="Panel/VBox/PortraitRow"]
 layout_mode = 2
-custom_minimum_size = Vector2(100, 100)
+custom_minimum_size = Vector2(140, 140)
 expand_mode = 3
 stretch_mode = 5
 
-[node name="StoryScroll" type="ScrollContainer" parent="Panel/VBox"]
+[node name="StoryScroll" type="PanelContainer" parent="Panel/VBox"]
 layout_mode = 2
 size_flags_vertical = 3
+
+[node name="StoryMargin" type="MarginContainer" parent="Panel/VBox/StoryScroll"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 14
 
 [node name="StoryLabel" type="Label" parent="Panel/VBox/StoryScroll"]
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_font_sizes/font_size = 26
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
 text = ""
 autowrap_mode = 2
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="EnemyLabel" type="Label" parent="Panel/VBox"]
 layout_mode = 2
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(1, 0.6, 0.4, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
 text = "Feind: ???"
+horizontal_alignment = 1
+
+[node name="PageIndicator" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+text = "1 / 1"
 horizontal_alignment = 1
 
 [node name="ContinueButton" type="Button" parent="Panel/VBox"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 50)
-text = "LOS GAHT'S!"
+custom_minimum_size = Vector2(0, 72)
+theme_override_font_sizes/font_size = 28
+text = "Tippä zum wiiterläse…"
 
 [connection signal="pressed" from="Panel/VBox/ContinueButton" to="." method="_on_continue_button_pressed"]

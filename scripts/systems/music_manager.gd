@@ -42,9 +42,34 @@ func _ready() -> void:
 
 	_player = AudioStreamPlayer.new()
 	_player.stream = stream
-	_player.volume_db = linear_to_db(_volume)
 	_player.bus = "Master"
 	add_child(_player)
+	_apply_user_volume()
+
+	if GameManager:
+		GameManager.game_state_changed.connect(_on_game_state_changed)
+
+
+func _apply_user_volume() -> void:
+	if not _player:
+		return
+	var user_vol: float = 1.0
+	if GameManager:
+		user_vol = GameManager.music_volume
+	var effective := _volume * user_vol
+	if effective <= 0.0001:
+		_player.volume_db = -80.0
+	else:
+		_player.volume_db = linear_to_db(effective)
+
+
+func refresh_volume() -> void:
+	## Called by the options menu after the user moves the music slider.
+	_apply_user_volume()
+
+
+func _on_game_state_changed(_state: int) -> void:
+	_apply_user_volume()
 
 
 func play_music() -> void:
