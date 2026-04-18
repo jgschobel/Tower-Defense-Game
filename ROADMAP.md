@@ -116,6 +116,41 @@ run project:
 - [ ] Viewport scaling across phone sizes — PLAN #66
 - [ ] Battery optimization: stop music gen when backgrounded — PLAN #67
 
+## 🔥 P0 — Creative Upgrade Pipeline (Live Feedback)
+
+User: upgrades must be visually + mechanically creative, not just stat
+bumps. Each tier must look different; projectiles must evolve.
+
+- [ ] **Per-tier tower texture variants**: use Nano Banana img2img with
+  existing tower PNG as source. Generate 2 extra variants per path per
+  tower (tier 1, tier 2, plus tier 3 "ultimate" bigger change). Save as
+  `assets/textures/towers/<id>_A1.png`, `_A2.png`, `_A3.png`,
+  `_B1.png` etc. TowerData arrays: `path_a_textures`, `path_b_textures`.
+  base_tower._update_visual() picks the highest-tier texture per path
+  that matches current state (when A3 reached, use A3 over A2).
+  Total assets: 5 towers × 6 tier variants = 30 new PNGs via the
+  generate-art cron.
+- [ ] **Per-tier projectile animations**: base_projectile.gd grows a
+  `style: String` parameter (`banana`, `banana_sharp`, `banana_bomb`,
+  `pollen_cloud`, `ice_shard`, `chaos_bubble`, etc). Each style has a
+  dedicated Sprite2D or shader effect. Tower hands `data.path_a_tier`
+  or `data.path_b_tier` to `launch_projectile()` so the visual matches.
+- [ ] **Upgrade-button icons in tower info panel**: tiny PNG per tier
+  name. Imagen 4 generate-background with 1:1 aspect, 64×64 output,
+  matching tower tint. Wire into hud._style_path_button().
+- [ ] **Side-widget tower selection**: replace the full-width bottom
+  bar with a collapsible widget on the RIGHT edge of the screen. Five
+  small circular avatar buttons, expand on tap to show cost + range,
+  stays out of map center. hud.tscn rearrange: move TowerShop to an
+  anchored right-side VBoxContainer, shrink per-button size, add
+  "pull-tab" to collapse.
+- [ ] **Maps still boring — second pass**: Imagen 4 generate richer
+  Level 1/2/3 backgrounds with more detail (shelves, products, Swiss
+  supermarket atmosphere). Plus animated overlays per level: ice
+  particles for L2, flour drift for L3, fluorescent flicker for L1.
+  Current backgrounds are "screenshot of supermarket", user wants
+  "tower defense-ready stylized painting".
+
 ## 🔥 P0 — Just Added (Latest Live Feedback)
 
 - [ ] **Empty space left/right in landscape**: partially fixed by setting
