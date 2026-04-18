@@ -92,34 +92,9 @@ def call_stability_img2img(photo: pathlib.Path, prompt: str, out: pathlib.Path) 
     return True
 
 
-def call_stability_text2img(prompt: str, out: pathlib.Path) -> bool:
-    api_key = os.environ.get("STABILITY_API_KEY")
-    if not api_key:
-        log("STABILITY_API_KEY not set — skipping")
-        return False
-    log(f"text2img {out.name}: {prompt[:120]}...")
-    data = {
-        "prompt": prompt,
-        "negative_prompt": NEGATIVE_PROMPT,
-        "output_format": "png",
-        "aspect_ratio": "1:1",
-        "model": "sd3.5-large",
-    }
-    # SD3 text-to-image requires at least one file field per API quirks
-    files = {"none": ("", "", "application/octet-stream")}
-    r = requests.post(
-        STABILITY_URL,
-        headers={"Authorization": f"Bearer {api_key}", "Accept": "image/*"},
-        files=files,
-        data=data,
-        timeout=180,
-    )
-    if r.status_code != 200:
-        log(f"Stability API returned {r.status_code}: {r.text[:500]}")
-        return False
-    out.write_bytes(r.content)
-    log(f"wrote {out} ({len(r.content)} bytes)")
-    return True
+# HARD RULE (user directive): never use text-to-image for friend character
+# icons. Likeness matters — always require an actual photo as input for
+# Stability image-to-image. Sidecar-only entries are rejected.
 
 
 def load_sidecar(path: pathlib.Path) -> dict:
@@ -191,29 +166,14 @@ def main() -> int:
         else:
             log(f"failed for {photo.name} — leaving in inbox for retry")
 
-    # Also process text-only entries — sidecar .yml with no matching image
+    # HARD RULE: text-only sidecars are rejected. Friend icons MUST be
+    # produced from an actual photo via image-to-image. Any .yml without
+    # a matching .jpg/.png is flagged in the logs and left alone (so the
+    # user can add the photo later).
     for sidecar in INBOX_DIR.glob("*.yml"):
-        slug = slugify(sidecar.stem)
-        # Skip if a matching image exists (already handled above)
         has_image = any((INBOX_DIR / f"{sidecar.stem}{ext}").exists() for ext in (".jpg", ".jpeg", ".png"))
-        if has_image:
-            continue
-        meta = load_sidecar(sidecar)
-        if not meta.get("text_only"):
-            continue
-        prompt = build_prompt(meta)
-        replace = bool(meta.get("replace_existing", False))
-        existing = OUT_DIR / f"{slug}.png"
-        if replace and existing.exists():
-            out_path = existing
-        else:
-            out_path = OUT_DIR / f"friend_{slug}.png"
-        ok = call_stability_text2img(prompt, out_path)
-        if ok:
-            any_success = True
-            sidecar.unlink()
-        else:
-            log(f"text-only failed for {sidecar.name} — leaving for retry")
+        if not has_image:
+            log(f"WARN: sidecar {sidecar.name} has no matching photo — ignored (hard rule: img2img only)")
 
     emit_output("processed", "true" if any_success else "false")
     return 0 if any_success else 1
