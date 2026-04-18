@@ -32,10 +32,18 @@ with a preset tower layout and captured screenshots at key moments.
    - Specific description of the problem
    - A concrete suggested fix (code file, approach, design hint)
 
-4. **Prioritize** — don't file 20 nitpicks. File 3-8 real issues
-   that would meaningfully improve the game. If the game looks great,
-   file a single "Playtest passed — no major issues" issue as a
-   progress marker so the loop knows it ran.
+4. **Dedup existing issues FIRST**. Before filing anything, run
+   `gh issue list --label playtest-feedback --state open --limit 50`
+   and read the titles. If a problem you're about to file is
+   already tracked, SKIP it (don't file a duplicate). The issue
+   backlog should stay lean — if the same problem persists run
+   after run, adding a new issue each time just creates noise.
+
+5. **Prioritize** — don't file 20 nitpicks. File 3-8 genuinely new
+   issues that would meaningfully improve the game. If the game
+   looks great AND all prior issues are closed, file a single
+   "Playtest passed — no new issues" marker issue so the loop knows
+   the run completed.
 
 5. **Don't modify code in this run**. Your job is observation and issue
    filing only. The next `audit-polish` / `self-improve` cron will pick

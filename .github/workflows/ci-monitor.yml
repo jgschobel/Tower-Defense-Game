@@ -23,6 +23,10 @@ permissions:
   contents: read
   issues: write
 
+concurrency:
+  group: ci-monitor-${{ github.event.workflow_run.id }}
+  cancel-in-progress: false
+
 jobs:
   on-failure:
     if: ${{ github.event.workflow_run.conclusion == 'failure' }}
