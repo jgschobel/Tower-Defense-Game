@@ -197,14 +197,25 @@ func _refresh_tower_info() -> void:
 	var sell_btn: Button = tower_info.get_node_or_null("VBox/HBox/SellButton")
 
 	if name_lbl:
-		name_lbl.text = "%s (Lv %d)" % [td.display_name, _selected_tower.upgrade_level + 1]
+		if td.has_branching_upgrades():
+			name_lbl.text = "%s  (A%d / B%d)" % [
+				td.display_name,
+				_selected_tower.path_a_tier,
+				_selected_tower.path_b_tier,
+			]
+		else:
+			name_lbl.text = "%s (Lv %d)" % [td.display_name, _selected_tower.upgrade_level + 1]
 	if stats_lbl:
 		stats_lbl.text = "Schade: %.0f  Tempo: %.1f  Riichwiiti: %.0f" % [
 			_selected_tower.effective_damage,
 			_selected_tower.effective_speed,
 			_selected_tower.effective_range,
 		]
-	if upgrade_btn:
+
+	if td.has_branching_upgrades():
+		_refresh_branching_buttons(upgrade_btn)
+	elif upgrade_btn:
+		_ensure_linear_upgrade_button(upgrade_btn)
 		var cost := _selected_tower.get_upgrade_cost()
 		if cost < 0:
 			upgrade_btn.text = "MAXIMUM"
@@ -212,9 +223,93 @@ func _refresh_tower_info() -> void:
 		else:
 			upgrade_btn.text = "Verbessere %d" % cost
 			upgrade_btn.disabled = not _selected_tower.can_upgrade()
+
 	if sell_btn:
-		var sell_val := td.get_sell_value(_selected_tower.upgrade_level)
+		var sell_val: int
+		if td.has_branching_upgrades():
+			sell_val = td.get_sell_value_branched(_selected_tower.path_a_tier, _selected_tower.path_b_tier)
+		else:
+			sell_val = td.get_sell_value(_selected_tower.upgrade_level)
 		sell_btn.text = "Verchaufe %d" % sell_val
+
+
+func _ensure_linear_upgrade_button(upgrade_btn: Button) -> void:
+	upgrade_btn.visible = true
+	var parent := upgrade_btn.get_parent()
+	if parent:
+		var path_a_btn: Button = parent.get_node_or_null("PathAButton")
+		var path_b_btn: Button = parent.get_node_or_null("PathBButton")
+		if path_a_btn:
+			path_a_btn.visible = false
+		if path_b_btn:
+			path_b_btn.visible = false
+
+
+func _refresh_branching_buttons(linear_btn: Button) -> void:
+	if not _selected_tower or not _selected_tower.data:
+		return
+	var td := _selected_tower.data
+	var parent := linear_btn.get_parent() if linear_btn else tower_info.get_node_or_null("VBox/HBox")
+	if parent == null:
+		return
+	if linear_btn:
+		linear_btn.visible = false
+
+	var path_a_btn: Button = parent.get_node_or_null("PathAButton")
+	var path_b_btn: Button = parent.get_node_or_null("PathBButton")
+	if path_a_btn == null:
+		path_a_btn = Button.new()
+		path_a_btn.name = "PathAButton"
+		path_a_btn.custom_minimum_size = Vector2(0, 60)
+		path_a_btn.pressed.connect(_on_path_a_button_pressed)
+		parent.add_child(path_a_btn)
+		# Put path buttons before the sell button
+		var sell_idx := parent.get_node_or_null("SellButton")
+		if sell_idx:
+			parent.move_child(path_a_btn, sell_idx.get_index())
+	if path_b_btn == null:
+		path_b_btn = Button.new()
+		path_b_btn.name = "PathBButton"
+		path_b_btn.custom_minimum_size = Vector2(0, 60)
+		path_b_btn.pressed.connect(_on_path_b_button_pressed)
+		parent.add_child(path_b_btn)
+		var sell_idx2 := parent.get_node_or_null("SellButton")
+		if sell_idx2:
+			parent.move_child(path_b_btn, sell_idx2.get_index())
+
+	path_a_btn.visible = true
+	path_b_btn.visible = true
+	_style_path_button(path_a_btn, "a", td)
+	_style_path_button(path_b_btn, "b", td)
+
+
+func _style_path_button(btn: Button, path_letter: String, td: TowerData) -> void:
+	var display: String = td.path_a_display if path_letter == "a" else td.path_b_display
+	var tier := _selected_tower.path_a_tier if path_letter == "a" else _selected_tower.path_b_tier
+	var cost := _selected_tower.get_path_upgrade_cost(path_letter)
+	var tint: Color = td.path_a_tint if path_letter == "a" else td.path_b_tint
+	if cost < 0:
+		btn.text = "%s ⭐ MAX" % display
+		btn.disabled = true
+	else:
+		var next_name := _selected_tower.get_path_next_tier_name(path_letter)
+		btn.text = "↑ %s\n(%dg)" % [next_name if next_name != "" else display, cost]
+		btn.disabled = not _selected_tower.can_upgrade_path(path_letter)
+	btn.add_theme_color_override("font_color", tint)
+
+
+func _on_path_a_button_pressed() -> void:
+	if not _selected_tower:
+		return
+	if _selected_tower.upgrade_path("a"):
+		_refresh_tower_info()
+
+
+func _on_path_b_button_pressed() -> void:
+	if not _selected_tower:
+		return
+	if _selected_tower.upgrade_path("b"):
+		_refresh_tower_info()
 
 
 func _on_gold_changed(amount: int) -> void:
