@@ -366,18 +366,21 @@ func upgrade_path(path_letter: String) -> bool:
 func _apply_path_tint() -> void:
 	if not sprite or not data or not data.has_branching_upgrades():
 		return
-	# Blend path-A and path-B tints by their tier ratios (3 = full tint)
-	var a_weight: float = float(path_a_tier) / 3.0
-	var b_weight: float = float(path_b_tier) / 3.0
-	var total: float = a_weight + b_weight
-	if total <= 0.01:
+	if path_a_tier == 0 and path_b_tier == 0:
 		sprite.modulate = Color.WHITE
 		return
-	var a_norm := a_weight / total
-	var b_norm := b_weight / total
-	var strength: float = clampf(max(a_weight, b_weight), 0.0, 1.0)
-	var blended := data.path_a_tint * a_norm + data.path_b_tint * b_norm
-	sprite.modulate = Color.WHITE.lerp(blended, strength * 0.6)
+	# Strength ramps 0.55 / 0.80 / 1.00 per max-tier so the visual delta
+	# between tiers is actually visible. Previous ramp was 0.20/0.40/0.60
+	# which barely tinted a near-white sprite (reported as #47 by vision-agent).
+	var max_tier: int = max(path_a_tier, path_b_tier)
+	var strength: float = 0.30 + 0.25 * float(max_tier)  # T1=0.55, T2=0.80, T3=1.05 clamped
+	strength = clampf(strength, 0.0, 1.0)
+	# Blend tints by their per-path weights
+	var a_weight: float = float(path_a_tier)
+	var b_weight: float = float(path_b_tier)
+	var total: float = a_weight + b_weight
+	var blended: Color = data.path_a_tint * (a_weight / total) + data.path_b_tint * (b_weight / total)
+	sprite.modulate = Color.WHITE.lerp(blended, strength)
 
 
 func show_range(visible_flag: bool) -> void:
