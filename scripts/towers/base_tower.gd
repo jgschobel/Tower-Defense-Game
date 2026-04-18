@@ -196,7 +196,14 @@ func _attack() -> void:
 		atk_tween.tween_property(sprite, "scale", sprite.scale * 1.2, 0.08)
 		atk_tween.tween_property(sprite, "scale", sprite.scale, 0.12)
 
-	var projectile = _projectile_scene.instantiate()
+	# Prefer the pool to avoid instantiate/queue_free churn at scale.
+	# Falls back to instantiation if pool is unavailable (loading order)
+	var projectile: Node = null
+	if ProjectilePool and ProjectilePool.has_method("acquire"):
+		projectile = ProjectilePool.acquire()
+	if projectile == null:
+		projectile = _projectile_scene.instantiate()
+		get_tree().current_scene.add_child(projectile)
 	projectile.setup(
 		origin_pos,
 		current_target,
@@ -209,7 +216,6 @@ func _attack() -> void:
 		data.slow_amount,
 		data.slow_duration
 	)
-	get_tree().current_scene.add_child(projectile)
 
 
 func upgrade() -> bool:
