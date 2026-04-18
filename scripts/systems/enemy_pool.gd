@@ -38,8 +38,8 @@ func _prewarm() -> void:
 
 func acquire(data, path_node) -> Node:
 	var e: Node
+	var from_pool := false
 	if _free.is_empty():
-		# Pool exhausted — instantiate a fresh one
 		if _scene == null:
 			return null
 		e = _scene.instantiate()
@@ -47,7 +47,10 @@ func acquire(data, path_node) -> Node:
 		e = _free.pop_back()
 		if e.get_parent() == _container:
 			_container.remove_child(e)
-	# Attach to the path2D so PathFollow2D behavior works
+		from_pool = true
+	# Mark origin so release() knows whether to pool-park or queue_free.
+	# Mixing pool + non-pool instances was audit finding #5.
+	e.set_meta("pooled", from_pool)
 	path_node.add_child(e)
 	e.data = data
 	if e.has_method("reset_for_pool"):
@@ -59,17 +62,21 @@ func acquire(data, path_node) -> Node:
 func release(e: Node) -> void:
 	if e == null or not is_instance_valid(e):
 		return
-	if _container == null:
-		# Pool not ready yet — fall back to queue_free
+	# Double-release guard (audit #6)
+	if e in _free:
+		return
+	# Non-pooled instances just free themselves
+	if not e.has_meta("pooled") or not e.get_meta("pooled"):
 		e.queue_free()
 		return
-	# Detach from current parent (usually Path2D) and park in container
+	if _container == null:
+		e.queue_free()
+		return
 	if e.get_parent():
 		e.get_parent().remove_child(e)
 	_container.add_child(e)
 	_deactivate(e)
-	if e not in _free:
-		_free.append(e)
+	_free.append(e)
 
 
 func _activate(e: Node) -> void:
