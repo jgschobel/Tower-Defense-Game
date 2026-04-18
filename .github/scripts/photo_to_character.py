@@ -122,51 +122,22 @@ def download(url: str, dest: pathlib.Path) -> None:
     log(f"wrote {dest} ({len(r.content)} bytes)")
 
 
-def call_stability(photo: pathlib.Path, prompt: str, out: pathlib.Path) -> None:
-    api_key = os.environ.get("STABILITY_API_KEY")
-    if not api_key:
-        raise RuntimeError("STABILITY_API_KEY not set")
-
-    log(f"calling Stability AI with prompt: {prompt[:100]}...")
-    with open(photo, "rb") as f:
-        files = {"image": ("photo", f, "application/octet-stream")}
-        data = {
-            "prompt": prompt,
-            "negative_prompt": NEGATIVE_PROMPT,
-            "mode": "image-to-image",
-            "strength": "0.75",
-            "output_format": "png",
-            "aspect_ratio": "1:1",
-            "model": "sd3.5-large",
-        }
-        r = requests.post(
-            STABILITY_URL,
-            headers={
-                "Authorization": f"Bearer {api_key}",
-                "Accept": "image/*",
-            },
-            files=files,
-            data=data,
-            timeout=180,
-        )
-    if r.status_code != 200:
-        log(f"Stability API returned {r.status_code}: {r.text[:500]}")
-        r.raise_for_status()
-    out.write_bytes(r.content)
-    log(f"wrote {out} ({len(r.content)} bytes)")
-
-
 def main() -> int:
     body = os.environ.get("ISSUE_BODY", "")
     if not body.strip():
         log("empty issue body — nothing to do")
-        return 0
+        # Write a reason file so the workflow can comment back meaningfully
+        _write_reason("Empty issue body — nothing to process")
+        return 1
 
+    log(f"body length: {len(body)} chars")
     sections = parse_fields(body)
+    log(f"parsed sections: {list(sections.keys())}")
     name_raw = sections.get("character name (swiss german welcome)", "") or \
                sections.get("character name", "")
     if not name_raw:
         log("no character name found in issue body — aborting")
+        _write_reason("No '### Character name' section found in the issue body. Open a fresh issue using the `friend-photo` template.")
         return 1
 
     description = sections.get("character description / vibe", "") or \
@@ -179,6 +150,7 @@ def main() -> int:
     image_url = extract_first_image_url(photo_block) or extract_first_image_url(body)
     if not image_url:
         log("no image attachment found — aborting")
+        _write_reason("No image attachment found in the issue body or photo section. Make sure you dragged a photo into the 'Photo' field of the issue form (or pasted it anywhere in the body).")
         return 1
 
     slug = slugify(name_raw.splitlines()[0])
@@ -188,7 +160,12 @@ def main() -> int:
     work = pathlib.Path("/tmp/friend_photo")
     work.mkdir(parents=True, exist_ok=True)
     photo_path = work / f"{slug}_input.jpg"
-    download(image_url, photo_path)
+    try:
+        download(image_url, photo_path)
+    except Exception as e:
+        log(f"download failed: {e}")
+        _write_reason(f"Photo download failed: {e}. The URL may require auth or be expired.")
+        return 1
 
     out_dir = pathlib.Path("assets/textures/towers")
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -204,11 +181,22 @@ def main() -> int:
     ok = generate_icon(photo_path, prompt, out_path)
     if not ok:
         log("all generators failed")
+        _write_reason("All image generators failed. Likely causes: (1) GEMINI_API_KEY and STABILITY_API_KEY secrets missing or expired; (2) API quota exhausted for the day; (3) Gemini image model renamed. Check workflow logs for the specific HTTP error.")
         return 1
 
     emit_output("asset_path", str(out_path))
     emit_output("character_name", slug)
     return 0
+
+
+def _write_reason(msg: str) -> None:
+    """Write a human-readable reason for failure so the workflow can
+    comment it back onto the issue. Previously failures went silent."""
+    try:
+        pathlib.Path("/tmp/photo_reason.txt").write_text(msg)
+    except Exception:
+        pass
+    log(f"REASON: {msg}")
 
 
 if __name__ == "__main__":
