@@ -8,6 +8,11 @@ name: Photo → Character Icon
 on:
   issues:
     types: [opened, labeled]
+  # Also trigger when someone adds a photo in a comment on a labeled issue.
+  # This is the easiest mobile path: the user opens a barebones issue with
+  # just the label, then replies with the photo attached.
+  issue_comment:
+    types: [created]
 
 permissions:
   contents: write
@@ -16,7 +21,9 @@ permissions:
 
 jobs:
   generate:
-    if: contains(github.event.issue.labels.*.name, 'friend-photo')
+    if: >-
+      contains(github.event.issue.labels.*.name, 'friend-photo') ||
+      contains(github.event.issue.labels.*.name, 'friend-photo')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -30,7 +37,10 @@ jobs:
         id: gen
         env:
           STABILITY_API_KEY: ${{ secrets.STABILITY_API_KEY }}
-          ISSUE_BODY: ${{ github.event.issue.body }}
+          # On issue: use the issue body. On issue_comment: use the comment
+          # body (which is where the photo attachment lives if the user
+          # replied with a photo after opening a barebones issue).
+          ISSUE_BODY: ${{ github.event.comment.body || github.event.issue.body }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
           ISSUE_TITLE: ${{ github.event.issue.title }}
         run: |
