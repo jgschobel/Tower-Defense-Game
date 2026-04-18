@@ -6,6 +6,16 @@ on:
     # main autonomous-dev loop (which runs on 00/04/08/...).
     - cron: '30 */3 * * *'
   workflow_dispatch:
+  # Also run whenever substantive code lands on main — so every merged
+  # PR is playtested within ~5 min without the user triggering anything.
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/**'
+      - 'scenes/**'
+      - 'resources/**'
+      - 'project.godot'
+      - 'export_presets.cfg'
 
 permissions:
   contents: read
