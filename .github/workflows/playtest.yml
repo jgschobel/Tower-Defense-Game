@@ -76,7 +76,7 @@ jobs:
             timeout 120 godot --path . --playtest
           echo "bot exit=$?"
 
-      - name: Collect screenshots
+      - name: Collect screenshots + summary
         id: collect
         run: |
           set -e
@@ -85,11 +85,17 @@ jobs:
           mkdir -p "$OUT"
           if [ -d "$SRC" ]; then
             cp "$SRC"/*.png "$OUT"/ 2>/dev/null || true
+            cp "$SRC"/*.md "$OUT"/ 2>/dev/null || true
+            cp "$SRC"/*.log "$OUT"/ 2>/dev/null || true
           fi
           COUNT=$(ls -1 "$OUT"/*.png 2>/dev/null | wc -l | tr -d ' ')
           echo "Captured $COUNT screenshots"
           echo "count=$COUNT" >> "$GITHUB_OUTPUT"
           ls -la "$OUT/" || true
+          if [ -f "$OUT/summary.md" ]; then
+            echo "=== playtest summary ==="
+            cat "$OUT/summary.md"
+          fi
 
       - name: Upload screenshots as workflow artifact
         if: steps.collect.outputs.count != '0'
@@ -107,15 +113,23 @@ jobs:
           prompt: |
             $(cat .github/playtest/analyze-prompt.md)
 
-            ## Screenshots captured this run
+            ## Artifacts this run
 
-            Read every PNG file in ./playtest_output/ using the Read tool —
-            you can see images directly. Then file feedback issues as
-            instructed in the prompt above.
+            - All PNG screenshots in ./playtest_output/ (3 scenarios:
+              healthy / sparse / empty — each captures menu, level-load,
+              towers-placed, then 8 in-wave shots + final)
+            - ./playtest_output/summary.md — per-scenario metrics
+              (avg/min FPS, final lives, state, duration)
+            - ./playtest_output/fps.log — per-frame FPS samples if present
+
+            Read the summary.md first to understand what the three
+            scenarios did, then read every PNG using the Read tool (you
+            are multimodal — images are visible to you). File issues as
+            instructed.
 
             The `gh` CLI is preconfigured with GH_TOKEN.
           claude_args: |
-            --max-turns 40
+            --max-turns 60
             --model claude-sonnet-4-6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
