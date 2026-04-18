@@ -14,10 +14,6 @@ concurrency:
   group: pages
   cancel-in-progress: true
 
-env:
-  GODOT_VERSION: 4.6.0
-  GODOT_VERSION_TYPE: stable
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -26,35 +22,53 @@ jobs:
         with:
           lfs: true
 
-      - name: Install Godot + export templates (manual, version-exact)
+      - name: Pick a real released Godot version
+        id: godot
         run: |
           set -e
-          GODOT_VER="${GODOT_VERSION}-${GODOT_VERSION_TYPE}"
-          echo "Installing Godot ${GODOT_VER}"
+          # Godot tags are formatted like "4.3-stable", "4.4-stable", "4.6-stable"
+          # — NOT "4.6.0-stable". Ask the GitHub API for the latest stable
+          # release tag so we never download a 404 page.
+          TAG=$(curl -fsSL https://api.github.com/repos/godotengine/godot/releases \
+            | jq -r '[.[] | select(.prerelease == false) | .tag_name] | map(select(endswith("-stable"))) | first')
+          if [ -z "$TAG" ] || [ "$TAG" = "null" ]; then
+            # Fallback to a known-released version
+            TAG="4.3-stable"
+          fi
+          echo "Using Godot tag: $TAG"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
-          # Download Godot headless binary
-          curl -sSL -o godot.zip \
-            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-${GODOT_VERSION_TYPE}/Godot_v${GODOT_VERSION}-${GODOT_VERSION_TYPE}_linux.x86_64.zip"
+      - name: Install Godot headless + export templates
+        env:
+          GODOT_TAG: ${{ steps.godot.outputs.tag }}
+        run: |
+          set -e
+          echo "Installing Godot ${GODOT_TAG}"
+          BASE="https://github.com/godotengine/godot/releases/download/${GODOT_TAG}"
+
+          # Godot binary (-f makes curl fail on 404 instead of saving HTML)
+          curl -fsSL -o godot.zip "${BASE}/Godot_v${GODOT_TAG}_linux.x86_64.zip"
           unzip -q godot.zip
-          mv "Godot_v${GODOT_VERSION}-${GODOT_VERSION_TYPE}_linux.x86_64" /usr/local/bin/godot
+          mv "Godot_v${GODOT_TAG}_linux.x86_64" /usr/local/bin/godot
           chmod +x /usr/local/bin/godot
           godot --version
 
-          # Download matching export templates
-          curl -sSL -o templates.tpz \
-            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-${GODOT_VERSION_TYPE}/Godot_v${GODOT_VERSION}-${GODOT_VERSION_TYPE}_export_templates.tpz"
-          mkdir -p "$HOME/.local/share/godot/export_templates/${GODOT_VER}"
+          # Export templates — installed under ~/.local/share/godot/export_templates/<version>/
+          curl -fsSL -o templates.tpz "${BASE}/Godot_v${GODOT_TAG}_export_templates.tpz"
+          VER_DIR="${GODOT_TAG}"
+          mkdir -p "$HOME/.local/share/godot/export_templates/${VER_DIR}"
           unzip -q templates.tpz -d /tmp/templates
-          mv /tmp/templates/templates/* "$HOME/.local/share/godot/export_templates/${GODOT_VER}/"
-          ls "$HOME/.local/share/godot/export_templates/${GODOT_VER}/" | head -5
+          mv /tmp/templates/templates/* "$HOME/.local/share/godot/export_templates/${VER_DIR}/"
+          echo "Export templates installed:"
+          ls "$HOME/.local/share/godot/export_templates/${VER_DIR}/" | head -5
 
-      - name: Import project resources (first pass)
+      - name: Import project resources (two passes)
         run: |
+          set +e
           mkdir -p build/web
-          # Godot 4 import: open the project, import, then exit via timeout
-          timeout 180 godot --headless --path . --import || true
-          # Second pass in case first pass had to generate some .import files
-          timeout 60 godot --headless --path . --import || true
+          timeout 180 godot --headless --path . --import
+          timeout 60  godot --headless --path . --import
+          exit 0
 
       - name: Export Web build
         run: |
