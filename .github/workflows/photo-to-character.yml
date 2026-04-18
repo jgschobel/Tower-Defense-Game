@@ -37,10 +37,13 @@ jobs:
         id: gen
         env:
           STABILITY_API_KEY: ${{ secrets.STABILITY_API_KEY }}
-          # On issue: use the issue body. On issue_comment: use the comment
-          # body (which is where the photo attachment lives if the user
-          # replied with a photo after opening a barebones issue).
-          ISSUE_BODY: ${{ github.event.comment.body || github.event.issue.body }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Combine both — photos can live in either the original issue
+          # body (template form) or a follow-up comment. Python picks
+          # whichever has the image URL.
+          ISSUE_BODY: |
+            ${{ github.event.issue.body }}
+            ${{ github.event.comment.body }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
           ISSUE_TITLE: ${{ github.event.issue.title }}
         run: |
