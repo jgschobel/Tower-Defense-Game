@@ -5,6 +5,7 @@ Each run appends one line.
 
 ## 2026-04-17
 
+- chore(validate): removed orphaned root main.tscn (empty bare Node2D, unreferenced); full signal/resource/scene audit passed clean
 - polish(hud): tower cost label turns red when unaffordable, gold when affordable (ROADMAP P0 #28)
 - Set up autonomous dev loop (GitHub Actions, 6h cron, 4 rotating modes)
 - Added ROADMAP.md as the shared task list for the loop
