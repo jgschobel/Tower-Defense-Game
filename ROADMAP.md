@@ -8,6 +8,106 @@ Within a priority, top-of-list wins.
 
 ---
 
+## 🔥 P0 — Game-Identity Levers (NEWLY ADDED — pick these next)
+
+These three are the highest-ROI gameplay additions per BTD design
+research. None require new infrastructure. Order them by spec
+clarity, not by size.
+
+### A) Hero System (one Friend, one game-changer)
+
+The single biggest design lever. Heroes auto-level mid-round and have
+abilities. Pick **Lemurius** as the inaugural hero (matches lore as the
+banana-throwing protagonist).
+
+- [ ] **Hero data model**: extend `tower_data.gd` with `is_hero: bool`,
+  `hero_max_level: int = 10`, `hero_xp_per_pop: float = 1.0`,
+  `hero_ability_cooldown: float = 60.0`, `hero_ability_id: String`.
+  Add to a new `resources/tower_data/lemurius_hero.tres` (different from
+  `basic.tres` — heroes are their own slot).
+- [ ] **One-instance-per-game rule**: `tower_placement.gd` rejects placement
+  if any tower with `data.is_hero == true` already exists in the scene.
+- [ ] **Mid-round leveling**: `base_tower._on_enemy_killed` adds
+  `data.hero_xp_per_pop` to a runtime `hero_xp` field. Crossing thresholds
+  `[10, 25, 50, 100, 200, 350, 550, 800, 1100, 1500]` increments
+  `hero_level` from 1 to 10. Each level gives +5% damage, +3% range.
+  At levels 3, 6, 9 the active ability cooldown reduces by 33%.
+- [ ] **Active ability "Banani-Wurf"**: 60s cooldown, single-tap a button
+  in HUD, instant 80-damage AoE across entire screen. Visual: rain of
+  bananas SVG drops from top, screen-shake 0.3s, gold +50 per pop.
+- [ ] **HUD hero panel**: bottom-left widget showing Lemurius portrait, XP
+  bar, current level, ability cooldown timer, big tap-to-fire button.
+- [ ] **Free purchase first level**: hero costs 0 gold on level 1,
+  scaling: 50g L2, 150g L3+. So players see the hero immediately.
+
+Effort: M (single tower mostly, but new UI + new mechanic).
+Why: BTD6's biggest retention lever per research; matches Friend-as-Tower
+identity perfectly.
+
+### B) The 1% Juice Pass (5 micro-polishes, ship in one PR)
+
+Tiny individually, transformative together. Per Bloons-veteran research:
+the difference between "prototype" and "real game" lives here.
+
+- [ ] **Pop SFX pitch by enemy size**: in `sfx_manager.play_death(enemy_data)`
+  modulate base sweep frequency by `enemy_data.health` (small enemies =
+  higher pitch, big enemies = deep thump). Single line change.
+- [ ] **Generous starting cash +50%**: bump `level_data.starting_gold` by
+  ~50% across all 3 level data files. Testing playtests already show
+  early game is gold-starved.
+- [ ] **Tower sprite rotates toward target**: in `base_tower._process` set
+  `sprite.rotation = (current_target.global_position - global_position).angle()`
+  when targeting, with `lerp` smoothing for snappy feel. Skip if no
+  target.
+- [ ] **Victory screen 2s hold**: in `game_over.gd` defer score reveal
+  by 2s after `level_completed` signal — gives the final pop air time.
+- [ ] **+gold floater on EVERY enemy hit (not just kill)**: tiny "+1"
+  floater on damage, "+%d" big floater on kill. Existing label
+  infrastructure works; just add a smaller variant on damage events
+  in `base_enemy.take_damage`.
+
+Effort: S (5 tiny edits, all in known files).
+Why: Cheapest dopamine hits in the game. Compounds.
+
+### C) Cumulus Meta-Progression (retention hook)
+
+Loyalty-points-style permanent tree. Every failed run earns Cumulus,
+spend on permanent buffs that stack across all future runs.
+
+- [ ] **Save format**: `user://cumulus.save` JSON with
+  `{ "balance": int, "unlocked_nodes": Array[String] }`.
+  GameManager loads on `_ready`, saves on `complete_level` and
+  `lose_life` (when run ends).
+- [ ] **Earning rule**: 1 Cumulus per enemy killed, 50 bonus per level
+  WON, 10 per level LOST. Show running total on game-over screen.
+- [ ] **15 nodes (Migros-themed)**:
+  1. `start_gold_50`: +50g start (cost 100 Cumulus)
+  2. `start_gold_100`: +100g start (200, requires #1)
+  3. `extra_life`: +1 life per level (300)
+  4. `extra_life_2`: +1 more life (500, requires #3)
+  5. `tower_discount_5`: -5% all tower costs (200)
+  6. `tower_discount_10`: -10% all tower costs (400, requires #5)
+  7. `faster_waves`: -25% time between waves (300)
+  8. `pop_bonus_gold`: +1 gold per pop (200)
+  9. `lemurius_speed`: Lemurius +10% attack speed (250)
+  10. `kuhne_range`: Kühne +15% range (250)
+  11. `jojo_splash`: JoJo splash radius +20% (250)
+  12. `cordula_dmg`: Cordula +10% damage (250)
+  13. `amosius_slow`: Amösius slow +0.5s (250)
+  14. `hero_start_lvl_2`: Hero starts at level 2 (500, requires hero shipped)
+  15. `cumulus_double`: 2× Cumulus earn rate (1000, requires 5+ other nodes)
+- [ ] **UI**: new `scenes/ui/cumulus_shop.tscn` accessible from main menu
+  ("Cumulus-Punkt"), grid of 15 nodes with cost/locked indicator/buy
+  button. Use existing PanelContainer style.
+- [ ] **Apply at level start**: `GameManager.start_level()` reads unlocked
+  nodes and modifies `max_lives`, `CurrencyManager.gold`, applies
+  per-tower stat bonuses to that level's tower data via temp overrides.
+
+Effort: M-L (new scene, save format, application logic).
+Why: Per BTD6 research, meta-progression is the #1 long-term retention
+driver. Every failed run becomes progress. Strategically more important
+than 5 more levels because it fixes "why play again" not "what to play".
+
 ## 🔥 P0 — Blocking / Bugs
 
 - [x] Fix JoJo splash tower `can_target_flying = true` (PLAN #12)
