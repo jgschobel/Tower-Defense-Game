@@ -39,6 +39,30 @@ def _log(msg: str) -> None:
     print(f"[generators] {msg}", flush=True)
 
 
+def _load_style_sheet() -> str:
+    """Read docs/art_style.md and return the universal style tokens
+    section. Prepended to every generation prompt so all assets stay
+    visually coherent across runs and providers."""
+    path = pathlib.Path("docs/art_style.md")
+    if not path.exists():
+        return ""
+    text = path.read_text()
+    # Extract just the "Universal Style Tokens" section (under that header
+    # until the next ## header)
+    in_section = False
+    out_lines: list[str] = []
+    for line in text.splitlines():
+        if line.startswith("## Universal Style Tokens"):
+            in_section = True
+            continue
+        if in_section and line.startswith("## "):
+            break
+        if in_section:
+            out_lines.append(line)
+    sheet = "\n".join(out_lines).strip()
+    return f"\n\nGlobal style guide:\n{sheet}\n" if sheet else ""
+
+
 def call_gemini_img2img(photo: pathlib.Path, prompt: str, out: pathlib.Path) -> bool:
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
@@ -46,6 +70,7 @@ def call_gemini_img2img(photo: pathlib.Path, prompt: str, out: pathlib.Path) -> 
     _log(f"gemini img2img {out.name}: {prompt[:120]}...")
     img_bytes = photo.read_bytes()
     mime = "image/png" if photo.suffix.lower() == ".png" else "image/jpeg"
+    style_sheet = _load_style_sheet()
     body = {
         "contents": [{
             "parts": [
@@ -54,6 +79,7 @@ def call_gemini_img2img(photo: pathlib.Path, prompt: str, out: pathlib.Path) -> 
                     "Keep the face likeness recognizable but stylize heavily into a cute cartoon. "
                     "Transparent background (plain white also OK). Centered, 1:1 square. "
                     f"{prompt}"
+                    f"{style_sheet}"
                 )},
                 {"inline_data": {"mime_type": mime, "data": base64.b64encode(img_bytes).decode("ascii")}},
             ]
@@ -88,10 +114,11 @@ def call_stability_img2img(photo: pathlib.Path, prompt: str, out: pathlib.Path) 
     if not api_key:
         return False
     _log(f"stability img2img {out.name}: {prompt[:120]}...")
+    full_prompt = prompt + _load_style_sheet()
     with open(photo, "rb") as f:
         files = {"image": ("photo", f, "application/octet-stream")}
         data = {
-            "prompt": prompt,
+            "prompt": full_prompt,
             "negative_prompt": NEGATIVE_PROMPT,
             "mode": "image-to-image",
             "strength": "0.75",
@@ -127,7 +154,7 @@ def call_imagen4_text2img(prompt: str, out: pathlib.Path, aspect_ratio: str = "1
         return False
     _log(f"imagen4 text2img {out.name} [{aspect_ratio}]: {prompt[:120]}...")
     body = {
-        "instances": [{"prompt": prompt}],
+        "instances": [{"prompt": prompt + _load_style_sheet()}],
         "parameters": {
             "sampleCount": 1,
             "aspectRatio": aspect_ratio,
