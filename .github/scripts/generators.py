@@ -253,19 +253,25 @@ def generate_icon(
     out: pathlib.Path,
     requested: Optional[str] = None,
 ) -> bool:
-    """Try Gemini first, fall back to Stability. `requested` may be
-    "gemini" or "stability" to force a specific provider (skipping
-    the fallback)."""
+    """Try Stability first (known-good, paid, reliable). Fall back to
+    Gemini Nano Banana (free tier, sometimes better quality but API
+    has been churning model names). `requested` forces a specific
+    provider and skips the fallback chain.
+
+    Order changed 2026-04-18: user issues #24/25/26 went 6+ hours
+    without producing icons while Gemini kept failing silently. Flip
+    to Stability-first so the happy path always produces output;
+    Gemini is a bonus if available."""
     if requested == "stability":
         return call_stability_img2img(photo, prompt, out)
     if requested == "gemini":
         return call_gemini_img2img(photo, prompt, out)
-    # Auto: prefer Gemini (free tier + better quality for characters)
+    if os.environ.get("STABILITY_API_KEY"):
+        if call_stability_img2img(photo, prompt, out):
+            return True
+        _log("stability failed — trying gemini as fallback")
     if os.environ.get("GEMINI_API_KEY"):
         if call_gemini_img2img(photo, prompt, out):
             return True
-        _log("gemini failed — falling back to stability")
-    if os.environ.get("STABILITY_API_KEY"):
-        return call_stability_img2img(photo, prompt, out)
-    _log("no image generator API key configured")
+    _log("both generators failed OR neither API key is set")
     return False
