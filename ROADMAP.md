@@ -100,13 +100,22 @@ run project:
 - [ ] Katzensee level using saved photo reference — PLAN #61
 - [ ] Migros entrance level using saved photo reference — PLAN #62
 
-## 🧪 P2 — Branching Upgrades (PLAN #72)
+## 🚀 Master-Plan Phase 3 — Deferred (too invasive for blind ship)
 
-- [ ] Lemurius: Schnelli Banane vs Scharfi Banane → Explosivi Khaki
-- [ ] Amösius: Längeri Zunge vs Chläbrigeri Zunge → Insta-Reel Attacke
-- [ ] Kühne: Giftige Pollen vs Iis-Blüete → Füür-Lilie
-- [ ] JoJo: Stärcheri Formel vs Chaos-Chemie → Lotter JoJo
-- [ ] Cordula: Volleyball Hagel vs Ankerhake → Party Kanone
+- [ ] **3-tier → 5-tier upgrade system** (BTD-standard with crosspath
+  exclusion at tier 3+5). Touches every tower, every UI button, save
+  format. Recommended path: `ideate` cron drafts the migration plan
+  one tower at a time, then `build-content` cron ships per-tower.
+  Requires playtest verification at each step. The wave-balance
+  simulator (`sim-gate.yml`) catches regressions automatically.
+
+## 🧪 P2 — Branching Upgrades (PLAN #72) — SHIPPED in PRs #20, #31
+
+- [x] Lemurius: Schnelli Banane vs Scharfi Banane → Explosivi Khaki
+- [x] Amösius: Längeri Zunge vs Chläbrigeri Zunge → Insta-Reel Attacke
+- [x] Kühne: Giftige Pollen vs Iis-Blüete → Füür-Lilie
+- [x] JoJo: Stärcheri Formel vs Chaos-Chemie → Lotter JoJo
+- [x] Cordula: Volleyball Hagel vs Ankerhake → Party Kanone
 - [ ] Lotter JoJo random effects — PLAN #73
 
 ## 🏎 P2 — Performance

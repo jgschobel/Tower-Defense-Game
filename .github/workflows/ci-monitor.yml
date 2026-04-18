@@ -18,6 +18,9 @@ on:
       - "Weekly Digest"
       - "Wave-Balance Simulator Gate"
       - "PR Preview Deploy"
+      - "Weekly Drift Scan"
+      - "Secret Scan (Gitleaks)"
+      - "Deploy to Itch.io"
     types: [completed]
 
 permissions:
