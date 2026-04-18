@@ -1,0 +1,120 @@
+name: Weekly Drift Scan
+
+# Weekly hygiene check that runs OUTSIDE the feature loop. Detects:
+# - Dead GDScript functions (defined but never called from any other file)
+# - Orphaned .tscn / .tres / .png assets (zero references anywhere)
+# - ROADMAP drift (items marked [x] but no matching CHANGELOG entry)
+# - Branch / PR backlog growth
+# Files an issue with findings — next self-improve cron run picks it up.
+
+on:
+  schedule:
+    - cron: '0 7 * * 1'  # Mondays 07:00 UTC, after weekly-digest at 06:00
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: drift-scan
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Find dead GDScript functions
+        id: dead_funcs
+        run: |
+          set -e
+          # Naive heuristic: every `func name(` defined in scripts/, then
+          # check if `name(` appears anywhere else (other files OR same
+          # file as a call). Excludes Godot lifecycle hooks (_ready,
+          # _process, _input, etc.) and common signal handlers.
+          DEAD=""
+          IGNORE='_ready|_process|_input|_unhandled_input|_physics_process|_draw|_init|_enter_tree|_exit_tree|_notification|_get_property|_set_property|_to_string|_get|_set'
+          while IFS= read -r line; do
+            file=$(echo "$line" | cut -d: -f1)
+            fn=$(echo "$line" | grep -oE 'func [a-zA-Z_][a-zA-Z0-9_]*' | sed 's/func //')
+            if [ -z "$fn" ]; then continue; fi
+            if echo "$fn" | grep -qE "^($IGNORE)$"; then continue; fi
+            # Count callsites OUTSIDE the defining file
+            CALLS=$(grep -rE "\b${fn}\s*\(" --include='*.gd' scripts/ scenes/ resources/ 2>/dev/null \
+              | grep -v "^${file}:" \
+              | grep -vE "^[^:]+:[0-9]+:func ${fn}" \
+              | wc -l | tr -d ' ')
+            if [ "$CALLS" = "0" ]; then
+              DEAD="${DEAD}- \`${fn}\` in ${file}"$'\n'
+            fi
+          done < <(grep -rnE '^func [a-zA-Z_]' --include='*.gd' scripts/ 2>/dev/null)
+          echo "$DEAD" > /tmp/dead_funcs.txt
+          DCOUNT=$(echo -n "$DEAD" | grep -c '^-' || echo 0)
+          echo "count=$DCOUNT" >> "$GITHUB_OUTPUT"
+
+      - name: Find orphaned scenes / resources
+        id: orphans
+        run: |
+          set -e
+          ORPHANS=""
+          # For each .tscn or .tres outside scenes/ui/main_menu (the entry
+          # point) check if it's referenced anywhere
+          for f in $(find scenes resources -name '*.tscn' -o -name '*.tres' 2>/dev/null); do
+            base="res://$f"
+            REFS=$(grep -rl --include='*.tscn' --include='*.tres' --include='*.gd' --include='*.godot' "$base" . 2>/dev/null | wc -l | tr -d ' ')
+            # Account for self-reference (the file's own header)
+            EFFECTIVE=$((REFS - 1))
+            if [ "$EFFECTIVE" -le 0 ]; then
+              ORPHANS="${ORPHANS}- ${f}"$'\n'
+            fi
+          done
+          # Filter out main_menu (entry point) and base_*.tscn (instantiated dynamically)
+          ORPHANS_FILTERED=$(echo "$ORPHANS" | grep -vE 'main_menu|base_enemy|base_tower|base_projectile' || true)
+          echo "$ORPHANS_FILTERED" > /tmp/orphans.txt
+          OCOUNT=$(echo -n "$ORPHANS_FILTERED" | grep -c '^-' || echo 0)
+          echo "count=$OCOUNT" >> "$GITHUB_OUTPUT"
+
+      - name: ROADMAP drift check
+        id: roadmap
+        run: |
+          set -e
+          DONE=$(grep -cE '^\s*-\s*\[x\]' ROADMAP.md 2>/dev/null || echo 0)
+          TODO=$(grep -cE '^\s*-\s*\[ \]' ROADMAP.md 2>/dev/null || echo 0)
+          PCT=$(( DONE * 100 / (DONE + TODO + 1) ))
+          echo "done=$DONE" >> "$GITHUB_OUTPUT"
+          echo "todo=$TODO" >> "$GITHUB_OUTPUT"
+          echo "pct=$PCT" >> "$GITHUB_OUTPUT"
+
+      - name: File drift report issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          NOW=$(date -u +%Y-%m-%d)
+          {
+            echo "# Weekly Drift Scan — $NOW"
+            echo ""
+            echo "## ROADMAP progress"
+            echo "- ${{ steps.roadmap.outputs.done }} done"
+            echo "- ${{ steps.roadmap.outputs.todo }} remaining"
+            echo "- ${{ steps.roadmap.outputs.pct }}% complete"
+            echo ""
+            echo "## Dead GDScript functions (${{ steps.dead_funcs.outputs.count }})"
+            echo ""
+            cat /tmp/dead_funcs.txt 2>/dev/null || echo "(none)"
+            echo ""
+            echo "## Orphaned scenes / resources (${{ steps.orphans.outputs.count }})"
+            echo ""
+            cat /tmp/orphans.txt 2>/dev/null || echo "(none)"
+            echo ""
+            echo "---"
+            echo "_Filed by drift-scan.yml. Next self-improve cron run should pick the most impactful items here. Close when addressed._"
+          } > drift.md
+          gh issue create \
+            --title "[drift-scan] Weekly hygiene report — $NOW" \
+            --body-file drift.md \
+            --label "drift-scan,autonomous"

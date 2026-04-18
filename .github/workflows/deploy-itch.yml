@@ -1,0 +1,99 @@
+name: Deploy to Itch.io
+
+# Optional secondary deploy target via Butler (Itch.io's CLI). Itch's
+# HTML5 player often renders Godot GL Compatibility builds better on
+# iOS Safari than raw GitHub Pages. Skips silently if BUTLER_API_KEY
+# isn't configured in repo secrets.
+#
+# Setup (one-time, from phone):
+# 1. Create itch.io account, create a new project page set to HTML5
+# 2. Get Butler API key from itch.io/user/settings/api-keys
+# 3. Add as GitHub secret: BUTLER_API_KEY
+# 4. Set ITCH_USER and ITCH_GAME below to your slug (e.g. jgschobel/affoltern)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-itch
+  cancel-in-progress: true
+
+env:
+  ITCH_USER: jgschobel
+  ITCH_GAME: affoltern-banani-raubzug
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Skip if BUTLER_API_KEY secret missing
+        id: check
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+        run: |
+          if [ -z "$BUTLER_API_KEY" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "BUTLER_API_KEY not set — skipping Itch.io deploy."
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.check.outputs.skip == 'false'
+
+      - name: Pick Godot version
+        id: godot
+        if: steps.check.outputs.skip == 'false'
+        run: |
+          PINNED=$(cat .github/godot-version.txt | tr -d '[:space:]')
+          echo "tag=$PINNED" >> "$GITHUB_OUTPUT"
+
+      - name: Install Godot + templates
+        if: steps.check.outputs.skip == 'false'
+        env:
+          GODOT_TAG: ${{ steps.godot.outputs.tag }}
+        run: |
+          set -e
+          BASE="https://github.com/godotengine/godot/releases/download/${GODOT_TAG}"
+          curl -fsSL -o godot.zip "${BASE}/Godot_v${GODOT_TAG}_linux.x86_64.zip"
+          unzip -q godot.zip
+          mv "Godot_v${GODOT_TAG}_linux.x86_64" /usr/local/bin/godot
+          chmod +x /usr/local/bin/godot
+          curl -fsSL -o templates.tpz "${BASE}/Godot_v${GODOT_TAG}_export_templates.tpz"
+          VER_DIR="$(echo "${GODOT_TAG}" | sed 's/-/./g')"
+          mkdir -p "$HOME/.local/share/godot/export_templates/${VER_DIR}"
+          unzip -q templates.tpz -d /tmp/templates
+          mv /tmp/templates/templates/* "$HOME/.local/share/godot/export_templates/${VER_DIR}/"
+
+      - name: Export HTML5
+        if: steps.check.outputs.skip == 'false'
+        run: |
+          set +e
+          mkdir -p build/web
+          timeout 120 godot --headless --path . --import
+          timeout 60  godot --headless --path . --import
+          set -e
+          godot --headless --path . --export-release "Web" build/web/index.html
+          # Itch wants a zip
+          cd build/web && zip -r ../../itch-build.zip . && cd ../..
+
+      - name: Install Butler
+        if: steps.check.outputs.skip == 'false'
+        run: |
+          curl -L -o butler.zip https://broth.itch.zone/butler/linux-amd64/LATEST/archive/default
+          unzip -q butler.zip
+          chmod +x butler
+          ./butler -V
+
+      - name: Push build to Itch.io
+        if: steps.check.outputs.skip == 'false'
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+        run: |
+          ./butler push itch-build.zip "${ITCH_USER}/${ITCH_GAME}:html5" \
+            --userversion "$(date -u +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}"

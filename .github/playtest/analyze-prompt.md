@@ -61,6 +61,25 @@ issues — these inform what to file):
 - `bughunt_post_rapid_tap` shows no stuck ghost tower?
 - `bughunt_after_cancel` shows normal HUD (placement mode exited cleanly)?
 
+### Visual Glitch Hunt (Godogen-style — actively look for these)
+
+For every screenshot, scan for:
+
+- **Z-fighting**: tearing/flickering where two sprites overlap at same depth
+- **Missing texture**: pink/magenta squares (Godot's missing-texture indicator)
+- **Stretched / squashed sprites**: characters that look anatomically wrong vs.
+  the expected style sheet (`docs/art_style.md`)
+- **Off-canvas elements**: HUD widgets that bleed off the 1280×720 canvas
+- **Ghost / orphan elements**: leftover tooltips, invisible-but-clickable areas,
+  half-faded UI from incomplete tweens
+- **Color mismatches**: text that's the same color as its background (unreadable)
+- **Aspect-ratio breakage**: backgrounds that don't fill the viewport (black bars
+  on a 16:9 layout indicate stretch_mode regression)
+
+Each glitch you spot is one issue. Reference the specific PNG filename
+and describe what you see vs. what you expect. These tend to be the
+most actionable bugs because they're visually obvious.
+
 ## Filing Issues
 
 For every rubric item that fails (and isn't already an open issue), file:
