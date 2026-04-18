@@ -287,3 +287,24 @@ func _on_sell_button_pressed() -> void:
 
 func _on_close_button_pressed() -> void:
 	hide_tower_info()
+
+
+func show_toast(message: String) -> void:
+	var toast := Label.new()
+	toast.text = message
+	toast.add_theme_font_size_override("font_size", 24)
+	toast.add_theme_color_override("font_color", Color(1, 0.35, 0.2))
+	toast.add_theme_color_override("font_outline_color", Color(0.1, 0.05, 0))
+	toast.add_theme_constant_override("outline_size", 5)
+	toast.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	toast.anchor_left = 0.5
+	toast.anchor_top = 0.62
+	toast.anchor_right = 0.5
+	toast.anchor_bottom = 0.62
+	toast.offset_left = -160
+	toast.offset_right = 160
+	toast.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	add_child(toast)
+	var tween := toast.create_tween()
+	tween.tween_property(toast, "modulate:a", 0.0, 1.2).set_delay(0.4)
+	tween.tween_callback(toast.queue_free)
