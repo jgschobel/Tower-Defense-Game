@@ -30,6 +30,31 @@ var sfx_volume: float = 0.8
 
 func _ready() -> void:
 	load_game()
+	# Warm up enemy and tower textures so Level 1's first wave doesn't
+	# hitch to 1 FPS loading them from disk (issue #46). Runs once at
+	# game start while the menu is showing.
+	call_deferred("_warmup_textures")
+
+
+func _warmup_textures() -> void:
+	var paths := [
+		"res://assets/textures/towers/lemurius.png",
+		"res://assets/textures/towers/kuhne.png",
+		"res://assets/textures/towers/jojo.png",
+		"res://assets/textures/towers/cordula.png",
+		"res://assets/textures/towers/amosius.png",
+		"res://assets/textures/enemies/tofu_wurst.png",
+		"res://assets/textures/enemies/hafer_riegel.png",
+		"res://assets/textures/enemies/soja_steak.png",
+		"res://assets/textures/enemies/hafer_milch.png",
+		"res://assets/textures/enemies/avocado.png",
+		"res://assets/textures/enemies/vegan_teufel.png",
+		"res://assets/textures/projectiles/banana.png",
+		"res://assets/textures/projectiles/tongue.png",
+	]
+	for p in paths:
+		if ResourceLoader.exists(p):
+			load(p)  # discarded — Godot caches for subsequent use
 
 
 func set_music_volume(v: float) -> void:

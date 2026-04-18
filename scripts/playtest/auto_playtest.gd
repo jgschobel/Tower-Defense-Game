@@ -88,18 +88,33 @@ func _run_healthy_level(level_id: int) -> void:
 
 	var wm := game_root.get_node_or_null("WaveManager") as Node
 	if wm and wm.has_method("start_next_wave"):
-		wm.start_next_wave()
+		wm.set("auto_start_waves", true)
+		wm.set("time_between_waves", 2.0)  # speed through between-wave breaks
+		wm.call("start_next_wave")
 
-	# Capture a dense animation clip at the wave start (3s at ~8 FPS)
+	# Time-scale boost so we actually reach WON state within reasonable
+	# wall-clock. Issue #53: healthy scenarios previously timed out at
+	# wave 1/10 because the 6-shot × 2.5s window = 15s only covered the
+	# first wave. At 4× speed a full 10-wave level fits in ~75s.
+	Engine.time_scale = 4.0
+
 	await _capture_anim_clip("%s_wavestart" % _scenario_name)
 
-	for i in MAX_SHOTS_PER_SCENARIO:
+	# Extended loop: keep sampling until WON/LOST or 60s elapsed at 4×.
+	var sim_started := Time.get_ticks_msec()
+	var shot_idx := 0
+	while true:
 		await get_tree().create_timer(SHOT_INTERVAL).timeout
-		_snapshot("%s_t%02d" % [_scenario_name, i])
+		_snapshot("%s_t%02d" % [_scenario_name, shot_idx])
+		shot_idx += 1
 		if GameManager.current_state == GameManager.GameState.LOST \
 		or GameManager.current_state == GameManager.GameState.WON:
 			break
+		var elapsed := float(Time.get_ticks_msec() - sim_started) / 1000.0
+		if elapsed > 60.0 or shot_idx >= 24:
+			break
 
+	Engine.time_scale = 1.0
 	_snapshot("%s_final" % _scenario_name)
 	_record_scenario(t0)
 	_cleanup_scene()
@@ -160,7 +175,14 @@ func _run_stress_test() -> void:
 	var wm := game_root.get_node_or_null("WaveManager") as Node
 	var path := game_root.get_node_or_null("EnemyPath") as Path2D
 	if wm and path:
-		# Bypass wave queue — directly spawn STRESS_ENEMY_COUNT enemies
+		# Issue #51: previous version used add_to_group + child but
+		# didn't wire enemy signals back to WaveManager, so life-drain
+		# and kill tracking were bypassed. And screenshots showed only
+		# 1 enemy at a time because spawns happened inside a single
+		# frame tick but the tree didn't flush until next frame.
+		# Fix: spawn all 80 THIS FRAME with staggered v_offset so the
+		# renderer draws them immediately, AND connect enemy_reached_end
+		# so life-drain fires correctly.
 		var enemy_scene: PackedScene = load("res://scenes/enemies/base_enemy.tscn") as PackedScene
 		var enemy_data = load("res://resources/enemy_data/basic.tres")
 		for i in STRESS_ENEMY_COUNT:
@@ -168,9 +190,21 @@ func _run_stress_test() -> void:
 			e.data = enemy_data
 			e.add_to_group("enemies")
 			path.add_child(e)
+			if e.has_signal("enemy_died"):
+				e.connect("enemy_died", Callable(wm, "_on_enemy_died"))
+			if e.has_signal("enemy_reached_end"):
+				e.connect("enemy_reached_end", Callable(wm, "_on_enemy_reached_end"))
+			# Explicit v_offset stagger so the renderer shows them
+			# as 80 distinct sprites, not one clump
+			e.v_offset = float(i - 40) * 2.0
 
+	# Force a frame flush so the renderer actually draws 80 sprites
+	# BEFORE we screenshot (was snapping before the tree settled).
+	await get_tree().process_frame
+	await get_tree().process_frame
 	_snapshot("stress_spawned")
-	# Let them march for a bit, sampling FPS
+
+	# Let them march for a bit, sampling FPS at realistic intervals
 	for i in 6:
 		await get_tree().create_timer(1.0).timeout
 		_snapshot("stress_t%d" % i)
