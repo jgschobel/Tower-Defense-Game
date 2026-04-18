@@ -14,6 +14,8 @@ on:
       - "Photo → Character Icon"
       - "Photo Inbox Processor"
       - "Art Request Generator"
+      - "Daily Cleanup"
+      - "Weekly Digest"
     types: [completed]
 
 permissions:
