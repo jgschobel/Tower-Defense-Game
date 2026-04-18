@@ -6,6 +6,7 @@ extends Node2D
 
 signal tower_placed(tower: Node2D)
 signal placement_cancelled
+signal placement_failed(reason: String, at_pos: Vector2)
 
 @export var min_tower_spacing: float = 60.0
 @export var min_path_distance: float = 45.0
@@ -108,6 +109,7 @@ func _try_place(screen_pos: Vector2) -> void:
 	var world_pos := get_canvas_transform().affine_inverse() * screen_pos
 
 	if not _can_place_at(world_pos):
+		placement_failed.emit(_get_failure_reason(world_pos), screen_pos)
 		return
 
 	if not CurrencyManager.spend_gold(selected_tower_data.buy_cost):
@@ -125,6 +127,17 @@ func _try_place(screen_pos: Vector2) -> void:
 
 	tower_placed.emit(tower)
 	cancel_placement()
+
+
+func _get_failure_reason(pos: Vector2) -> String:
+	for tower_node in placed_towers:
+		if is_instance_valid(tower_node):
+			if pos.distance_to(tower_node.global_position) < min_tower_spacing:
+				return "Z'nöch am Turm!"
+	for path_point in _path_points:
+		if pos.distance_to(path_point) < min_path_distance:
+			return "Z'nöch am Wäg!"
+	return "Nid gültig!"
 
 
 func _can_place_at(pos: Vector2) -> bool:

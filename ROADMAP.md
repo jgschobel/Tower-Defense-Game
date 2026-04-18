@@ -11,8 +11,8 @@ Within a priority, top-of-list wins.
 ## 🔥 P0 — Blocking / Bugs
 
 - [x] Fix JoJo splash tower `can_target_flying = true` (PLAN #12)
-- [ ] DamageType enum actually applied in base_enemy.gd (magic ignores armor, physical reduced by armor) — PLAN #16
-- [ ] Show feedback text on invalid tower placement ("Z'nöch am Wäg!" / "Z'nöch am Turm!") — PLAN #24
+- [x] DamageType enum actually applied in base_enemy.gd (magic ignores armor, physical reduced by armor) — PLAN #16
+- [x] Show feedback text on invalid tower placement ("Z'nöch am Wäg!" / "Z'nöch am Turm!") — PLAN #24
 - [x] Tower cost affordability color (yellow/gold affordable, red unaffordable) — PLAN #28
 
 ## ⚡ P1 — Important (Polish & UX)
@@ -23,7 +23,7 @@ Within a priority, top-of-list wins.
 - [ ] HUD buttons ≥ 50px for mobile touch — PLAN #34
 - [ ] Pause button 60px minimum — PLAN #35
 - [ ] Safe area margins for notches/status bars — PLAN #36
-- [ ] Health bar smooth tween over 0.2s — PLAN #41
+- [x] Health bar smooth tween over 0.2s — PLAN #41
 - [ ] Screen shake on boss spawn (level 3 wave 10) — PLAN #42
 - [ ] Wave start announcement flies across screen — PLAN #43
 - [ ] UI click SFX wired to every button press — PLAN #52

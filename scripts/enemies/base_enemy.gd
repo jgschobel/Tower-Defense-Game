@@ -22,6 +22,7 @@ var is_dead: bool = false
 @onready var health_bar: ProgressBar = $HealthBar
 
 var heal_timer_node: Timer = null
+var _hp_tween: Tween = null
 
 
 func _ready() -> void:
@@ -66,16 +67,27 @@ func _process(delta: float) -> void:
 		return
 
 
-func take_damage(amount: float, _damage_type: String = "physical") -> void:
+func take_damage(amount: float, damage_type: int = 0) -> void:
 	if is_dead:
 		return
 
-	var actual_damage := maxf(1.0, amount - armor)
+	# 0 = PHYSICAL: full armor reduction
+	# 1 = MAGIC: armor reduced to 30% effectiveness (bypasses most armor)
+	# 2 = PURE: true damage, ignores armor entirely
+	var actual_damage: float
+	match damage_type:
+		1:
+			actual_damage = maxf(1.0, amount - armor * 0.3)
+		2:
+			actual_damage = amount
+		_:
+			actual_damage = maxf(1.0, amount - armor)
+
 	health -= actual_damage
 	_update_health_bar()
 
 	# Show floating damage number
-	_show_damage_number(actual_damage)
+	_show_damage_number(actual_damage, damage_type)
 
 	# Flash white on hit, then restore
 	modulate = Color(2.0, 2.0, 2.0)
@@ -301,9 +313,14 @@ func _get_base_color() -> Color:
 
 
 func _update_health_bar() -> void:
-	if health_bar:
-		health_bar.value = (health / max_health) * 100.0
-		health_bar.visible = health < max_health
+	if not health_bar:
+		return
+	health_bar.visible = health < max_health
+	var target_val := (health / max_health) * 100.0
+	if _hp_tween:
+		_hp_tween.kill()
+	_hp_tween = create_tween()
+	_hp_tween.tween_property(health_bar, "value", target_val, 0.2)
 
 
 func _heal_nearby() -> void:
@@ -338,11 +355,19 @@ func _spawn_children() -> void:
 		child.progress = progress + (i * 20.0)
 
 
-func _show_damage_number(amount: float) -> void:
+func _show_damage_number(amount: float, damage_type: int = 0) -> void:
 	var label := Label.new()
 	label.text = "-%d" % int(amount)
 	label.add_theme_font_size_override("font_size", 14)
-	label.add_theme_color_override("font_color", Color(1, 0.3, 0.2))
+	var dmg_color: Color
+	match damage_type:
+		1:
+			dmg_color = Color(0.85, 0.3, 1.0)  # magic — purple
+		2:
+			dmg_color = Color(1.0, 0.95, 0.35)  # pure — gold
+		_:
+			dmg_color = Color(1, 0.3, 0.2)  # physical — red
+	label.add_theme_color_override("font_color", dmg_color)
 	label.add_theme_color_override("font_outline_color", Color.BLACK)
 	label.add_theme_constant_override("outline_size", 2)
 	label.position = Vector2(randf_range(-15, 15), -40)

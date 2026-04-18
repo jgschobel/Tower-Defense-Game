@@ -131,6 +131,28 @@ func _show_wave_announcement(current: int, _total: int) -> void:
 	tween.tween_callback(announce.queue_free)
 
 
+func show_placement_toast(message: String, at_pos: Vector2) -> void:
+	var label := Label.new()
+	label.text = message
+	label.add_theme_font_size_override("font_size", 30)
+	label.add_theme_color_override("font_color", Color(1, 0.25, 0.15))
+	label.add_theme_color_override("font_outline_color", Color(0.1, 0.05, 0))
+	label.add_theme_constant_override("outline_size", 5)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.custom_minimum_size = Vector2(220, 48)
+	# Position toast above the tap point, clamped inside safe screen area
+	var vp := get_viewport().get_visible_rect().size
+	var tx := clampf(at_pos.x - 110.0, 0.0, vp.x - 220.0)
+	var ty := clampf(at_pos.y - 90.0, 60.0, vp.y - 250.0)
+	label.position = Vector2(tx, ty)
+	add_child(label)
+	var tween := label.create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(label, "position:y", ty - 45.0, 1.0)
+	tween.tween_property(label, "modulate:a", 0.0, 0.9).set_delay(0.25)
+	tween.chain().tween_callback(label.queue_free)
+
+
 func show_next_wave_button(visible_flag: bool) -> void:
 	if next_wave_button:
 		next_wave_button.visible = visible_flag
