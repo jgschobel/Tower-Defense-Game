@@ -95,22 +95,34 @@ func _spawn_enemy(enemy_id: String) -> void:
 		push_error("WaveManager: No enemy_path assigned!")
 		return
 
-	var enemy_instance = _base_enemy_scene.instantiate()
-
 	var data_path := "res://resources/enemy_data/%s.tres" % enemy_id
+	var enemy_data = null
 	if ResourceLoader.exists(data_path):
-		enemy_instance.data = load(data_path)
+		enemy_data = load(data_path)
 	else:
 		push_warning("WaveManager: Enemy data '%s' not found, using basic" % enemy_id)
 		var fallback := "res://resources/enemy_data/basic.tres"
 		if ResourceLoader.exists(fallback):
-			enemy_instance.data = load(fallback)
+			enemy_data = load(fallback)
+
+	# Prefer the pool to avoid instantiate/queue_free churn at scale.
+	# Falls back to instantiate if pool loads late.
+	var enemy_instance: Node = null
+	if EnemyPool and EnemyPool.has_method("acquire"):
+		enemy_instance = EnemyPool.acquire(enemy_data, enemy_path)
+	if enemy_instance == null:
+		enemy_instance = _base_enemy_scene.instantiate()
+		enemy_instance.data = enemy_data
+		enemy_path.add_child(enemy_instance)
 
 	enemy_instance.add_to_group("enemies")
-	enemy_instance.enemy_died.connect(_on_enemy_died)
-	enemy_instance.enemy_reached_end.connect(_on_enemy_reached_end)
+	# Connect signals only once per instance to avoid dupe fires when
+	# the same pooled enemy is reused across waves
+	if not enemy_instance.enemy_died.is_connected(_on_enemy_died):
+		enemy_instance.enemy_died.connect(_on_enemy_died)
+	if not enemy_instance.enemy_reached_end.is_connected(_on_enemy_reached_end):
+		enemy_instance.enemy_reached_end.connect(_on_enemy_reached_end)
 
-	enemy_path.add_child(enemy_instance)
 	enemies_alive += 1
 	enemies_remaining_changed.emit(enemies_alive)
 
