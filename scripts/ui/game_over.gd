@@ -31,10 +31,12 @@ var _defeat_messages := [
 
 func show_victory(stars: int) -> void:
 	visible = true
-	# Fade in animation
+	# Juice: 2s hold before the panel fades in — lets the final pop
+	# breathe and the player's win land emotionally (per BTD pacing).
 	modulate = Color(1, 1, 1, 0)
 	var fade := create_tween()
-	fade.tween_property(self, "modulate:a", 1.0, 0.4)
+	fade.tween_interval(2.0)
+	fade.tween_property(self, "modulate:a", 1.0, 0.5)
 	if title_label:
 		title_label.text = "SIEG!"
 	if stars_label:

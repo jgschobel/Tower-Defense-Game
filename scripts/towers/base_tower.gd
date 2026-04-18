@@ -102,14 +102,19 @@ func _process(delta: float) -> void:
 	# Find target
 	current_target = _find_target()
 
-	# Slight character tilt toward target + aim attack origin
+	# Juice: sprite visibly turns toward the active target. Attack origin
+	# rotates fully (for projectile spawn direction). Sprite clamped to
+	# ±35° so chibi heads stay readable (not fully upside-down when
+	# enemy is to the left), with snappy 8× lerp for "tracking feel".
 	if current_target and attack_origin:
 		var dir := current_target.global_position - global_position
 		attack_origin.rotation = dir.angle()
-		# Gentle tilt of the sprite (max ~15 degrees)
-		var target_tilt := clampf(dir.angle(), -0.26, 0.26)
+		var target_tilt := clampf(dir.angle(), -0.6, 0.6)
 		if sprite:
-			sprite.rotation = lerpf(sprite.rotation, target_tilt, 5.0 * delta)
+			sprite.rotation = lerpf(sprite.rotation, target_tilt, 8.0 * delta)
+	elif sprite:
+		# No target: ease back to neutral
+		sprite.rotation = lerpf(sprite.rotation, 0.0, 4.0 * delta)
 
 	# Attack
 	attack_timer -= delta

@@ -102,7 +102,7 @@ func _draw() -> void:
 
 func _hit() -> void:
 	if is_instance_valid(target) and not target.is_dead:
-		target.take_damage(damage)
+		target.take_damage(damage, damage_type)
 		target.show_hit_reaction()
 
 		if slow_amount > 0.0 and slow_duration > 0.0:
@@ -115,6 +115,6 @@ func _hit() -> void:
 			if enemy == null or enemy == target or enemy.is_dead:
 				continue
 			if global_position.distance_to(enemy.global_position) <= splash_radius:
-				enemy.take_damage(damage * splash_damage_pct)
+				enemy.take_damage(damage * splash_damage_pct, damage_type)
 
 	queue_free()
