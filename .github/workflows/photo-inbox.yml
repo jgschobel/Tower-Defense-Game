@@ -1,0 +1,68 @@
+name: Photo Inbox Processor
+
+# When any .jpg/.png lands in .github/friend_photos_inbox/, this workflow
+# treats each file as a friend-photo request, calls Stability AI to
+# generate a chibi cartoon icon, commits the result to
+# assets/textures/towers/friend_<slug>.png, deletes the inbox file, and
+# opens a PR.
+#
+# Used when the in-chat Claude saves a photo the user uploaded directly
+# in the conversation — no need for the user to open an issue manually.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/friend_photos_inbox/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: photo-inbox
+  cancel-in-progress: false
+
+jobs:
+  process:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Python deps
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install requests pyyaml
+
+      - name: Process all files in the inbox
+        id: process
+        env:
+          STABILITY_API_KEY: ${{ secrets.STABILITY_API_KEY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          python3 .github/scripts/process_photo_inbox.py
+
+      - name: Commit new assets + clear inbox
+        if: steps.process.outputs.processed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          BRANCH="friend-photo/inbox-$(date +%s)"
+          git checkout -b "$BRANCH"
+          git add assets/textures/towers/*.png 2>/dev/null || true
+          git add -u .github/friend_photos_inbox/ 2>/dev/null || true
+          git commit -m "art(character): process friend photo inbox"
+          git push -u origin "$BRANCH"
+          gh pr create \
+            --title "art(character): friend photo inbox → new icon(s)" \
+            --body "Processed $(ls assets/textures/towers/friend_*.png 2>/dev/null | wc -l) icon(s) from the inbox. A future build-content run will wire these into TowerData resources and the shop." \
+            --base main \
+            --head "$BRANCH"

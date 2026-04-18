@@ -27,6 +27,13 @@ autonomous or manual. Update only when the user explicitly changes them.
   a GitHub Issue with log tails whenever any workflow fails. Before
   starting new work, check `mcp__github__list_issues` with label
   `ci-failure` and fix those first. Close the issue when fixed.
+- **When the user drops a photo in chat for a new character icon**,
+  DO NOT ask them to open a GitHub Issue. Save the photo directly to
+  `.github/friend_photos_inbox/<slug>.jpg` (pick a short slug from any
+  name they mention), optionally write a sidecar `<slug>.yml` with
+  `name`, `description`, `style` (default / warrior / scholar / pirate
+  / pixie / punk). Commit + push. The `photo-inbox.yml` workflow
+  handles the rest (Stability AI img2img → new asset → PR).
 - **Feedback rhythm**: user plays the deployed HTML5 build
   (`jgschobel.github.io/Tower-Defense-Game/`) and edits `ROADMAP.md`
   when they want to redirect priorities. Otherwise: zero input required.

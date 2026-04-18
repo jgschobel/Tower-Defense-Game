@@ -1,0 +1,78 @@
+name: Photo → Character Icon
+
+# Triggered when an issue labeled "friend-photo" is opened.
+# Extracts the attached image from the issue body, calls Stability AI
+# image-to-image to turn it into a chibi cartoon tower icon, commits
+# the result and opens a PR.
+
+on:
+  issues:
+    types: [opened, labeled]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  generate:
+    if: contains(github.event.issue.labels.*.name, 'friend-photo')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Python deps
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install requests
+
+      - name: Extract + generate icon
+        id: gen
+        env:
+          STABILITY_API_KEY: ${{ secrets.STABILITY_API_KEY }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+        run: |
+          set -e
+          python3 .github/scripts/photo_to_character.py
+
+      - name: Open PR with new asset
+        if: steps.gen.outputs.asset_path != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ASSET: ${{ steps.gen.outputs.asset_path }}
+          CHAR_NAME: ${{ steps.gen.outputs.character_name }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          set -e
+          BRANCH="friend-photo/${CHAR_NAME}-$(date +%s)"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add "$ASSET"
+          git commit -m "art(character): add friend icon '$CHAR_NAME' (closes #$ISSUE_NUMBER)"
+          git push -u origin "$BRANCH"
+          gh pr create \
+            --title "art(character): add friend icon '$CHAR_NAME'" \
+            --body "Generated from issue #$ISSUE_NUMBER via Stability AI image-to-image.\n\nAsset: \`$ASSET\`\n\nNext: an autonomous build-content run will wire this into a new TowerData .tres and the shop." \
+            --base main \
+            --head "$BRANCH"
+
+      - name: Comment on issue with result
+        if: steps.gen.outputs.asset_path != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CHAR_NAME: ${{ steps.gen.outputs.character_name }}
+          ASSET: ${{ steps.gen.outputs.asset_path }}
+        run: |
+          gh issue comment "${{ github.event.issue.number }}" \
+            --body "Icon generated for **$CHAR_NAME** and committed as \`$ASSET\`. A PR is open to merge it. Once merged, the next autonomous cron run will wire it into a new tower."
+
+      - name: Comment on failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue comment "${{ github.event.issue.number }}" \
+            --body "⚠️ Icon generation failed. The workflow run logs are at: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}. The CI-monitor workflow will also file a detailed ci-failure issue."
