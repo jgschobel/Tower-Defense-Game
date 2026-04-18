@@ -88,9 +88,23 @@ jobs:
             --body "Icon generated for **$CHAR_NAME** and committed as \`$ASSET\`. A PR is open to merge it. Once merged, the next autonomous cron run will wire it into a new tower."
 
       - name: Comment on failure
-        if: failure()
+        if: failure() || steps.gen.outputs.asset_path == ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh issue comment "${{ github.event.issue.number }}" \
-            --body "⚠️ Icon generation failed. The workflow run logs are at: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}. The CI-monitor workflow will also file a detailed ci-failure issue."
+          REASON=""
+          if [ -f /tmp/photo_reason.txt ]; then
+            REASON=$(cat /tmp/photo_reason.txt)
+          fi
+          {
+            echo "⚠️ Icon generation failed for this issue."
+            echo ""
+            if [ -n "$REASON" ]; then
+              echo "**Reason**: $REASON"
+              echo ""
+            fi
+            echo "Workflow logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            echo ""
+            echo "The CI-monitor workflow will also file a detailed ci-failure issue. The next autonomous test-validate cron will see it and attempt a fix."
+          } > /tmp/fail_comment.md
+          gh issue comment "${{ github.event.issue.number }}" --body-file /tmp/fail_comment.md

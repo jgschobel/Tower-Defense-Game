@@ -24,8 +24,13 @@ import requests
 
 
 STABILITY_URL = "https://api.stability.ai/v2beta/stable-image/generate/sd3"
-GEMINI_MODEL = "gemini-2.5-flash-image-preview"
-GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent"
+# Try multiple Gemini image model names — the API has renamed this several
+# times between preview and GA. First one that responds 200 wins.
+GEMINI_MODELS = [
+    "gemini-2.5-flash-image",          # production GA (expected post-2025)
+    "gemini-2.5-flash-image-preview",  # preview name used earlier
+    "gemini-2.0-flash-exp-image-generation",  # older fallback
+]
 IMAGEN_MODEL = "imagen-4.0-generate-001"
 IMAGEN_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{IMAGEN_MODEL}:predict"
 
@@ -66,8 +71,8 @@ def _load_style_sheet() -> str:
 def call_gemini_img2img(photo: pathlib.Path, prompt: str, out: pathlib.Path) -> bool:
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
+        _log("GEMINI_API_KEY not set — skipping gemini")
         return False
-    _log(f"gemini img2img {out.name}: {prompt[:120]}...")
     img_bytes = photo.read_bytes()
     mime = "image/png" if photo.suffix.lower() == ".png" else "image/jpeg"
     style_sheet = _load_style_sheet()
@@ -86,26 +91,45 @@ def call_gemini_img2img(photo: pathlib.Path, prompt: str, out: pathlib.Path) -> 
         }],
         "generationConfig": {"responseModalities": ["IMAGE", "TEXT"]},
     }
-    r = requests.post(
-        f"{GEMINI_URL}?key={api_key}",
-        json=body,
-        headers={"Content-Type": "application/json"},
-        timeout=180,
-    )
-    if r.status_code != 200:
-        _log(f"Gemini API returned {r.status_code}: {r.text[:500]}")
-        return False
-    data = r.json()
-    try:
-        for part in data["candidates"][0]["content"]["parts"]:
-            inline = part.get("inlineData") or part.get("inline_data")
-            if inline:
-                png_bytes = base64.b64decode(inline["data"])
-                out.write_bytes(png_bytes)
-                _log(f"wrote {out} ({len(png_bytes)} bytes)")
-                return True
-    except (KeyError, IndexError) as e:
-        _log(f"Gemini response shape unexpected: {e}; payload: {json.dumps(data)[:500]}")
+    # Try each candidate model name until one returns a usable response
+    last_error = ""
+    for model in GEMINI_MODELS:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+        _log(f"gemini img2img {out.name} via {model}: {prompt[:100]}...")
+        try:
+            r = requests.post(
+                f"{url}?key={api_key}",
+                json=body,
+                headers={"Content-Type": "application/json"},
+                timeout=180,
+            )
+        except requests.RequestException as e:
+            last_error = f"request exception: {e}"
+            _log(f"gemini {model} network error: {e}")
+            continue
+        if r.status_code == 404 or r.status_code == 400:
+            last_error = f"{r.status_code}: {r.text[:200]}"
+            _log(f"gemini {model} returned {r.status_code} — trying next model")
+            continue
+        if r.status_code != 200:
+            last_error = f"{r.status_code}: {r.text[:400]}"
+            _log(f"gemini {model} unexpected status {r.status_code}: {r.text[:300]}")
+            continue
+        try:
+            data = r.json()
+            for part in data["candidates"][0]["content"]["parts"]:
+                inline = part.get("inlineData") or part.get("inline_data")
+                if inline:
+                    png_bytes = base64.b64decode(inline["data"])
+                    out.write_bytes(png_bytes)
+                    _log(f"gemini {model} wrote {out} ({len(png_bytes)} bytes)")
+                    return True
+            last_error = "no inlineData in response"
+            _log(f"gemini {model} returned 200 but no image data; payload head: {json.dumps(data)[:400]}")
+        except Exception as e:
+            last_error = f"parse error: {e}"
+            _log(f"gemini {model} response parse error: {e}")
+    _log(f"all gemini model candidates failed — last error: {last_error}")
     return False
 
 
