@@ -314,6 +314,7 @@ func upgrade() -> bool:
 	_recalculate_stats()
 	_update_range_collider()
 	_update_visual()
+	queue_redraw()  # refresh tier pips
 	tower_upgraded.emit(self, upgrade_level)
 
 	SfxManager.play_upgrade()
@@ -423,6 +424,7 @@ func upgrade_path(path_letter: String) -> bool:
 	_recalculate_stats()
 	_update_range_collider()
 	_apply_path_tint()
+	queue_redraw()  # refresh tier pips
 	tower_upgraded.emit(self, upgrade_level)
 	SfxManager.play_upgrade()
 
@@ -535,6 +537,28 @@ func _draw() -> void:
 	draw_circle(Vector2.ZERO, 29.0, Color(0.62, 0.52, 0.42, 0.35))
 	# Thin highlight along top edge
 	draw_arc(Vector2(-2, -2), 33.0, PI * 1.1, PI * 1.9, 24, Color(1, 0.95, 0.8, 0.25), 2.0)
+	# Tier pips — small colored dots around the pedestal edge showing
+	# upgrade tiers. Left arc = Path A, Right arc = Path B. Three max per
+	# side. Makes upgrade level legible at a glance on the map without
+	# opening the info panel. Linear-upgrade towers use the center arc.
+	if data and data.has_branching_upgrades():
+		_draw_tier_pips(path_a_tier, PI * 0.95, -1.0, data.path_a_tint)
+		_draw_tier_pips(path_b_tier, PI * 0.05, 1.0, data.path_b_tint)
+	elif upgrade_level > 0:
+		_draw_tier_pips(upgrade_level, PI * 0.5, 1.0, Color(1, 0.9, 0.3))
+
+
+func _draw_tier_pips(tier: int, base_angle: float, dir: float, tint: Color) -> void:
+	if tier <= 0:
+		return
+	var ring_r: float = 42.0
+	var pip_r: float = 3.5
+	var spread: float = 0.22  # radians between pips
+	for i in tier:
+		var a: float = base_angle + dir * spread * float(i)
+		var p := Vector2(cos(a), sin(a)) * ring_r
+		draw_circle(p, pip_r + 1.5, Color(0, 0, 0, 0.55))
+		draw_circle(p, pip_r, tint)
 
 
 func _update_range_collider() -> void:
