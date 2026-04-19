@@ -56,6 +56,18 @@ const CHARACTER_BIOS := {
 		"name": "Amösius — D'Zunge vo de Grächtigkeit",
 		"bio": "Art: Tokay Gecko / Mönsch-Hybrid\nBruef: Sälbständigi \"Schädlingsbekämpfig\" (er frisst Mugge)\nWaffe: 40cm chläbrigi Zunge (reicht wiiter wenn er verruckt isch)\nSchwächi: Chalti Oberfläche, Lotto-Zettel\nLieblings-Getränk: Was au immer i dere blaue Dose isch\nSpruch: \"Ich han mal CHF 2.50 im Lotto gwunne. Ich bi basically riich.\"",
 	},
+	"kuehne": {
+		"name": "Kühne — D'Bluemene-Magie",
+		"bio": "Art: Wildi Blueme / Naturmagier-Hybrid\nBruef: Wildgarten-Wächterin, Pollen-Sommelier\nWaffe: Magische Pollen-Wölkli (verwirred Feind, slow-down Garantie)\nSchwächi: Heuschnupfe, Parfumerie-Gang\nLieblings-Getränk: Hollersirup mit Sprudel\nSpruch: \"D'Natur het immer es letschts Wort — i dem Fall es nieses.\"",
+	},
+	"jojo": {
+		"name": "JoJo — De Chemie-Magier",
+		"bio": "Art: Chaos-Wissenschaftler / Erlenmeyer-Liebhaber\nBruef: Sälbständig erforschi Reaktione (meistens au bi Regel)\nWaffe: Säure-Erlenmeyer-Flask, bliibendi Acid-Pool wo Feinde übergeht\nSchwächi: Gegestoff, pH-neutrali Diskussione\nLieblings-Getränk: Destilliert, mit ere Priise Manganat\nSpruch: \"Das isch nid es Problem, das isch en EXOTHERMI Lösig.\"",
+	},
+	"cordula": {
+		"name": "Cordula — D'Fasnachts-Piratin",
+		"bio": "Art: Fasnacht-Korsarin mit chronischem Party-Instinkt\nBruef: Kapitänin vom Chaos-Schiff \"D'Banani\"\nWaffe: Fasnachts-Volleyball (splash-bouncer — trifft sibe Feind mit eim Wurf)\nSchwächi: Konfetti-Überdosis, leise Bibliothekä\nLieblings-Getränk: Ovo-Pudel mit Limetti-Zest\nSpruch: \"Wenn de Ball zruggchunnt, gwönned beidi Parteie.\"",
+	},
 	"m_teufel": {
 		"name": "De M-Tüüfel — De Migros-Tüüfel",
 		"bio": "Art: Dämonischi Detailhandels-Entität\nBruef: Supermarkt-Produkt verfluche\nWaffe: Abglaufeni Cumulus-Punkte, kaputti Iichaufswäge\nUrsprung: Gebore us 10'000 nöd iglööste Cumulus-Punkte und de kollektive Wuet vo Chunde wo ihri Täsche vergässe händ\nZiel: Alli Banane-Rabatt z'Züri widerruefe\nSpruch: \"CUMULUS-PUNKTE SIND JETZT WÄRTLOS! MWAHAHAHA!\"",

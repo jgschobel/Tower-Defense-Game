@@ -299,6 +299,7 @@ func sell() -> void:
 	CurrencyManager.add_gold(refund)
 	tower_sold.emit(self)
 	is_placed = false  # stop attacking
+	SfxManager.play_sell()
 	# Shrink animation before removing
 	var sell_tween := create_tween()
 	sell_tween.tween_property(self, "scale", Vector2.ZERO, 0.3).set_ease(Tween.EASE_IN)
