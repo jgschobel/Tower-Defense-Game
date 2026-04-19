@@ -36,7 +36,7 @@ jobs:
       - name: Install Python deps
         run: |
           python3 -m pip install --upgrade pip
-          python3 -m pip install requests pyyaml
+          python3 -m pip install requests pyyaml rembg[cpu] onnxruntime pillow
 
       - name: Process all files in the inbox
         id: process
