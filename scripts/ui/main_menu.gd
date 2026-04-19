@@ -10,6 +10,28 @@ func _ready() -> void:
 	# Continuous music — don't stop on menu entry. MusicManager auto-
 	# switches to the "menu" track via GameManager.game_state_changed.
 	GameManager.set_state(GameManager.GameState.MENU)
+	_show_run_stats()
+
+
+func _show_run_stats() -> void:
+	# Small corner stats badge showing persistent progress: total stars
+	# across all levels + lifetime kills. Returning players see their
+	# cumulative damage to the M-Tüüfel grow between sessions.
+	if has_node("RunStats"):
+		return
+	var stats := Label.new()
+	stats.name = "RunStats"
+	stats.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	stats.add_theme_font_size_override("font_size", 14)
+	stats.add_theme_color_override("font_color", Color(1, 0.9, 0.6))
+	stats.add_theme_color_override("font_outline_color", Color(0.1, 0.05, 0, 0.9))
+	stats.add_theme_constant_override("outline_size", 3)
+	var max_stars: int = GameManager.MAX_LEVELS * 3
+	stats.text = "★ %d / %d   ☠ %d" % [GameManager.total_stars, max_stars, GameManager.total_kills]
+	stats.anchors_preset = Control.PRESET_TOP_LEFT
+	stats.offset_left = 20
+	stats.offset_top = 20
+	add_child(stats)
 
 
 func _on_play_button_pressed() -> void:
