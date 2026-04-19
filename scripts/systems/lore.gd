@@ -82,6 +82,7 @@ const CHARACTER_BIOS := {
 }
 
 const ENEMY_LORE := {
+	"swarm": "Tofu-Schwarm — Chliini Tofu-Würfli wo i Rudel marschiered. Einzeln harmlos, zäme en echti Bedrohig. Härdi Viganer füegend immer meh derzue.",
 	"basic": "Bösi Brötli — Es verfluechts Brötli mit Guggelauge und ere schlechte Laune. Marschiert langsam aber i grusige Zahl. No warm vom Ofe.",
 	"fast": "Turbo Toblerone — En Schoggistange bsässe vo Schwiizer Präzision und Koffein. Rast dure d'Gäng mit gföhrlicher Gschwindigkeit. Spitzigi Ecke.",
 	"tank": "Beefy Cervelat — D'Nationalwurscht vo de Schwiiz, jetzt 3 Meter lang und gpanzeret i ihrem eigene Darm. Langsam aber nöd z'stoppe. Rücht unglaublich.",
