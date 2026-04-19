@@ -34,10 +34,38 @@ func play_upgrade() -> void:
 
 
 func play_click() -> void:
-	# User reported the old 660Hz square tone hurt in the ear — the harsh
-	# harmonics at short duration were piercing. Softer: gentle downward
-	# sweep 380→220 Hz at low volume, more "tap" than "beep".
-	_play_sweep(380.0, 220.0, 0.04, 0.08)
+	# Minecraft-style wooden "tick" — short noise burst with a quick
+	# decay, softer than any pitched tone. User complained the previous
+	# sweep was annoying; this is genuinely neutral.
+	_play_tick()
+
+
+func _play_tick() -> void:
+	# Super-short (25ms) filtered noise burst at very low volume.
+	# Sharp attack + exponential-ish decay mimics a wooden UI click.
+	var duration: float = 0.025
+	var samples := int(_sample_rate * duration)
+	var audio := AudioStreamWAV.new()
+	audio.format = AudioStreamWAV.FORMAT_8_BITS
+	audio.mix_rate = int(_sample_rate)
+	audio.stereo = false
+	var data := PackedByteArray()
+	var vol: float = 0.12
+	for i in samples:
+		var t := float(i) / _sample_rate
+		# Exponential decay — very sharp attack, quick tail
+		var env: float = pow(1.0 - (t / duration), 2.4)
+		# Mix filtered noise (rough low-pass by running average)
+		var noise: float = randf() * 2.0 - 1.0
+		var sample: float = noise * env * vol
+		data.append(int((sample * 0.5 + 0.5) * 255))
+	audio.data = data
+	var player := AudioStreamPlayer.new()
+	player.stream = audio
+	player.volume_db = _db_with_user_volume(-4.0)
+	add_child(player)
+	player.play()
+	player.finished.connect(player.queue_free)
 
 
 func play_sell() -> void:

@@ -30,9 +30,8 @@ text = " 200"
 [node name="LivesLabel" type="Label" parent="TopBar/HBox"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "♥ 20"
+text = "20 Läbe"
 horizontal_alignment = 1
-theme_override_colors/font_color = Color(1, 0.5, 0.5, 1)
 
 [node name="WaveLabel" type="Label" parent="TopBar/HBox"]
 layout_mode = 2
@@ -50,18 +49,18 @@ horizontal_alignment = 1
 [node name="SpeedButton" type="Button" parent="TopBar/HBox"]
 layout_mode = 2
 custom_minimum_size = Vector2(56, 0)
-text = "▶ 1x"
+text = "1x"
 
 [node name="AutoButton" type="Button" parent="TopBar/HBox"]
 layout_mode = 2
 custom_minimum_size = Vector2(60, 0)
-text = "↻ AUTO"
+text = "AUTO"
 toggle_mode = true
 
 [node name="PauseButton" type="Button" parent="TopBar/HBox"]
 layout_mode = 2
 custom_minimum_size = Vector2(60, 0)
-text = "⏸"
+text = "||"
 
 [node name="SideShop" type="PanelContainer" parent="."]
 anchors_preset = 6

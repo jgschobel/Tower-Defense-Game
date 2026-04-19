@@ -40,7 +40,7 @@ func show_victory(stars: int) -> void:
 	if title_label:
 		title_label.text = "SIEG!"
 	if stars_label:
-		stars_label.text = "★".repeat(stars) + "☆".repeat(3 - stars)
+		stars_label.text = "*".repeat(stars) + "-".repeat(3 - stars)
 	if message_label:
 		var flavor: String
 		if stars == 3:
