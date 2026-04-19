@@ -217,13 +217,20 @@ func _hit() -> void:
 				src.kill_count += 1
 
 	if is_splash and splash_radius > 0.0:
+		var src_tower = get_meta("source_tower") if has_meta("source_tower") else null
 		var enemies := get_tree().get_nodes_in_group("enemies")
 		for enemy_node in enemies:
 			var enemy := enemy_node as BaseEnemy
 			if enemy == null or enemy == target or enemy.is_dead:
 				continue
 			if global_position.distance_to(enemy.global_position) <= splash_radius:
+				var splash_was_alive: bool = not enemy.is_dead
 				enemy.take_damage(damage * splash_damage_pct, damage_type)
+				# Credit splash kills back to the owning tower too — was
+				# previously only crediting the direct-hit target. Agent-audit
+				# BUG #2 (JoJo's kill total was artificially low).
+				if splash_was_alive and enemy.is_dead and src_tower != null and is_instance_valid(src_tower) and "kill_count" in src_tower:
+					src_tower.kill_count += 1
 
 	# Spawn a lingering acid pool for JoJo-style projectiles — continues
 	# damaging enemies that walk over it for `pool_duration` seconds.
@@ -278,3 +285,8 @@ func reset_for_pool() -> void:
 	_origin_pos = Vector2.ZERO
 	global_position = Vector2.ZERO
 	rotation = 0.0
+	# Clear the source_tower meta so a freshly-acquired projectile can't
+	# briefly carry the previous owner and mis-credit a kill between
+	# acquire() and setup(). Agent-audit BUG #1.
+	if has_meta("source_tower"):
+		remove_meta("source_tower")

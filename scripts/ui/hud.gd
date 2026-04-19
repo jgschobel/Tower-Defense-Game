@@ -22,10 +22,6 @@ signal auto_wave_toggled(enabled: bool)
 
 var tower_data_list: Array = []
 var _cost_labels: Array = []
-# Cached references so affordability updates can tint the whole row
-# (icon + text) rather than just the cost label. Populated by
-# _populate_tower_shop, iterated in _on_gold_changed.
-var _shop_rows: Array = []
 var _game_speed: float = 1.0
 var _selected_tower: BaseTower = null
 var _is_placing: bool = false
@@ -142,9 +138,12 @@ func _build_boss_hpbar() -> Control:
 	wrap.anchor_right = 0.8
 	wrap.anchor_bottom = 0.0
 	wrap.offset_left = 0.0
-	wrap.offset_top = 72.0
+	# Respect the top safe-area inset — on a notched phone TopBar lives
+	# at `_inset_top + 65`, so the HP bar below it must be pushed down
+	# accordingly. Agent-audit BUG #10.
+	wrap.offset_top = _inset_top + 72.0
 	wrap.offset_right = 0.0
-	wrap.offset_bottom = 130.0
+	wrap.offset_bottom = _inset_top + 130.0
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = Color(0.15, 0.05, 0.05, 0.85)
 	sb.border_width_top = 2
@@ -219,6 +218,7 @@ func _set_threat_badge(badge_name: String, visible_flag: bool, text: String, col
 
 var _safe_area_applied: bool = false
 var _inset_right: float = 0.0
+var _inset_top: float = 0.0
 
 func _apply_safe_area() -> void:
 	# Idempotent guard: without this, running twice (rotation, re-init)
@@ -232,6 +232,7 @@ func _apply_safe_area() -> void:
 	var inset_top := safe_rect.position.y
 	var inset_bottom := screen_size.y - (safe_rect.position.y + safe_rect.size.y)
 	_inset_right = float(inset_right)
+	_inset_top = float(inset_top)
 	# Responsive shop width — scales with viewport width. Clamps between
 	# 136px (minimum readable) and 190px (avoid dominating ultra-wide).
 	# Step 3 goal: narrow phones get a narrower shop; iPads get wider.
@@ -361,6 +362,19 @@ func _on_viewport_resized() -> void:
 	# Clears the safe-area-applied flag so insets are recomputed too.
 	_safe_area_applied = false
 	_apply_safe_area()
+	# Tear down live overlays that depend on the stale insets — they'll
+	# be rebuilt on the next threat-watcher tick / next-wave button show.
+	# Agent-audit BUG #9.
+	var existing_boss: Control = get_node_or_null("BossHPBar") as Control
+	if existing_boss:
+		existing_boss.queue_free()
+	for badge_name in ["HealerBadge", "BossBadge"]:
+		var b: Node = get_node_or_null("TopBar/%s" % badge_name)
+		if b:
+			b.queue_free()
+	var existing_preview: Node = get_node_or_null("NextWavePreview")
+	if existing_preview:
+		existing_preview.queue_free()
 
 
 func _populate_tower_shop() -> void:
@@ -456,7 +470,6 @@ func _populate_tower_shop() -> void:
 		row.add_child(text_col)
 		btn.add_child(row)
 		tower_shop.add_child(btn)
-		_shop_rows.append(btn)
 
 
 func _style_shop_button(btn: Button, td: TowerData) -> void:
@@ -497,8 +510,9 @@ func _style_shop_button(btn: Button, td: TowerData) -> void:
 func show_enemy_intro(enemy_id: String, enemy_data: Resource) -> void:
 	# Big first-appearance reveal per enemy type. 1.2s animation that
 	# eats the middle of the screen. After this, no more persistent
-	# name labels float over enemies of this type (handled in
-	# base_enemy by checking `GameLevel.seen_enemy_ids`).
+	# name labels float over enemies of this type (handled by
+	# `WaveManager._seen_enemy_ids` emitting `enemy_introduced` only on
+	# the first spawn).
 	var overlay := PanelContainer.new()
 	overlay.modulate = Color(1, 1, 1, 0)
 	overlay.anchors_preset = Control.PRESET_CENTER
@@ -506,8 +520,13 @@ func show_enemy_intro(enemy_id: String, enemy_data: Resource) -> void:
 	overlay.anchor_top = 0.5
 	overlay.anchor_right = 0.5
 	overlay.anchor_bottom = 0.5
-	overlay.offset_left = -280
-	overlay.offset_right = 280
+	# Responsive width — agent-audit BUG #7: was fixed ±280 which clipped
+	# on narrow phones (after safe-area inset the viewport can be <620px
+	# wide). Now scales to 45% of viewport width, clamped to stay usable.
+	var vp_w: float = get_viewport().get_visible_rect().size.x
+	var half_w: float = clampf(vp_w * 0.45 * 0.5, 180.0, 300.0)
+	overlay.offset_left = -half_w
+	overlay.offset_right = half_w
 	overlay.offset_top = -90
 	overlay.offset_bottom = 90
 	overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -948,6 +967,11 @@ func _refresh_tower_info() -> void:
 
 	if sell_btn:
 		_paint_sell_button(sell_btn)
+	# Re-clamp after refresh — post-upgrade the branching path buttons
+	# appear and grow the panel height, which can push it off-screen on
+	# narrow viewports. Agent-audit BUG #8.
+	if tower_info and tower_info.visible:
+		_clamp_tower_info_to_viewport()
 
 
 func _paint_sell_button(sell_btn: Button) -> void:
