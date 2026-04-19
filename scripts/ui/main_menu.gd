@@ -45,11 +45,23 @@ func _on_lore_button_pressed() -> void:
 	_lore_panel.visible = true
 
 
+var _options_instance: Node = null
+
+
 func _on_options_button_pressed() -> void:
 	SfxManager.play_click()
+	# Guard against double-instancing if the user taps the button twice
+	# before the first Options overlay animates in. Audit P2 #24.
+	if _options_instance and is_instance_valid(_options_instance):
+		return
 	var opts_scene := load("res://scenes/ui/options_menu.tscn") as PackedScene
 	if opts_scene:
-		add_child(opts_scene.instantiate())
+		var inst = opts_scene.instantiate()
+		_options_instance = inst
+		add_child(inst)
+		if inst.has_signal("closed"):
+			inst.closed.connect(func():
+				_options_instance = null)
 
 
 func _on_quit_button_pressed() -> void:
