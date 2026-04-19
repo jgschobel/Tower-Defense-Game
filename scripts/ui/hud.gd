@@ -228,7 +228,12 @@ func _populate_tower_shop() -> void:
 
 		var btn := Button.new()
 		btn.custom_minimum_size = Vector2(125, 140)
-		btn.pressed.connect(_on_tower_button_pressed.bind(td))
+		# Use button_down (press) instead of pressed (release) so the player
+		# can press-and-drag the shop button straight to the map (drag-and-
+		# drop placement). The press fires placement mode immediately; the
+		# subsequent drag events go to TowerPlacement via _unhandled_input;
+		# release-on-map places the tower.
+		btn.button_down.connect(_on_tower_button_pressed.bind(td))
 
 		var vbox := VBoxContainer.new()
 		vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE

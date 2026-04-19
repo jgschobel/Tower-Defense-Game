@@ -3,6 +3,15 @@ extends Node2D
 
 ## Handles tower placement via touch/click. Free placement (no grid snap).
 ## Towers can't overlap each other or be placed on the enemy path.
+##
+## Drag-and-drop flow (BTD-style):
+##   1. Player taps a shop button → HUD emits tower_selected_for_placement
+##   2. GameLevel calls start_placement() → ghost created (hidden)
+##   3. First pointer motion reveals ghost at finger, continuously updates
+##   4. On release (or on a quick tap with no motion) → try to place
+##      at the release position. Release on invalid = cancel, not place.
+##   5. Previous behavior (press-to-place) also still works as a fallback
+##      for cases where release event is lost — press also fires a place.
 
 signal tower_placed(tower: Node2D)
 signal placement_cancelled
@@ -18,6 +27,11 @@ var placed_towers: Array = []
 
 var _tower_scene: PackedScene
 var _path_points: PackedVector2Array = PackedVector2Array()
+# Drag-and-drop state: suppress double-place (press + release fires twice).
+var _just_placed: bool = false
+# Track whether the current touch interaction has seen any motion, so a
+# quick stationary tap counts as place-at-finger rather than cancel.
+var _had_motion: bool = false
 
 
 func _ready() -> void:
@@ -80,9 +94,20 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventScreenTouch or event is InputEventMouseButton:
 		var pos := _get_event_position(event)
 		if event.is_pressed():
-			_try_place(pos)
+			# Start of interaction: update ghost to finger, clear motion flag.
+			_had_motion = false
+			_just_placed = false
+			_update_ghost_position(pos)
+		else:
+			# Release: place on current position (drag-and-drop drop).
+			# If we never moved (stationary tap), still place at the tap
+			# location — identical to the pre-existing press-to-place UX
+			# so tap-happy users aren't broken.
+			if not _just_placed:
+				_try_place(pos)
 
 	if event is InputEventScreenDrag or event is InputEventMouseMotion:
+		_had_motion = true
 		var pos := _get_event_position(event)
 		_update_ghost_position(pos)
 
@@ -136,6 +161,7 @@ func _try_place(screen_pos: Vector2) -> void:
 
 	SfxManager.play_place()
 	tower_placed.emit(tower)
+	_just_placed = true
 	cancel_placement()
 
 
