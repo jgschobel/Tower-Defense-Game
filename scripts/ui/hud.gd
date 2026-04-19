@@ -294,19 +294,21 @@ func _build_shop_collapse_handle() -> void:
 	toggle.name = "ShopToggle"
 	toggle.text = "▶"
 	toggle.flat = true
-	toggle.custom_minimum_size = Vector2(22, 44)
-	toggle.add_theme_font_size_override("font_size", 16)
+	toggle.custom_minimum_size = Vector2(36, 52)
+	toggle.add_theme_font_size_override("font_size", 18)
 	toggle.add_theme_color_override("font_color", Color(1, 0.9, 0.5))
 	toggle.mouse_filter = Control.MOUSE_FILTER_STOP
 	# Position: pinned to the top-LEFT corner of the SideShop, sticking
-	# slightly out (-18px) so users can grab it easily.
+	# out ~32px for a comfortable 36-wide tap target (mobile touch
+	# target minimum is 44px — 36 is a compromise to avoid blocking too
+	# much of the adjacent map area).
 	toggle.anchors_preset = Control.PRESET_TOP_LEFT
 	toggle.anchor_left = 0.0
 	toggle.anchor_top = 0.0
-	toggle.offset_left = -18.0
+	toggle.offset_left = -32.0
 	toggle.offset_top = 8.0
 	toggle.offset_right = 4.0
-	toggle.offset_bottom = 52.0
+	toggle.offset_bottom = 60.0
 	side_shop.add_child(toggle)
 	toggle.pressed.connect(_toggle_shop_collapse)
 
@@ -314,6 +316,15 @@ func _build_shop_collapse_handle() -> void:
 func _toggle_shop_collapse() -> void:
 	shop_collapsed = not shop_collapsed
 	SfxManager.play_click()
+	# Hide the scroll contents entirely when collapsed — saves layout +
+	# render cost for the 5 rows that would otherwise sit behind a 32px
+	# strip with 0 visible width.
+	if has_node("SideShop/SideShopVBox/ShopScroll"):
+		var scroll: Control = $SideShop/SideShopVBox/ShopScroll
+		scroll.visible = not shop_collapsed
+	if has_node("SideShop/SideShopVBox/ShopHeader"):
+		var header: Control = $SideShop/SideShopVBox/ShopHeader
+		header.visible = not shop_collapsed
 	# Kill any in-flight slide tween so rapid taps don't fight.
 	if _shop_collapse_tween and _shop_collapse_tween.is_valid():
 		_shop_collapse_tween.kill()
@@ -1201,16 +1212,18 @@ func _on_close_button_pressed() -> void:
 
 
 func show_toast(message: String) -> void:
-	# Single-toast policy: free any prior toast before adding a new one.
-	# Without this, rapid-fire invalid placements stacked toasts on top of
-	# each other and older ones stayed visible until their individual
-	# tweens finished (playtest-feedback #104 — two consecutive screenshots
-	# showed identical frozen toasts).
-	var prior: Node = get_node_or_null("HudToast")
-	if prior:
-		prior.queue_free()
+	# Single-toast policy: free any prior toast(s) before adding a new
+	# one. Playtest-feedback #104 — rapid-fire invalid placements stacked
+	# Labels. An earlier name-based dedup was still racy because
+	# `queue_free()` is deferred: between the free call and the new
+	# add_child, the prior node still exists with name "HudToast" and
+	# Godot auto-suffixes the new name. Group-based iteration handles
+	# the race cleanly.
+	for prior in get_tree().get_nodes_in_group("hud_toast"):
+		if is_instance_valid(prior):
+			prior.queue_free()
 	var toast := Label.new()
-	toast.name = "HudToast"
+	toast.add_to_group("hud_toast")
 	toast.text = message
 	toast.add_theme_font_size_override("font_size", 24)
 	toast.add_theme_color_override("font_color", Color(1, 0.35, 0.2))
