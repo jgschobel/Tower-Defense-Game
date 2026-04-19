@@ -28,6 +28,10 @@ var effective_speed: float = 0.0
 
 var _enemies_in_range: Array = []
 var _projectile_scene: PackedScene
+# Cached tier-pip geometry — recomputed on upgrade(), reused in _draw
+# so per-frame trig is avoided. ROADMAP PERF #7. Stored as
+# Array[Array] with entries [position: Vector2, tint: Color].
+var _pip_cache: Array = []
 
 # Taunt memes — one per character. Randomly floated above the tower every
 # 6-12s while placed, to give each friend some personality. Strings are
@@ -71,6 +75,12 @@ func _maybe_taunt(t: Timer) -> void:
 	t.wait_time = randf_range(6.0, 12.0)
 	if not is_placed or not data:
 		return
+	# Skip during active spawning — taunt labels allocate a Label + tween
+	# per fire, adding GC pressure right when the frame budget is tightest
+	# (stress waves). ROADMAP PERF #6.
+	var wm: Node = get_tree().get_first_node_in_group("wave_manager")
+	if wm != null and "is_spawning" in wm and wm.is_spawning:
+		return
 	var lines: Array = TAUNTS.get(data.id, [])
 	if lines.is_empty():
 		return
@@ -111,6 +121,7 @@ func _float_taunt(text: String) -> void:
 
 func _apply_data() -> void:
 	_recalculate_stats()
+	_rebuild_pip_cache()
 
 
 func _recalculate_stats() -> void:
@@ -330,7 +341,8 @@ func upgrade() -> bool:
 	_recalculate_stats()
 	_update_range_collider()
 	_update_visual()
-	queue_redraw()  # refresh tier pips
+	_rebuild_pip_cache()
+	queue_redraw()  # refresh tier pips from cache
 	tower_upgraded.emit(self, upgrade_level)
 
 	SfxManager.play_upgrade()
@@ -440,7 +452,8 @@ func upgrade_path(path_letter: String) -> bool:
 	_recalculate_stats()
 	_update_range_collider()
 	_apply_path_tint()
-	queue_redraw()  # refresh tier pips
+	_rebuild_pip_cache()
+	queue_redraw()  # refresh tier pips from cache
 	tower_upgraded.emit(self, upgrade_level)
 	SfxManager.play_upgrade()
 
@@ -553,32 +566,36 @@ func _draw() -> void:
 	draw_circle(Vector2.ZERO, 29.0, Color(0.62, 0.52, 0.42, 0.35))
 	# Thin highlight along top edge
 	draw_arc(Vector2(-2, -2), 33.0, PI * 1.1, PI * 1.9, 24, Color(1, 0.95, 0.8, 0.25), 2.0)
-	# Tier pips — small colored dots around the pedestal edge showing
-	# upgrade tiers. Left-upper arc = Path A, right-upper arc = Path B.
-	# Three max per side. Drawn ABOVE the pedestal (negative Y) so they're
-	# not hidden by the drop shadow at the bottom. Linear-upgrade towers
-	# use a straight top-center arc.
-	if data and data.has_branching_upgrades():
-		# Path A starts top-left (~-165°) and spreads clockwise toward top
-		_draw_tier_pips(path_a_tier, -PI * 0.92, 1.0, data.path_a_tint)
-		# Path B starts top-right (~-15°) and spreads counter-clockwise toward top
-		_draw_tier_pips(path_b_tier, -PI * 0.08, -1.0, data.path_b_tint)
+	# Tier pips — replay the precomputed cache. Positions + tints are
+	# refreshed in `_rebuild_pip_cache()` on upgrade so _draw never calls
+	# cos()/sin() per frame. ROADMAP PERF #7.
+	for entry in _pip_cache:
+		var p: Vector2 = entry[0]
+		var tint: Color = entry[1]
+		draw_circle(p, 5.0, Color(0, 0, 0, 0.55))
+		draw_circle(p, 3.5, tint)
+
+
+func _rebuild_pip_cache() -> void:
+	_pip_cache.clear()
+	if not data:
+		return
+	const RING_R: float = 42.0
+	const SPREAD: float = 0.22
+	if data.has_branching_upgrades():
+		_append_pip_arc(path_a_tier, -PI * 0.92, 1.0, data.path_a_tint, RING_R, SPREAD)
+		_append_pip_arc(path_b_tier, -PI * 0.08, -1.0, data.path_b_tint, RING_R, SPREAD)
 	elif upgrade_level > 0:
-		# Linear: centered top, spread sideways
-		_draw_tier_pips(upgrade_level, -PI * 0.5, 1.0, Color(1, 0.9, 0.3))
+		_append_pip_arc(upgrade_level, -PI * 0.5, 1.0, Color(1, 0.9, 0.3), RING_R, SPREAD)
 
 
-func _draw_tier_pips(tier: int, base_angle: float, dir: float, tint: Color) -> void:
+func _append_pip_arc(tier: int, base_angle: float, dir: float, tint: Color, ring_r: float, spread: float) -> void:
 	if tier <= 0:
 		return
-	var ring_r: float = 42.0
-	var pip_r: float = 3.5
-	var spread: float = 0.22  # radians between pips
 	for i in tier:
 		var a: float = base_angle + dir * spread * float(i)
 		var p := Vector2(cos(a), sin(a)) * ring_r
-		draw_circle(p, pip_r + 1.5, Color(0, 0, 0, 0.55))
-		draw_circle(p, pip_r, tint)
+		_pip_cache.append([p, tint])
 
 
 func _update_range_collider() -> void:
