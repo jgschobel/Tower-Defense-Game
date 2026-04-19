@@ -32,6 +32,13 @@ var _is_placing: bool = false
 
 var _shop_tower_ids: Array = ["basic", "sniper", "splash", "cordula", "slow"]
 
+# Side-shop collapse state + responsive sizing. `shop_collapsed` persists
+# across one session only (not saved). Shop width is computed per-viewport
+# in _apply_safe_area / _refresh_side_shop_layout.
+var shop_collapsed: bool = false
+var _shop_width: float = 152.0
+var _shop_collapse_tween: Tween = null
+
 
 func _ready() -> void:
 	CurrencyManager.gold_changed.connect(_on_gold_changed)
@@ -41,7 +48,11 @@ func _ready() -> void:
 	_on_lives_changed(GameManager.lives)
 	_populate_tower_shop()
 	_apply_safe_area()
+	_build_shop_collapse_handle()
 	_start_threat_watcher()
+	# Re-apply layout if the viewport resizes (orientation change, window
+	# resize on desktop / web). Both events can fire; idempotent refresh.
+	get_tree().root.size_changed.connect(_on_viewport_resized)
 
 	if tower_info:
 		tower_info.visible = false
@@ -207,6 +218,7 @@ func _set_threat_badge(badge_name: String, visible_flag: bool, text: String, col
 
 
 var _safe_area_applied: bool = false
+var _inset_right: float = 0.0
 
 func _apply_safe_area() -> void:
 	# Idempotent guard: without this, running twice (rotation, re-init)
@@ -219,7 +231,14 @@ func _apply_safe_area() -> void:
 	var inset_right := screen_size.x - (safe_rect.position.x + safe_rect.size.x)
 	var inset_top := safe_rect.position.y
 	var inset_bottom := screen_size.y - (safe_rect.position.y + safe_rect.size.y)
+	_inset_right = float(inset_right)
+	# Responsive shop width — scales with viewport width. Clamps between
+	# 136px (minimum readable) and 190px (avoid dominating ultra-wide).
+	# Step 3 goal: narrow phones get a narrower shop; iPads get wider.
+	var vp_w: float = float(screen_size.x if screen_size.x > 0 else 1280)
+	_shop_width = clampf(vp_w * 0.135, 136.0, 190.0)
 	if inset_left == 0 and inset_right == 0 and inset_top == 0 and inset_bottom == 0:
+		_refresh_side_shop_layout()
 		_safe_area_applied = true
 		return
 	var top_bar: PanelContainer = $TopBar
@@ -231,17 +250,106 @@ func _apply_safe_area() -> void:
 	# to the SideShop widget (anchored right-center).
 	var bottom_panel: PanelContainer = $BottomPanel
 	bottom_panel.offset_left = float(inset_left)
-	# Leave room on the right for the SideShop widget (~170px) — the
-	# button row stops before the shop so nothing overlaps.
-	bottom_panel.offset_right = -170.0 - float(inset_right)
 	bottom_panel.offset_top = -76.0 - float(inset_bottom)
 	bottom_panel.offset_bottom = float(-inset_bottom)
-	# Side shop edge-inset (horizontal only; it's vertically centered
-	# via its anchor so notches on top/bottom don't shift it).
-	var side_shop: PanelContainer = $SideShop
-	side_shop.offset_left = -160.0 - float(inset_right)
-	side_shop.offset_right = -8.0 - float(inset_right)
+	_refresh_side_shop_layout()
 	_safe_area_applied = true
+
+
+func _refresh_side_shop_layout() -> void:
+	# Applies the current `shop_collapsed` state + computed `_shop_width`
+	# to the SideShop panel and the BottomPanel right-offset. Called on
+	# safe-area apply, collapse toggle, and responsive-resize events.
+	var side_shop: PanelContainer = $SideShop if has_node("SideShop") else null
+	if side_shop == null:
+		return
+	var visible_w: float = 18.0 if shop_collapsed else _shop_width
+	# SideShop uses anchor_right=1.0, so offsets are relative to the right edge.
+	# When collapsed we push it mostly off-screen (leaving an 18px handle).
+	if shop_collapsed:
+		side_shop.offset_left = -18.0 - _inset_right
+		side_shop.offset_right = 0.0 - _inset_right
+	else:
+		side_shop.offset_left = -_shop_width - 8.0 - _inset_right
+		side_shop.offset_right = -8.0 - _inset_right
+	# Reserve right-edge space on BottomPanel so the next-wave button
+	# doesn't underlap the shop.
+	if has_node("BottomPanel"):
+		var bottom_panel: PanelContainer = $BottomPanel
+		var reserve: float = visible_w + 16.0
+		bottom_panel.offset_right = -reserve - _inset_right
+
+
+func _build_shop_collapse_handle() -> void:
+	# Small toggle button on the LEFT edge of the SideShop so the player
+	# can hide the shop to see more of the map. When collapsed, the
+	# arrow flips ◀ ↔ ▶ and the shop slides off; only the 18px handle
+	# remains tappable against the right edge.
+	if not has_node("SideShop"):
+		return
+	var side_shop: PanelContainer = $SideShop
+	if side_shop.has_node("ShopToggle"):
+		return
+	var toggle := Button.new()
+	toggle.name = "ShopToggle"
+	toggle.text = "▶"
+	toggle.flat = true
+	toggle.custom_minimum_size = Vector2(22, 44)
+	toggle.add_theme_font_size_override("font_size", 16)
+	toggle.add_theme_color_override("font_color", Color(1, 0.9, 0.5))
+	toggle.mouse_filter = Control.MOUSE_FILTER_STOP
+	# Position: pinned to the top-LEFT corner of the SideShop, sticking
+	# slightly out (-18px) so users can grab it easily.
+	toggle.anchors_preset = Control.PRESET_TOP_LEFT
+	toggle.anchor_left = 0.0
+	toggle.anchor_top = 0.0
+	toggle.offset_left = -18.0
+	toggle.offset_top = 8.0
+	toggle.offset_right = 4.0
+	toggle.offset_bottom = 52.0
+	side_shop.add_child(toggle)
+	toggle.pressed.connect(_toggle_shop_collapse)
+
+
+func _toggle_shop_collapse() -> void:
+	shop_collapsed = not shop_collapsed
+	SfxManager.play_click()
+	# Kill any in-flight slide tween so rapid taps don't fight.
+	if _shop_collapse_tween and _shop_collapse_tween.is_valid():
+		_shop_collapse_tween.kill()
+		_shop_collapse_tween = null
+	# Update the arrow glyph to point where the shop WILL go on next tap.
+	var toggle: Button = null
+	if has_node("SideShop/ShopToggle"):
+		toggle = $SideShop/ShopToggle as Button
+	if toggle:
+		toggle.text = "◀" if shop_collapsed else "▶"
+	# Animate the offsets instead of snapping so the slide feels
+	# responsive. Compute target offsets same as _refresh_side_shop_layout.
+	var side_shop: PanelContainer = $SideShop
+	var bottom_panel: PanelContainer = $BottomPanel
+	var target_left: float
+	var target_right: float
+	var bp_target_right: float
+	if shop_collapsed:
+		target_left = -18.0 - _inset_right
+		target_right = 0.0 - _inset_right
+		bp_target_right = -34.0 - _inset_right
+	else:
+		target_left = -_shop_width - 8.0 - _inset_right
+		target_right = -8.0 - _inset_right
+		bp_target_right = -(_shop_width + 16.0) - _inset_right
+	_shop_collapse_tween = create_tween().set_parallel(true)
+	_shop_collapse_tween.tween_property(side_shop, "offset_left", target_left, 0.22).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	_shop_collapse_tween.tween_property(side_shop, "offset_right", target_right, 0.22).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	_shop_collapse_tween.tween_property(bottom_panel, "offset_right", bp_target_right, 0.22).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+
+
+func _on_viewport_resized() -> void:
+	# Recompute shop width for the new viewport size and re-apply layout.
+	# Clears the safe-area-applied flag so insets are recomputed too.
+	_safe_area_applied = false
+	_apply_safe_area()
 
 
 func _populate_tower_shop() -> void:
