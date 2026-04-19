@@ -41,6 +41,24 @@ func setup_waves(waves: Array) -> void:
 	_preload_enemy_resources(waves)
 
 
+func get_next_wave_preview() -> Array:
+	# Returns enemy groups in the NEXT wave (not current), as an Array of
+	# {enemy_id: String, count: int}. Used by HUD to show what's coming
+	# before the player taps "Nächsti Welle schicke". Empty if no more.
+	if current_wave >= total_waves:
+		return []
+	var wave: Dictionary = _wave_data[current_wave]  # next = current_wave index (0-based)
+	var groups: Array = wave.get("groups", [])
+	var out: Array = []
+	for g in groups:
+		var gd: Dictionary = g
+		out.append({
+			"enemy_id": gd.get("enemy_id", "basic"),
+			"count": gd.get("count", 1),
+		})
+	return out
+
+
 func _preload_enemy_resources(waves: Array) -> void:
 	# Warm the ResourceLoader cache for every enemy type before any wave
 	# starts. Without this, the first `load()` call per enemy type in
