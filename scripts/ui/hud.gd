@@ -84,8 +84,8 @@ func _refresh_threat_badges() -> void:
 				has_healer = true
 			"boss":
 				boss_refs.append(e)
-	_set_threat_badge("HealerBadge", has_healer, "⚕ HEAL", Color(0.4, 1.0, 0.5))
-	_set_threat_badge("BossBadge", not boss_refs.is_empty(), "☠ BOSS", Color(1.0, 0.35, 0.25))
+	_set_threat_badge("HealerBadge", has_healer, "+ HEAL", Color(0.4, 1.0, 0.5))
+	_set_threat_badge("BossBadge", not boss_refs.is_empty(), "! BOSS", Color(1.0, 0.35, 0.25))
 	_refresh_boss_hpbar(boss_refs)
 
 
@@ -282,10 +282,11 @@ func _refresh_side_shop_layout() -> void:
 
 
 func _build_shop_collapse_handle() -> void:
-	# Small toggle button on the LEFT edge of the SideShop so the player
-	# can hide the shop to see more of the map. When collapsed, the
-	# arrow flips ◀ ↔ ▶ and the shop slides off; only the 18px handle
-	# remains tappable against the right edge.
+	# Small toggle button FULLY OUTSIDE the SideShop panel so the tower
+	# rows never share hitbox with the handle. User report: clicking
+	# a tower accidentally triggered the collapse because the handle's
+	# right edge (+4px) intruded into the first row's clickable area.
+	# Moved entirely to the left of the panel (offset_right = -4 outside).
 	if not has_node("SideShop"):
 		return
 	var side_shop: PanelContainer = $SideShop
@@ -293,22 +294,22 @@ func _build_shop_collapse_handle() -> void:
 		return
 	var toggle := Button.new()
 	toggle.name = "ShopToggle"
-	toggle.text = "▶"
-	toggle.flat = true
-	toggle.custom_minimum_size = Vector2(36, 52)
+	toggle.text = ">"
+	# Styled with a visible background so it reads as a UI chrome element
+	# distinct from the tower rows, not `flat` like before.
+	toggle.custom_minimum_size = Vector2(32, 48)
 	toggle.add_theme_font_size_override("font_size", 18)
 	toggle.add_theme_color_override("font_color", Color(1, 0.9, 0.5))
 	toggle.mouse_filter = Control.MOUSE_FILTER_STOP
-	# Position: pinned to the top-LEFT corner of the SideShop, sticking
-	# out ~32px for a comfortable 36-wide tap target (mobile touch
-	# target minimum is 44px — 36 is a compromise to avoid blocking too
-	# much of the adjacent map area).
+	# Position: top-LEFT of the SideShop, entirely OUTSIDE the panel.
+	# offset_right = -4 means the toggle's right edge is 4px LEFT of the
+	# SideShop's left edge — zero overlap with tower rows.
 	toggle.anchors_preset = Control.PRESET_TOP_LEFT
 	toggle.anchor_left = 0.0
 	toggle.anchor_top = 0.0
-	toggle.offset_left = -32.0
+	toggle.offset_left = -36.0
 	toggle.offset_top = 8.0
-	toggle.offset_right = 4.0
+	toggle.offset_right = -4.0
 	toggle.offset_bottom = 60.0
 	side_shop.add_child(toggle)
 	toggle.pressed.connect(_toggle_shop_collapse)
@@ -335,7 +336,7 @@ func _toggle_shop_collapse() -> void:
 	if has_node("SideShop/ShopToggle"):
 		toggle = $SideShop/ShopToggle as Button
 	if toggle:
-		toggle.text = "◀" if shop_collapsed else "▶"
+		toggle.text = "<" if shop_collapsed else ">"
 	# Animate the offsets instead of snapping so the slide feels
 	# responsive. Compute target offsets same as _refresh_side_shop_layout.
 	var side_shop: PanelContainer = $SideShop
@@ -793,12 +794,12 @@ func update_enemy_count(count: int) -> void:
 	if not enemy_count_label:
 		return
 	if count > 0:
-		enemy_count_label.text = "☠ %d" % count
+		enemy_count_label.text = "%d übrig" % count
 		enemy_count_label.add_theme_color_override("font_color", Color(1, 0.9, 0.8))
 	else:
 		# Briefly celebrate wave clear before going blank
 		if enemy_count_label.text != "":
-			enemy_count_label.text = "Wälle gschafft! ★"
+			enemy_count_label.text = "Wälle gschafft!"
 			enemy_count_label.add_theme_color_override("font_color", Color(1, 0.85, 0.3))
 			var fade := enemy_count_label.create_tween()
 			fade.tween_interval(1.6)
@@ -1123,7 +1124,7 @@ func _on_gold_changed(amount: int) -> void:
 
 func _on_lives_changed(amount: int) -> void:
 	if lives_label:
-		lives_label.text = "♥ %d" % amount
+		lives_label.text = "%d Läbe" % amount
 	# Red screen-flash on life loss — big "you lost one!" cue
 	if _last_lives >= 0 and amount < _last_lives:
 		_flash_life_lost()
@@ -1185,7 +1186,7 @@ func _on_speed_button_pressed() -> void:
 		_game_speed = 1.0
 	Engine.time_scale = _game_speed
 	if speed_button:
-		speed_button.text = "▶ %dx" % int(_game_speed)
+		speed_button.text = "%dx" % int(_game_speed)
 		# Tint by speed so the current mode is visible at a glance:
 		# 1x = white, 2x = warm yellow, 3x = red-hot fast-forward.
 		match int(_game_speed):
