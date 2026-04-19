@@ -11,7 +11,7 @@ signal level_completed(level_id: int)
 signal game_state_changed(new_state: int)
 
 const SAVE_PATH := "user://save_data.json"
-const MAX_LEVELS := 3
+const MAX_LEVELS := 4
 
 var current_state: int = GameState.MENU
 var current_level: int = 1

@@ -456,7 +456,7 @@ run project:
 
 ## 🎮 P1 — New Content
 
-- [ ] Level 4 data + scene + story intro (D'Kasse — cash register chaos)
+- [x] Level 4 data + scene + story intro — D'Chäsi-Keller (PR #84 ships chäs theme; cash register kept for L5)
 - [ ] Level 5 data + scene + story intro (D'Lager — warehouse descent)
 - [ ] Level 6 data + scene + story intro (D'Parkhuus)
 - [ ] Level 7 data + scene + story intro (D'Dach — rooftop showdown)
