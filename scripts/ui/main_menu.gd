@@ -27,7 +27,7 @@ func _show_run_stats() -> void:
 	stats.add_theme_color_override("font_outline_color", Color(0.1, 0.05, 0, 0.9))
 	stats.add_theme_constant_override("outline_size", 3)
 	var max_stars: int = GameManager.MAX_LEVELS * 3
-	stats.text = "★ %d / %d   ☠ %d" % [GameManager.total_stars, max_stars, GameManager.total_kills]
+	stats.text = "Sterne: %d/%d  Kills: %d" % [GameManager.total_stars, max_stars, GameManager.total_kills]
 	stats.anchors_preset = Control.PRESET_TOP_LEFT
 	stats.offset_left = 20
 	stats.offset_top = 20
