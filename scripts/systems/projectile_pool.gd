@@ -78,27 +78,25 @@ func release(p: Node) -> void:
 
 
 func _activate(p: Node) -> void:
+	p.process_mode = Node.PROCESS_MODE_INHERIT
 	if p is Node2D:
 		p.visible = true
 	if p is Area2D:
 		p.monitoring = true
 		p.monitorable = true
-	p.set_process(true)
-	p.set_physics_process(true)
 
 
 func _deactivate(p: Node) -> void:
-	if p is Node2D:
-		p.visible = false
 	if p is Area2D:
 		p.monitoring = false
 		p.monitorable = false
-	p.set_process(false)
-	p.set_physics_process(false)
-	# Reset transient state via a `reset()` method on the projectile,
-	# if it implements one
+	if p is Node2D:
+		p.visible = false
+	# Reset before disabling so reset_for_pool() can still call process-
+	# dependent methods (signal disconnects, tween kills, etc.)
 	if p.has_method("reset_for_pool"):
 		p.call("reset_for_pool")
+	p.process_mode = Node.PROCESS_MODE_DISABLED
 
 
 # Diagnostic (optional)
