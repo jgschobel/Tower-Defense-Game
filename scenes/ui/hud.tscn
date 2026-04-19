@@ -61,21 +61,50 @@ layout_mode = 2
 custom_minimum_size = Vector2(60, 0)
 text = "||"
 
+[node name="SideShop" type="PanelContainer" parent="."]
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -160.0
+offset_top = -260.0
+offset_right = -8.0
+offset_bottom = 260.0
+grow_horizontal = 0
+grow_vertical = 2
+
+[node name="SideShopVBox" type="VBoxContainer" parent="SideShop"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="ShopHeader" type="Label" parent="SideShop/SideShopVBox"]
+layout_mode = 2
+text = "TÜRM"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 14
+
+[node name="ShopScroll" type="ScrollContainer" parent="SideShop/SideShopVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="TowerShop" type="VBoxContainer" parent="SideShop/SideShopVBox/ShopScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
 [node name="BottomPanel" type="PanelContainer" parent="."]
 anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = -220.0
+offset_top = -76.0
+offset_right = -170.0
 grow_vertical = 0
 
 [node name="BottomBar" type="VBoxContainer" parent="BottomPanel"]
 layout_mode = 2
-theme_override_constants/separation = 6
-
-[node name="TowerShop" type="HBoxContainer" parent="BottomPanel/BottomBar"]
-layout_mode = 2
-size_flags_horizontal = 4
 theme_override_constants/separation = 6
 
 [node name="ButtonRow" type="HBoxContainer" parent="BottomPanel/BottomBar"]
@@ -102,10 +131,10 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -175.0
-offset_top = -420.0
-offset_right = 175.0
-offset_bottom = -228.0
+offset_left = -200.0
+offset_top = -300.0
+offset_right = 200.0
+offset_bottom = -90.0
 grow_horizontal = 2
 grow_vertical = 0
 
