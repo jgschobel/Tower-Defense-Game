@@ -109,10 +109,17 @@ func lose_life(amount: int = 1) -> void:
 
 func complete_level() -> void:
 	var stars := _calculate_stars()
-	var prev_stars: int = level_stars.get(current_level, 0)
+	# JSON round-trips coerce int keys to strings, so after save+reload
+	# `level_stars[current_level]` (int key) misses. Check both forms.
+	# Audit P0 #3: without this, total_stars inflated on every replay.
+	var prev_stars: int = int(level_stars.get(current_level, level_stars.get(str(current_level), 0)))
 	if stars > prev_stars:
 		total_stars += stars - prev_stars
 		level_stars[current_level] = stars
+		# Also drop the string-keyed stale entry (if any) so future reads
+		# are consistent.
+		if level_stars.has(str(current_level)):
+			level_stars.erase(str(current_level))
 
 	if current_level >= levels_unlocked and current_level < MAX_LEVELS:
 		levels_unlocked = current_level + 1
@@ -170,7 +177,21 @@ func load_game() -> void:
 		var save_data: Dictionary = json.data
 		levels_unlocked = save_data.get("levels_unlocked", 1)
 		level_stars = save_data.get("level_stars", {})
-		total_stars = save_data.get("total_stars", 0)
+		# Normalize string keys back to int on load so subsequent dict
+		# lookups by level_id (int) hit consistently. Audit P0 #3.
+		var normalized := {}
+		for k in level_stars.keys():
+			if typeof(k) == TYPE_STRING and k.is_valid_int():
+				normalized[int(k)] = int(level_stars[k])
+			else:
+				normalized[k] = int(level_stars[k])
+		level_stars = normalized
+		# Recompute total_stars from the authoritative per-level dict
+		# rather than trusting a possibly-drifted persisted int (audit P2 #20).
+		var recomputed := 0
+		for v in level_stars.values():
+			recomputed += int(v)
+		total_stars = recomputed
 		friend_photos = save_data.get("friend_photos", {})
 		music_volume = save_data.get("music_volume", 0.7)
 		sfx_volume = save_data.get("sfx_volume", 0.8)

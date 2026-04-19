@@ -32,6 +32,8 @@ var _base_enemy_scene: PackedScene
 
 func _ready() -> void:
 	_base_enemy_scene = preload("res://scenes/enemies/base_enemy.tscn")
+	# Register in group so HUD can find us reliably during scene reloads
+	add_to_group("wave_manager")
 
 
 func setup_waves(waves: Array) -> void:

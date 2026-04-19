@@ -6,8 +6,10 @@ extends Control
 func show_pause() -> void:
 	visible = true
 	modulate = Color(1, 1, 1, 0)
+	# Process this node while the tree is paused so the fade-in tween
+	# can tick. The tween inherits from this node's process_mode.
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	var fade := create_tween()
-	fade.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	fade.tween_property(self, "modulate:a", 1.0, 0.2)
 	get_tree().paused = true
 	MusicManager.pause_music()

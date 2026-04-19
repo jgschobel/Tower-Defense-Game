@@ -7,7 +7,7 @@ script = ExtResource("1")
 level_id = 6
 level_name = "S'Parkhuus (Bonus)"
 description = "Nach de Kasse chömed sie dur's Parkhuus zrugg. Wenn du hie überläbsch bisch en echte Migros-Veteran."
-starting_gold = 1100
+starting_gold = 1500
 starting_lives = 15
 waves = [
 	{"groups": [{"enemy_id": "swarm", "count": 60, "spawn_delay": 0.12}]},
@@ -19,7 +19,7 @@ waves = [
 	{"groups": [{"enemy_id": "boss", "count": 3, "spawn_delay": 3.5}, {"enemy_id": "tank", "count": 10, "spawn_delay": 0.6}, {"enemy_id": "fast", "count": 30, "spawn_delay": 0.18}]},
 	{"groups": [{"enemy_id": "healer", "count": 12, "spawn_delay": 0.4}, {"enemy_id": "flying", "count": 30, "spawn_delay": 0.22}, {"enemy_id": "swarm", "count": 50, "spawn_delay": 0.12}]},
 	{"groups": [{"enemy_id": "boss", "count": 4, "spawn_delay": 4.0}, {"enemy_id": "tank", "count": 15, "spawn_delay": 0.5}, {"enemy_id": "healer", "count": 10, "spawn_delay": 0.45}, {"enemy_id": "flying", "count": 25, "spawn_delay": 0.22}]},
-	{"groups": [{"enemy_id": "boss", "count": 5, "spawn_delay": 4.5}, {"enemy_id": "tank", "count": 20, "spawn_delay": 0.4}, {"enemy_id": "fast", "count": 40, "spawn_delay": 0.18}, {"enemy_id": "healer", "count": 15, "spawn_delay": 0.35}, {"enemy_id": "swarm", "count": 60, "spawn_delay": 0.1}]}
+	{"groups": [{"enemy_id": "boss", "count": 4, "spawn_delay": 5.0}, {"enemy_id": "tank", "count": 15, "spawn_delay": 0.5}, {"enemy_id": "fast", "count": 30, "spawn_delay": 0.2}, {"enemy_id": "healer", "count": 10, "spawn_delay": 0.4}, {"enemy_id": "swarm", "count": 40, "spawn_delay": 0.15}]}
 ]
 background_color = Color(0.18, 0.18, 0.22, 1)
 path_color = Color(0.5, 0.45, 0.3, 1)
