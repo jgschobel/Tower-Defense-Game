@@ -53,6 +53,35 @@ func _ready() -> void:
 		_update_range_collider()
 	# Kick off the random taunt loop — only fires when is_placed=true
 	_start_taunt_loop()
+	# Gentle idle life — breathing scale + slight bob. Staggered per
+	# tower (random offset) so 5 placed towers don't pulse in lockstep.
+	_start_idle_animation()
+
+
+func _start_idle_animation() -> void:
+	# Breathing + bob loop on the Sprite2D. Kept subtle (~3% scale,
+	# 1.5px bob) so it reads as "alive" without being distracting.
+	# Uses a local baseline captured AFTER _apply_data applies its own
+	# scale, so tower-specific sizing (data.sprite_scale) is preserved.
+	if sprite == null:
+		return
+	var base_scale: Vector2 = sprite.scale
+	var base_y: float = sprite.position.y
+	# Per-tower phase offset so the herd doesn't sync up
+	var phase: float = randf() * PI * 2.0
+	# Stagger cycle length a touch for variety
+	var cycle: float = randf_range(1.8, 2.4)
+	var breath := create_tween().set_loops()
+	breath.set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+	# Delay the start so freshly-placed towers don't snap mid-breath
+	breath.tween_interval(phase / (PI * 2.0) * cycle)
+	breath.tween_property(sprite, "scale", base_scale * 1.03, cycle * 0.5)
+	breath.tween_property(sprite, "scale", base_scale, cycle * 0.5)
+	var bob := create_tween().set_loops()
+	bob.set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+	bob.tween_interval((phase + PI * 0.5) / (PI * 2.0) * cycle)
+	bob.tween_property(sprite, "position:y", base_y - 1.5, cycle * 0.5)
+	bob.tween_property(sprite, "position:y", base_y, cycle * 0.5)
 
 
 func _start_taunt_loop() -> void:
@@ -279,11 +308,18 @@ func _attack() -> void:
 	if EffectPlayer and is_instance_valid(current_target):
 		var flash_dir := (current_target.global_position - origin_pos).normalized()
 		EffectPlayer.spawn_muzzle_flash(origin_pos, flash_dir, data.projectile_color)
-	# Attack animation — bounce/pulse
+	# Attack animation — squash-and-stretch that returns to the idle
+	# baseline. We can't read sprite.scale live because the idle
+	# breathing loop is tweening it; instead we derive the baseline
+	# from data.sprite_scale (or fall back to Vector2.ONE).
 	if sprite:
-		var atk_tween := create_tween()
-		atk_tween.tween_property(sprite, "scale", sprite.scale * 1.2, 0.08)
-		atk_tween.tween_property(sprite, "scale", sprite.scale, 0.12)
+		var base_sc: Vector2 = Vector2.ONE
+		if data and "sprite_scale" in data and typeof(data.sprite_scale) == TYPE_VECTOR2:
+			base_sc = data.sprite_scale
+		var atk_tween := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		atk_tween.tween_property(sprite, "scale", Vector2(base_sc.x * 0.88, base_sc.y * 1.18), 0.06)
+		atk_tween.tween_property(sprite, "scale", Vector2(base_sc.x * 1.22, base_sc.y * 0.92), 0.08)
+		atk_tween.tween_property(sprite, "scale", base_sc, 0.14)
 
 	# Prefer the pool to avoid instantiate/queue_free churn at scale.
 	# Falls back to instantiation if pool is unavailable (loading order)
