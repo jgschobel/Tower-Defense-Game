@@ -27,6 +27,11 @@ var friend_photos: Dictionary = {}
 var music_volume: float = 0.7
 var sfx_volume: float = 0.8
 
+# Kill counters. total_kills persists across sessions (save file); level_kills
+# resets at start_level and gets surfaced on the game over / victory screen.
+var total_kills: int = 0
+var level_kills: int = 0
+
 
 func _ready() -> void:
 	load_game()
@@ -80,7 +85,13 @@ func start_level(level_id: int) -> void:
 		max_lives = 20
 		CurrencyManager.reset_for_level(level_id)
 	lives = max_lives
+	level_kills = 0
 	set_state(GameState.PLAYING)
+
+
+func record_kill() -> void:
+	level_kills += 1
+	total_kills += 1
 
 
 func set_state(new_state: int) -> void:
@@ -141,6 +152,7 @@ func save_game() -> void:
 		"friend_photos": friend_photos,
 		"music_volume": music_volume,
 		"sfx_volume": sfx_volume,
+		"total_kills": total_kills,
 	}
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file:
@@ -162,6 +174,7 @@ func load_game() -> void:
 		friend_photos = save_data.get("friend_photos", {})
 		music_volume = save_data.get("music_volume", 0.7)
 		sfx_volume = save_data.get("sfx_volume", 0.8)
+		total_kills = save_data.get("total_kills", 0)
 
 
 func assign_friend_photo(character_id: String, texture_path: String) -> void:
