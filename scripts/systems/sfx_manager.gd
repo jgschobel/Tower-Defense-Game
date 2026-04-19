@@ -44,6 +44,12 @@ func play_sell() -> void:
 	_play_sweep(660.0, 330.0, 0.15, 0.3)
 
 
+func play_place() -> void:
+	# Placement confirmation — short "thunk" that rises then settles.
+	# Gives tactile feedback on successful drop.
+	_play_sweep(220.0, 440.0, 0.12, 0.35)
+
+
 func _play_tone(freq: float, duration: float, volume: float, noise: bool = false) -> void:
 	var samples := int(_sample_rate * duration)
 	var audio := AudioStreamWAV.new()
