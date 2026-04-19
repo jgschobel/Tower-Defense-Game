@@ -307,6 +307,17 @@ func _draw() -> void:
 			draw_circle(Vector2(5, -3) * s, 2.5, Color.WHITE)
 			draw_circle(Vector2(-5, -3) * s, 1.2, Color.BLACK)
 			draw_circle(Vector2(5, -3) * s, 1.2, Color.BLACK)
+		"swarm":
+			# Tofu-Würfli — tiny white cube with nervous eyes
+			draw_rect(Rect2(Vector2(-9, -9) * s, Vector2(18, 18) * s), c, true)
+			draw_rect(Rect2(Vector2(-9, -9) * s, Vector2(18, 18) * s), Color(0.6, 0.6, 0.5), false, 1.5)
+			# Nervous darting eyes (left-biased)
+			draw_circle(Vector2(-3, -2) * s, 2.0, Color.WHITE)
+			draw_circle(Vector2(3, -2) * s, 2.0, Color.WHITE)
+			draw_circle(Vector2(-4, -2) * s, 1.0, Color.BLACK)
+			draw_circle(Vector2(2, -2) * s, 1.0, Color.BLACK)
+			# Sweat drop for extra panic
+			draw_circle(Vector2(6, 2) * s, 1.2, Color(0.5, 0.8, 1.0, 0.8))
 		"fast":
 			# Toblerone - triangular chocolate bar
 			var tri := PackedVector2Array([
