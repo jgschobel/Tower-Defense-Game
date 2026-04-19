@@ -42,24 +42,35 @@ func _ready() -> void:
 
 
 func _warmup_textures() -> void:
-	var paths := [
-		"res://assets/textures/towers/lemurius.png",
-		"res://assets/textures/towers/kuhne.png",
-		"res://assets/textures/towers/jojo.png",
-		"res://assets/textures/towers/cordula.png",
-		"res://assets/textures/towers/amosius.png",
-		"res://assets/textures/enemies/tofu_wurst.png",
-		"res://assets/textures/enemies/hafer_riegel.png",
-		"res://assets/textures/enemies/soja_steak.png",
-		"res://assets/textures/enemies/hafer_milch.png",
-		"res://assets/textures/enemies/avocado.png",
-		"res://assets/textures/enemies/vegan_teufel.png",
+	# Auto-discover every texture referenced by tower_data + enemy_data
+	# .tres files rather than maintaining a hand-edited path list.
+	# Agent-audit DRIFT #27 — the old list missed swarm + newer enemies
+	# and stayed glued to the L1-L3 lineup even after L4-L7 shipped.
+	# Cheap one-time cost at game start.
+	var dirs := ["res://resources/tower_data", "res://resources/enemy_data"]
+	for dir_path in dirs:
+		var dir := DirAccess.open(dir_path)
+		if dir == null:
+			continue
+		dir.list_dir_begin()
+		var fn := dir.get_next()
+		while fn != "":
+			if fn.ends_with(".tres"):
+				var res_path := "%s/%s" % [dir_path, fn]
+				var res = load(res_path)
+				if res and "custom_texture" in res and res.custom_texture:
+					# Touch the texture to ensure GPU upload
+					res.custom_texture.get_size()
+			fn = dir.get_next()
+		dir.list_dir_end()
+	# Projectile + UI textures are a tiny fixed set that don't live in .tres
+	for p in [
 		"res://assets/textures/projectiles/banana.png",
 		"res://assets/textures/projectiles/tongue.png",
-	]
-	for p in paths:
+		"res://assets/textures/ui/money.png",
+	]:
 		if ResourceLoader.exists(p):
-			load(p)  # discarded — Godot caches for subsequent use
+			load(p)
 
 
 func set_music_volume(v: float) -> void:
