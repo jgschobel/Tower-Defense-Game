@@ -305,6 +305,82 @@ func show_next_wave_button(visible_flag: bool) -> void:
 			var pulse := next_wave_button.create_tween().set_loops(3)
 			pulse.tween_property(next_wave_button, "modulate", Color(1.3, 1.2, 0.8), 0.4)
 			pulse.tween_property(next_wave_button, "modulate", Color.WHITE, 0.4)
+	_refresh_next_wave_preview(visible_flag)
+
+
+func _refresh_next_wave_preview(show: bool) -> void:
+	# Shows a compact panel above the Next Wave button with the enemy
+	# composition of the upcoming wave — "Chunt: 15x Brötli, 3x Cervelat".
+	# Hidden while a wave is in progress.
+	var existing: Node = get_node_or_null("NextWavePreview")
+	if existing:
+		existing.queue_free()
+	if not show:
+		return
+	# Find the game's WaveManager via the scene tree
+	var game: Node = get_tree().current_scene
+	if not game:
+		return
+	var wm: Node = game.get_node_or_null("WaveManager")
+	if not wm or not wm.has_method("get_next_wave_preview"):
+		return
+	var preview: Array = wm.get_next_wave_preview()
+	if preview.is_empty():
+		return
+	var panel := PanelContainer.new()
+	panel.name = "NextWavePreview"
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	panel.anchors_preset = Control.PRESET_BOTTOM_WIDE
+	panel.anchor_top = 1.0
+	panel.anchor_right = 1.0
+	panel.anchor_bottom = 1.0
+	panel.offset_left = 20
+	panel.offset_right = -20
+	# Park above BottomPanel (bottom ~220px tall), give preview ~60px
+	panel.offset_top = -290.0
+	panel.offset_bottom = -230.0
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.08, 0.1, 0.12, 0.85)
+	sb.corner_radius_top_left = 10
+	sb.corner_radius_top_right = 10
+	sb.corner_radius_bottom_left = 10
+	sb.corner_radius_bottom_right = 10
+	sb.border_width_top = 2
+	sb.border_width_bottom = 2
+	sb.border_width_left = 2
+	sb.border_width_right = 2
+	sb.border_color = Color(1, 0.8, 0.3, 0.7)
+	panel.add_theme_stylebox_override("panel", sb)
+	var hbox := HBoxContainer.new()
+	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	hbox.add_theme_constant_override("separation", 14)
+	var prefix := Label.new()
+	prefix.text = "Chunt:"
+	prefix.add_theme_font_size_override("font_size", 16)
+	prefix.add_theme_color_override("font_color", Color(1, 0.85, 0.3))
+	hbox.add_child(prefix)
+	for group in preview:
+		var entry := Label.new()
+		var display_name: String = _short_name_for_enemy(group.get("enemy_id", ""))
+		entry.text = "%dx %s" % [group.get("count", 0), display_name]
+		entry.add_theme_font_size_override("font_size", 16)
+		entry.add_theme_color_override("font_color", Color(1, 0.95, 0.8))
+		hbox.add_child(entry)
+	panel.add_child(hbox)
+	add_child(panel)
+
+
+func _short_name_for_enemy(enemy_id: String) -> String:
+	# Compact display names for the preview panel — full names are too
+	# long for a single row with 3+ groups.
+	match enemy_id:
+		"basic": return "Brötli"
+		"fast": return "Toblerone"
+		"tank": return "Cervelat"
+		"healer": return "Dr.Rivella"
+		"flying": return "Fondue"
+		"boss": return "M-TÜÜFEL"
+		_: return enemy_id.capitalize()
 
 
 func update_enemy_count(count: int) -> void:
