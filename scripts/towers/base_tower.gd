@@ -192,6 +192,10 @@ func _attack() -> void:
 		origin_pos = global_position
 
 	SfxManager.play_shoot()
+	# Muzzle flash — colored burst in the direction of the target
+	if EffectPlayer and is_instance_valid(current_target):
+		var flash_dir := (current_target.global_position - origin_pos).normalized()
+		EffectPlayer.spawn_muzzle_flash(origin_pos, flash_dir, data.projectile_color)
 	# Attack animation — bounce/pulse
 	if sprite:
 		var atk_tween := create_tween()

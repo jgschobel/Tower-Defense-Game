@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-04-19
+
+- polish(combat): EffectPlayer autoload — muzzle flash (CPUParticles2D) on every tower shot, impact sparks on every projectile hit, screen shake on boss intro reveal
+
 ## 2026-04-18
 
 - feat(observability): workflows commit results to `docs/observability/` — chat-session Claude can now Read ledger.md, playtest_latest.md, sim_latest.md, deploy_latest.md instead of guessing at workflow state (PR #62)

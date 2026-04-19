@@ -166,6 +166,10 @@ func show_enemy_intro(enemy_id: String, enemy_data: Resource) -> void:
 	overlay.add_child(vbox)
 	add_child(overlay)
 
+	# Screen-shake the game scene on boss reveal (HUD CanvasLayer unaffected)
+	if enemy_id == "boss" and EffectPlayer:
+		EffectPlayer.screen_shake(7.0, 0.45)
+
 	# Zoom-in + fade — 0.25s in, 0.7s hold, 0.25s out
 	overlay.scale = Vector2(2.0, 2.0)
 	var tw := overlay.create_tween()

@@ -444,7 +444,7 @@ run project:
 - [x] Pause button 60px minimum — PLAN #35
 - [x] Safe area margins for notches/status bars — PLAN #36
 - [x] Health bar smooth tween over 0.2s — PLAN #41
-- [ ] Screen shake on boss spawn (level 3 wave 10) — PLAN #42
+- [x] Screen shake on boss spawn (level 3 wave 10) — PLAN #42
 - [x] Wave start announcement flies across screen — PLAN #43
 - [ ] UI click SFX wired to every button press — PLAN #52
 - [ ] Boss entrance SFX (low rumble) — PLAN #54
