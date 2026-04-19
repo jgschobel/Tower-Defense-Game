@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-04-19 (generate-art — L4+L5 backgrounds)
+
+- art(maps): generate level4_bg.png (D'Chäsi-Keller cheese cellar, dark stone + fondue) and level5_bg.png (D'Kasse checkout area, bright fluorescent retail) via Stability Core 16:9; wire into level_4.tscn and level_5.tscn as TextureRect Background nodes replacing ColorRect placeholders (ROADMAP P1 #4 partial)
+
 ## 2026-04-19 (self-improve — placement toast clears on cancel)
 
 - fix(placement): toast now dismisses immediately when placement is

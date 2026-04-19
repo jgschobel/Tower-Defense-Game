@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/systems/game_level.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/systems/wave_manager.gd" id="2"]
@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="4"]
 [ext_resource type="PackedScene" path="res://scenes/ui/game_over_screen.tscn" id="5"]
 [ext_resource type="PackedScene" path="res://scenes/ui/pause_menu.tscn" id="6"]
+[ext_resource type="Texture2D" path="res://assets/textures/maps/level4_bg.png" id="7"]
 
 [sub_resource type="Curve2D" id="curve_4"]
 point_count = 12
@@ -50,15 +51,13 @@ point_11/out = Vector2(0, 0)
 script = ExtResource("1")
 level_id = 4
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="TextureRect" parent="."]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.3, 0.25, 0.2, 1)
-
-[node name="CellarTiles" type="Polygon2D" parent="."]
-color = Color(0.22, 0.18, 0.15, 1)
-polygon = PackedVector2Array(0, 0, 1280, 0, 1280, 720, 0, 720)
+texture = ExtResource("7")
+expand_mode = 1
+stretch_mode = 6
 
 [node name="PathBorder" type="Line2D" parent="."]
 points = PackedVector2Array(-40, 100, 200, 150, 250, 430, 460, 580, 520, 260, 700, 120, 830, 360, 720, 560, 920, 610, 1050, 400, 1180, 220, 1320, 500)

@@ -37,7 +37,7 @@ the user for anything unless explicitly noted.
 1. **Level 8 content** — "Coop-Einbruch" (rival supermarket, blue palette). 10 waves escalating, 3-boss finale. .tres + .tscn + lore (chapter 8) + level-select color + story-screen bg map.
 2. **Level 9 content** — "Cumulus-Punkte-Kern" (inside loyalty-system, glitchy neon). Harder than L8, 4-boss finale.
 3. **Level 10 content** — "Finale im Tüüfel-Äste" (multi-path BTD-style?). Final campaign level, 5-boss gauntlet, unique twist (e.g. two lanes).
-4. **Dedicated backgrounds L4–L7** — currently reusing level1_bg / level2_bg / migros_entrance. Generate 4 new 16:9 via the `art-request` workflow (Stability text2img at 1280×720) with Swiss-themed prompts.
+4. **Dedicated backgrounds L4–L7** — ⚠️ L4 (D'Chäsi-Keller cheese cellar) + L5 (D'Kasse checkout) generated 2026-04-19 via Stability Core 16:9; L6+L7 still TODO.
 
 #### Perf (from agent audit)
 5. **Signal-based threat badges** — replace 0.5s `get_nodes_in_group("enemies")` polling with WaveManager emitting boss/healer count changes. O(n)×0.5s per poll × 4× time_scale × 80 enemies is measurable.

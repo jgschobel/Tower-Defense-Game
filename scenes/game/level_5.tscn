@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/systems/game_level.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/systems/wave_manager.gd" id="2"]
@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="4"]
 [ext_resource type="PackedScene" path="res://scenes/ui/game_over_screen.tscn" id="5"]
 [ext_resource type="PackedScene" path="res://scenes/ui/pause_menu.tscn" id="6"]
+[ext_resource type="Texture2D" path="res://assets/textures/maps/level5_bg.png" id="7"]
 
 [sub_resource type="Curve2D" id="curve_5"]
 point_count = 13
@@ -53,11 +54,13 @@ point_12/out = Vector2(0, 0)
 script = ExtResource("1")
 level_id = 5
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="TextureRect" parent="."]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.9, 0.85, 0.7, 1)
+texture = ExtResource("7")
+expand_mode = 1
+stretch_mode = 6
 
 [node name="PathBorder" type="Line2D" parent="."]
 points = PackedVector2Array(-40, 360, 140, 180, 280, 540, 440, 220, 600, 520, 560, 620, 780, 620, 820, 280, 980, 130, 1100, 380, 1020, 600, 1200, 600, 1320, 360)
