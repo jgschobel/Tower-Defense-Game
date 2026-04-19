@@ -29,7 +29,7 @@ except ImportError:
 
 
 STABILITY_URL = "https://api.stability.ai/v2beta/stable-image/generate/sd3"
-GEMINI_MODEL = "gemini-2.5-flash-image-preview"
+GEMINI_MODEL = "gemini-2.5-flash-image"
 GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent"
 INBOX_DIR = pathlib.Path(".github/friend_photos_inbox")
 OUT_DIR = pathlib.Path("assets/textures/towers")
@@ -121,7 +121,6 @@ def call_stability_img2img(photo: pathlib.Path, prompt: str, out: pathlib.Path) 
             "mode": "image-to-image",
             "strength": "0.75",
             "output_format": "png",
-            "aspect_ratio": "1:1",
             "model": "sd3.5-large",
         }
         r = requests.post(
