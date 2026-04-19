@@ -34,10 +34,39 @@ func play_upgrade() -> void:
 
 
 func play_click() -> void:
-	# Minecraft-style wooden "tick" — short noise burst with a quick
-	# decay, softer than any pitched tone. User complained the previous
-	# sweep was annoying; this is genuinely neutral.
-	_play_tick()
+	# Soft felt-pluck — warm 180 Hz body + quick falloff, ~40ms, very quiet.
+	# Tried full silence, user wanted a subtle tone back but absolutely not
+	# anything bright or percussive. Low fundamental + long ramp-in + short
+	# decay removes the "bite" entirely.
+	_play_soft_pluck()
+
+
+func _play_soft_pluck() -> void:
+	var duration: float = 0.04
+	var samples := int(_sample_rate * duration)
+	var audio := AudioStreamWAV.new()
+	audio.format = AudioStreamWAV.FORMAT_8_BITS
+	audio.mix_rate = int(_sample_rate)
+	audio.stereo = false
+	var data := PackedByteArray()
+	var freq: float = 180.0  # warm, sub-voice fundamental
+	var attack_samples: float = float(_sample_rate) * 0.006  # 6ms ramp-in (no click transient)
+	for i in samples:
+		var t := float(i) / _sample_rate
+		var attack: float = clamp(float(i) / attack_samples, 0.0, 1.0)
+		var tail: float = pow(1.0 - (t / duration), 2.5)
+		var env: float = attack * tail
+		# Pure sine — no harmonics = no harshness
+		var body: float = sin(t * freq * TAU)
+		var sample: float = body * env * 0.045
+		data.append(int(clamp(sample * 0.5 + 0.5, 0.0, 1.0) * 255))
+	audio.data = data
+	var player := AudioStreamPlayer.new()
+	player.stream = audio
+	player.volume_db = _db_with_user_volume(-12.0)
+	add_child(player)
+	player.play()
+	player.finished.connect(player.queue_free)
 
 
 func _play_tick() -> void:

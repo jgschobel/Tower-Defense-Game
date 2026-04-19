@@ -1,0 +1,51 @@
+[gd_resource type="Resource" script_class="TowerData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/towers/tower_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/textures/towers/seve.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "seve"
+display_name = "Seve"
+description = "Maschinebau-Ing wo Zahnrädli schmeisst, spöter mit Laserblick. Buff für Nachbarn."
+friend_character_id = "friend_seve"
+buy_cost = 240
+sell_return_pct = 0.6
+damage = 35.0
+attack_speed = 1.1
+attack_range = 180.0
+damage_type = 0
+target_mode = 0
+is_splash = false
+splash_radius = 0.0
+splash_damage_pct = 0.5
+slow_amount = 0.0
+slow_duration = 0.0
+can_target_flying = true
+buff_range = 120.0
+buff_damage_pct = 0.15
+buff_speed_pct = 0.1
+base_color = Color(0.5, 0.6, 0.85, 1)
+projectile_color = Color(0.7, 0.7, 0.75, 1)
+custom_texture = ExtResource("2")
+projectile_style = "gear"
+projectile_origin_offset = Vector2(10, -10)
+upgrade_costs = Array[int]([280, 560, 1200])
+upgrade_damage_bonus = Array[float]([18.0, 40.0, 90.0])
+upgrade_range_bonus = Array[float]([20.0, 35.0, 55.0])
+upgrade_speed_bonus = Array[float]([0.12, 0.22, 0.35])
+upgrade_names = Array[String](["Mech-Tech", "Laser-Auge", "Cyborg-Commander"])
+path_a_display = "Laser-Auge"
+path_a_tier_names = Array[String](["Laser I", "Laser II", "Cyborg-Commander"])
+path_a_costs = Array[int]([260, 550, 1250])
+path_a_damage_bonus = Array[float]([30.0, 65.0, 150.0])
+path_a_range_bonus = Array[float]([10.0, 20.0, 35.0])
+path_a_speed_bonus = Array[float]([0.15, 0.25, 0.4])
+path_a_tint = Color(1.0, 0.2, 0.2, 1)
+path_b_display = "Support-Mech"
+path_b_tier_names = Array[String](["Support I", "Support II", "War-Engineer"])
+path_b_costs = Array[int]([300, 620, 1400])
+path_b_damage_bonus = Array[float]([10.0, 20.0, 45.0])
+path_b_range_bonus = Array[float]([25.0, 45.0, 70.0])
+path_b_speed_bonus = Array[float]([0.05, 0.1, 0.2])
+path_b_tint = Color(0.4, 0.7, 1.0, 1)
