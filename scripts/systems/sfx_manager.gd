@@ -41,28 +41,39 @@ func play_click() -> void:
 
 
 func _play_tick() -> void:
-	# Super-short (25ms) filtered noise burst at very low volume.
-	# Sharp attack + exponential-ish decay mimics a wooden UI click.
-	var duration: float = 0.025
+	# Softer "tock" — warm damped sine (~240 Hz body) mixed with a tiny
+	# low-passed noise whisper, ~55ms. Previous version was a 25ms
+	# noise burst with an instant attack which felt piercing; the ramp
+	# in the first 4ms plus the low-frequency body removes the bite.
+	var duration: float = 0.055
 	var samples := int(_sample_rate * duration)
 	var audio := AudioStreamWAV.new()
 	audio.format = AudioStreamWAV.FORMAT_8_BITS
 	audio.mix_rate = int(_sample_rate)
 	audio.stereo = false
 	var data := PackedByteArray()
-	var vol: float = 0.12
+	var freq: float = 240.0
+	var noise_avg: float = 0.0
+	var attack_samples: float = float(_sample_rate) * 0.004  # 4ms ramp in
 	for i in samples:
 		var t := float(i) / _sample_rate
-		# Exponential decay — very sharp attack, quick tail
-		var env: float = pow(1.0 - (t / duration), 2.4)
-		# Mix filtered noise (rough low-pass by running average)
-		var noise: float = randf() * 2.0 - 1.0
-		var sample: float = noise * env * vol
-		data.append(int((sample * 0.5 + 0.5) * 255))
+		# Attack ramp then exponential decay — no sharp transient
+		var attack: float = clamp(float(i) / attack_samples, 0.0, 1.0)
+		var tail: float = pow(1.0 - (t / duration), 3.0)
+		var env: float = attack * tail
+		# Warm body — damped sine at 240 Hz
+		var body: float = sin(t * freq * TAU) * 0.55
+		# Noise whisper, lightly low-pass filtered via rolling average,
+		# ducked well below the body so it reads as "texture" not "shh"
+		var raw_noise: float = randf() * 2.0 - 1.0
+		noise_avg = noise_avg * 0.7 + raw_noise * 0.3
+		var noise: float = noise_avg * 0.18
+		var sample: float = (body + noise) * env * 0.08
+		data.append(int(clamp(sample * 0.5 + 0.5, 0.0, 1.0) * 255))
 	audio.data = data
 	var player := AudioStreamPlayer.new()
 	player.stream = audio
-	player.volume_db = _db_with_user_volume(-4.0)
+	player.volume_db = _db_with_user_volume(-6.0)
 	add_child(player)
 	player.play()
 	player.finished.connect(player.queue_free)
