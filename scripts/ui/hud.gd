@@ -1243,6 +1243,16 @@ func _on_close_button_pressed() -> void:
 	hide_tower_info()
 
 
+func clear_toast() -> void:
+	# Dismiss any in-flight placement toast. Called when placement is
+	# cancelled — the error context is gone, so the toast shouldn't
+	# linger through its fade delay. Playtest-feedback #104.
+	for prior in get_tree().get_nodes_in_group("hud_toast"):
+		if is_instance_valid(prior):
+			prior.modulate.a = 0.0
+			prior.queue_free()
+
+
 func show_toast(message: String) -> void:
 	# Single-toast policy: free any prior toast(s) before adding a new
 	# one. Playtest-feedback #104 — rapid-fire invalid placements stacked
@@ -1251,9 +1261,7 @@ func show_toast(message: String) -> void:
 	# add_child, the prior node still exists with name "HudToast" and
 	# Godot auto-suffixes the new name. Group-based iteration handles
 	# the race cleanly.
-	for prior in get_tree().get_nodes_in_group("hud_toast"):
-		if is_instance_valid(prior):
-			prior.queue_free()
+	clear_toast()
 	var toast := Label.new()
 	toast.add_to_group("hud_toast")
 	toast.text = message
