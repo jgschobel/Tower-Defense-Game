@@ -3,6 +3,37 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-04-19 (evening close-out — bug batch + audit round 4 + perf/ux polish)
+
+- feat(roadmap): perf+ux+sfx batch — tier-pip geometry cache, healer
+  redraw per-enemy jitter, taunt throttle during `is_spawning`,
+  cost amber %-based threshold, instant ghost on selection,
+  boss_roar + life_lost procedural sweeps wired into celebration
+  and flash paths (PR #117)
+- fix: agent audit 30-item systematic review — 12 bugs fixed,
+  18 perf/ux/idea items filed into ROADMAP. Source-tower meta
+  cleared on pool release, splash kills now credit source,
+  drag-from-shop tap race via `_fresh_placement` flag, taunt
+  Timer named + idempotent, enemy-intro responsive width,
+  tower-info re-clamp post-upgrade, resize tears down stale
+  overlays, boss HP bar respects inset_top, boss-shake debounce,
+  celebration reparent to scene, warmup auto-discovery (PR #116)
+- fix: audit round 4 — tier pips now above pedestal (were hidden
+  in shadow), toast dedup via group (queue_free race cleared),
+  collapsed SideShop hides scroll contents, shop toggle 22→36px,
+  L6 display-name renamed to "S'Parkhuus ★", taunt edge clamp,
+  drag-drop invalid-drop auto-cancels (PR #115)
+- fix: single-toast policy + robust playtest observability commit
+  (snapshot-reset replaces fragile `git checkout main` dance) (#113)
+- docs: README / CLAUDE / CHANGELOG / ROADMAP / audit notes refresh
+  (PR #114)
+- feat: Level 7 "S'Dach vo de Migros" + tier pips + boss-kill
+  celebration (3× sparks + shake + "TÜÜFEL GSTÜRZT!" text) (PR #109)
+- feat: Level 6 "S'Parkhuus" bonus stage (5-boss finale, 16-point
+  serpentine path) + enemy drop shadows (PR #100)
+- Force playtest trigger via project.godot direct-push after
+  concurrency lock suspected for push events (commit f65c3146)
+
 ## 2026-04-19 (afternoon session — side-shop sprint + audits)
 
 - feat(hud): BTD-style side-shop refactor in 3 PRs (#110 scene + populate,
