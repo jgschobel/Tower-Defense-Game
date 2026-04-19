@@ -81,7 +81,17 @@ func _float_taunt(text: String) -> void:
 	lbl.add_theme_color_override("font_color", Color(1, 0.95, 0.6))
 	lbl.add_theme_color_override("font_outline_color", Color(0.15, 0.05, 0, 0.9))
 	lbl.add_theme_constant_override("outline_size", 3)
-	lbl.position = Vector2(-60, -70)
+	# Default taunt position — centered above the tower. If the tower is
+	# near the edge, nudge the label inward so the text stays on screen.
+	var local_x: float = -60.0
+	var vp_rect := get_viewport().get_visible_rect()
+	var screen_pos_left: float = global_position.x + local_x
+	var screen_pos_right: float = screen_pos_left + 120.0
+	if screen_pos_left < 10.0:
+		local_x += (10.0 - screen_pos_left)
+	elif screen_pos_right > vp_rect.size.x - 10.0:
+		local_x -= (screen_pos_right - (vp_rect.size.x - 10.0))
+	lbl.position = Vector2(local_x, -70)
 	lbl.size = Vector2(120, 22)
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	lbl.z_index = 18
@@ -538,14 +548,18 @@ func _draw() -> void:
 	# Thin highlight along top edge
 	draw_arc(Vector2(-2, -2), 33.0, PI * 1.1, PI * 1.9, 24, Color(1, 0.95, 0.8, 0.25), 2.0)
 	# Tier pips — small colored dots around the pedestal edge showing
-	# upgrade tiers. Left arc = Path A, Right arc = Path B. Three max per
-	# side. Makes upgrade level legible at a glance on the map without
-	# opening the info panel. Linear-upgrade towers use the center arc.
+	# upgrade tiers. Left-upper arc = Path A, right-upper arc = Path B.
+	# Three max per side. Drawn ABOVE the pedestal (negative Y) so they're
+	# not hidden by the drop shadow at the bottom. Linear-upgrade towers
+	# use a straight top-center arc.
 	if data and data.has_branching_upgrades():
-		_draw_tier_pips(path_a_tier, PI * 0.95, -1.0, data.path_a_tint)
-		_draw_tier_pips(path_b_tier, PI * 0.05, 1.0, data.path_b_tint)
+		# Path A starts top-left (~-165°) and spreads clockwise toward top
+		_draw_tier_pips(path_a_tier, -PI * 0.92, 1.0, data.path_a_tint)
+		# Path B starts top-right (~-15°) and spreads counter-clockwise toward top
+		_draw_tier_pips(path_b_tier, -PI * 0.08, -1.0, data.path_b_tint)
 	elif upgrade_level > 0:
-		_draw_tier_pips(upgrade_level, PI * 0.5, 1.0, Color(1, 0.9, 0.3))
+		# Linear: centered top, spread sideways
+		_draw_tier_pips(upgrade_level, -PI * 0.5, 1.0, Color(1, 0.9, 0.3))
 
 
 func _draw_tier_pips(tier: int, base_angle: float, dir: float, tint: Color) -> void:
