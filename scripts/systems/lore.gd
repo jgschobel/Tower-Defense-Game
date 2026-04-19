@@ -45,6 +45,13 @@ static func get_level_intro(level_id: int) -> Dictionary:
 				"text": "D'Coupon-Tüüfel blocke de Uusgang. Cumulus-Punkte explodiered i de Luft.\n\n\"Dr Tüüfel het sich verDREIfacht!\"\n\"Cordula — Volleyball-Zeit.\"\n\"ENDLICH en gschider Endkampf.\"",
 				"enemy_preview": "Coupon-Tüüfel • Quittige-Swarm • DREI Tüüfel zum Schluss",
 			}
+		6:
+			return {
+				"title": "Bonus: S'Parkhuus",
+				"subtitle": "Neon. Beton. 5 Tüüfel.",
+				"text": "Mir händ dänkt mir sind dure. Falsch.\n\n\"Im Parkhuus? Ernschthaft?\"\n\"Fünf Tüüfel. Bringed eui Cumulus-Karte, wär bruuched Glück.\"\n\"Ich han mini no!\"\n\"Amösius, din Cumulus isch abglaufe sit 2011.\"",
+				"enemy_preview": "FÜNF Tüüfel • Schwärm • Alles uf einisch",
+			}
 		_:
 			return {
 				"title": "Kapitel %d: Tüüfer id Migros" % level_id,
