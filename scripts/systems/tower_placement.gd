@@ -98,12 +98,21 @@ func _unhandled_input(event: InputEvent) -> void:
 			_had_motion = false
 			_just_placed = false
 			_update_ghost_position(pos)
+			# Tap-to-place fallback: if the press lands on a valid map
+			# location already (the user pressed on the map, not dragged
+			# from the shop button), also try to place immediately. This
+			# preserves the pre-drag-and-drop UX for tap-happy users.
+			# Guard: only fire if the ghost actually showed (position was
+			# in viewport). start_placement parked ghost offscreen until
+			# first input reveals it, so if visible after update the tap
+			# is on the map.
+			if ghost_tower and ghost_tower.visible:
+				_try_place(pos)
 		else:
-			# Release: place on current position (drag-and-drop drop).
-			# If we never moved (stationary tap), still place at the tap
-			# location — identical to the pre-existing press-to-place UX
-			# so tap-happy users aren't broken.
-			if not _just_placed:
+			# Release after drag: place at release position.
+			# Motion-less release (e.g. from a button tap with no map
+			# interaction) does nothing — user will tap the map next.
+			if _had_motion and not _just_placed:
 				_try_place(pos)
 
 	if event is InputEventScreenDrag or event is InputEventMouseMotion:
