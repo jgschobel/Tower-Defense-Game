@@ -38,6 +38,26 @@ func setup_waves(waves: Array) -> void:
 	_wave_data = waves
 	total_waves = waves.size()
 	current_wave = 0
+	_preload_enemy_resources(waves)
+
+
+func _preload_enemy_resources(waves: Array) -> void:
+	# Warm the ResourceLoader cache for every enemy type before any wave
+	# starts. Without this, the first `load()` call per enemy type in
+	# _spawn_enemy() hits the disk mid-frame and causes a visible hitch
+	# (reported as 1 FPS spike on L1 wave-1 start, issue #73).
+	var seen: Dictionary = {}
+	for wave in waves:
+		var wave_dict: Dictionary = wave
+		for group in wave_dict.get("groups", []):
+			var group_dict: Dictionary = group
+			var enemy_id: String = group_dict.get("enemy_id", "basic")
+			if enemy_id in seen:
+				continue
+			seen[enemy_id] = true
+			var data_path := "res://resources/enemy_data/%s.tres" % enemy_id
+			if ResourceLoader.exists(data_path):
+				ResourceLoader.load(data_path)  # warms disk cache; result discarded
 
 
 func start_next_wave() -> void:
