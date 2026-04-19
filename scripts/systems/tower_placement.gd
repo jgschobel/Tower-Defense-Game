@@ -54,6 +54,11 @@ func start_placement(tower_data: TowerData) -> void:
 	ghost_tower.data = tower_data
 	ghost_tower.modulate = Color(1.0, 1.0, 1.0, 0.5)
 	ghost_tower.is_placed = false
+	# Park the ghost offscreen so it doesn't briefly flash at world origin
+	# (0,0) = top-left corner of the play area before the player taps/drags
+	# to position it. Fixes playtest-feedback #81.
+	ghost_tower.global_position = Vector2(-9999, -9999)
+	ghost_tower.visible = false
 	add_child(ghost_tower)
 	# Show range AFTER adding to tree so _ready() has set up the range indicator
 	ghost_tower.show_range(true)
@@ -98,6 +103,9 @@ func _update_ghost_position(screen_pos: Vector2) -> void:
 	if ghost_tower:
 		var world_pos := get_canvas_transform().affine_inverse() * screen_pos
 		ghost_tower.global_position = world_pos
+		# First input — reveal the ghost (was hidden offscreen at start_placement)
+		if not ghost_tower.visible:
+			ghost_tower.visible = true
 
 		if _can_place_at(world_pos):
 			ghost_tower.modulate = Color(0.5, 1.0, 0.5, 0.6)

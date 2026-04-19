@@ -192,6 +192,10 @@ func _attack() -> void:
 		origin_pos = global_position
 
 	SfxManager.play_shoot()
+	# Muzzle flash — colored burst in the direction of the target
+	if EffectPlayer and is_instance_valid(current_target):
+		var flash_dir := (current_target.global_position - origin_pos).normalized()
+		EffectPlayer.spawn_muzzle_flash(origin_pos, flash_dir, data.projectile_color)
 	# Attack animation — bounce/pulse
 	if sprite:
 		var atk_tween := create_tween()
@@ -396,18 +400,35 @@ func _apply_path_tint() -> void:
 	if path_a_tier == 0 and path_b_tier == 0:
 		sprite.modulate = Color.WHITE
 		return
-	# Strength ramps 0.55 / 0.80 / 1.00 per max-tier so the visual delta
-	# between tiers is actually visible. Previous ramp was 0.20/0.40/0.60
-	# which barely tinted a near-white sprite (reported as #47 by vision-agent).
+	# Per-tier visual delta fix (playtest-feedback #80): strength ramp alone
+	# collapsed into near-identical greens at A1/A2/A3 because lerp(WHITE,
+	# saturated_tint, 0.55..1.0) produces small perceptual steps on an
+	# already-green target. We now also darken each step so the player
+	# reads tier progression as "getting darker/richer", not just "slightly
+	# different green". T1 = pastel, T2 = mid, T3 = rich-dark.
 	var max_tier: int = max(path_a_tier, path_b_tier)
-	var strength: float = 0.30 + 0.25 * float(max_tier)  # T1=0.55, T2=0.80, T3=1.05 clamped
-	strength = clampf(strength, 0.0, 1.0)
+	# Lookup-table per tier for strength + brightness. Hand-tuned for
+	# perceptual separation against Lemurius green and Cordula orange tints.
+	var strength: float = 0.45
+	var brightness: float = 1.0
+	match max_tier:
+		1:
+			strength = 0.45
+			brightness = 1.0
+		2:
+			strength = 0.85
+			brightness = 0.88
+		_:  # 3+
+			strength = 1.0
+			brightness = 0.72
 	# Blend tints by their per-path weights
 	var a_weight: float = float(path_a_tier)
 	var b_weight: float = float(path_b_tier)
 	var total: float = a_weight + b_weight
 	var blended: Color = data.path_a_tint * (a_weight / total) + data.path_b_tint * (b_weight / total)
-	sprite.modulate = Color.WHITE.lerp(blended, strength)
+	var tinted: Color = Color.WHITE.lerp(blended, strength)
+	# Apply brightness by scaling RGB (keep alpha)
+	sprite.modulate = Color(tinted.r * brightness, tinted.g * brightness, tinted.b * brightness, tinted.a)
 
 
 func show_range(visible_flag: bool) -> void:

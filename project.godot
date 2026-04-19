@@ -25,6 +25,7 @@ AutoPlaytest="*res://scripts/playtest/auto_playtest.gd"
 WaveSimulator="*res://scripts/playtest/wave_simulator.gd"
 ProjectilePool="*res://scripts/systems/projectile_pool.gd"
 EnemyPool="*res://scripts/systems/enemy_pool.gd"
+EffectPlayer="*res://scripts/systems/effect_player.gd"
 
 [display]
 

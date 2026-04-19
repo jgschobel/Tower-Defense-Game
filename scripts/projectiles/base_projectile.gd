@@ -195,6 +195,9 @@ func _hit() -> void:
 	if is_instance_valid(target) and not target.is_dead:
 		target.take_damage(damage, damage_type)
 		target.show_hit_reaction()
+		# Impact sparks at the hit position, tinted by this projectile's color
+		if EffectPlayer:
+			EffectPlayer.spawn_impact_sparks(global_position, color)
 
 		if slow_amount > 0.0 and slow_duration > 0.0:
 			target.apply_slow(1.0 - slow_amount, slow_duration)

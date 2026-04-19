@@ -45,7 +45,7 @@ func _preload_enemy_resources(waves: Array) -> void:
 	# Warm the ResourceLoader cache for every enemy type before any wave
 	# starts. Without this, the first `load()` call per enemy type in
 	# _spawn_enemy() hits the disk mid-frame and causes a visible hitch
-	# (reported as 1 FPS spike on L1 wave-1 start, issue #73).
+	# (reported as 1 FPS spike on L1 wave-1 start, issue #73 / #78).
 	var seen: Dictionary = {}
 	for wave in waves:
 		var wave_dict: Dictionary = wave
@@ -57,7 +57,19 @@ func _preload_enemy_resources(waves: Array) -> void:
 			seen[enemy_id] = true
 			var data_path := "res://resources/enemy_data/%s.tres" % enemy_id
 			if ResourceLoader.exists(data_path):
-				ResourceLoader.load(data_path)  # warms disk cache; result discarded
+				var enemy_data = ResourceLoader.load(data_path)
+				# Touch the custom_texture + spawns_on_death chain so their
+				# pngs + linked resources are also cached. Without this,
+				# the first spawn of an enemy with a new texture still
+				# stalls on image decode. Fixes playtest-feedback #78.
+				if enemy_data and "custom_texture" in enemy_data and enemy_data.custom_texture:
+					var _tex = enemy_data.custom_texture  # deref → ensures decode
+					_tex.get_size()  # force texture materialization on GPU
+				if enemy_data and "spawns_on_death" in enemy_data and enemy_data.spawns_on_death != "":
+					var child_path := "res://resources/enemy_data/%s.tres" % enemy_data.spawns_on_death
+					if ResourceLoader.exists(child_path) and not (enemy_data.spawns_on_death in seen):
+						seen[enemy_data.spawns_on_death] = true
+						ResourceLoader.load(child_path)
 
 
 func start_next_wave() -> void:
