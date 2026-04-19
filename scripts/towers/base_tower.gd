@@ -52,7 +52,13 @@ func _ready() -> void:
 
 
 func _start_taunt_loop() -> void:
+	# Idempotency guard (agent-audit #5) — matches the pattern used by
+	# HUD's ThreatTimer. Prevents stacked timers if _ready were to run
+	# twice for any reason.
+	if has_node("TauntTimer"):
+		return
 	var t := Timer.new()
+	t.name = "TauntTimer"
 	t.wait_time = randf_range(6.0, 12.0)
 	t.one_shot = false
 	t.autostart = true

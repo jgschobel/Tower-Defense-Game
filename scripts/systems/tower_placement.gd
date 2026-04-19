@@ -32,6 +32,10 @@ var _just_placed: bool = false
 # Track whether the current touch interaction has seen any motion, so a
 # quick stationary tap counts as place-at-finger rather than cancel.
 var _had_motion: bool = false
+# First interaction after start_placement — suppresses the tap-to-place
+# auto-fire for that press so the user can drag from the shop button.
+# Agent-audit BUG #3.
+var _fresh_placement: bool = false
 
 
 func _ready() -> void:
@@ -63,6 +67,7 @@ func start_placement(tower_data: TowerData) -> void:
 
 	selected_tower_data = tower_data
 	is_placing = true
+	_fresh_placement = true
 
 	ghost_tower = _tower_scene.instantiate()
 	ghost_tower.data = tower_data
@@ -98,16 +103,20 @@ func _unhandled_input(event: InputEvent) -> void:
 			_had_motion = false
 			_just_placed = false
 			_update_ghost_position(pos)
-			# Tap-to-place fallback: if the press lands on a valid map
-			# location already (the user pressed on the map, not dragged
-			# from the shop button), also try to place immediately. This
-			# preserves the pre-drag-and-drop UX for tap-happy users.
-			# Guard: only fire if the ghost actually showed (position was
-			# in viewport). start_placement parked ghost offscreen until
-			# first input reveals it, so if visible after update the tap
-			# is on the map.
-			if ghost_tower and ghost_tower.visible:
-				_try_place(pos)
+			# Tap-to-place: fire ONLY if this press is NOT the fresh
+			# `start_placement`-initiating press from the shop button.
+			# Agent-audit BUG #3: the previous `if ghost.visible` check
+			# was a no-op because _update_ghost_position always made the
+			# ghost visible, so every press fired _try_place and broke
+			# drag-from-shop. `_fresh_placement` is set in start_placement
+			# and cleared here on the very first press.
+			if _fresh_placement:
+				_fresh_placement = false
+				# Swallow this press — the user's pointer is still on the
+				# shop button area after button_down fired. Wait for drag
+				# or a subsequent tap on the map.
+				return
+			_try_place(pos)
 		else:
 			# Release after drag: place at release position.
 			# Motion-less release (e.g. from a button tap with no map

@@ -514,8 +514,16 @@ func _celebrate_boss_death() -> void:
 			EffectPlayer.spawn_impact_sparks(global_position, Color(1, 0.9, 0.3))
 			EffectPlayer.spawn_impact_sparks(global_position + Vector2(-20, -20), Color(1, 0.4, 0.2))
 			EffectPlayer.spawn_impact_sparks(global_position + Vector2(20, -20), Color(1, 0.6, 0.2))
+		# Shake debounce — if another boss died in the last 0.5s, skip
+		# this shake to prevent nausea on multi-boss waves (L5-10, L6-10,
+		# L7-10 all spawn 3-4 bosses within a few seconds). Agent-audit
+		# UX #20.
 		if EffectPlayer.has_method("screen_shake"):
-			EffectPlayer.screen_shake(9.0, 0.5)
+			var last_shake_ms: int = int(EffectPlayer.get_meta("last_boss_shake_ms", 0))
+			var now_ms: int = Time.get_ticks_msec()
+			if now_ms - last_shake_ms >= 500:
+				EffectPlayer.screen_shake(9.0, 0.5)
+				EffectPlayer.set_meta("last_boss_shake_ms", now_ms)
 	# Floating "TÜÜFEL GSTÜRZT!" label at the death position
 	var lbl := Label.new()
 	lbl.text = "TÜÜFEL GSTÜRZT!"
@@ -527,13 +535,18 @@ func _celebrate_boss_death() -> void:
 	lbl.position = Vector2(-120, -90)
 	lbl.size = Vector2(240, 40)
 	lbl.z_index = 30
-	var parent := get_parent()
-	if parent:
-		parent.add_child(lbl)
+	lbl.z_as_relative = false
+	# Reparent to current_scene rather than the Path2D parent: Path2D can
+	# have rotation/scale, which would skew or flip the label text.
+	# Agent-audit BUG #19.
+	var scene_root := get_tree().current_scene
+	var host: Node = scene_root if scene_root else get_parent()
+	if host:
+		host.add_child(lbl)
 		lbl.global_position = global_position + Vector2(-120, -90)
 		var tw := get_tree().create_tween()
 		tw.set_parallel(true)
-		tw.tween_property(lbl, "position:y", lbl.position.y - 60.0, 1.2)
+		tw.tween_property(lbl, "global_position:y", lbl.global_position.y - 60.0, 1.2)
 		tw.tween_property(lbl, "modulate:a", 0.0, 1.2)
 		tw.chain().tween_callback(lbl.queue_free)
 
