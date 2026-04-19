@@ -495,9 +495,10 @@ func _show_damage_number(amount: float, damage_type: int = 0) -> void:
 
 
 func _show_mini_pop() -> void:
-	# Tiny "✦" particle on damage (non-kill). Very cheap, lots of dopamine.
+	# Tiny damage spark. ASCII-safe: the previous glyph U+2726 rendered as
+	# a tofu box in the default Godot font on HTML5 builds.
 	var label := Label.new()
-	label.text = "✦"
+	label.text = "*"
 	label.add_theme_font_size_override("font_size", 12)
 	label.add_theme_color_override("font_color", Color(1, 0.95, 0.5, 0.9))
 	label.position = Vector2(randf_range(-18, 18), randf_range(-20, -30))
