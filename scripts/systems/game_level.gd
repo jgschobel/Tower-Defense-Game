@@ -52,6 +52,44 @@ func _ready() -> void:
 	wave_manager.setup_waves(wave_definitions)
 	hud.show_next_wave_button(true)
 	hud.update_wave_info(0, wave_manager.total_waves)
+	_spawn_path_direction_arrows()
+
+
+func _spawn_path_direction_arrows() -> void:
+	# Add small chevrons along the enemy path pointing in the direction
+	# of travel. Makes the path's orientation obvious — on winding paths
+	# the player can otherwise lose track of which side the spawn is on.
+	if not enemy_path or not enemy_path.curve:
+		return
+	# Avoid re-populating on scene reload / re-ready
+	if enemy_path.get_node_or_null("DirectionArrows") != null:
+		return
+	var arrows_container := Node2D.new()
+	arrows_container.name = "DirectionArrows"
+	arrows_container.z_index = -1  # sit below enemies but above path
+	enemy_path.add_child(arrows_container)
+	var curve := enemy_path.curve
+	var length: float = curve.get_baked_length()
+	var step: float = 140.0  # one chevron every ~140px
+	var dist: float = step * 0.5  # start a bit past the spawn
+	var chevron_color := Color(0.1, 0.05, 0.02, 0.45)
+	while dist < length - step * 0.3:
+		var pos: Vector2 = curve.sample_baked(dist)
+		var ahead: Vector2 = curve.sample_baked(minf(dist + 20.0, length))
+		var dir: Vector2 = (ahead - pos).normalized()
+		if dir.length() < 0.01:
+			dist += step
+			continue
+		var perp: Vector2 = Vector2(-dir.y, dir.x)
+		var tip: Vector2 = pos + dir * 12.0
+		var back_left: Vector2 = pos - dir * 6.0 + perp * 10.0
+		var back_right: Vector2 = pos - dir * 6.0 - perp * 10.0
+		var poly := Polygon2D.new()
+		poly.polygon = PackedVector2Array([tip, back_left, back_right])
+		poly.color = chevron_color
+		poly.position = Vector2.ZERO
+		arrows_container.add_child(poly)
+		dist += step
 
 
 func _load_wave_data() -> void:
