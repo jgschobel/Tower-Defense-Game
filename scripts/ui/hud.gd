@@ -880,10 +880,12 @@ func hide_tower_info() -> void:
 
 
 func _notification(what: int) -> void:
-	# Cancel an active placement on focus loss (window minimize, app
-	# backgrounded, screen-off). Prevents a stuck ghost if the user lifts
-	# their finger outside the window on desktop. Audit P2 #25.
-	if what == NOTIFICATION_APPLICATION_FOCUS_OUT or what == NOTIFICATION_WM_WINDOW_FOCUS_OUT:
+	# Cancel active placement on application-level focus loss (tab backgrounded,
+	# app killed). Intentionally NOT reacting to NOTIFICATION_WM_WINDOW_FOCUS_OUT:
+	# that fires in HTML5 every time the browser gains/loses focus for things
+	# like clicking the pause button or the dev tools, which was cancelling
+	# placement spuriously. Only the application-level notification is reliable.
+	if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
 		if _is_placing:
 			placement_cancelled.emit()
 			set_placing(false)
