@@ -22,6 +22,10 @@ signal auto_wave_toggled(enabled: bool)
 
 var tower_data_list: Array = []
 var _cost_labels: Array = []
+# Cached references so affordability updates can tint the whole row
+# (icon + text) rather than just the cost label. Populated by
+# _populate_tower_shop, iterated in _on_gold_changed.
+var _shop_rows: Array = []
 var _game_speed: float = 1.0
 var _selected_tower: BaseTower = null
 var _is_placing: bool = false
@@ -259,6 +263,10 @@ func _populate_tower_shop() -> void:
 		# stacked on the right.
 		btn.custom_minimum_size = Vector2(0, 76)
 		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		btn.clip_contents = true
+		# Per-tier faint tint on the row background so the 5 friends are
+		# visually distinguishable even when the icons are loading.
+		_style_shop_button(btn, td)
 		# Use button_down (press) instead of pressed (release) so the player
 		# can press-and-drag the shop button straight to the map (drag-and-
 		# drop placement). The press fires placement mode immediately; the
@@ -298,6 +306,9 @@ func _populate_tower_shop() -> void:
 		name_label.text = td.display_name
 		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 		name_label.add_theme_font_size_override("font_size", 14)
+		name_label.add_theme_color_override("font_color", Color(1, 0.96, 0.88))
+		name_label.add_theme_color_override("font_outline_color", Color(0.05, 0.02, 0, 0.9))
+		name_label.add_theme_constant_override("outline_size", 3)
 		name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		text_col.add_child(name_label)
 
@@ -306,6 +317,8 @@ func _populate_tower_shop() -> void:
 		cost_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 		cost_label.add_theme_font_size_override("font_size", 12)
 		cost_label.add_theme_color_override("font_color", Color(1, 0.9, 0.3))
+		cost_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.75))
+		cost_label.add_theme_constant_override("outline_size", 2)
 		cost_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		text_col.add_child(cost_label)
 		_cost_labels.append(cost_label)
@@ -315,13 +328,51 @@ func _populate_tower_shop() -> void:
 		dps_label.text = "DPS %.0f" % base_dps
 		dps_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 		dps_label.add_theme_font_size_override("font_size", 10)
-		dps_label.add_theme_color_override("font_color", Color(0.7, 0.85, 1.0, 0.85))
+		dps_label.add_theme_color_override("font_color", Color(0.7, 0.85, 1.0, 0.9))
+		dps_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.7))
+		dps_label.add_theme_constant_override("outline_size", 2)
 		dps_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		text_col.add_child(dps_label)
 
 		row.add_child(text_col)
 		btn.add_child(row)
 		tower_shop.add_child(btn)
+		_shop_rows.append(btn)
+
+
+func _style_shop_button(btn: Button, td: TowerData) -> void:
+	# Build per-state StyleBoxFlat's for the shop row. The base color is
+	# a muted version of the tower's projectile color so each friend's
+	# row reads at a glance; hover/pressed lift brightness.
+	var c: Color = td.projectile_color if td and td.projectile_color.a > 0.01 else Color(0.3, 0.3, 0.35)
+	var base := StyleBoxFlat.new()
+	base.bg_color = Color(c.r * 0.18 + 0.08, c.g * 0.18 + 0.08, c.b * 0.18 + 0.08, 0.95)
+	base.border_color = Color(c.r * 0.6, c.g * 0.6, c.b * 0.6, 0.85)
+	base.border_width_top = 1
+	base.border_width_bottom = 1
+	base.border_width_left = 2
+	base.border_width_right = 1
+	base.corner_radius_top_left = 8
+	base.corner_radius_top_right = 8
+	base.corner_radius_bottom_left = 8
+	base.corner_radius_bottom_right = 8
+	base.content_margin_left = 8
+	base.content_margin_right = 6
+	base.content_margin_top = 4
+	base.content_margin_bottom = 4
+	var hover := base.duplicate() as StyleBoxFlat
+	hover.bg_color = Color(c.r * 0.25 + 0.1, c.g * 0.25 + 0.1, c.b * 0.25 + 0.1, 0.98)
+	hover.border_color = Color(c.r * 0.85, c.g * 0.85, c.b * 0.85, 0.95)
+	var pressed := base.duplicate() as StyleBoxFlat
+	pressed.bg_color = Color(c.r * 0.35 + 0.12, c.g * 0.35 + 0.12, c.b * 0.35 + 0.12, 1.0)
+	pressed.border_color = Color.WHITE
+	var disabled := base.duplicate() as StyleBoxFlat
+	disabled.bg_color = Color(0.08, 0.08, 0.1, 0.8)
+	disabled.border_color = Color(0.25, 0.25, 0.3, 0.7)
+	btn.add_theme_stylebox_override("normal", base)
+	btn.add_theme_stylebox_override("hover", hover)
+	btn.add_theme_stylebox_override("pressed", pressed)
+	btn.add_theme_stylebox_override("disabled", disabled)
 
 
 func show_enemy_intro(enemy_id: String, enemy_data: Resource) -> void:
@@ -895,14 +946,28 @@ func _on_gold_changed(amount: int) -> void:
 			pulse.tween_property(gold_label, "modulate", Color(1.5, 1.3, 0.5), 0.12)
 			pulse.tween_property(gold_label, "modulate", Color.WHITE, 0.2)
 		_last_gold = amount
+	# Whole-row affordability feedback: disabled state uses our styled
+	# disabled stylebox (darker grey), cost label goes red, and the row
+	# modulate drops to 0.75 so the icon dims too. Just-barely-affordable
+	# entries (player can afford but only just) pulse their cost amber
+	# to invite the buy.
 	for i in tower_shop.get_child_count():
-		if i < tower_data_list.size():
-			var btn: Button = tower_shop.get_child(i)
-			var affordable: bool = CurrencyManager.can_afford(tower_data_list[i].buy_cost)
-			btn.disabled = not affordable
-			if i < _cost_labels.size():
-				var col := Color(1, 0.9, 0.3) if affordable else Color(1, 0.3, 0.2)
-				_cost_labels[i].add_theme_color_override("font_color", col)
+		if i >= tower_data_list.size():
+			continue
+		var btn: Button = tower_shop.get_child(i)
+		var cost: int = tower_data_list[i].buy_cost
+		var affordable: bool = CurrencyManager.can_afford(cost)
+		btn.disabled = not affordable
+		btn.modulate = Color.WHITE if affordable else Color(0.7, 0.7, 0.75, 1.0)
+		if i < _cost_labels.size():
+			var col: Color
+			if not affordable:
+				col = Color(1, 0.35, 0.25)
+			elif amount < cost + 50:
+				col = Color(1, 0.75, 0.3)
+			else:
+				col = Color(1, 0.9, 0.3)
+			_cost_labels[i].add_theme_color_override("font_color", col)
 	if _selected_tower:
 		_refresh_tower_info()
 
