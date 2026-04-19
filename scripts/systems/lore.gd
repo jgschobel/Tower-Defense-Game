@@ -52,6 +52,13 @@ static func get_level_intro(level_id: int) -> Dictionary:
 				"text": "Mir händ dänkt mir sind dure. Falsch.\n\n\"Im Parkhuus? Ernschthaft?\"\n\"Fünf Tüüfel. Bringed eui Cumulus-Karte, wär bruuched Glück.\"\n\"Ich han mini no!\"\n\"Amösius, din Cumulus isch abglaufe sit 2011.\"",
 				"enemy_preview": "FÜNF Tüüfel • Schwärm • Alles uf einisch",
 			}
+		7:
+			return {
+				"title": "Kapitel 7: S'Dach",
+				"subtitle": "Wind. Mööwe. Neon.",
+				"text": "De Tüüfel flüücht aufs Dach. D'Affoltner Skyline bränned im Sunneunergang.\n\n\"Warum flüüchtemer immer uf d'Dächer?\"\n\"Cordula, dis Segel!\"\n\"Ich han kes Segel, ich han en Volleyball.\"\n\"...funktioniert au.\"",
+				"enemy_preview": "Flüügend alles • 4 Tüüfel • Fondue-Bomben vom Himmel",
+			}
 		_:
 			return {
 				"title": "Kapitel %d: Tüüfer id Migros" % level_id,
