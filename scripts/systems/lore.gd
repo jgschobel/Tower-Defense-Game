@@ -31,6 +31,13 @@ static func get_level_intro(level_id: int) -> Dictionary:
 				"text": "Zopf-Barrikade. Kamikaze-Gipfeli. De Suurteig LÄBT.\n\n\"Bio-Banane hinder de Feind. CHF 2.95 s'Kilo.\"\n\"Lemurius, jetzt isch nöd—\"\n\"ES ISCH IMMER DE MOMENT FÜR BIO-BANANE.\"",
 				"enemy_preview": "Kamikaze-Gipfeli • Zopf-Barrikade • Dr. Rivella • De Suurteig",
 			}
+		4:
+			return {
+				"title": "Kapitel 4: D'Chäsi-Keller",
+				"subtitle": "Es gärt im Undergrund.",
+				"text": "Raclette-Bombe rollet dur de Gang. Fondue-Tröpfli bränned.\n\n\"De Tüüfel isch PERSÖNLICH da unde.\"\n\"Zwei vo denne?! Ich han nur EI Banane übrig!\"\n\"Wirf sie bio. Immer bio.\"",
+				"enemy_preview": "Raclette-Bombe • Fondue-Wolke • Zwei Tüüfel • Chäs-Healer",
+			}
 		_:
 			return {
 				"title": "Kapitel %d: Tüüfer id Migros" % level_id,

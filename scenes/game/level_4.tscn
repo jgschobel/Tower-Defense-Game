@@ -1,0 +1,92 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/systems/game_level.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/systems/wave_manager.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/systems/tower_placement.gd" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/ui/game_over_screen.tscn" id="5"]
+[ext_resource type="PackedScene" path="res://scenes/ui/pause_menu.tscn" id="6"]
+
+[sub_resource type="Curve2D" id="curve_4"]
+point_count = 12
+point_0/position = Vector2(-40, 100)
+point_0/in = Vector2(0, 0)
+point_0/out = Vector2(60, 20)
+point_1/position = Vector2(200, 150)
+point_1/in = Vector2(-50, -20)
+point_1/out = Vector2(40, 40)
+point_2/position = Vector2(250, 430)
+point_2/in = Vector2(-20, -60)
+point_2/out = Vector2(50, 30)
+point_3/position = Vector2(460, 580)
+point_3/in = Vector2(-40, -20)
+point_3/out = Vector2(60, -30)
+point_4/position = Vector2(520, 260)
+point_4/in = Vector2(-30, 50)
+point_4/out = Vector2(40, -30)
+point_5/position = Vector2(700, 120)
+point_5/in = Vector2(-40, 30)
+point_5/out = Vector2(50, -10)
+point_6/position = Vector2(830, 360)
+point_6/in = Vector2(-30, -50)
+point_6/out = Vector2(20, 50)
+point_7/position = Vector2(720, 560)
+point_7/in = Vector2(40, -30)
+point_7/out = Vector2(-30, 40)
+point_8/position = Vector2(920, 610)
+point_8/in = Vector2(-50, 0)
+point_8/out = Vector2(50, -10)
+point_9/position = Vector2(1050, 400)
+point_9/in = Vector2(-30, 40)
+point_9/out = Vector2(30, -40)
+point_10/position = Vector2(1180, 220)
+point_10/in = Vector2(-30, 50)
+point_10/out = Vector2(40, -30)
+point_11/position = Vector2(1320, 500)
+point_11/in = Vector2(-50, -30)
+point_11/out = Vector2(0, 0)
+
+[node name="GameLevel" type="Node2D"]
+script = ExtResource("1")
+level_id = 4
+
+[node name="Background" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.3, 0.25, 0.2, 1)
+
+[node name="CellarTiles" type="Polygon2D" parent="."]
+color = Color(0.22, 0.18, 0.15, 1)
+polygon = PackedVector2Array(0, 0, 1280, 0, 1280, 720, 0, 720)
+
+[node name="PathBorder" type="Line2D" parent="."]
+points = PackedVector2Array(-40, 100, 200, 150, 250, 430, 460, 580, 520, 260, 700, 120, 830, 360, 720, 560, 920, 610, 1050, 400, 1180, 220, 1320, 500)
+width = 52.0
+default_color = Color(0.15, 0.1, 0.08, 0.7)
+begin_cap_mode = 1
+end_cap_mode = 1
+joint_mode = 2
+
+[node name="PathDraw" type="Line2D" parent="."]
+points = PackedVector2Array(-40, 100, 200, 150, 250, 430, 460, 580, 520, 260, 700, 120, 830, 360, 720, 560, 920, 610, 1050, 400, 1180, 220, 1320, 500)
+width = 42.0
+default_color = Color(0.45, 0.3, 0.2, 0.75)
+begin_cap_mode = 1
+end_cap_mode = 1
+joint_mode = 2
+
+[node name="EnemyPath" type="Path2D" parent="."]
+curve = SubResource("curve_4")
+
+[node name="WaveManager" type="Node" parent="."]
+script = ExtResource("2")
+
+[node name="TowerPlacement" type="Node2D" parent="."]
+script = ExtResource("3")
+
+[node name="HUD" parent="." instance=ExtResource("4")]
+
+[node name="GameOverScreen" parent="." instance=ExtResource("5")]
+
+[node name="PauseMenu" parent="." instance=ExtResource("6")]
