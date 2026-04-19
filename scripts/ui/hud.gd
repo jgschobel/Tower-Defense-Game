@@ -600,6 +600,10 @@ func hide_tower_info() -> void:
 	if _glow_tween and _glow_tween.is_valid():
 		_glow_tween.kill()
 		_glow_tween = null
+	# Disarm the sell button if it was armed — otherwise next reopen
+	# would be hair-trigger.
+	_sell_armed = false
+	_sell_arm_timer = null
 	if _selected_tower and is_instance_valid(_selected_tower):
 		_selected_tower.show_range(false)
 		_selected_tower.modulate = Color.WHITE
@@ -821,6 +825,13 @@ func _on_pause_button_pressed() -> void:
 
 func _on_auto_button_toggled(toggled_on: bool) -> void:
 	auto_wave_toggled.emit(toggled_on)
+	# Visual feedback for auto-wave mode: green tint when active, white
+	# when off. Toggle-buttons in Godot default to a subtle pressed
+	# style but it's easy to miss — color does the work.
+	var btn: Button = $TopBar/HBox/AutoButton if has_node("TopBar/HBox/AutoButton") else null
+	if btn:
+		btn.modulate = Color(0.4, 1.0, 0.5) if toggled_on else Color.WHITE
+	SfxManager.play_click()
 
 
 func _on_speed_button_pressed() -> void:
@@ -851,10 +862,42 @@ func _on_upgrade_button_pressed() -> void:
 		_refresh_tower_info()
 
 
+var _sell_armed: bool = false
+var _sell_arm_timer: SceneTreeTimer = null
+
+
 func _on_sell_button_pressed() -> void:
-	if _selected_tower:
+	if not _selected_tower:
+		return
+	# Two-tap sell to prevent accidental taps from nuking an expensive
+	# tower. First tap arms the button + changes text to "Sicher? ✖",
+	# the arm expires after 2s. Second tap within the window sells.
+	var sell_btn: Button = tower_info.get_node_or_null("VBox/HBox/SellButton") if tower_info else null
+	if _sell_armed:
+		_sell_armed = false
+		if _sell_arm_timer and is_instance_valid(_sell_arm_timer):
+			_sell_arm_timer = null
 		_selected_tower.sell()
 		hide_tower_info()
+		return
+	_sell_armed = true
+	if sell_btn:
+		sell_btn.text = "Sicher? ✖"
+		sell_btn.modulate = Color(1.0, 0.5, 0.3)
+	# Auto-disarm after 2s
+	_sell_arm_timer = get_tree().create_timer(2.0)
+	_sell_arm_timer.timeout.connect(_disarm_sell)
+
+
+func _disarm_sell() -> void:
+	_sell_armed = false
+	_sell_arm_timer = null
+	if tower_info and tower_info.visible:
+		var sell_btn: Button = tower_info.get_node_or_null("VBox/HBox/SellButton") as Button
+		if sell_btn:
+			sell_btn.modulate = Color.WHITE
+			# refresh puts the proper "Verchaufe X" text back
+			_refresh_tower_info()
 
 
 func _on_close_button_pressed() -> void:
