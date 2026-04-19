@@ -175,28 +175,36 @@ func _run_stress_test() -> void:
 	var wm := game_root.get_node_or_null("WaveManager") as Node
 	var path := game_root.get_node_or_null("EnemyPath") as Path2D
 	if wm and path:
-		# Issue #51: previous version used add_to_group + child but
-		# didn't wire enemy signals back to WaveManager, so life-drain
-		# and kill tracking were bypassed. And screenshots showed only
-		# 1 enemy at a time because spawns happened inside a single
-		# frame tick but the tree didn't flush until next frame.
-		# Fix: spawn all 80 THIS FRAME with staggered v_offset so the
-		# renderer draws them immediately, AND connect enemy_reached_end
-		# so life-drain fires correctly.
-		var enemy_scene: PackedScene = load("res://scenes/enemies/base_enemy.tscn") as PackedScene
+		# Issue #79 fix: route stress spawn through EnemyPool.acquire so
+		# enemies get the same lifecycle (process_mode, signal wiring,
+		# is_dead accounting) as the real game. Previous direct-instantiate
+		# path bypassed the pool and caused metric drift (80 spawned, 0
+		# killed) because the pool's release path was never a participant
+		# and enemies sat at progress=0 invisibly stacked.
 		var enemy_data = load("res://resources/enemy_data/basic.tres")
+		var curve_length: float = 0.0
+		if path.curve:
+			curve_length = path.curve.get_baked_length()
 		for i in STRESS_ENEMY_COUNT:
-			var e = enemy_scene.instantiate()
-			e.data = enemy_data
+			var e: Node = null
+			if EnemyPool and EnemyPool.has_method("acquire"):
+				e = EnemyPool.acquire(enemy_data, path)
+			if e == null:
+				var enemy_scene: PackedScene = load("res://scenes/enemies/base_enemy.tscn") as PackedScene
+				e = enemy_scene.instantiate()
+				e.data = enemy_data
+				path.add_child(e)
 			e.add_to_group("enemies")
-			path.add_child(e)
-			if e.has_signal("enemy_died"):
+			if e.has_signal("enemy_died") and not e.enemy_died.is_connected(Callable(wm, "_on_enemy_died")):
 				e.connect("enemy_died", Callable(wm, "_on_enemy_died"))
-			if e.has_signal("enemy_reached_end"):
+			if e.has_signal("enemy_reached_end") and not e.enemy_reached_end.is_connected(Callable(wm, "_on_enemy_reached_end")):
 				e.connect("enemy_reached_end", Callable(wm, "_on_enemy_reached_end"))
-			# Explicit v_offset stagger so the renderer shows them
-			# as 80 distinct sprites, not one clump
-			e.v_offset = float(i - 40) * 2.0
+			# Stagger progress along the path so the 80 enemies visually
+			# spread out instead of stacking at the start. v_offset is
+			# overwritten by base_enemy._process every frame so isn't
+			# useful for separation — progress is the real lever.
+			if curve_length > 0.0:
+				e.progress = fmod(float(i) * 25.0, curve_length - 40.0)
 
 	# Force a frame flush so the renderer actually draws 80 sprites
 	# BEFORE we screenshot (was snapping before the tree settled).
