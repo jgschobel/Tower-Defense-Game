@@ -793,7 +793,7 @@ func update_enemy_count(count: int) -> void:
 	if not enemy_count_label:
 		return
 	if count > 0:
-		enemy_count_label.text = "%d übrig" % count
+		enemy_count_label.text = "☠ %d" % count
 		enemy_count_label.add_theme_color_override("font_color", Color(1, 0.9, 0.8))
 	else:
 		# Briefly celebrate wave clear before going blank
@@ -1123,7 +1123,7 @@ func _on_gold_changed(amount: int) -> void:
 
 func _on_lives_changed(amount: int) -> void:
 	if lives_label:
-		lives_label.text = "%d Läbe" % amount
+		lives_label.text = "♥ %d" % amount
 	# Red screen-flash on life loss — big "you lost one!" cue
 	if _last_lives >= 0 and amount < _last_lives:
 		_flash_life_lost()
@@ -1185,7 +1185,7 @@ func _on_speed_button_pressed() -> void:
 		_game_speed = 1.0
 	Engine.time_scale = _game_speed
 	if speed_button:
-		speed_button.text = "%dx" % int(_game_speed)
+		speed_button.text = "▶ %dx" % int(_game_speed)
 		# Tint by speed so the current mode is visible at a glance:
 		# 1x = white, 2x = warm yellow, 3x = red-hot fast-forward.
 		match int(_game_speed):
