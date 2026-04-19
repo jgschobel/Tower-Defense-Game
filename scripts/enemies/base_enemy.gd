@@ -84,8 +84,10 @@ func _process(delta: float) -> void:
 	# midpoint and add the bob on top
 	v_offset = _base_v_offset + sin(_walk_phase) * 4.0
 
-	# Healer aura animates via _draw — keep redraws flowing while alive
-	if data and data.heals_nearby:
+	# Healer aura animates via _draw — the pulse is time-driven so 15fps
+	# is plenty for a smooth look. Throttle redraw to every ~4th frame
+	# to save work at 60fps, per audit P1 #9.
+	if data and data.heals_nearby and (Engine.get_frames_drawn() & 3) == 0:
 		queue_redraw()
 
 	# Check if reached end of path
@@ -272,30 +274,30 @@ func _draw() -> void:
 		draw_circle(Vector2.ZERO, 15.0, Color.RED)
 		return
 
-	if sprite and sprite.visible:
-		return  # Using a real texture, don't draw
-
-	var s := data.scale_factor
-	var c := data.base_color
-
-	# Drop shadow BEHIND the draw so every enemy sits in the scene
-	draw_circle(Vector2(0, 12) * s, 12.0 * s, Color(0, 0, 0, 0.35))
-
-	# Healer aura — faint pulsing green circle around healer enemies so
-	# the player can see the heal radius at a glance and prioritize them.
-	# Draws BEHIND the sprite so the character stays readable.
+	# Healer aura — ALWAYS drawn regardless of sprite visibility so that
+	# photo-skinned healers also show their heal range. Audit P0 #2:
+	# the earlier placement below the `sprite.visible` short-circuit
+	# meant custom_texture healers had no visible aura.
 	if data.heals_nearby and data.heal_radius > 0.0 and not is_dead:
 		var aura_t: float = float(Time.get_ticks_msec()) * 0.002
-		var pulse: float = 0.85 + 0.15 * sin(aura_t * 3.0)
-		var r: float = data.heal_radius * pulse
+		var pulse_f: float = 0.85 + 0.15 * sin(aura_t * 3.0)
+		var r: float = data.heal_radius * pulse_f
 		draw_circle(Vector2.ZERO, r, Color(0.35, 1.0, 0.4, 0.08))
-		# Thin ring to give a visible edge
 		var ring_points := PackedVector2Array()
 		for i in 33:
 			var a: float = (float(i) / 32.0) * TAU
 			ring_points.append(Vector2(cos(a), sin(a)) * r)
 		for i in 32:
 			draw_line(ring_points[i], ring_points[i + 1], Color(0.4, 1.0, 0.45, 0.35), 2.0)
+
+	if sprite and sprite.visible:
+		return  # Using a real texture, don't draw the body shape
+
+	var s := data.scale_factor
+	var c := data.base_color
+
+	# Drop shadow BEHIND the draw so every enemy sits in the scene
+	draw_circle(Vector2(0, 12) * s, 12.0 * s, Color(0, 0, 0, 0.35))
 
 	match data.id:
 		"basic":
