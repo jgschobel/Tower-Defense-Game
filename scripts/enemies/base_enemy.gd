@@ -162,6 +162,7 @@ func die() -> void:
 	if heal_timer_node:
 		heal_timer_node.stop()
 	CurrencyManager.add_gold(gold_reward)
+	GameManager.record_kill()
 	_show_gold_earned()
 	SfxManager.play_death(data.health if data else 100.0)
 
