@@ -485,6 +485,7 @@ func upgrade_path(path_letter: String) -> bool:
 	else:
 		path_b_tier += 1
 	upgrade_level = path_a_tier + path_b_tier  # keep legacy counter in sync for sell_value, etc.
+	_maybe_swap_tier3_sprite(path_letter)
 	_recalculate_stats()
 	_update_range_collider()
 	_apply_path_tint()
@@ -664,3 +665,26 @@ func _on_detection_area_area_exited(area: Area2D) -> void:
 	var enemy := area.get_parent()
 	if enemy is BaseEnemy:
 		_enemies_in_range.erase(enemy)
+
+
+func _maybe_swap_tier3_sprite(path_letter: String) -> void:
+	# At tier 3 on either path, swap the tower sprite to the dedicated t3
+	# variant (e.g. basic_t3a.png for Lemurius path-A tier 3). Falls back
+	# silently if the asset doesn't exist for this tower.
+	if not sprite or not data:
+		return
+	var tier := path_a_tier if path_letter == "a" else path_b_tier
+	if tier < 3:
+		return
+	var tex_path := "res://assets/textures/towers/%s_t3%s.png" % [data.id, path_letter]
+	if not ResourceLoader.exists(tex_path):
+		return
+	var new_tex: Texture2D = load(tex_path)
+	if new_tex == null:
+		return
+	sprite.texture = new_tex
+	# Re-fit baseline scale so the swapped sprite matches the existing fit size.
+	var max_dim := maxf(new_tex.get_width(), new_tex.get_height())
+	var s := 90.0 / max_dim
+	_baseline_scale = Vector2(s, s)
+	sprite.scale = _baseline_scale
