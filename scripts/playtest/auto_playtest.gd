@@ -276,10 +276,14 @@ func _placements_for_level(level_id: int) -> Array:
 	var path := game_root.get_node_or_null("EnemyPath") as Path2D if game_root else null
 	if path and path.curve and path.curve.get_baked_length() > 100:
 		var ids: Array
+		# Cheap-first ordering so that if starting-gold runs out, we still
+		# get a decent early comp. Playtest-feedback #74: L3 was leaking
+		# wave-1 because the expensive splash/slow placements came first
+		# and consumed the budget before basic/sniper could go down.
 		match level_id:
 			1: ids = ["basic", "basic", "sniper", "splash"]
-			2: ids = ["basic", "slow", "sniper", "splash"]
-			3: ids = ["basic", "cordula", "sniper", "splash", "slow"]
+			2: ids = ["basic", "sniper", "slow", "splash"]
+			3: ids = ["basic", "basic", "sniper", "cordula", "splash", "slow"]
 			_: ids = ["basic", "sniper", "splash"]
 		return _sample_placements_along(path, ids)
 	# Fallback (path missing or degenerate)
