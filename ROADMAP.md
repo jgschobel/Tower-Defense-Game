@@ -14,13 +14,41 @@ Picked up as items complete. Priority top-first.
 
 **Currently open**:
 
-1. **Level 8, 9, 10 content** — continue the progression past L7. Ideas: L8 "Coop-Einbruch" (rival supermarket heist, blue palette), L9 "Cumulus-Punkte-Kern" (inside the loyalty-system, glitchy neon), L10 "Finale im Tüüfel-Äste" (multi-path BTD-style). Each: .tres + .tscn + lore + level-select color.
-2. **Dedicated backgrounds for L4–L7** — currently reusing level1_bg / level2_bg / migros_entrance as placeholders. Generate 4 new 16:9 backgrounds via art-request workflow (Stability text2img at 1280×720) with Swiss-themed prompts.
-3. **Design polish spec** — `docs/design_polish.md`: palette rules, shadow/highlight tokens, typography stack. Informs every subsequent visual PR.
-4. **L8-L10 story intros** — lore.gd Chapter 8/9/10, story_screen bg mapping.
-5. **PAT-based user-attachment fetch** — `photo_to_character.py` tries `USER_ATTACHMENT_PAT` secret first. Unblocks friend-photo issue template (user has to create the PAT). Optional.
-6. **Dust-puff particles on enemy step** — small Particle2D at each enemy's bob-bottom when `_walk_phase` crosses zero. Adds final layer of ground-contact juice to the bobbing walk.
-7. **Scrollable side-shop polish** — row-selected highlight while placing (currently only button default pressed state), smooth scroll when tower button goes above viewport.
+### Content
+1. **Level 8, 9, 10 content** — L8 "Coop-Einbruch" (rival supermarket, blue), L9 "Cumulus-Punkte-Kern" (glitchy neon), L10 "Finale" (multi-path BTD-style). .tres + .tscn + lore + level-select color each.
+2. **Dedicated backgrounds for L4–L7** — currently reusing placeholders. Generate 4 new 16:9 via art-request (Stability text2img).
+3. **L8-L10 story intros** — lore.gd Chapter 8/9/10, story_screen bg mapping.
+
+### Design spec
+4. **Design polish spec** — `docs/design_polish.md`: palette rules, shadow/highlight tokens, typography stack.
+
+### Perf / scale (from agent audit 2026-04-19)
+5. **Signal-based threat badges** — replace 0.5s `get_nodes_in_group("enemies")` polling in `_refresh_threat_badges` with WaveManager emitting boss/healer count changes on spawn/death. Currently O(n) per 0.5s × 4 at 4× time_scale × 80 enemies.
+6. **Taunt labels throttled during waves** — `if is_spawning: return` in `_maybe_taunt`, and/or pool the Label nodes. Currently ~1.1 allocs/s in steady state, 3.3/s at 3×.
+7. **Cache tier-pip positions on upgrade** — `_draw_tier_pips` does 6 × `cos()`/`sin()` per tower redraw. Precompute into `PackedVector2Array` in `upgrade()` / `upgrade_path()`.
+8. **Per-enemy jitter on healer redraw** — `Engine.get_frames_drawn() & 3` throttle fires ALL healers on the same frame (spike at L5-L7). Add `+ int(get_instance_id())` jitter so they stagger across 4 frames.
+9. **Next-wave preview cache** — `_refresh_next_wave_preview` tears down + rebuilds 5-10 Labels + StyleBoxFlat on every show. Cache panel, update text only.
+
+### UX (from agent audit 2026-04-19)
+10. **Shop cost amber threshold percentage-based** — `amount < cost + 50` is meaningless for 90g Basic vs 400g Kühne. Switch to `amount < cost * 1.2`.
+11. **Ghost visible immediately on start_placement** — park at shop button position or viewport center, don't wait for motion. Makes selection feel instant.
+12. **Next-wave button fade instead of abrupt hide** — `_refresh_next_wave_preview(false)` queue_frees without tween. Add `modulate:a → 0` over 0.2s.
+13. **Wave-progress-bar sub-wave detail** — currently jumps 10%/wave. Track enemies defeated / spawn target within current wave.
+14. **Shop row-selected highlight while placing** — mark the active row gold-bordered during `_is_placing`.
+
+### Ideas (nice-to-have)
+15. **Enemy icons in next-wave preview** — prepend 20×20 thumbnail per group instead of text-only "15x Brötli".
+16. **Per-tower taunt persona** — towers of the same type share the TAUNTS dict; shuffle a persistent sub-pool per tower so chorus effects don't happen.
+17. **Boss roar SFX** — procedural low-frequency THOOM for boss enemy_introduced; heartbeat thump on life-lost flash.
+18. **Tower hover range preview in shop** — hovering a shop row shows the range circle on the map at tower placement location.
+19. **Dust-puff particles on enemy step** — small Particle2D at each bob-bottom when `_walk_phase` crosses zero.
+
+### L6 balance drift
+20. **L6 is labeled Bonus but harder than L7** — either rebalance L6 down (easier break between L5 and L7) or rename "S'Parkhuus ★" differently. Currently 1500g/15 lives for L6 vs 1800g/14 lives for L7.
+
+### Infrastructure
+21. **PAT-based user-attachment fetch** — `photo_to_character.py` tries `USER_ATTACHMENT_PAT` secret first. Unblocks friend-photo issue template. Optional (user has to create the PAT).
+22. **Scrollable side-shop extras** — smooth scroll when tower button goes above viewport; slight scroll indicator when content extends beyond visible.
 
 **Circuit breaker**: 25 merges / 24h, 4 Opus 4.7 runs / 5h. Don't exceed. If rate-limited, stop and log to `docs/observability/ledger.md`.
 
