@@ -8,51 +8,72 @@ Within a priority, top-of-list wins.
 
 ---
 
-## 📋 Autonomous Loop — current work queue (2026-04-19 afternoon)
+## 📋 Session handoff — 2026-04-19 17:00Z (loop takes over)
 
-Picked up as items complete. Priority top-first.
+Chat-session Claude is logging off. Everything below is for the
+autonomous loop (`autonomous-dev.yml` every 6h) to pick up. All
+user-driven inputs from this session are captured; no waiting on
+the user for anything unless explicitly noted.
 
-**Currently open**:
+### User directives from this session (all shipped or queued)
 
-### Content
-1. **Level 8, 9, 10 content** — L8 "Coop-Einbruch" (rival supermarket, blue), L9 "Cumulus-Punkte-Kern" (glitchy neon), L10 "Finale" (multi-path BTD-style). .tres + .tscn + lore + level-select color each.
-2. **Dedicated backgrounds for L4–L7** — currently reusing placeholders. Generate 4 new 16:9 via art-request (Stability text2img).
-3. **L8-L10 story intros** — lore.gd Chapter 8/9/10, story_screen bg mapping.
+| User input | Status |
+|---|---|
+| "Drag-and-drop Tower Placement" | ✅ PR #99 + #107 + #116 (tap race fix) |
+| "Coole Memes für die Türme" | ✅ PR #99 TAUNTS dict per tower, viewport-clamped, throttled during waves |
+| "Verbessere Grafik wenn nötig" | ✅ PR #99 shadows/pedestal/highlights, #100 enemy drop shadows, #109 tier pips, #116 pip cache + positions above pedestal |
+| "Komplexere Maps + mehr Art" | ✅ L2 pretzel path + L4/L5/L6/L7 shipped |
+| "Add extra level" (×multiple) | ✅ L4, L5, L6 (bonus), L7 shipped; L8-L10 queued below |
+| "Scrollable side-widget Tower-Shop (BTD6-style)" | ✅ PR #110 + #111 + #112 (3-step refactor) + #115/#116/#117 polish |
+| "Audit and fix bugs; rest in roadmap" | ✅ PR #107 + #108 + #115 + #116 (4 audit rounds, 30+ findings) |
+| "Teste alle neuen upgrades — starte den game tester" | ⚠️ Bot lief 13:43Z, filed #103-106 (all closed); force-triggered again via project.godot edit (commit f65c3146); concurrency lock suspected for subsequent push triggers |
+| "Fix all bugs and put rest into the roadmap" | ✅ PR #116 + #117 (18 bugs + 12 perf/ux items shipped; rest below) |
 
-### Design spec
-4. **Design polish spec** — `docs/design_polish.md`: palette rules, shadow/highlight tokens, typography stack.
+---
 
-### Perf / scale (from agent audit 2026-04-19)
-5. **Signal-based threat badges** — replace 0.5s `get_nodes_in_group("enemies")` polling in `_refresh_threat_badges` with WaveManager emitting boss/healer count changes on spawn/death. Currently O(n) per 0.5s × 4 at 4× time_scale × 80 enemies.
-6. **Taunt labels throttled during waves** — `if is_spawning: return` in `_maybe_taunt`, and/or pool the Label nodes. Currently ~1.1 allocs/s in steady state, 3.3/s at 3×.
-7. **Cache tier-pip positions on upgrade** — `_draw_tier_pips` does 6 × `cos()`/`sin()` per tower redraw. Precompute into `PackedVector2Array` in `upgrade()` / `upgrade_path()`.
-8. **Per-enemy jitter on healer redraw** — `Engine.get_frames_drawn() & 3` throttle fires ALL healers on the same frame (spike at L5-L7). Add `+ int(get_instance_id())` jitter so they stagger across 4 frames.
-9. **Next-wave preview cache** — `_refresh_next_wave_preview` tears down + rebuilds 5-10 Labels + StyleBoxFlat on every show. Cache panel, update text only.
+### Queue (priority top-first)
 
-### UX (from agent audit 2026-04-19)
-10. **Shop cost amber threshold percentage-based** — `amount < cost + 50` is meaningless for 90g Basic vs 400g Kühne. Switch to `amount < cost * 1.2`.
-11. **Ghost visible immediately on start_placement** — park at shop button position or viewport center, don't wait for motion. Makes selection feel instant.
-12. **Next-wave button fade instead of abrupt hide** — `_refresh_next_wave_preview(false)` queue_frees without tween. Add `modulate:a → 0` over 0.2s.
-13. **Wave-progress-bar sub-wave detail** — currently jumps 10%/wave. Track enemies defeated / spawn target within current wave.
-14. **Shop row-selected highlight while placing** — mark the active row gold-bordered during `_is_placing`.
+#### Content (high visible value)
+1. **Level 8 content** — "Coop-Einbruch" (rival supermarket, blue palette). 10 waves escalating, 3-boss finale. .tres + .tscn + lore (chapter 8) + level-select color + story-screen bg map.
+2. **Level 9 content** — "Cumulus-Punkte-Kern" (inside loyalty-system, glitchy neon). Harder than L8, 4-boss finale.
+3. **Level 10 content** — "Finale im Tüüfel-Äste" (multi-path BTD-style?). Final campaign level, 5-boss gauntlet, unique twist (e.g. two lanes).
+4. **Dedicated backgrounds L4–L7** — currently reusing level1_bg / level2_bg / migros_entrance. Generate 4 new 16:9 via the `art-request` workflow (Stability text2img at 1280×720) with Swiss-themed prompts.
 
-### Ideas (nice-to-have)
-15. **Enemy icons in next-wave preview** — prepend 20×20 thumbnail per group instead of text-only "15x Brötli".
-16. **Per-tower taunt persona** — towers of the same type share the TAUNTS dict; shuffle a persistent sub-pool per tower so chorus effects don't happen.
-17. **Boss roar SFX** — procedural low-frequency THOOM for boss enemy_introduced; heartbeat thump on life-lost flash.
-18. **Tower hover range preview in shop** — hovering a shop row shows the range circle on the map at tower placement location.
-19. **Dust-puff particles on enemy step** — small Particle2D at each bob-bottom when `_walk_phase` crosses zero.
+#### Perf (from agent audit)
+5. **Signal-based threat badges** — replace 0.5s `get_nodes_in_group("enemies")` polling with WaveManager emitting boss/healer count changes. O(n)×0.5s per poll × 4× time_scale × 80 enemies is measurable.
+6. **Next-wave preview cache** — `_refresh_next_wave_preview` tears down + rebuilds 5-10 Labels + StyleBoxFlat on every show. Cache panel, update text only.
 
-### L6 balance drift
-20. **L6 is labeled Bonus but harder than L7** — either rebalance L6 down (easier break between L5 and L7) or rename "S'Parkhuus ★" differently. Currently 1500g/15 lives for L6 vs 1800g/14 lives for L7.
+#### UX
+7. **Next-wave button fade** — `_refresh_next_wave_preview(false)` queue_frees without tween. Add `modulate:a → 0` over 0.2s before free.
+8. **Sub-wave progress bar** — currently jumps 10%/wave. Track enemies-defeated / total-enemies within current wave.
+9. **Shop row-selected highlight while placing** — mark the active row gold-bordered during `_is_placing`.
 
-### Infrastructure
-21. **PAT-based user-attachment fetch** — `photo_to_character.py` tries `USER_ATTACHMENT_PAT` secret first. Unblocks friend-photo issue template. Optional (user has to create the PAT).
-22. **Scrollable side-shop extras** — smooth scroll when tower button goes above viewport; slight scroll indicator when content extends beyond visible.
+#### Ideas (nice-to-have)
+10. **Enemy icons in next-wave preview** — prepend 20×20 thumbnail per group instead of text-only.
+11. **Per-tower taunt persona** — towers of same type share TAUNTS dict; shuffle a persistent sub-pool per tower so chorus effects don't happen.
+12. **Tower hover range preview in shop** — hovering a shop row shows the range circle on the map.
+13. **Dust-puff particles on enemy step** — small Particle2D at each bob-bottom when `_walk_phase` crosses zero.
+
+#### Design spec
+14. **`docs/design_polish.md`** — palette rules, shadow/highlight tokens, typography stack. Informs every subsequent visual PR.
+
+#### Balance drift
+15. **L6 "Bonus" vs L7 progression** — L6 is labeled Bonus but harder than L7 (1500g/15 lives vs 1800g/14 lives). Either rebalance L6 down or rename "S'Parkhuus ★" / reposition in menu.
+
+#### Infrastructure (not auto-pickable)
+16. **Playtest concurrency investigation** — push-triggered playtest ran once at 13:43Z then appeared blocked for ~1h despite 15+ merges. Suspected: GitHub's 1-queued-run concurrency limit OR minutes-quota hit. The `cancel-in-progress: false` on group `playtest` may need `cancel-in-progress: true` OR the workflow needs to check `github.repository_runs_remaining` before starting. Force-trigger commit `f65c3146` verified it still fires on direct push.
+17. **PAT-based user-attachment fetch** — `photo_to_character.py` tries `USER_ATTACHMENT_PAT` secret first. Unblocks friend-photo issue template. Requires user to create the PAT.
+18. **Scrollable side-shop extras** — smooth scroll when tower button goes above viewport; scroll indicator when content extends.
+
+---
+
+### Autonomous loop rules (unchanged)
 
 **Circuit breaker**: 25 merges / 24h, 4 Opus 4.7 runs / 5h. Don't exceed. If rate-limited, stop and log to `docs/observability/ledger.md`.
 
 **Do NOT do**: anything requiring user input. No new issue-template changes, no secrets, no PR reviews. Auto-merge everything validated by sim-gate + playtest.
+
+**Close-out target**: get to L10 + 0 audit findings + observability pipeline writing consistently. Then wait.
 
 ---
 
