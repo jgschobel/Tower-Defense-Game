@@ -56,10 +56,21 @@ func screen_shake(amplitude: float, duration: float) -> void:
 	if not (scene is Node2D):
 		return
 	var n := scene as Node2D
+	# Guard against concurrent shakes stacking onto a mid-shake position:
+	# kill any existing shake tween first and restore the true origin
+	# before building a new chain. Audit P2 #22.
+	if n.has_meta("shake_tween"):
+		var prev_tween = n.get_meta("shake_tween")
+		if prev_tween != null and prev_tween is Tween and prev_tween.is_valid():
+			prev_tween.kill()
+	if n.has_meta("shake_origin"):
+		n.position = n.get_meta("shake_origin")
 	var orig := n.position
+	n.set_meta("shake_origin", orig)
 	var steps := maxi(4, int(duration * 20.0))
 	var step_dur: float = duration / float(steps)
 	var tw := n.create_tween()
+	n.set_meta("shake_tween", tw)
 	for _i in range(steps):
 		var offset := Vector2(
 			randf_range(-amplitude, amplitude),
@@ -67,6 +78,11 @@ func screen_shake(amplitude: float, duration: float) -> void:
 		)
 		tw.tween_property(n, "position", orig + offset, step_dur)
 	tw.tween_property(n, "position", orig, step_dur)
+	tw.tween_callback(func():
+		if n.has_meta("shake_origin"):
+			n.remove_meta("shake_origin")
+		if n.has_meta("shake_tween"):
+			n.remove_meta("shake_tween"))
 
 
 func _get_host() -> Node:
