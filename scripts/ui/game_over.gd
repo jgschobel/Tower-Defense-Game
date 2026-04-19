@@ -40,7 +40,7 @@ func show_victory(stars: int) -> void:
 	if title_label:
 		title_label.text = "SIEG!"
 	if stars_label:
-		stars_label.text = "*".repeat(stars) + "-".repeat(3 - stars)
+		stars_label.text = "★".repeat(stars) + "☆".repeat(3 - stars)
 	if message_label:
 		var flavor: String
 		if stars == 3:
@@ -81,12 +81,14 @@ func show_defeat() -> void:
 
 
 func _on_retry_button_pressed() -> void:
+	SfxManager.play_click()
 	Engine.time_scale = 1.0
 	GameManager.start_level(GameManager.current_level)
 	get_tree().reload_current_scene()
 
 
 func _on_next_button_pressed() -> void:
+	SfxManager.play_click()
 	Engine.time_scale = 1.0
 	var next_level := GameManager.current_level + 1
 	GameManager.start_level(next_level)
@@ -94,6 +96,7 @@ func _on_next_button_pressed() -> void:
 
 
 func _on_menu_button_pressed() -> void:
+	SfxManager.play_click()
 	Engine.time_scale = 1.0
 	# Don't stop music — MusicManager auto-switches to menu track on
 	# state change via GameManager.game_state_changed.
