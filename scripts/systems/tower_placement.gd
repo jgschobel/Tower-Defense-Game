@@ -134,6 +134,7 @@ func _try_place(screen_pos: Vector2) -> void:
 
 	placed_towers.append(tower)
 
+	SfxManager.play_place()
 	tower_placed.emit(tower)
 	cancel_placement()
 
