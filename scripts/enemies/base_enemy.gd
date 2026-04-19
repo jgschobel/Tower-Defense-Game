@@ -84,6 +84,10 @@ func _process(delta: float) -> void:
 	# midpoint and add the bob on top
 	v_offset = _base_v_offset + sin(_walk_phase) * 4.0
 
+	# Healer aura animates via _draw — keep redraws flowing while alive
+	if data and data.heals_nearby:
+		queue_redraw()
+
 	# Check if reached end of path
 	if progress_ratio >= 1.0:
 		_reached_end()
@@ -273,6 +277,22 @@ func _draw() -> void:
 
 	var s := data.scale_factor
 	var c := data.base_color
+
+	# Healer aura — faint pulsing green circle around healer enemies so
+	# the player can see the heal radius at a glance and prioritize them.
+	# Draws BEHIND the sprite so the character stays readable.
+	if data.heals_nearby and data.heal_radius > 0.0 and not is_dead:
+		var aura_t: float = float(Time.get_ticks_msec()) * 0.002
+		var pulse: float = 0.85 + 0.15 * sin(aura_t * 3.0)
+		var r: float = data.heal_radius * pulse
+		draw_circle(Vector2.ZERO, r, Color(0.35, 1.0, 0.4, 0.08))
+		# Thin ring to give a visible edge
+		var ring_points := PackedVector2Array()
+		for i in 33:
+			var a: float = (float(i) / 32.0) * TAU
+			ring_points.append(Vector2(cos(a), sin(a)) * r)
+		for i in 32:
+			draw_line(ring_points[i], ring_points[i + 1], Color(0.4, 1.0, 0.45, 0.35), 2.0)
 
 	match data.id:
 		"basic":
