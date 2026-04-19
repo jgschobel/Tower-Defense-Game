@@ -278,6 +278,9 @@ func _draw() -> void:
 	var s := data.scale_factor
 	var c := data.base_color
 
+	# Drop shadow BEHIND the draw so every enemy sits in the scene
+	draw_circle(Vector2(0, 12) * s, 12.0 * s, Color(0, 0, 0, 0.35))
+
 	# Healer aura — faint pulsing green circle around healer enemies so
 	# the player can see the heal radius at a glance and prioritize them.
 	# Draws BEHIND the sprite so the character stays readable.
