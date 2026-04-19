@@ -90,8 +90,15 @@ func _refresh_boss_hpbar(boss_refs: Array) -> void:
 	var total_max: float = 0.0
 	var total_cur: float = 0.0
 	for e in boss_refs:
+		# Guard: a boss in mid-death-tween stays in the enemies group for
+		# ~0.35s; skip so we don't sum NaN/0 into the bar. Audit P1 #7.
+		if not is_instance_valid(e) or e.is_dead:
+			continue
 		total_max += e.max_health
 		total_cur += maxf(0.0, e.health)
+	if total_max <= 0.0:
+		# All bosses mid-death — skip update this tick
+		return
 	if existing == null:
 		existing = _build_boss_hpbar()
 		add_child(existing)
@@ -496,11 +503,14 @@ func _refresh_next_wave_preview(visible_flag: bool) -> void:
 		existing.queue_free()
 	if not visible_flag:
 		return
-	# Find the game's WaveManager via the scene tree
-	var game: Node = get_tree().current_scene
-	if not game:
-		return
-	var wm: Node = game.get_node_or_null("WaveManager")
+	# Find the game's WaveManager. current_scene may briefly be wrong
+	# during reload_current_scene transitions, so prefer the group lookup.
+	# Audit P1 #10.
+	var wm: Node = get_tree().get_first_node_in_group("wave_manager")
+	if wm == null:
+		var game: Node = get_tree().current_scene
+		if game:
+			wm = game.get_node_or_null("WaveManager")
 	if not wm or not wm.has_method("get_next_wave_preview"):
 		return
 	var preview: Array = wm.get_next_wave_preview()
