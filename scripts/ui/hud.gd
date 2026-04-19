@@ -58,7 +58,7 @@ func _start_threat_watcher() -> void:
 
 func _refresh_threat_badges() -> void:
 	var has_healer: bool = false
-	var has_boss: bool = false
+	var boss_refs: Array = []
 	for n in get_tree().get_nodes_in_group("enemies"):
 		var e := n as BaseEnemy
 		if e == null or e.is_dead or not e.data:
@@ -67,11 +67,83 @@ func _refresh_threat_badges() -> void:
 			"healer":
 				has_healer = true
 			"boss":
-				has_boss = true
-		if has_healer and has_boss:
-			break
+				boss_refs.append(e)
 	_set_threat_badge("HealerBadge", has_healer, "⚕ HEAL", Color(0.4, 1.0, 0.5))
-	_set_threat_badge("BossBadge", has_boss, "☠ BOSS", Color(1.0, 0.35, 0.25))
+	_set_threat_badge("BossBadge", not boss_refs.is_empty(), "☠ BOSS", Color(1.0, 0.35, 0.25))
+	_refresh_boss_hpbar(boss_refs)
+
+
+func _refresh_boss_hpbar(boss_refs: Array) -> void:
+	# Prominent boss HP bar anchored top-center below the TopBar. Shows
+	# pooled HP of all active bosses (for multi-boss waves like L5-10).
+	# Disappears cleanly when no boss is alive.
+	var existing: Control = get_node_or_null("BossHPBar") as Control
+	if boss_refs.is_empty():
+		if existing:
+			existing.queue_free()
+		return
+	var total_max: float = 0.0
+	var total_cur: float = 0.0
+	for e in boss_refs:
+		total_max += e.max_health
+		total_cur += maxf(0.0, e.health)
+	if existing == null:
+		existing = _build_boss_hpbar()
+		add_child(existing)
+	var bar: ProgressBar = existing.get_node_or_null("VBox/Bar") as ProgressBar
+	var label: Label = existing.get_node_or_null("VBox/Label") as Label
+	if bar:
+		bar.max_value = total_max
+		bar.value = total_cur
+	if label:
+		if boss_refs.size() > 1:
+			label.text = "DE M-TÜÜFEL × %d" % boss_refs.size()
+		else:
+			label.text = "DE M-TÜÜFEL"
+
+
+func _build_boss_hpbar() -> Control:
+	var wrap := PanelContainer.new()
+	wrap.name = "BossHPBar"
+	wrap.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	wrap.anchors_preset = Control.PRESET_TOP_WIDE
+	wrap.anchor_right = 1.0
+	wrap.offset_left = 340.0
+	wrap.offset_top = 72.0
+	wrap.offset_right = -340.0
+	wrap.offset_bottom = 130.0
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.15, 0.05, 0.05, 0.85)
+	sb.border_width_top = 2
+	sb.border_width_bottom = 2
+	sb.border_width_left = 2
+	sb.border_width_right = 2
+	sb.border_color = Color(1, 0.3, 0.2, 1)
+	sb.corner_radius_top_left = 8
+	sb.corner_radius_top_right = 8
+	sb.corner_radius_bottom_left = 8
+	sb.corner_radius_bottom_right = 8
+	wrap.add_theme_stylebox_override("panel", sb)
+	var vbox := VBoxContainer.new()
+	vbox.name = "VBox"
+	vbox.add_theme_constant_override("separation", 2)
+	var label := Label.new()
+	label.name = "Label"
+	label.text = "DE M-TÜÜFEL"
+	label.add_theme_font_size_override("font_size", 14)
+	label.add_theme_color_override("font_color", Color(1, 0.75, 0.6))
+	label.add_theme_color_override("font_outline_color", Color.BLACK)
+	label.add_theme_constant_override("outline_size", 2)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(label)
+	var bar := ProgressBar.new()
+	bar.name = "Bar"
+	bar.show_percentage = false
+	bar.custom_minimum_size = Vector2(0, 16)
+	bar.modulate = Color(1, 0.3, 0.25, 1)
+	vbox.add_child(bar)
+	wrap.add_child(vbox)
+	return wrap
 
 
 func _set_threat_badge(badge_name: String, show: bool, text: String, color: Color) -> void:
