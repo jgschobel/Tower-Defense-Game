@@ -17,7 +17,7 @@ signal auto_wave_toggled(enabled: bool)
 @onready var pause_button: Button = $TopBar/HBox/PauseButton
 @onready var next_wave_button: Button = $BottomPanel/BottomBar/ButtonRow/NextWaveButton
 @onready var cancel_button: Button = $BottomPanel/BottomBar/ButtonRow/CancelButton
-@onready var tower_shop: HBoxContainer = $BottomPanel/BottomBar/TowerShop
+@onready var tower_shop: VBoxContainer = $SideShop/SideShopVBox/ShopScroll/TowerShop
 @onready var tower_info: PanelContainer = $TowerInfo
 
 var tower_data_list: Array = []
@@ -223,11 +223,20 @@ func _apply_safe_area() -> void:
 	top_bar.offset_right = float(-inset_right)
 	top_bar.offset_top = float(inset_top)
 	top_bar.offset_bottom = float(inset_top) + 65.0
+	# BottomPanel shrunk to just the button row; the tower shop moved
+	# to the SideShop widget (anchored right-center).
 	var bottom_panel: PanelContainer = $BottomPanel
 	bottom_panel.offset_left = float(inset_left)
-	bottom_panel.offset_right = float(-inset_right)
-	bottom_panel.offset_top = -220.0 - float(inset_bottom)
+	# Leave room on the right for the SideShop widget (~170px) — the
+	# button row stops before the shop so nothing overlaps.
+	bottom_panel.offset_right = -170.0 - float(inset_right)
+	bottom_panel.offset_top = -76.0 - float(inset_bottom)
 	bottom_panel.offset_bottom = float(-inset_bottom)
+	# Side shop edge-inset (horizontal only; it's vertically centered
+	# via its anchor so notches on top/bottom don't shift it).
+	var side_shop: PanelContainer = $SideShop
+	side_shop.offset_left = -160.0 - float(inset_right)
+	side_shop.offset_right = -8.0 - float(inset_right)
 	_safe_area_applied = true
 
 
@@ -245,7 +254,11 @@ func _populate_tower_shop() -> void:
 		tower_data_list.append(td)
 
 		var btn := Button.new()
-		btn.custom_minimum_size = Vector2(125, 140)
+		# BTD-style side-shop row: full container width, 76px tall —
+		# big enough for a 60px icon on the left with name/cost/DPS
+		# stacked on the right.
+		btn.custom_minimum_size = Vector2(0, 76)
+		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		# Use button_down (press) instead of pressed (release) so the player
 		# can press-and-drag the shop button straight to the map (drag-and-
 		# drop placement). The press fires placement mode immediately; the
@@ -253,55 +266,61 @@ func _populate_tower_shop() -> void:
 		# release-on-map places the tower.
 		btn.button_down.connect(_on_tower_button_pressed.bind(td))
 
-		var vbox := VBoxContainer.new()
-		vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		vbox.alignment = BoxContainer.ALIGNMENT_CENTER
-		vbox.add_theme_constant_override("separation", 4)
+		var row := HBoxContainer.new()
+		row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		row.add_theme_constant_override("separation", 8)
+		row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
+		# Icon on the left
 		if td.custom_texture:
 			var icon := TextureRect.new()
 			icon.texture = td.custom_texture
-			icon.custom_minimum_size = Vector2(85, 85)
+			icon.custom_minimum_size = Vector2(60, 60)
 			icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 			icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
 			icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			vbox.add_child(icon)
+			row.add_child(icon)
 		else:
-			# Placeholder colored rect for towers without custom art
 			var placeholder := ColorRect.new()
-			placeholder.custom_minimum_size = Vector2(60, 60)
+			placeholder.custom_minimum_size = Vector2(48, 48)
 			placeholder.color = td.base_color
 			placeholder.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			vbox.add_child(placeholder)
+			row.add_child(placeholder)
+
+		# Stacked text on the right
+		var text_col := VBoxContainer.new()
+		text_col.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		text_col.add_theme_constant_override("separation", 0)
+		text_col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		text_col.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 
 		var name_label := Label.new()
 		name_label.text = td.display_name
-		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 		name_label.add_theme_font_size_override("font_size", 14)
 		name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		vbox.add_child(name_label)
+		text_col.add_child(name_label)
 
 		var cost_label := Label.new()
-		cost_label.text = "%d" % td.buy_cost
-		cost_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		cost_label.text = "%d g" % td.buy_cost
+		cost_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 		cost_label.add_theme_font_size_override("font_size", 12)
 		cost_label.add_theme_color_override("font_color", Color(1, 0.9, 0.3))
 		cost_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		vbox.add_child(cost_label)
+		text_col.add_child(cost_label)
 		_cost_labels.append(cost_label)
 
-		# DPS preview line — damage × attack_speed. Gives the player a
-		# glanceable "power per coin" metric before buying.
 		var dps_label := Label.new()
 		var base_dps: float = td.damage * td.attack_speed
 		dps_label.text = "DPS %.0f" % base_dps
-		dps_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		dps_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 		dps_label.add_theme_font_size_override("font_size", 10)
 		dps_label.add_theme_color_override("font_color", Color(0.7, 0.85, 1.0, 0.85))
 		dps_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		vbox.add_child(dps_label)
+		text_col.add_child(dps_label)
 
-		btn.add_child(vbox)
+		row.add_child(text_col)
+		btn.add_child(row)
 		tower_shop.add_child(btn)
 
 
@@ -523,11 +542,12 @@ func _refresh_next_wave_preview(visible_flag: bool) -> void:
 	panel.anchor_top = 1.0
 	panel.anchor_right = 1.0
 	panel.anchor_bottom = 1.0
+	# Keep clear of the right-anchored SideShop (~170px wide)
 	panel.offset_left = 20
-	panel.offset_right = -20
-	# Park above BottomPanel (bottom ~220px tall), give preview ~60px
-	panel.offset_top = -290.0
-	panel.offset_bottom = -230.0
+	panel.offset_right = -190
+	# Park just above the now-76px-tall BottomPanel, give preview ~60px
+	panel.offset_top = -146.0
+	panel.offset_bottom = -86.0
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = Color(0.08, 0.1, 0.12, 0.85)
 	sb.corner_radius_top_left = 10
