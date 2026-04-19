@@ -405,7 +405,10 @@ func _populate_tower_shop() -> void:
 		# drop placement). The press fires placement mode immediately; the
 		# subsequent drag events go to TowerPlacement via _unhandled_input;
 		# release-on-map places the tower.
-		btn.button_down.connect(_on_tower_button_pressed.bind(td))
+		# Use standard `pressed` (fires on release) — the `button_down`
+		# experiment for drag-from-shop was unreliable on HTML5/touch
+		# and effectively broke tower selection entirely (user report).
+		btn.pressed.connect(_on_tower_button_pressed.bind(td))
 
 		var row := HBoxContainer.new()
 		row.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -879,16 +882,13 @@ func hide_tower_info() -> void:
 		tower_info.visible = false
 
 
-func _notification(what: int) -> void:
-	# Cancel active placement on application-level focus loss (tab backgrounded,
-	# app killed). Intentionally NOT reacting to NOTIFICATION_WM_WINDOW_FOCUS_OUT:
-	# that fires in HTML5 every time the browser gains/loses focus for things
-	# like clicking the pause button or the dev tools, which was cancelling
-	# placement spuriously. Only the application-level notification is reliable.
-	if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
-		if _is_placing:
-			placement_cancelled.emit()
-			set_placing(false)
+func _notification(_what: int) -> void:
+	# Previous focus-out auto-cancel was firing spuriously in the HTML5
+	# deploy (any tab-blur, dev-tools-open, or pause-button click was
+	# dismissing an active placement). User reported inability to place
+	# towers as a result. Dropped the behavior entirely — user can
+	# cancel via the explicit ABBRECHE button.
+	pass
 
 
 func _unhandled_input(event: InputEvent) -> void:
