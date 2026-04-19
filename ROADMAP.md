@@ -8,16 +8,19 @@ Within a priority, top-of-list wins.
 
 ---
 
-## 📋 Autonomous Loop — overnight work queue (user asleep 2026-04-18 22:00Z)
+## 📋 Autonomous Loop — current work queue (2026-04-19 afternoon)
 
-Priority for the 6-hour loop while user sleeps. Pick one, ship it, auto-merge:
+Picked up as items complete. Priority top-first.
 
-1. **Level 4 content** — `resources/level_data/level_4.tres` + `scenes/game/level_4.tscn` (reuse level_3.tscn as base, new path, 10 waves escalating from tank+basic mix through flying+boss). Include new Lore entry in `scripts/systems/lore.gd`. Unlock via GameManager level progression.
-2. **Strike animations** — particles/muzzle flash on tower attack + impact effects on projectile hit. `scenes/effects/muzzle_flash.tscn` + `scenes/effects/impact_spark.tscn`. Spawn via `base_tower._attack` and `base_projectile._hit`. Keeps the 4× time_scale playtest running smooth (CPU-cheap particle2D).
-3. **Price-popup edge-fix** — the tower-info panel anchor math for towers placed far right/left of screen. Clamp `tower_info.offset_left/right` within viewport bounds.
-4. **Design polish P1** — `docs/design_polish.md` spec: replace "teenager garage" look with pro art brief (color palette, shadow/highlight rules, typography tokens). No code, just spec so subsequent PRs follow consistent direction.
-5. **PAT-based user-attachment fetch** — in `photo_to_character.py`, try `USER_ATTACHMENT_PAT` secret before `GITHUB_TOKEN`. If PAT set and valid, 404 would go away. Add docs on how to create the PAT. Optional — user needs to set the secret.
-6. **More levels** — level_5 through level_10 stubbed out with progressively harder wave defs. Even stub resources make the level-select feel full.
+**Currently open**:
+
+1. **Level 8, 9, 10 content** — continue the progression past L7. Ideas: L8 "Coop-Einbruch" (rival supermarket heist, blue palette), L9 "Cumulus-Punkte-Kern" (inside the loyalty-system, glitchy neon), L10 "Finale im Tüüfel-Äste" (multi-path BTD-style). Each: .tres + .tscn + lore + level-select color.
+2. **Dedicated backgrounds for L4–L7** — currently reusing level1_bg / level2_bg / migros_entrance as placeholders. Generate 4 new 16:9 backgrounds via art-request workflow (Stability text2img at 1280×720) with Swiss-themed prompts.
+3. **Design polish spec** — `docs/design_polish.md`: palette rules, shadow/highlight tokens, typography stack. Informs every subsequent visual PR.
+4. **L8-L10 story intros** — lore.gd Chapter 8/9/10, story_screen bg mapping.
+5. **PAT-based user-attachment fetch** — `photo_to_character.py` tries `USER_ATTACHMENT_PAT` secret first. Unblocks friend-photo issue template (user has to create the PAT). Optional.
+6. **Dust-puff particles on enemy step** — small Particle2D at each enemy's bob-bottom when `_walk_phase` crosses zero. Adds final layer of ground-contact juice to the bobbing walk.
+7. **Scrollable side-shop polish** — row-selected highlight while placing (currently only button default pressed state), smooth scroll when tower button goes above viewport.
 
 **Circuit breaker**: 25 merges / 24h, 4 Opus 4.7 runs / 5h. Don't exceed. If rate-limited, stop and log to `docs/observability/ledger.md`.
 

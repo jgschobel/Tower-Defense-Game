@@ -54,7 +54,7 @@ autonomous or manual. Update only when the user explicitly changes them.
   antagonist. Migros Affoltern as world.
 
 ## Project Overview
-A **landscape** (1280x720) tower defense game built in **Godot 4.6** using GDScript. Set in Migros Affoltern, Zürich. 5 tower characters (Lemurius, Kühne, JoJo, Cordula, Amösius) fight cursed vegan products controlled by De Vegan-Tüüfel. All text in Swiss German. Procedural chiptune music + SFX, AI-generated art, story cutscenes, 3 levels with 10 waves each.
+A **landscape** (1280x720) tower defense game built in **Godot 4.6** using GDScript. Set in Migros Affoltern, Zürich. 5 tower characters (Lemurius, Kühne, JoJo, Cordula, Amösius) fight cursed vegan products controlled by De Vegan-Tüüfel. All text in Swiss German. Procedural chiptune music + SFX, AI-generated art, story cutscenes, **7 levels** with 10 waves each (L1-L5 main + L6 bonus parking + L7 rooftop finale). `MAX_LEVELS = 7` in `game_manager.gd`. BTD-style branching upgrades (paths A+B, 3 tiers each) with visible tier pips + drag-and-drop placement from a right-anchored collapsible side-shop.
 
 ## Tech Stack
 - **Engine**: Godot 4.6 (GL Compatibility renderer for mobile)
