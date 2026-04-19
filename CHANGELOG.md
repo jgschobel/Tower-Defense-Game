@@ -3,6 +3,18 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-04-19 (self-improve — placement toast clears on cancel)
+
+- fix(placement): toast now dismisses immediately when placement is
+  cancelled (HUD cancel button, invalid drag-drop, focus-out, or
+  re-entry). Previously the "Z'nöch am Wäg!" / "Z'nöch am Turm!" /
+  "Am Rand bleibe!" label lingered through its 1.6s fade even after
+  the error context was gone — visible in playtest shots 096 vs 097
+  (pixel-identical toast 0.35s after cancel). New `HUD.clear_toast()`
+  is wired to `TowerPlacement.placement_cancelled` and also reused
+  inside `show_toast()` (the old inline dedup loop was duplicated).
+  Closes playtest-feedback #104.
+
 ## 2026-04-19 (evening close-out — bug batch + audit round 4 + perf/ux polish)
 
 - feat(roadmap): perf+ux+sfx batch — tier-pip geometry cache, healer
