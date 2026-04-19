@@ -103,7 +103,29 @@ def call_gemini_img2img(photo: pathlib.Path, prompt: str, out: pathlib.Path) -> 
     body = {
         "contents": [{
             "parts": [
-                {"text": f"Transform this photo into a chibi cartoon tower defense game character icon. Keep the face likeness recognizable but stylize heavily. Transparent background, centered, 1:1 aspect ratio. {prompt}"},
+                {"text": (
+                    "You are creating a character icon for a Bloons Tower Defense-style "
+                    "game. Use the PERSON in the reference photo as the source of the face.\n\n"
+                    "CRITICAL — face fidelity:\n"
+                    "- Keep the EXACT same hairstyle, hair color, skin tone, eye color, "
+                    "eyebrow shape, nose shape and smile.\n"
+                    "- The viewer must instantly recognize this as the same person.\n"
+                    "- Treat the face like a caricature painting: stylized linework and "
+                    "cel shading, but every defining feature preserved. Do not invent a "
+                    "new face, do not swap race/gender/age.\n\n"
+                    "Transform ONLY the body, clothing, props and pose into a full-body "
+                    "hand-drawn chibi cartoon:\n"
+                    f"{prompt}\n\n"
+                    "Art direction:\n"
+                    "- Big-head, small-body chibi proportions (head is ~45% of total height).\n"
+                    "- Thick black outlines, bright saturated cel-shaded colors, strong "
+                    "rim light, BTD6 / modern-mobile-TD mascot style.\n"
+                    "- Dynamic action pose (not a flat frontal portrait, not a selfie).\n"
+                    "- Centered composition, character fills ~80% of the frame.\n\n"
+                    "Output requirements:\n"
+                    "- Pure transparent background (no walls, no furniture, no mirror).\n"
+                    "- Square 1:1 aspect, high resolution, clean edges.\n"
+                    "- No text, no watermarks, no logos, no captions.")},
                 {"inline_data": {"mime_type": mime, "data": base64.b64encode(img_bytes).decode("ascii")}},
             ]
         }],
@@ -282,22 +304,23 @@ def main() -> int:
         existing = OUT_DIR / f"{slug}.png"
         out_path = existing if (replace and existing.exists()) else OUT_DIR / f"friend_{slug}.png"
 
-        # Generator selection: sidecar override > GEMINI key > STABILITY key
+        # Generator selection: sidecar override > GEMINI (default).
+        # User directive: friend icons MUST go through Gemini 2.5 Flash
+        # Image ("nano banana") — much stronger likeness preservation +
+        # faithful character stylization than Stability. Billing is now
+        # active on the project, so the free-tier 429 that forced a
+        # Stability fallback is no longer in play. We keep Stability as
+        # an explicit opt-in via sidecar, not an automatic fallback, to
+        # avoid silently producing inferior icons.
         requested: str = (meta.get("generator") or "").strip().lower()
         ok = False
         if requested == "stability":
             ok = call_stability_img2img(photo, prompt, out_path)
-        elif requested == "gemini":
-            ok = call_gemini_img2img(photo, prompt, out_path)
         else:
-            # Default order: try Gemini (free tier, often better quality),
-            # fall back to Stability if Gemini fails or isn't configured.
             if os.environ.get("GEMINI_API_KEY"):
                 ok = call_gemini_img2img(photo, prompt, out_path)
                 if not ok:
-                    log(f"gemini failed for {photo.name} — falling back to stability")
-            if not ok and os.environ.get("STABILITY_API_KEY"):
-                ok = call_stability_img2img(photo, prompt, out_path)
+                    log(f"gemini failed for {photo.name} — leaving in inbox (no Stability fallback for friend icons)")
 
         if ok:
             remove_background(out_path)
