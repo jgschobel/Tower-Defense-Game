@@ -32,10 +32,6 @@ var _just_placed: bool = false
 # Track whether the current touch interaction has seen any motion, so a
 # quick stationary tap counts as place-at-finger rather than cancel.
 var _had_motion: bool = false
-# First interaction after start_placement — suppresses the tap-to-place
-# auto-fire for that press so the user can drag from the shop button.
-# Agent-audit BUG #3.
-var _fresh_placement: bool = false
 
 
 func _ready() -> void:
@@ -67,7 +63,8 @@ func start_placement(tower_data: TowerData) -> void:
 
 	selected_tower_data = tower_data
 	is_placing = true
-	_fresh_placement = true
+	_had_motion = false
+	_just_placed = false
 
 	ghost_tower = _tower_scene.instantiate()
 	ghost_tower.data = tower_data
@@ -102,30 +99,22 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventScreenTouch or event is InputEventMouseButton:
 		var pos := _get_event_position(event)
 		if event.is_pressed():
-			# Start of interaction: update ghost to finger, clear motion flag.
+			# Press on the map → place immediately. Shop buttons consume
+			# their own press events via MOUSE_FILTER_STOP so this path
+			# only fires when the pointer is genuinely on the play area.
+			# The `_fresh_placement` swallow-first-press hack was a net
+			# regression (it broke tap-to-place entirely since shop
+			# button events don't reach _unhandled_input anyway).
 			_had_motion = false
-			_just_placed = false
 			_update_ghost_position(pos)
-			# Tap-to-place: fire ONLY if this press is NOT the fresh
-			# `start_placement`-initiating press from the shop button.
-			# Agent-audit BUG #3: the previous `if ghost.visible` check
-			# was a no-op because _update_ghost_position always made the
-			# ghost visible, so every press fired _try_place and broke
-			# drag-from-shop. `_fresh_placement` is set in start_placement
-			# and cleared here on the very first press.
-			if _fresh_placement:
-				_fresh_placement = false
-				# Swallow this press — the user's pointer is still on the
-				# shop button area after button_down fired. Wait for drag
-				# or a subsequent tap on the map.
-				return
 			_try_place(pos)
 		else:
-			# Release after drag: place at release position.
-			# Motion-less release (e.g. from a button tap with no map
-			# interaction) does nothing — user will tap the map next.
+			# Release: only place if we dragged and haven't already placed
+			# via the press branch. Handles edge cases where the finger
+			# moved between press and release.
 			if _had_motion and not _just_placed:
 				_try_place(pos)
+			_just_placed = false
 
 	if event is InputEventScreenDrag or event is InputEventMouseMotion:
 		_had_motion = true
