@@ -486,7 +486,11 @@ func _update_range_collider() -> void:
 
 func _on_detection_area_area_entered(area: Area2D) -> void:
 	var enemy := area.get_parent()
-	if enemy is BaseEnemy:
+	# Dedupe: pool reuse can re-fire area_entered for an already-tracked
+	# enemy when the HitBox was deactivated + reactivated while still
+	# overlapping our DetectionArea (area_exited may skip on pool-park).
+	# Audit P1: duplicate entries were biasing target-mode selection.
+	if enemy is BaseEnemy and enemy not in _enemies_in_range:
 		_enemies_in_range.append(enemy)
 
 

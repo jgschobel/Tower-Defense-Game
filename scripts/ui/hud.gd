@@ -73,6 +73,11 @@ func _apply_safe_area() -> void:
 
 
 func _populate_tower_shop() -> void:
+	# Idempotency guard — if _ready somehow re-fires (scene reparenting,
+	# hot-reload, autoload quirks), avoid duplicating the shop entries.
+	# Same class of fix as the safe-area audit finding.
+	if not tower_data_list.is_empty():
+		return
 	for tower_id in _shop_tower_ids:
 		var data_path := "res://resources/tower_data/%s.tres" % tower_id
 		if not ResourceLoader.exists(data_path):
@@ -402,17 +407,25 @@ func set_placing(placing: bool) -> void:
 		next_wave_button.visible = true
 
 
+var _glow_tween: Tween = null
+
+
 func show_tower_info(tower: BaseTower) -> void:
+	# Kill any existing glow tween — audit P0 #3: the old infinite-loop
+	# tween was never killed on deselect, so the previous tower kept
+	# pulsing its modulate forever even after selection moved on.
+	if _glow_tween and _glow_tween.is_valid():
+		_glow_tween.kill()
 	# Deselect previous
 	if _selected_tower and is_instance_valid(_selected_tower):
 		_selected_tower.modulate = Color.WHITE
 		_selected_tower.show_range(false)
 	_selected_tower = tower
 	tower.show_range(true)
-	# Glow effect on selected tower
-	var glow := tower.create_tween().set_loops()
-	glow.tween_property(tower, "modulate", Color(1.2, 1.2, 1.4), 0.5)
-	glow.tween_property(tower, "modulate", Color.WHITE, 0.5)
+	# Glow effect on selected tower — stored on HUD so we can kill it
+	_glow_tween = tower.create_tween().set_loops()
+	_glow_tween.tween_property(tower, "modulate", Color(1.2, 1.2, 1.4), 0.5)
+	_glow_tween.tween_property(tower, "modulate", Color.WHITE, 0.5)
 	SfxManager.play_click()
 	if tower_info:
 		tower_info.visible = true
@@ -442,6 +455,10 @@ func _clamp_tower_info_to_viewport() -> void:
 
 
 func hide_tower_info() -> void:
+	# Kill the glow-loop tween so the deselected tower stops pulsing
+	if _glow_tween and _glow_tween.is_valid():
+		_glow_tween.kill()
+		_glow_tween = null
 	if _selected_tower and is_instance_valid(_selected_tower):
 		_selected_tower.show_range(false)
 		_selected_tower.modulate = Color.WHITE

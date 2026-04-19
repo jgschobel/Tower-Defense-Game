@@ -30,6 +30,11 @@ func _ready() -> void:
 		1: "res://assets/textures/maps/migros_entrance.png",
 		2: "res://assets/textures/maps/level2_bg.png",
 		3: "res://assets/textures/maps/level3_bg.png",
+		# L4/L5 don't have dedicated art yet — reuse thematic closest:
+		# L4 "D'Chäsi-Keller" → cold-storage bg (level2)
+		# L5 "D'Kasse" → Migros entrance (cash register area)
+		4: "res://assets/textures/maps/level2_bg.png",
+		5: "res://assets/textures/maps/migros_entrance.png",
 	}
 	var bg_path: String = bg_paths.get(_level_id, "res://assets/textures/ui/story_bg.png")
 	if bg and ResourceLoader.exists(bg_path):

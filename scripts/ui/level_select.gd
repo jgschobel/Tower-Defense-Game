@@ -56,20 +56,16 @@ func _get_level_name(level_id: int) -> String:
 
 
 func _stars_text(count: int) -> String:
-	if count == 3:
-		return "***"
-	elif count == 2:
-		return "**-"
-	elif count == 1:
-		return "*--"
-	else:
-		return "---"
+	# Unicode stars — zero-asset visual upgrade over plain ASCII asterisks.
+	return "★".repeat(count) + "☆".repeat(3 - count)
 
 
 func _on_level_pressed(level_id: int) -> void:
+	SfxManager.play_click()
 	GameManager.start_level(level_id)
 	get_tree().change_scene_to_file("res://scenes/ui/story_screen.tscn")
 
 
 func _on_back_button_pressed() -> void:
+	SfxManager.play_click()
 	get_tree().change_scene_to_file("res://scenes/ui/main_menu.tscn")

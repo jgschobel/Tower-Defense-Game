@@ -30,6 +30,11 @@ var _spin_speed: float = 12.0
 var _is_tongue: bool = false
 var _origin_pos: Vector2 = Vector2.ZERO
 
+# Styles that render themselves via _draw() — the Sprite2D is hidden for
+# these. Hoisted to module scope so adding a new style only requires one
+# edit instead of three (audit P2 drift risk).
+const DRAWN_STYLES: Array = ["tongue", "volleyball", "flask", "pollen"]
+
 
 func setup(
 	origin: Vector2,
@@ -74,7 +79,7 @@ func setup(
 	# only run _ready() once (at pool prewarm with style=banana), so on
 	# reuse we need to update here or the default sprite leaks through on
 	# styles that draw themselves.
-	var drawn_styles := ["tongue", "volleyball", "flask", "pollen"]
+	var drawn_styles := DRAWN_STYLES
 	if has_node("Sprite2D"):
 		$Sprite2D.visible = not (style in drawn_styles)
 
@@ -89,7 +94,7 @@ func setup(
 
 func _ready() -> void:
 	# Hide the default sprite for styles that draw themselves via _draw()
-	var drawn_styles := ["tongue", "volleyball", "flask", "pollen"]
+	var drawn_styles := DRAWN_STYLES
 	if style in drawn_styles:
 		if has_node("Sprite2D"):
 			$Sprite2D.visible = false
@@ -127,7 +132,7 @@ func _process(delta: float) -> void:
 	global_position += _direction * speed * delta
 
 	# Styles that draw themselves redraw every frame; spinners spin their sprite
-	var drawn_styles := ["tongue", "volleyball", "flask", "pollen"]
+	var drawn_styles := DRAWN_STYLES
 	if style in drawn_styles:
 		queue_redraw()
 	else:
