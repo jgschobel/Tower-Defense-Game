@@ -164,7 +164,7 @@ func die() -> void:
 	CurrencyManager.add_gold(gold_reward)
 	GameManager.record_kill()
 	_show_gold_earned()
-	SfxManager.play_death(data.health if data else 100.0)
+	SfxManager.play_death(data.max_health if data else 100.0)
 
 	# Spawn children on death if configured
 	if data and data.spawns_on_death != "" and data.spawn_count > 0:

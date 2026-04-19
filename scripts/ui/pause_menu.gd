@@ -20,11 +20,13 @@ func hide_pause() -> void:
 
 
 func _on_resume_button_pressed() -> void:
+	SfxManager.play_click()
 	hide_pause()
 	GameManager.set_state(GameManager.GameState.PLAYING)
 
 
 func _on_restart_button_pressed() -> void:
+	SfxManager.play_click()
 	get_tree().paused = false
 	Engine.time_scale = 1.0
 	GameManager.start_level(GameManager.current_level)
@@ -44,6 +46,7 @@ func _on_options_button_pressed() -> void:
 
 
 func _on_quit_button_pressed() -> void:
+	SfxManager.play_click()
 	get_tree().paused = false
 	Engine.time_scale = 1.0
 	get_tree().change_scene_to_file("res://scenes/ui/main_menu.tscn")
