@@ -28,6 +28,17 @@ var effective_speed: float = 0.0
 var _enemies_in_range: Array = []
 var _projectile_scene: PackedScene
 
+# Taunt memes — one per character. Randomly floated above the tower every
+# 6-12s while placed, to give each friend some personality. Strings are
+# exactly what each friend would actually yell in the scenario.
+const TAUNTS: Dictionary = {
+	"basic": ["BIO BANANE!", "CHF 2.95/kg!", "Monet x17!", "Fairtrade!", "Rundschwanz!"],
+	"sniper": ["ATSCHII!", "Pollen-Zeit!", "Blueme-Power!", "Heuschnupfe weg!", "Magic!"],
+	"splash": ["EXOTHERMI!", "pH 0!", "REAGIERT!", "SÄURE!", "Erlenmeyer!"],
+	"cordula": ["Helau!", "Konfetti!", "VOLLEY!", "Fasnachts-Power!", "Ahoi!"],
+	"slow": ["LOTTO!", "CHF 2.50!", "Zunge raus!", "Chläbrig!", "Gopfriedstutz!"],
+}
+
 
 func _ready() -> void:
 	_projectile_scene = preload("res://scenes/projectiles/base_projectile.tscn")
@@ -35,6 +46,50 @@ func _ready() -> void:
 		_apply_data()
 		_update_visual()
 		_update_range_collider()
+	# Kick off the random taunt loop — only fires when is_placed=true
+	_start_taunt_loop()
+
+
+func _start_taunt_loop() -> void:
+	var t := Timer.new()
+	t.wait_time = randf_range(6.0, 12.0)
+	t.one_shot = false
+	t.autostart = true
+	add_child(t)
+	t.timeout.connect(_maybe_taunt.bind(t))
+
+
+func _maybe_taunt(t: Timer) -> void:
+	# Re-randomize interval so taunts don't line up
+	t.wait_time = randf_range(6.0, 12.0)
+	if not is_placed or not data:
+		return
+	var lines: Array = TAUNTS.get(data.id, [])
+	if lines.is_empty():
+		return
+	# 60% chance to actually fire, so it feels spontaneous
+	if randf() > 0.6:
+		return
+	_float_taunt(lines[randi() % lines.size()])
+
+
+func _float_taunt(text: String) -> void:
+	var lbl := Label.new()
+	lbl.text = text
+	lbl.add_theme_font_size_override("font_size", 14)
+	lbl.add_theme_color_override("font_color", Color(1, 0.95, 0.6))
+	lbl.add_theme_color_override("font_outline_color", Color(0.15, 0.05, 0, 0.9))
+	lbl.add_theme_constant_override("outline_size", 3)
+	lbl.position = Vector2(-60, -70)
+	lbl.size = Vector2(120, 22)
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.z_index = 18
+	add_child(lbl)
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(lbl, "position:y", -110.0, 1.6)
+	tw.tween_property(lbl, "modulate:a", 0.0, 1.6)
+	tw.chain().tween_callback(lbl.queue_free)
 
 
 func _apply_data() -> void:
@@ -468,9 +523,14 @@ func _update_visual() -> void:
 func _draw() -> void:
 	if not is_placed:
 		return
-	# Stone pedestal under tower
-	draw_circle(Vector2.ZERO, 35.0, Color(0.35, 0.3, 0.25, 0.5))
-	draw_circle(Vector2.ZERO, 32.0, Color(0.45, 0.4, 0.35, 0.4))
+	# Soft ellipse drop-shadow BELOW the tower for grounding
+	draw_circle(Vector2(0, 16), 32.0, Color(0, 0, 0, 0.25))
+	# Stone pedestal rings — adds weight and separation from the background
+	draw_circle(Vector2.ZERO, 38.0, Color(0.28, 0.22, 0.18, 0.55))
+	draw_circle(Vector2.ZERO, 33.0, Color(0.48, 0.4, 0.32, 0.55))
+	draw_circle(Vector2.ZERO, 29.0, Color(0.62, 0.52, 0.42, 0.35))
+	# Thin highlight along top edge
+	draw_arc(Vector2(-2, -2), 33.0, PI * 1.1, PI * 1.9, 24, Color(1, 0.95, 0.8, 0.25), 2.0)
 
 
 func _update_range_collider() -> void:
