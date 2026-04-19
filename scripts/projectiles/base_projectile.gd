@@ -198,6 +198,9 @@ func _draw() -> void:
 
 func _hit() -> void:
 	if is_instance_valid(target) and not target.is_dead:
+		# Capture is_dead BEFORE damage so we can credit the source tower
+		# if this hit was the killing blow.
+		var was_alive: bool = not target.is_dead
 		target.take_damage(damage, damage_type)
 		target.show_hit_reaction()
 		# Impact sparks at the hit position, tinted by this projectile's color
@@ -206,6 +209,12 @@ func _hit() -> void:
 
 		if slow_amount > 0.0 and slow_duration > 0.0:
 			target.apply_slow(1.0 - slow_amount, slow_duration)
+
+		# If the target just died, credit the kill to the owning tower
+		if was_alive and target.is_dead and has_meta("source_tower"):
+			var src = get_meta("source_tower")
+			if src != null and is_instance_valid(src) and "kill_count" in src:
+				src.kill_count += 1
 
 	if is_splash and splash_radius > 0.0:
 		var enemies := get_tree().get_nodes_in_group("enemies")
