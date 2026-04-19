@@ -42,6 +42,7 @@ func _ready() -> void:
 
 	tower_placement.tower_placed.connect(_on_tower_placed)
 	tower_placement.placement_invalid.connect(_on_placement_invalid)
+	tower_placement.placement_cancelled.connect(_on_tower_placement_cancelled)
 
 	GameManager.game_over.connect(_on_game_over)
 
@@ -156,6 +157,13 @@ func _on_tower_placed(_tower: Node2D) -> void:
 
 func _on_placement_invalid(reason: String) -> void:
 	hud.show_toast(reason)
+
+
+func _on_tower_placement_cancelled() -> void:
+	# Placement cancelled (from HUD button, invalid drop, focus-out, or
+	# re-entry). Clear any error toast so it doesn't linger past the
+	# context that produced it. Playtest-feedback #104.
+	hud.clear_toast()
 
 
 func _on_next_wave_requested() -> void:
