@@ -146,7 +146,12 @@ def call_stability_img2img(photo: pathlib.Path, prompt: str, out: pathlib.Path) 
             "prompt": prompt,
             "negative_prompt": NEGATIVE_PROMPT,
             "mode": "image-to-image",
-            "strength": "0.85",
+            # 0.70 balances: enough transformation for cartoon style but
+            # preserves enough face structure that likeness is recognizable.
+            # Round 1 (0.75) was slightly too conservative; round 2 (0.85)
+            # lost likeness completely. Land in the middle and let the
+            # character-specific prompt do the style work.
+            "strength": "0.70",
             "output_format": "png",
             "model": "sd3.5-large",
         }
@@ -182,22 +187,71 @@ def load_sidecar(path: pathlib.Path) -> dict:
         return {}
 
 
-def build_prompt(meta: dict) -> str:
-    prompt = DEFAULT_PROMPT
-    desc = meta.get("description", "").strip()
-    style = meta.get("style", "").strip().lower()
-    if style == "warrior":
-        prompt = prompt.replace("Swiss alpine village vibe", "heroic warrior with shining armor")
-    elif style == "scholar":
-        prompt = prompt.replace("Swiss alpine village vibe", "scholar with round glasses and flowing robes")
-    elif style == "pirate":
-        prompt = prompt.replace("Swiss alpine village vibe", "pirate with tricorn hat and cutlass")
-    elif style == "pixie":
-        prompt = prompt.replace("Swiss alpine village vibe", "forest pixie with delicate wings and flower crown")
-    elif style == "punk":
-        prompt = prompt.replace("Swiss alpine village vibe", "punk with leather jacket and colorful mohawk")
+#
+# Per-character canonical body/theme descriptions, matching CLAUDE.md
+# and the existing Amösius/Lemurius reference icons. These describe
+# the CHARACTER'S body + props + theme; the photo supplies the face
+# likeness. Keep each block focused: what they wear, what they hold,
+# what their vibe is. No background here — rembg strips it after.
+#
+CHARACTER_PROMPTS: dict[str, str] = {
+    "lemurius": (
+        "a chibi cartoon lemur-person, fluffy ringed lemur tail, "
+        "throwing a bright yellow banana, wearing a colorful tropical "
+        "outfit, playful jungle explorer vibe"
+    ),
+    "amosius": (
+        "a chibi cartoon gecko-person with green spotted lizard body, "
+        "sticky tongue flicking out, wearing adventure gear and glasses, "
+        "cheeky wilderness explorer vibe"
+    ),
+    "kuhne": (
+        "a chibi cartoon flower fairy girl, wreath of wildflowers on "
+        "her head, pastel petal dress, tiny pollen sparkles drifting "
+        "around her, holding a blooming daisy wand, soft spring vibe"
+    ),
+    "jojo": (
+        "a chibi cartoon mad-chemist boy, wild hair and goggles on "
+        "forehead, stained lab coat and rubber gloves, holding a "
+        "bubbling green acid flask, chemistry apparatus, mischievous "
+        "inventor vibe"
+    ),
+    "cordula": (
+        "a chibi cartoon pirate carnival girl, tricorn hat with "
+        "carnival ribbons, striped shirt with gold buttons, "
+        "sash across chest, holding a bright colorful volleyball "
+        "ready to throw, bold adventurer vibe"
+    ),
+}
+
+
+def build_prompt(meta: dict, slug: str = "") -> str:
+    # Base: the universal chibi-cartoon style frame.
+    body = CHARACTER_PROMPTS.get(slug, "a chibi cartoon tower defense character")
+    style = (meta.get("style") or "").strip().lower()
+    style_bodies = {
+        "warrior": "a chibi cartoon heroic warrior with shining armor and a sword",
+        "scholar": "a chibi cartoon scholar with round glasses and flowing robes, carrying a thick tome",
+        "pirate": "a chibi cartoon pirate with tricorn hat and a cutlass, striped shirt",
+        "pixie": "a chibi cartoon forest pixie with delicate translucent wings and a flower crown",
+        "punk": "a chibi cartoon punk with leather jacket and colorful mohawk, studded boots",
+    }
+    if style in style_bodies:
+        body = style_bodies[style]
+    # IMPORTANT ordering: likeness-preservation instruction FIRST so the
+    # model weights the face hard, then the character body, then the
+    # global style guide. Stability SD3.5 respects the front of the
+    # prompt more heavily.
+    prompt = (
+        f"Full-body character illustration of {body}, "
+        "with the EXACT facial likeness, skin tone, eye color and "
+        "hairstyle of the person in the reference photo — do not "
+        "change the face. "
+        + DEFAULT_PROMPT
+    )
+    desc = (meta.get("description") or "").strip()
     if desc:
-        prompt = f"{prompt}. Character notes: {desc[:400]}"
+        prompt = f"{prompt}. Character notes: {desc[:300]}"
     return prompt
 
 
@@ -223,7 +277,7 @@ def main() -> int:
         slug = slugify(photo.stem)
         sidecar = INBOX_DIR / f"{photo.stem}.yml"
         meta = load_sidecar(sidecar)
-        prompt = build_prompt(meta)
+        prompt = build_prompt(meta, slug)
         replace = bool(meta.get("replace_existing", False))
         existing = OUT_DIR / f"{slug}.png"
         out_path = existing if (replace and existing.exists()) else OUT_DIR / f"friend_{slug}.png"
