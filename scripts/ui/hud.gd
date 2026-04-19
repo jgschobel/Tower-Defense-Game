@@ -267,6 +267,17 @@ func _populate_tower_shop() -> void:
 		vbox.add_child(cost_label)
 		_cost_labels.append(cost_label)
 
+		# DPS preview line — damage × attack_speed. Gives the player a
+		# glanceable "power per coin" metric before buying.
+		var dps_label := Label.new()
+		var base_dps: float = td.damage * td.attack_speed
+		dps_label.text = "DPS %.0f" % base_dps
+		dps_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		dps_label.add_theme_font_size_override("font_size", 10)
+		dps_label.add_theme_color_override("font_color", Color(0.7, 0.85, 1.0, 0.85))
+		dps_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		vbox.add_child(dps_label)
+
 		btn.add_child(vbox)
 		tower_shop.add_child(btn)
 
@@ -525,6 +536,7 @@ func _short_name_for_enemy(enemy_id: String) -> String:
 		"tank": return "Cervelat"
 		"healer": return "Dr.Rivella"
 		"flying": return "Fondue"
+		"swarm": return "Tofu"
 		"boss": return "M-TÜÜFEL"
 		_: return enemy_id.capitalize()
 
