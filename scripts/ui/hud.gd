@@ -666,20 +666,52 @@ func hide_tower_info() -> void:
 		tower_info.visible = false
 
 
+func _notification(what: int) -> void:
+	# Cancel an active placement on focus loss (window minimize, app
+	# backgrounded, screen-off). Prevents a stuck ghost if the user lifts
+	# their finger outside the window on desktop. Audit P2 #25.
+	if what == NOTIFICATION_APPLICATION_FOCUS_OUT or what == NOTIFICATION_WM_WINDOW_FOCUS_OUT:
+		if _is_placing:
+			placement_cancelled.emit()
+			set_placing(false)
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	# Auto-hide tower info panel when user taps on empty map area. Audit
 	# #3: the panel occludes the middle band of the map and towers
 	# behind it can't be clicked. Tap-outside-to-close is BTD-style.
+	# Audit round-3 P1 #17: skip the close when tap is on a tower, so
+	# GameLevel._check_tower_tap can re-open immediately without a
+	# close/reopen flash frame.
 	if not tower_info or not tower_info.visible:
 		return
+	var tap_pos: Vector2
+	var is_tap: bool = false
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		var panel_rect: Rect2 = Rect2(tower_info.global_position, tower_info.size)
-		if not panel_rect.has_point(event.global_position):
-			hide_tower_info()
+		tap_pos = event.global_position
+		is_tap = true
 	elif event is InputEventScreenTouch and event.pressed:
-		var panel_rect_touch: Rect2 = Rect2(tower_info.global_position, tower_info.size)
-		if not panel_rect_touch.has_point(event.position):
-			hide_tower_info()
+		tap_pos = event.position
+		is_tap = true
+	if not is_tap:
+		return
+	# Inside the panel? Keep showing.
+	var panel_rect: Rect2 = Rect2(tower_info.global_position, tower_info.size)
+	if panel_rect.has_point(tap_pos):
+		return
+	# On a tower? Let GameLevel handle the reselect — don't hide+flash.
+	if _tap_is_on_a_tower(tap_pos):
+		return
+	hide_tower_info()
+
+
+func _tap_is_on_a_tower(screen_pos: Vector2) -> bool:
+	var world_pos: Vector2 = get_viewport().get_canvas_transform().affine_inverse() * screen_pos
+	for tower_node in get_tree().get_nodes_in_group("towers"):
+		var t := tower_node as Node2D
+		if t and t.global_position.distance_to(world_pos) < 50.0:
+			return true
+	return false
 
 
 func _refresh_tower_info() -> void:
