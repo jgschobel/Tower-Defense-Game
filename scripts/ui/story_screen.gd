@@ -37,6 +37,8 @@ func _ready() -> void:
 		5: "res://assets/textures/maps/migros_entrance.png",
 		# L6 "Parkhuus" — reuse cold storage bg (industrial vibe)
 		6: "res://assets/textures/maps/level2_bg.png",
+		# L7 "S'Dach" — use level1_bg (daylight sky vibe) as closest
+		7: "res://assets/textures/maps/level1_bg.png",
 	}
 	var bg_path: String = bg_paths.get(_level_id, "res://assets/textures/ui/story_bg.png")
 	if bg and ResourceLoader.exists(bg_path):
