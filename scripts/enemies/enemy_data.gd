@@ -20,6 +20,7 @@ extends Resource
 
 # Special abilities
 @export var is_flying: bool = false
+@export var is_boss: bool = false
 @export var heals_nearby: bool = false
 @export var heal_amount: float = 5.0
 @export var heal_radius: float = 60.0

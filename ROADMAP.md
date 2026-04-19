@@ -93,24 +93,8 @@ worth a dedicated PR.
   - Add `$SideShop` PanelContainer (anchor right, top 20%, height 60%)
   - Containing a VBox ScrollContainer with tower buttons
   - `_populate_tower_shop()` populates the VBox instead
-- [ ] **Monster first-appearance intro animation**: when a new enemy
-  type spawns for the first time in a session (track via GameManager.
-  seen_enemy_ids Set[String]), freeze the wave for 1.2s and play a
-  big reveal animation: enemy zooms in from offscreen to 2× scale at
-  center, portrait slides in with name label + Swiss-German taunt
-  speech bubble, music ducks 50% briefly, screen flashes. After first
-  reveal, enemies never show name labels again (removes the constant
-  floating text over every enemy). Spec:
-  - `GameManager.seen_enemy_ids: Array[String] = []`
-  - On wave_manager.\_spawn_enemy, check if enemy_id NOT in seen_enemy_ids
-  - If new: emit enemy_introduced(id, data) signal, add to seen
-  - HUD listens, builds an EnemyIntroOverlay, animates 1.2s, frees
-  - base_enemy removes its persistent name label; only the intro shows it
-- [ ] **Enemy movement polish**: add bobbing walk cycle to
-  base_enemy.\_physics_process — sine-wave y-offset ±3px at speed-
-  proportional frequency. Plus dust-puff particles on each "step"
-  (every 0.4s at normal speed). Makes enemies feel alive, not static
-  sprites sliding on a track.
+- [x] **Monster first-appearance intro animation**: `enemy_introduced` signal in wave_manager, HUD builds EnemyIntroOverlay with 1.2s zoom-fade — shipped PR #67.
+- [x] **Enemy movement polish**: sine-wave v_offset bobbing in base_enemy — shipped PR #67.
 
 ## 🔥 P0 — Long-Term Retention System (NEWLY ADDED — BTD-grade)
 
@@ -383,8 +367,8 @@ than 5 more levels because it fixes "why play again" not "what to play".
 - [x] Tower cost affordability color (yellow/gold affordable, red unaffordable) — PLAN #28
 - [x] Floating `+gold` labels don't disappear when monster dies (tween was self-bound to freed enemy)
 - [x] Death SFX was grating noise burst — replaced with soft 180→70Hz sweep at 0.15 volume
-- [ ] Story screen rework — multi-page dialogue boxes instead of one cramped panel. User reports text is too small to read and skips show immediately. Bloons/Monaco-style typewriter across 3-5 pages with big tap-to-advance buttons. Swiss German content unchanged, presentation rebuilt.
-- [ ] **Options menu** (music volume, SFX volume, master volume) accessible from main menu AND pause menu. Use AudioServer buses: add "Music" and "SFX" buses, route MusicManager/SfxManager players through them, expose sliders that call `AudioServer.set_bus_volume_db`.
+- [x] Story screen rework — multi-page typewriter (60 cps), paginated on double-newline, 26pt body / 44pt title, 72px tap-to-advance button, portraits row. Shipped in story_screen.gd.
+- [x] **Options menu** (music volume, SFX volume, master volume) accessible from main menu AND pause menu. Master volume via `AudioServer.set_bus_volume_db`; music + SFX per-player scaling via GameManager.
 - [x] Enemy pathing bug: at level 2+, enemies stack up at spawn — fixed in #43 with MIN_DELAY=0.35s floor in wave_manager spawn queue builder.
 
 ## 🎨 P0 — Map Backgrounds (each level needs real personality)
@@ -444,10 +428,10 @@ run project:
 - [x] Pause button 60px minimum — PLAN #35
 - [x] Safe area margins for notches/status bars — PLAN #36
 - [x] Health bar smooth tween over 0.2s — PLAN #41
-- [ ] Screen shake on boss spawn (level 3 wave 10) — PLAN #42
+- [x] Screen shake on boss spawn (level 3 wave 10) — PLAN #42
 - [x] Wave start announcement flies across screen — PLAN #43
 - [ ] UI click SFX wired to every button press — PLAN #52
-- [ ] Boss entrance SFX (low rumble) — PLAN #54
+- [x] Boss entrance SFX (low rumble) — PLAN #54
 - [ ] Tutorial overlay for first-time play — PLAN #27
 - [ ] Level select background uses levelselect_bg.png — PLAN #31
 - [ ] Story screen: small centered portraits, dark overlay — PLAN #32

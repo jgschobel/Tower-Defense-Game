@@ -50,6 +50,13 @@ func play_place() -> void:
 	_play_sweep(220.0, 440.0, 0.12, 0.35)
 
 
+func play_boss_rumble() -> void:
+	# Low-frequency gut-punch when De Vegan-Tüüfel arrives.
+	# Two overlapping sweeps: a deep bass drop + a mid-frequency stinger.
+	_play_sweep(90.0, 28.0, 0.55, 0.5)
+	_play_sweep(220.0, 80.0, 0.3, 0.3)
+
+
 func _play_tone(freq: float, duration: float, volume: float, noise: bool = false) -> void:
 	var samples := int(_sample_rate * duration)
 	var audio := AudioStreamWAV.new()

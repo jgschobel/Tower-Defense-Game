@@ -5,6 +5,7 @@ Each run appends one line.
 
 ## 2026-04-19
 
+- polish(boss+audio): boss spawn screen-shake (amplitude 14, 0.7s) + low-rumble SFX (90→28 Hz + 220→80 Hz); is_boss field on EnemyData; master volume slider in options menu via AudioServer.set_bus_volume_db; tick stale ROADMAP items (story screen, monster intro, enemy bobbing, options menu, boss SFX/shake) (closes #42 #54)
 - fix(perf): pool PROCESS_MODE_DISABLED propagates to children (ProgressBar + Area2D no longer processed while idle); enemy pool size 60→100; wave_manager preloads enemy .tres resources at setup_waves() to eliminate L1 wave-1 freeze; upgrade tints more saturated for Lemurius/Cordula so tiers are visually distinct (closes #71 #72 #73)
 
 ## 2026-04-18

@@ -24,9 +24,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -320.0
-offset_top = -200.0
+offset_top = -240.0
 offset_right = 320.0
-offset_bottom = 200.0
+offset_bottom = 240.0
 
 [node name="VBox" type="VBoxContainer" parent="Panel"]
 layout_mode = 2
@@ -38,6 +38,31 @@ theme_override_font_sizes/font_size = 40
 theme_override_colors/font_color = Color(1, 0.95, 0.7, 1)
 text = "Iistellige"
 horizontal_alignment = 1
+
+[node name="MasterRow" type="HBoxContainer" parent="Panel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="MasterLabel" type="Label" parent="Panel/VBox/MasterRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 24
+text = "Lautstärchi"
+
+[node name="MasterSlider" type="HSlider" parent="Panel/VBox/MasterRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(240, 50)
+min_value = 0.0
+max_value = 1.0
+step = 0.05
+
+[node name="MasterPct" type="Label" parent="Panel/VBox/MasterRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(80, 0)
+theme_override_font_sizes/font_size = 22
+text = "100%"
+horizontal_alignment = 2
 
 [node name="MusicRow" type="HBoxContainer" parent="Panel/VBox"]
 layout_mode = 2
@@ -95,6 +120,7 @@ custom_minimum_size = Vector2(0, 64)
 theme_override_font_sizes/font_size = 26
 text = "Zrugg"
 
+[connection signal="value_changed" from="Panel/VBox/MasterRow/MasterSlider" to="." method="_on_master_slider_value_changed"]
 [connection signal="value_changed" from="Panel/VBox/MusicRow/MusicSlider" to="." method="_on_music_slider_value_changed"]
 [connection signal="value_changed" from="Panel/VBox/SfxRow/SfxSlider" to="." method="_on_sfx_slider_value_changed"]
 [connection signal="pressed" from="Panel/VBox/CloseButton" to="." method="_on_close_button_pressed"]

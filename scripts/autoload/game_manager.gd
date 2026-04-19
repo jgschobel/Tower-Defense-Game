@@ -24,6 +24,7 @@ var level_stars: Dictionary = {}
 var friend_photos: Dictionary = {}
 
 # Audio settings — 0.0 = muted, 1.0 = full volume. Persisted in save file.
+var master_volume: float = 1.0
 var music_volume: float = 0.7
 var sfx_volume: float = 0.8
 
@@ -35,6 +36,7 @@ var level_kills: int = 0
 
 func _ready() -> void:
 	load_game()
+	set_master_volume(master_volume)
 	# Warm up enemy and tower textures so Level 1's first wave doesn't
 	# hitch to 1 FPS loading them from disk (issue #46). Runs once at
 	# game start while the menu is showing.
@@ -60,6 +62,13 @@ func _warmup_textures() -> void:
 	for p in paths:
 		if ResourceLoader.exists(p):
 			load(p)  # discarded — Godot caches for subsequent use
+
+
+func set_master_volume(v: float) -> void:
+	master_volume = clampf(v, 0.0, 1.0)
+	var db: float = -80.0 if master_volume <= 0.0001 else linear_to_db(master_volume)
+	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Master"), db)
+	save_game()
 
 
 func set_music_volume(v: float) -> void:
@@ -150,6 +159,7 @@ func save_game() -> void:
 		"total_stars": total_stars,
 		"currency_total": CurrencyManager.total_gold_earned,
 		"friend_photos": friend_photos,
+		"master_volume": master_volume,
 		"music_volume": music_volume,
 		"sfx_volume": sfx_volume,
 		"total_kills": total_kills,
@@ -172,6 +182,7 @@ func load_game() -> void:
 		level_stars = save_data.get("level_stars", {})
 		total_stars = save_data.get("total_stars", 0)
 		friend_photos = save_data.get("friend_photos", {})
+		master_volume = save_data.get("master_volume", 1.0)
 		music_volume = save_data.get("music_volume", 0.7)
 		sfx_volume = save_data.get("sfx_volume", 0.8)
 		total_kills = save_data.get("total_kills", 0)

@@ -182,6 +182,9 @@ func _spawn_enemy(enemy_id: String) -> void:
 	if enemy_id not in _seen_enemy_ids:
 		_seen_enemy_ids.append(enemy_id)
 		enemy_introduced.emit(enemy_id, enemy_data)
+		if enemy_data != null and enemy_data.is_boss:
+			EffectPlayer.screen_shake(14.0, 0.7)
+			SfxManager.play_boss_rumble()
 
 	enemies_alive += 1
 	enemies_remaining_changed.emit(enemies_alive)
