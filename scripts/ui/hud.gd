@@ -1201,7 +1201,16 @@ func _on_close_button_pressed() -> void:
 
 
 func show_toast(message: String) -> void:
+	# Single-toast policy: free any prior toast before adding a new one.
+	# Without this, rapid-fire invalid placements stacked toasts on top of
+	# each other and older ones stayed visible until their individual
+	# tweens finished (playtest-feedback #104 — two consecutive screenshots
+	# showed identical frozen toasts).
+	var prior: Node = get_node_or_null("HudToast")
+	if prior:
+		prior.queue_free()
 	var toast := Label.new()
+	toast.name = "HudToast"
 	toast.text = message
 	toast.add_theme_font_size_override("font_size", 24)
 	toast.add_theme_color_override("font_color", Color(1, 0.35, 0.2))

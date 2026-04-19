@@ -250,28 +250,36 @@ jobs:
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git checkout main
-          git add docs/observability/
-          git commit -m "chore(observability): playtest ${{ github.run_id }} ($STATUS) + 7 key screenshots" || { echo "no changes to commit"; exit 0; }
-          # Retry loop — main often diverges during the 6-min playtest so
-          # a naive push fails. Rebase + push up to 5 times with exponential
-          # backoff. The observability ledger was going unwritten because
-          # this step silently ate the failure.
+          # Snapshot the new observability files into a temp dir, fetch
+          # the latest main (via fresh clone into tmp worktree), copy the
+          # files over, commit, push. This avoids the "detached HEAD
+          # after checkout main" confusion and makes the retry loop
+          # deterministic.
+          SNAPSHOT_DIR=$(mktemp -d)
+          mkdir -p "$SNAPSHOT_DIR/docs/observability"
+          cp -r docs/observability/* "$SNAPSHOT_DIR/docs/observability/" 2>/dev/null || true
+
           PUSHED=0
           for attempt in 1 2 3 4 5; do
             git fetch origin main
-            if git rebase origin/main; then
-              if git push origin main; then
-                echo "pushed on attempt $attempt"
-                PUSHED=1
-                break
-              fi
-            else
-              echo "rebase conflict attempt $attempt — aborting"
-              git rebase --abort 2>/dev/null || true
+            git checkout -f main
+            git reset --hard origin/main
+            mkdir -p docs/observability/screenshots
+            cp -r "$SNAPSHOT_DIR/docs/observability/"* docs/observability/
+            git add docs/observability/
+            if git diff --cached --quiet; then
+              echo "no observability changes after reset — skip"
+              PUSHED=1
+              break
+            fi
+            git commit -m "chore(observability): playtest ${{ github.run_id }} ($STATUS)"
+            if git push origin main; then
+              echo "pushed on attempt $attempt"
+              PUSHED=1
+              break
             fi
             SLEEP=$((2 ** attempt))
-            echo "retry in ${SLEEP}s"
+            echo "push rejected — retry in ${SLEEP}s"
             sleep $SLEEP
           done
           if [ "$PUSHED" != "1" ]; then
