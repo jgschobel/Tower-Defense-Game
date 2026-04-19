@@ -5,6 +5,7 @@ Each run appends one line.
 
 ## 2026-04-19
 
+- docs(roadmap): 5 new spec'd ideas — Abstimmig-Modus (Swiss-vote between-wave modifiers), Reklamatzioe-Karte (100% refund within 10s of placement), Vegan-Tüüfel taunt system, Migros-Coupon tappable drops, Sechstigi Wuchä endless-mode with deterministic weekly modifier seeds; architecture note on GameManager save format collapse risk before Cumulus/Spezial/missions land
 - fix(perf): pool PROCESS_MODE_DISABLED propagates to children (ProgressBar + Area2D no longer processed while idle); enemy pool size 60→100; wave_manager preloads enemy .tres resources at setup_waves() to eliminate L1 wave-1 freeze; upgrade tints more saturated for Lemurius/Cordula so tiers are visually distinct (closes #71 #72 #73)
 
 ## 2026-04-18

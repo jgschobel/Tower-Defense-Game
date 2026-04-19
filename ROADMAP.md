@@ -592,6 +592,160 @@ bumps. Each tier must look different; projectiles must evolve.
   (no Kühne, double enemy speed, etc.). Shared seed so every player
   worldwide gets the same challenge — basis for future leaderboard.
 
+## 💡 Ideate 2026-04-19 — Direct Democracy, Coupons & Boss Personality
+
+Five fresh specs from the 2026-04-19 ideate run. Each fills a gap none of
+the existing roadmap items cover: **between-wave engagement**, **mistake
+recovery**, **antagonist personality**, **idle-tap dopamine**, and a true
+**post-Level-10 endless loop with weekly community variance**. Specs not
+vibes — concrete numbers, file paths, signal contracts.
+
+- [ ] **Abstimmig-Modus (Direct-democracy wave modifiers)** — every 3rd
+  wave (waves 3, 6, 9 of each level), pause briefly and pop a Swiss-style
+  voting card top-center: two modifier choices, each with a JA-grün /
+  NEI-rot button styled like a real Swiss ballot. Player picks one; the
+  modifier applies for the next 3 waves then expires. Twelve seed
+  modifiers, two random ones surfaced each vote:
+  - "+50% Gold-Bonus" (each kill +50% gold)
+  - "Schnälleri Wäue" (waves spawn 25% faster, more pressure)
+  - "+1 Läbe-Regäneration" (regain 1 life every wave clear)
+  - "Türm schiessed 25% schnäller"
+  - "Gegner händ -15% HP"
+  - "Zwöi-Ziel-Türm" (every tower targets 2 enemies)
+  - "Kein Sell-Refund" (sell button disabled — the trade-off)
+  - "Türm-Kosten -20%"
+  - "Boss spawnt 2 Wäue früener" (risk-reward)
+  - "Klini Banane-Räge alli 30s" (free auto-cast)
+  - "Spezial-Münze x2" (when shipped after Spezial currency lands)
+  - "Cumulus x1.5" (when shipped after Cumulus lands)
+
+  Implementation: `scripts/systems/wave_manager.gd` emits
+  `vote_required(modifier_options: Array[Dictionary])` between waves
+  3/6/9. New `scripts/systems/modifier_manager.gd` autoload tracks
+  active modifiers as `{id, expires_in_waves, payload}`, exposes
+  `apply_to(target_data, kind)` so towers/enemies/currency query it
+  on stat reads. New `scenes/ui/vote_panel.tscn` — two-column
+  PanelContainer with JA/NEI buttons, fades in via Tween, closes on
+  pick or 6s timeout (random pick if no input). Mobile-friendly: each
+  card ≥ 200px wide, ≥ 120px tall, single-tap.
+
+  Why ship: zero current systems give the player a between-wave
+  decision. This adds replayability (12C2 = 66 vote permutations per
+  run) and Swiss-cultural specificity (Abstimmig is the Swiss national
+  pastime). Not in BTD — direct-democracy modifiers are uniquely ours.
+
+- [ ] **Reklamatzioe-Karte (Migros complaint card — 100% undo)** — Swiss
+  humor mechanic: 3 "Reklamatzioe" cards per level let the player undo
+  a tower placement within 10 seconds for **100% refund** (vs. normal
+  sell's 60%). Models the real Migros customer-service desk where you
+  return a wrong purchase. After 10s the card greys out for that
+  tower; the count appears top-right next to gold (`📋 3/3`).
+
+  Implementation: `scripts/systems/reklamatzioe.gd` autoload tracks
+  `cards_remaining: int = 3` per level (reset on `start_level`). On
+  tower placed, `tower_placement.gd` records `placed_at_msec` on the
+  tower instance. Tower info panel shows a red "📋 Reklamatzioe (10s)"
+  button when `Time.get_ticks_msec() - placed_at_msec < 10000` AND
+  `Reklamatzioe.cards_remaining > 0`. Click → tower freed, full cost
+  refunded, ka-ching SFX, brief "Reklamatzioe agnomme!" toast.
+
+  Why ship: encourages experimentation (place-and-evaluate without
+  punishment), reduces rage-quit on misclicks (huge on touch), and
+  the Migros customer-service framing is character-rich. Not in BTD.
+
+- [ ] **De Vegan-Tüüfel Taunt System (boss personality between waves)** —
+  between every wave, a small De-Vegan-Tüüfel portrait pops in the
+  bottom-right corner with a Swiss-German taunt in a speech bubble for
+  3 seconds, then slides off. Taunts pull from a tagged pool keyed by
+  player state — never repeats verbatim within a level.
+
+  Taunt pool spec (≥ 30 lines, tagged by trigger condition):
+  - LOW_GOLD (< 50g): "Bisch pleite, ja? Häsch z'viel im Migros gebe!"
+  - LOW_LIVES (≤ 5): "No 5 Läbe... ich rieche dini Angst!"
+  - HIGH_TOWER_COUNT (≥ 8): "Vill Türm, vill Ärger — kömmer doch!"
+  - PERFECT_WAVE (no life lost in last wave): "Gschick, abr s'isch nur d'Vorspiis!"
+  - BOSS_INCOMING (next wave has boss): "Jetzt chunt MIR — pass uf!"
+  - MID_RUN (default fallback ~12 lines): generic mockery
+  - WIN: "Nein! Zürichberg sött MEIN si!" (final-wave taunt before
+    game-over screen, doubles as victory flavor)
+
+  Implementation: `scripts/systems/taunt_system.gd` autoload with
+  `Array[Dict]` of `{tag: String, text_de: String}`, function
+  `pick_taunt(state: Dictionary) -> String`. WaveManager emits
+  `wave_completed(stats: Dictionary)`; HUD listens, calls TauntSystem,
+  shows new `scenes/ui/taunt_bubble.tscn` (PanelContainer + Label +
+  small Vegan-Tüüfel sprite) with slide-in/out Tween. Stops appearing
+  if user taps a "Mute Tüüfel" toggle in options.
+
+  Why ship: cheap personality. Currently the antagonist is invisible
+  outside of cutscenes — between-wave taunts make him a constant
+  presence. 30 lines is one ideate-mode session's writing work.
+
+- [ ] **Migros-Coupon drop (tappable gold reward)** — every 7th enemy
+  killed (counter resets on level start) drops a Migros-orange coupon
+  Sprite2D ("Aktion! +25g") that floats slowly on a sine path across
+  the playable area for 4 seconds. Tap to claim +25g + ka-ching SFX +
+  small confetti puff. If untouched, it fades and is lost. Encourages
+  active touchscreen engagement during slow waves — perfect for the
+  fidgety mobile-train-ride play context.
+
+  Implementation: extend `base_enemy._on_died` with a global counter
+  in CurrencyManager (`enemies_killed_total`); when `% 7 == 0`, spawn
+  new `scenes/effects/migros_coupon.tscn` at enemy position. Coupon
+  is Area2D + Sprite2D with `_on_input_event(... InputEventMouseButton
+  or ScreenTouch)` → claim. CPUParticles2D for confetti on claim.
+  Auto-frees after 4s if untouched. Coupon texture: small 64×96 PNG
+  with Migros-orange "AKTION!" stamp — generate via Imagen 4.
+
+  Why ship: cheapest possible "do something between tower placements"
+  loop, and the Migros-coupon framing is on-theme to a degree no
+  generic +gold pickup would be. Designs around the "phone game played
+  one-handed on tram" use case.
+
+- [ ] **Sechstigi Wuchä (Endless mode with weekly modifier seeds)** —
+  builds on the already-planned Endless mode. After Level 10 win,
+  endless mode is unlocked. Each in-game "Wuchä" (= 5 waves) advances
+  a counter; **the modifier active each Wuchä is deterministic by
+  real-world week number** (`floor(Time.get_unix_time_from_system() /
+  604800) % MODIFIER_POOL_SIZE`), so every player worldwide gets the
+  same modifier sequence for that week. Foundation for community /
+  leaderboard play without a backend.
+
+  Modifier reveal UX: at the start of each Wuchä, an SBB-style
+  departure-board panel scrolls in from top-left with the modifier
+  text in yellow-on-black ("WUCHÄ 7 — Alli Gegner +20% Speed"),
+  ding-dong arrival SFX, holds 2.5s, scrolls out. Twelve seed
+  modifiers (separate pool from Abstimmig — these are forced, harsh,
+  shared globally):
+  - "Iis-Wuchä": all enemies +30% speed
+  - "Tüüfel-Wuchä": +1 boss spawns at end of each wave
+  - "Sparig-Wuchä": -50% gold income
+  - "Gross-Wuchä": all enemies +50% HP
+  - "Schwarm-Wuchä": +100% spawn count
+  - "Stiläzitig-Wuchä": between-wave time -50%
+  - "Räge-Wuchä": +25% gold but towers fire 25% slower (humid)
+  - "Föhn-Wuchä": projectiles drift (random ±15°)
+  - "Streik-Wuchä": one random tower disabled per wave
+  - "Marschpaus-Wuchä": +1 free Banana-Räge per wave (gift week)
+  - "Sale-Wuchä": -25% all tower costs
+  - "Härter-als-Härt-Wuchä": all multipliers x1.25 stacking
+
+  Implementation: `scenes/game/endless.tscn` reusing level_3 path/bg
+  initially. New `scripts/systems/endless_mode.gd` calculates current
+  Wuchä = 1 + (waves_cleared / 5). New
+  `scripts/systems/weekly_seed.gd` autoload exposes
+  `current_week_modifier_chain() -> Array[String]` returning the
+  next ~50 Wuchä modifiers from the deterministic seed. ModifierManager
+  (built for Abstimmig) reused to apply effects. Departure-board UI:
+  small `scenes/ui/sbb_board.tscn` with a horizontally-scrolling
+  Label using existing Tween infrastructure.
+
+  Why ship: makes endless interesting beyond "harder waves forever"
+  by forcing a different play-style every Wuchä. The deterministic
+  weekly seed means user can compare runs with friends without any
+  backend infra. Specifically Swiss (SBB-board UX is iconic) — BTD
+  endless has nothing like it.
+
 ## 💡 Ideate 2026-04-18 — Swiss-German Spectacle & Retention Hooks
 
 Five concrete ideas from today's ideate run. Each has a spec, a Swiss
@@ -687,6 +841,28 @@ creative swings. Lift to P1 when ready to ship.*
   anything else. Branching-upgrades work already has Lemurius shipped
   (PR #20) + 4 other towers in PR #31 — mark the P0 branching header
   as "in-progress, per-tower tickets still open" rather than bumping.
+- **2026-04-19 — GameManager save format will collapse under planned
+  expansions.** `scripts/autoload/game_manager.gd` `save_game()` writes
+  one monolithic `user://save_data.json` with a flat dict
+  (`levels_unlocked`, `level_stars`, `friend_photos`, audio volumes).
+  The current P0 expansion roadmap will add: Cumulus balance + node
+  unlocks, Spezial-Münzen balance + history, mission completion state
+  per level, level_clears keyed by difficulty (eifach/normal/hert/
+  brutal), Forschig unlocks across 3 branches, hero XP per friend,
+  endless-mode best-Wuchä per level. Without a schema strategy this
+  becomes ~12 sibling keys with implicit version coupling — any
+  breaking change wipes saves silently.
+
+  Recommended pre-expansion refactor (1 small PR, before shipping the
+  Spezial currency): introduce `save_version: int` field, namespaced
+  sub-dicts (`{ "core": {...}, "cumulus": {...}, "spezial": {...},
+  "missions": {...} }`), and a migration switch in `load_game()` that
+  applies version-to-version transformers. Each new currency/system
+  loads its own slice from its own autoload's `_ready`, never touches
+  others. Costs ~50 LoC; saves us from a "save file got corrupted"
+  bug-storm 4 PRs from now. Also: `MAX_LEVELS := 4` is hardcoded —
+  derive from `DirAccess.get_files_at("res://resources/level_data/")`
+  so the constant doesn't drift each time a level ships.
 
 ## 🎯 P2 — Polish & Extras
 
