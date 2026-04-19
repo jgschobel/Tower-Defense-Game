@@ -7,23 +7,13 @@ signal gold_changed(new_amount: int)
 var gold: int = 0
 var total_gold_earned: int = 0
 
-# Starting gold per level (can be overridden by level data)
-var _level_starting_gold: Dictionary = {
-	1: 200,
-	2: 250,
-	3: 300,
-	4: 350,
-	5: 400,
-	6: 450,
-	7: 500,
-	8: 550,
-	9: 600,
-	10: 700,
-}
 
-
-func reset_for_level(level_id: int) -> void:
-	gold = _level_starting_gold.get(level_id, 200)
+func reset_for_level(_level_id: int) -> void:
+	# Fallback only — GameManager.start_level reads starting_gold from the
+	# level .tres directly and only hits this path if the .tres is missing.
+	# Audit P2: the previous hard-coded per-level dict drifted from the
+	# canonical .tres values (CM said L4=350, level_4.tres says 700).
+	gold = 200
 	gold_changed.emit(gold)
 
 
