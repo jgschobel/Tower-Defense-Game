@@ -32,6 +32,11 @@ var _projectile_scene: PackedScene
 # so per-frame trig is avoided. ROADMAP PERF #7. Stored as
 # Array[Array] with entries [position: Vector2, tint: Color].
 var _pip_cache: Array = []
+# Fitted sprite scale from _update_visual — tweens use this as the idle
+# baseline instead of data.sprite_scale. Friend photos are ~1024px so the
+# fit scale is ~0.12, not 1.0; tweens returning to data.sprite_scale made
+# towers fill the screen on first attack.
+var _baseline_scale: Vector2 = Vector2.ONE
 
 # Taunt memes — one per character. Randomly floated above the tower every
 # 6-12s while placed, to give each friend some personality. Strings are
@@ -310,9 +315,7 @@ func _attack() -> void:
 	# breathing loop is tweening it; instead we derive the baseline
 	# from data.sprite_scale (or fall back to Vector2.ONE).
 	if sprite:
-		var base_sc: Vector2 = Vector2.ONE
-		if data and "sprite_scale" in data and typeof(data.sprite_scale) == TYPE_VECTOR2:
-			base_sc = data.sprite_scale
+		var base_sc: Vector2 = _baseline_scale
 		var atk_tween := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 		atk_tween.tween_property(sprite, "scale", Vector2(base_sc.x * 0.88, base_sc.y * 1.18), 0.06)
 		atk_tween.tween_property(sprite, "scale", Vector2(base_sc.x * 1.22, base_sc.y * 0.92), 0.08)
@@ -381,9 +384,7 @@ func upgrade() -> bool:
 	SfxManager.play_upgrade()
 	# Upgrade celebration animation
 	if sprite:
-		var base_sc: Vector2 = Vector2.ONE
-		if data and "sprite_scale" in data and typeof(data.sprite_scale) == TYPE_VECTOR2:
-			base_sc = data.sprite_scale
+		var base_sc: Vector2 = _baseline_scale
 		var upg_tween := create_tween()
 		upg_tween.tween_property(sprite, "scale", base_sc * 1.3, 0.15)
 		upg_tween.tween_property(sprite, "scale", base_sc, 0.2)
@@ -493,9 +494,7 @@ func upgrade_path(path_letter: String) -> bool:
 	SfxManager.play_upgrade()
 
 	if sprite:
-		var base_sc2: Vector2 = Vector2.ONE
-		if data and "sprite_scale" in data and typeof(data.sprite_scale) == TYPE_VECTOR2:
-			base_sc2 = data.sprite_scale
+		var base_sc2: Vector2 = _baseline_scale
 		var upg_tween := create_tween()
 		upg_tween.tween_property(sprite, "scale", base_sc2 * 1.2, 0.15)
 		upg_tween.tween_property(sprite, "scale", base_sc2, 0.2)
@@ -581,13 +580,17 @@ func _update_visual() -> void:
 
 	if tex:
 		sprite.texture = tex
-		# Auto-scale to fit nicely on the map
 		var max_dim := maxf(tex.get_width(), tex.get_height())
-		var target_size := 120.0
+		var target_size := 90.0
 		var s := target_size / max_dim
-		sprite.scale = Vector2(s, s)
+		_baseline_scale = Vector2(s, s)
+		sprite.scale = _baseline_scale
 		sprite.modulate = Color.WHITE
 	else:
+		_baseline_scale = Vector2.ONE
+		if data and "sprite_scale" in data and typeof(data.sprite_scale) == TYPE_VECTOR2:
+			_baseline_scale = data.sprite_scale
+		sprite.scale = _baseline_scale
 		sprite.modulate = data.base_color
 	# Draw base pedestal under tower
 	queue_redraw()
