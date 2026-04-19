@@ -189,6 +189,35 @@ func update_wave_info(current: int, total: int) -> void:
 			wave_label.text = "Welle %d/%d" % [current, total]
 			# Wave announcement — big text that fades
 			_show_wave_announcement(current, total)
+	_update_wave_progress_bar(current, total)
+
+
+func _update_wave_progress_bar(current: int, total: int) -> void:
+	# Create-on-first-use: a thin ProgressBar at the bottom of TopBar showing
+	# how far through the level's waves the player is. Glanceable "how much
+	# is left" cue that complements the "Welle X/Y" text.
+	var top_bar := get_node_or_null("TopBar")
+	if top_bar == null:
+		return
+	var bar: ProgressBar = top_bar.get_node_or_null("WaveProgressBar") as ProgressBar
+	if bar == null:
+		bar = ProgressBar.new()
+		bar.name = "WaveProgressBar"
+		bar.show_percentage = false
+		bar.custom_minimum_size = Vector2(0, 6)
+		bar.anchors_preset = Control.PRESET_BOTTOM_WIDE
+		bar.anchor_top = 1.0
+		bar.anchor_right = 1.0
+		bar.anchor_bottom = 1.0
+		bar.offset_top = -6.0
+		bar.modulate = Color(1, 0.9, 0.3, 0.85)
+		bar.max_value = 100
+		bar.value = 0
+		top_bar.add_child(bar)
+	if total <= 0:
+		bar.value = 0
+		return
+	bar.value = float(current) / float(total) * 100.0
 
 
 func _show_wave_announcement(current: int, _total: int) -> void:
@@ -261,6 +290,28 @@ func show_tower_info(tower: BaseTower) -> void:
 	if tower_info:
 		tower_info.visible = true
 		_refresh_tower_info()
+		_clamp_tower_info_to_viewport()
+
+
+func _clamp_tower_info_to_viewport() -> void:
+	# The TowerInfo PanelContainer is anchored center-bottom with fixed
+	# offsets (-175/+175). On narrow viewports (safe-area insets, split-
+	# screen) it can clip off the left/right edge. After the panel lays
+	# out, clamp its global_position + size into the viewport rect so
+	# it's always fully usable. (User report: popup "ganz am Rand".)
+	if not tower_info:
+		return
+	await get_tree().process_frame  # let container layout settle
+	if not is_instance_valid(tower_info) or not tower_info.visible:
+		return
+	var vp: Rect2 = get_viewport().get_visible_rect()
+	var p: Vector2 = tower_info.global_position
+	var s: Vector2 = tower_info.size
+	var clamped: Vector2 = p
+	clamped.x = clampf(p.x, 10.0, vp.size.x - s.x - 10.0)
+	clamped.y = clampf(p.y, 10.0, vp.size.y - s.y - 10.0)
+	if clamped != p:
+		tower_info.global_position = clamped
 
 
 func hide_tower_info() -> void:
