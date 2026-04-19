@@ -85,10 +85,14 @@ func _process(delta: float) -> void:
 	v_offset = _base_v_offset + sin(_walk_phase) * 4.0
 
 	# Healer aura animates via _draw — the pulse is time-driven so 15fps
-	# is plenty for a smooth look. Throttle redraw to every ~4th frame
-	# to save work at 60fps, per audit P1 #9.
-	if data and data.heals_nearby and (Engine.get_frames_drawn() & 3) == 0:
-		queue_redraw()
+	# is plenty for a smooth look. Throttle redraw to every ~4th frame.
+	# Per-enemy jitter (via instance_id) staggers redraws across the 4
+	# bucket phases so L5-L7 waves with 10+ healers don't all repaint
+	# on the same frame. ROADMAP PERF #8.
+	if data and data.heals_nearby:
+		var phase: int = (Engine.get_frames_drawn() + int(get_instance_id())) & 3
+		if phase == 0:
+			queue_redraw()
 
 	# Check if reached end of path
 	if progress_ratio >= 1.0:
@@ -507,8 +511,10 @@ func _show_mini_pop() -> void:
 
 
 func _celebrate_boss_death() -> void:
-	# Big impact burst + screen shake — makes toppling the M-Tüüfel feel
-	# like an event rather than another tick in the enemy counter.
+	# Big impact burst + screen shake + deep roar — makes toppling the
+	# M-Tüüfel feel like an event rather than another tick in the counter.
+	if SfxManager and SfxManager.has_method("play_boss_roar"):
+		SfxManager.play_boss_roar()
 	if EffectPlayer:
 		if EffectPlayer.has_method("spawn_impact_sparks"):
 			EffectPlayer.spawn_impact_sparks(global_position, Color(1, 0.9, 0.3))

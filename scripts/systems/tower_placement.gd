@@ -73,11 +73,14 @@ func start_placement(tower_data: TowerData) -> void:
 	ghost_tower.data = tower_data
 	ghost_tower.modulate = Color(1.0, 1.0, 1.0, 0.5)
 	ghost_tower.is_placed = false
-	# Park the ghost offscreen so it doesn't briefly flash at world origin
-	# (0,0) = top-left corner of the play area before the player taps/drags
-	# to position it. Fixes playtest-feedback #81.
-	ghost_tower.global_position = Vector2(-9999, -9999)
-	ghost_tower.visible = false
+	# Start the ghost at viewport center so the player sees selection
+	# confirmation immediately. First pointer input follows finger.
+	# (Earlier versions parked offscreen at -9999 which made selection
+	# feel unresponsive — ROADMAP UX #11.)
+	var vp_center: Vector2 = get_viewport_rect().size * 0.5
+	ghost_tower.global_position = get_canvas_transform().affine_inverse() * vp_center
+	ghost_tower.modulate = Color(0.5, 1.0, 0.5, 0.6) if _can_place_at(ghost_tower.global_position) else Color(1.0, 0.6, 0.3, 0.5)
+	ghost_tower.visible = true
 	add_child(ghost_tower)
 	# Show range AFTER adding to tree so _ready() has set up the range indicator
 	ghost_tower.show_range(true)

@@ -562,8 +562,12 @@ func show_enemy_intro(enemy_id: String, enemy_data: Resource) -> void:
 	add_child(overlay)
 
 	# Screen-shake the game scene on boss reveal (HUD CanvasLayer unaffected)
-	if enemy_id == "boss" and EffectPlayer:
-		EffectPlayer.screen_shake(7.0, 0.45)
+	# + deep procedural roar for tactile "oh no" feedback.
+	if enemy_id == "boss":
+		if EffectPlayer:
+			EffectPlayer.screen_shake(7.0, 0.45)
+		if SfxManager and SfxManager.has_method("play_boss_roar"):
+			SfxManager.play_boss_roar()
 
 	# Zoom-in + fade — 0.25s in, 0.7s hold, 0.25s out
 	overlay.scale = Vector2(2.0, 2.0)
@@ -1106,7 +1110,7 @@ func _on_gold_changed(amount: int) -> void:
 			var col: Color
 			if not affordable:
 				col = Color(1, 0.35, 0.25)
-			elif amount < cost + 50:
+			elif amount < int(float(cost) * 1.2):  # barely — <20% spare
 				col = Color(1, 0.75, 0.3)
 			else:
 				col = Color(1, 0.9, 0.3)
@@ -1125,6 +1129,8 @@ func _on_lives_changed(amount: int) -> void:
 
 
 func _flash_life_lost() -> void:
+	if SfxManager and SfxManager.has_method("play_life_lost"):
+		SfxManager.play_life_lost()
 	var flash := ColorRect.new()
 	flash.color = Color(1.0, 0.15, 0.1, 0.35)
 	flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
