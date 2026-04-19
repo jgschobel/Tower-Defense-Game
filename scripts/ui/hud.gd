@@ -37,10 +37,79 @@ func _ready() -> void:
 	_on_lives_changed(GameManager.lives)
 	_populate_tower_shop()
 	_apply_safe_area()
+	_start_threat_watcher()
 
 	if tower_info:
 		tower_info.visible = false
 	cancel_button.visible = false
+
+
+func _start_threat_watcher() -> void:
+	# Poll every 0.5s for active healer/flying enemies and show a warning
+	# badge top-right. Cheap enough at this cadence; avoids wiring a
+	# dedicated signal chain through the pool.
+	var t := Timer.new()
+	t.wait_time = 0.5
+	t.autostart = true
+	t.one_shot = false
+	add_child(t)
+	t.timeout.connect(_refresh_threat_badges)
+
+
+func _refresh_threat_badges() -> void:
+	var has_healer: bool = false
+	var has_boss: bool = false
+	for n in get_tree().get_nodes_in_group("enemies"):
+		var e := n as BaseEnemy
+		if e == null or e.is_dead or not e.data:
+			continue
+		match e.data.id:
+			"healer":
+				has_healer = true
+			"boss":
+				has_boss = true
+		if has_healer and has_boss:
+			break
+	_set_threat_badge("HealerBadge", has_healer, "⚕ HEAL", Color(0.4, 1.0, 0.5))
+	_set_threat_badge("BossBadge", has_boss, "☠ BOSS", Color(1.0, 0.35, 0.25))
+
+
+func _set_threat_badge(badge_name: String, show: bool, text: String, color: Color) -> void:
+	var top_bar: Node = get_node_or_null("TopBar")
+	if top_bar == null:
+		return
+	var existing: Label = top_bar.get_node_or_null(badge_name) as Label
+	if not show:
+		if existing:
+			existing.queue_free()
+		return
+	if existing:
+		return  # already showing, let the pulse tween keep running
+	var lbl := Label.new()
+	lbl.name = badge_name
+	lbl.text = text
+	lbl.add_theme_font_size_override("font_size", 13)
+	lbl.add_theme_color_override("font_color", color)
+	lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.7))
+	lbl.add_theme_constant_override("outline_size", 3)
+	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	lbl.anchors_preset = Control.PRESET_TOP_RIGHT
+	lbl.anchor_left = 1.0
+	lbl.anchor_right = 1.0
+	lbl.offset_left = -130.0
+	# Stagger vertical position so two badges don't overlap:
+	# boss below the top bar, healer further below.
+	if badge_name == "HealerBadge":
+		lbl.offset_top = 70.0
+	else:
+		lbl.offset_top = 92.0
+	lbl.offset_right = -12.0
+	lbl.offset_bottom = lbl.offset_top + 20.0
+	top_bar.add_child(lbl)
+	# Gentle pulse so the warning is noticeable without being annoying
+	var pulse := lbl.create_tween().set_loops()
+	pulse.tween_property(lbl, "modulate:a", 0.5, 0.6)
+	pulse.tween_property(lbl, "modulate:a", 1.0, 0.6)
 
 
 var _safe_area_applied: bool = false
@@ -692,6 +761,16 @@ func _on_speed_button_pressed() -> void:
 	Engine.time_scale = _game_speed
 	if speed_button:
 		speed_button.text = "%dx" % int(_game_speed)
+		# Tint by speed so the current mode is visible at a glance:
+		# 1x = white, 2x = warm yellow, 3x = red-hot fast-forward.
+		match int(_game_speed):
+			2:
+				speed_button.modulate = Color(1.0, 0.85, 0.3)
+			3:
+				speed_button.modulate = Color(1.0, 0.4, 0.25)
+			_:
+				speed_button.modulate = Color.WHITE
+	SfxManager.play_click()
 
 
 func _on_upgrade_button_pressed() -> void:
