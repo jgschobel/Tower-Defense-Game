@@ -279,40 +279,56 @@ func _refresh_side_shop_layout() -> void:
 		var bottom_panel: PanelContainer = $BottomPanel
 		var reserve: float = visible_w + 16.0
 		bottom_panel.offset_right = -reserve - _inset_right
+	_refresh_shop_toggle_position()
 
 
 func _build_shop_collapse_handle() -> void:
-	# Small toggle button FULLY OUTSIDE the SideShop panel so the tower
-	# rows never share hitbox with the handle. User report: clicking
-	# a tower accidentally triggered the collapse because the handle's
-	# right edge (+4px) intruded into the first row's clickable area.
-	# Moved entirely to the left of the panel (offset_right = -4 outside).
+	# Toggle MUST be a sibling of SideShop, not a child. SideShop is a
+	# PanelContainer; containers force-fit all children to their own rect,
+	# so custom offsets get ignored and the toggle ends up stretched over
+	# the whole shop — blocking every click on the tower rows because the
+	# toggle has MOUSE_FILTER_STOP. Parenting to HUD (CanvasLayer) keeps
+	# the toggle independent so the anchors/offsets stick.
 	if not has_node("SideShop"):
 		return
-	var side_shop: PanelContainer = $SideShop
-	if side_shop.has_node("ShopToggle"):
+	if has_node("ShopToggle"):
 		return
 	var toggle := Button.new()
 	toggle.name = "ShopToggle"
 	toggle.text = ">"
-	# Styled with a visible background so it reads as a UI chrome element
-	# distinct from the tower rows, not `flat` like before.
 	toggle.custom_minimum_size = Vector2(32, 48)
 	toggle.add_theme_font_size_override("font_size", 18)
 	toggle.add_theme_color_override("font_color", Color(1, 0.9, 0.5))
 	toggle.mouse_filter = Control.MOUSE_FILTER_STOP
-	# Position: top-LEFT of the SideShop, entirely OUTSIDE the panel.
-	# offset_right = -4 means the toggle's right edge is 4px LEFT of the
-	# SideShop's left edge — zero overlap with tower rows.
-	toggle.anchors_preset = Control.PRESET_TOP_LEFT
-	toggle.anchor_left = 0.0
-	toggle.anchor_top = 0.0
-	toggle.offset_left = -36.0
-	toggle.offset_top = 8.0
-	toggle.offset_right = -4.0
-	toggle.offset_bottom = 60.0
-	side_shop.add_child(toggle)
+	# Anchor to right edge + vertical center, mirroring SideShop so the
+	# toggle hugs its left side. Actual offsets get set per-layout in
+	# _refresh_shop_toggle_position().
+	toggle.anchor_left = 1.0
+	toggle.anchor_right = 1.0
+	toggle.anchor_top = 0.5
+	toggle.anchor_bottom = 0.5
+	add_child(toggle)
 	toggle.pressed.connect(_toggle_shop_collapse)
+	_refresh_shop_toggle_position()
+
+
+func _refresh_shop_toggle_position() -> void:
+	if not has_node("ShopToggle"):
+		return
+	var toggle: Button = $ShopToggle
+	# Sit 4px LEFT of the SideShop's left edge, 32px wide. SideShop's
+	# left-edge offset mirrors what's computed in _refresh_side_shop_layout.
+	var shop_left: float
+	if shop_collapsed:
+		shop_left = -18.0 - _inset_right
+	else:
+		shop_left = -_shop_width - 8.0 - _inset_right
+	toggle.offset_right = shop_left - 4.0
+	toggle.offset_left = shop_left - 36.0
+	# Vertical: SideShop is centered (anchor_top/bottom = 0.5, offset_top = -260).
+	# Put the toggle 8px below its top.
+	toggle.offset_top = -252.0
+	toggle.offset_bottom = -200.0
 
 
 func _toggle_shop_collapse() -> void:
@@ -332,9 +348,7 @@ func _toggle_shop_collapse() -> void:
 		_shop_collapse_tween.kill()
 		_shop_collapse_tween = null
 	# Update the arrow glyph to point where the shop WILL go on next tap.
-	var toggle: Button = null
-	if has_node("SideShop/ShopToggle"):
-		toggle = $SideShop/ShopToggle as Button
+	var toggle: Button = $ShopToggle if has_node("ShopToggle") else null
 	if toggle:
 		toggle.text = "<" if shop_collapsed else ">"
 	# Animate the offsets instead of snapping so the slide feels
@@ -356,6 +370,13 @@ func _toggle_shop_collapse() -> void:
 	_shop_collapse_tween.tween_property(side_shop, "offset_left", target_left, 0.22).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	_shop_collapse_tween.tween_property(side_shop, "offset_right", target_right, 0.22).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	_shop_collapse_tween.tween_property(bottom_panel, "offset_right", bp_target_right, 0.22).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	# Toggle hugs the shop's left edge — tween its offsets too so it tracks
+	# the slide instead of jumping at the end.
+	if toggle:
+		var toggle_right: float = target_left - 4.0
+		var toggle_left: float = target_left - 36.0
+		_shop_collapse_tween.tween_property(toggle, "offset_right", toggle_right, 0.22).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		_shop_collapse_tween.tween_property(toggle, "offset_left", toggle_left, 0.22).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 
 
 func _on_viewport_resized() -> void:
