@@ -53,6 +53,11 @@ layout_mode = 2
 custom_minimum_size = Vector2(0, 45)
 text = "Nöi starte"
 
+[node name="OptionsButton" type="Button" parent="Panel/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 45)
+text = "Istelligä"
+
 [node name="QuitButton" type="Button" parent="Panel/VBox"]
 layout_mode = 2
 custom_minimum_size = Vector2(0, 45)
@@ -60,4 +65,5 @@ text = "Zrugg zum Menü"
 
 [connection signal="pressed" from="Panel/VBox/ResumeButton" to="." method="_on_resume_button_pressed"]
 [connection signal="pressed" from="Panel/VBox/RestartButton" to="." method="_on_restart_button_pressed"]
+[connection signal="pressed" from="Panel/VBox/OptionsButton" to="." method="_on_options_button_pressed"]
 [connection signal="pressed" from="Panel/VBox/QuitButton" to="." method="_on_quit_button_pressed"]
