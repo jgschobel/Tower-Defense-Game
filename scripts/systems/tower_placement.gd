@@ -153,6 +153,12 @@ func _try_place(screen_pos: Vector2) -> void:
 	var error := _get_placement_error(world_pos)
 	if error != "":
 		placement_invalid.emit(error)
+		# Drag-and-drop UX: if the user moved the ghost (intentional drop),
+		# cancel placement on invalid drop so they don't need a separate
+		# "ABBRECHE" tap. Taps with no motion keep placement armed so the
+		# player can try again without re-buying.
+		if _had_motion:
+			cancel_placement()
 		return
 
 	if not CurrencyManager.spend_gold(selected_tower_data.buy_cost):

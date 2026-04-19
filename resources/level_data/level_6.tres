@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1")
 level_id = 6
-level_name = "S'Parkhuus (Bonus)"
+level_name = "S'Parkhuus ★"
 description = "Nach de Kasse chömed sie dur's Parkhuus zrugg. Wenn du hie überläbsch bisch en echte Migros-Veteran."
 starting_gold = 1500
 starting_lives = 15
