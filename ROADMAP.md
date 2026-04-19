@@ -93,10 +93,12 @@ worth a dedicated PR.
   - Add `$SideShop` PanelContainer (anchor right, top 20%, height 60%)
   - Containing a VBox ScrollContainer with tower buttons
   - `_populate_tower_shop()` populates the VBox instead
-- [ ] **Monster first-appearance intro animation**: when a new enemy
-  type spawns for the first time in a session (track via GameManager.
-  seen_enemy_ids Set[String]), freeze the wave for 1.2s and play a
-  big reveal animation: enemy zooms in from offscreen to 2× scale at
+- [x] **Monster first-appearance intro animation** (PR #67) — shipped
+  via `enemy_introduced` signal + HUD zoom-fade overlay + sprite preview
+  thumbnail (PR #88). Original spec follows for reference:
+  when a new enemy type spawns for the first time in a session (track
+  via WaveManager._seen_enemy_ids), freeze the wave for 1.2s and play
+  a big reveal animation: enemy zooms in from offscreen to 2× scale at
   center, portrait slides in with name label + Swiss-German taunt
   speech bubble, music ducks 50% briefly, screen flashes. After first
   reveal, enemies never show name labels again (removes the constant
@@ -106,11 +108,9 @@ worth a dedicated PR.
   - If new: emit enemy_introduced(id, data) signal, add to seen
   - HUD listens, builds an EnemyIntroOverlay, animates 1.2s, frees
   - base_enemy removes its persistent name label; only the intro shows it
-- [ ] **Enemy movement polish**: add bobbing walk cycle to
-  base_enemy.\_physics_process — sine-wave y-offset ±3px at speed-
-  proportional frequency. Plus dust-puff particles on each "step"
-  (every 0.4s at normal speed). Makes enemies feel alive, not static
-  sprites sliding on a track.
+- [x] **Enemy movement polish** (PR #67) — bobbing walk via `v_offset`
+  in `base_enemy._process` shipped. Dust-puff particles still TODO
+  if further juice is wanted.
 
 ## 🔥 P0 — Long-Term Retention System (NEWLY ADDED — BTD-grade)
 
@@ -457,8 +457,8 @@ run project:
 ## 🎮 P1 — New Content
 
 - [x] Level 4 data + scene + story intro — D'Chäsi-Keller (PR #84 ships chäs theme; cash register kept for L5)
-- [ ] Level 5 data + scene + story intro (D'Lager — warehouse descent)
-- [ ] Level 6 data + scene + story intro (D'Parkhuus)
+- [x] Level 5 data + scene + story intro — D'Kasse — Endkampf (PR #87)
+- [x] Level 6 data + scene + story intro — S'Parkhuus Bonus (PR #100)
 - [ ] Level 7 data + scene + story intro (D'Dach — rooftop showdown)
 - [ ] Level 8 data + scene + story intro (D'Chüelraum — deep freeze)
 - [ ] Level 9 data + scene + story intro (D'Zentrale — HQ infiltration)
@@ -560,7 +560,9 @@ bumps. Each tier must look different; projectiles must evolve.
   path start. 2s total. Track `seen_enemies: Array[String]` in
   `wave_manager.gd`; fire `enemy_introduced(enemy_id, data)` signal
   first time each id appears. HUD listens and plays animation.
-- [ ] **Better music** — current procedural chiptune is "cheap".
+- [x] **Better music** (PR #66) — triangle wave + kick/snare/hi-hat
+  drums on the game track + menu/game track bank switch. Original
+  spec retained for reference:
   Upgrade `music_manager.gd`:
   - Add drum pattern (kick + snare + hi-hat procedural)
   - Vary melody + bass per level (Level 1 happy, Level 2 dark/cold,

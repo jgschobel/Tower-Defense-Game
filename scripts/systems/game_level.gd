@@ -96,7 +96,13 @@ func _load_wave_data() -> void:
 	var path := "res://resources/level_data/level_%d.tres" % level_id
 	if ResourceLoader.exists(path):
 		var level_res = load(path)
-		wave_definitions = level_res.waves
+		# Defensive: corrupt .tres or missing `waves` field would otherwise
+		# crash wave_manager.setup_waves(null) on .size(). Audit P1 #11.
+		if level_res and level_res.has_method("get") and level_res.waves and level_res.waves is Array:
+			wave_definitions = level_res.waves
+		else:
+			push_warning("level_%d.tres missing/empty waves field — using defaults" % level_id)
+			wave_definitions = _default_waves()
 	elif wave_definitions.is_empty():
 		wave_definitions = _default_waves()
 
