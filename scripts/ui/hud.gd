@@ -154,10 +154,17 @@ func show_enemy_intro(enemy_id: String, enemy_data: Resource) -> void:
 	warning.add_theme_color_override("font_color", Color(1, 0.6, 0.2))
 	vbox.add_child(warning)
 
+	# Enemy sprite preview — shows either the custom_texture (if set) or
+	# the drawn fallback via a tiny BaseEnemy instance. Gives the player
+	# a visual cue about what's coming, not just a name.
+	var preview := _build_enemy_preview(enemy_data)
+	if preview:
+		vbox.add_child(preview)
+
 	var name_lbl := Label.new()
 	name_lbl.text = enemy_data.display_name if enemy_data and "display_name" in enemy_data else enemy_id
 	name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name_lbl.add_theme_font_size_override("font_size", 42)
+	name_lbl.add_theme_font_size_override("font_size", 38)
 	name_lbl.add_theme_color_override("font_color", Color(1, 0.95, 0.7))
 	name_lbl.add_theme_color_override("font_outline_color", Color.BLACK)
 	name_lbl.add_theme_constant_override("outline_size", 5)
@@ -179,6 +186,50 @@ func show_enemy_intro(enemy_id: String, enemy_data: Resource) -> void:
 	tw.chain().tween_interval(0.7)
 	tw.chain().tween_property(overlay, "modulate:a", 0.0, 0.25)
 	tw.chain().tween_callback(overlay.queue_free)
+
+
+func _build_enemy_preview(enemy_data: Resource) -> Control:
+	# Build a 90px square thumbnail of the enemy. If custom_texture is
+	# set, use a TextureRect. Otherwise instantiate a BaseEnemy off-tree
+	# and let its _draw() render onto a SubViewport. For simplicity here
+	# we fall back to a colored circle for non-texture enemies — the
+	# _draw path would need a SubViewport pipeline which is heavier.
+	if not enemy_data:
+		return null
+	var wrap := CenterContainer.new()
+	wrap.custom_minimum_size = Vector2(96, 96)
+	if "custom_texture" in enemy_data and enemy_data.custom_texture:
+		var tex_rect := TextureRect.new()
+		tex_rect.texture = enemy_data.custom_texture
+		tex_rect.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+		tex_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		tex_rect.custom_minimum_size = Vector2(90, 90)
+		wrap.add_child(tex_rect)
+	else:
+		# Colored disc as fallback (base_color from EnemyData)
+		var col := Color.RED
+		if "base_color" in enemy_data:
+			col = enemy_data.base_color
+		var disc := ColorRect.new()
+		disc.color = col
+		disc.custom_minimum_size = Vector2(72, 72)
+		# Rounded corners via a small StyleBoxFlat in a wrapper panel
+		var panel := PanelContainer.new()
+		panel.custom_minimum_size = Vector2(82, 82)
+		var sb := StyleBoxFlat.new()
+		sb.bg_color = col
+		sb.corner_radius_top_left = 36
+		sb.corner_radius_top_right = 36
+		sb.corner_radius_bottom_left = 36
+		sb.corner_radius_bottom_right = 36
+		sb.border_width_top = 3
+		sb.border_width_bottom = 3
+		sb.border_width_left = 3
+		sb.border_width_right = 3
+		sb.border_color = Color.BLACK
+		panel.add_theme_stylebox_override("panel", sb)
+		wrap.add_child(panel)
+	return wrap
 
 
 func update_wave_info(current: int, total: int) -> void:
@@ -465,9 +516,19 @@ func _on_path_b_button_pressed() -> void:
 		_refresh_tower_info()
 
 
+var _last_gold: int = -1
+var _last_lives: int = -1
+
+
 func _on_gold_changed(amount: int) -> void:
 	if gold_label:
 		gold_label.text = "%d" % amount
+		# Quick pulse on gold gain (not on spend) so the player sees income
+		if _last_gold >= 0 and amount > _last_gold and gold_label.get_parent():
+			var pulse := gold_label.create_tween()
+			pulse.tween_property(gold_label, "modulate", Color(1.5, 1.3, 0.5), 0.12)
+			pulse.tween_property(gold_label, "modulate", Color.WHITE, 0.2)
+		_last_gold = amount
 	for i in tower_shop.get_child_count():
 		if i < tower_data_list.size():
 			var btn: Button = tower_shop.get_child(i)
@@ -483,6 +544,23 @@ func _on_gold_changed(amount: int) -> void:
 func _on_lives_changed(amount: int) -> void:
 	if lives_label:
 		lives_label.text = "%d Läbe" % amount
+	# Red screen-flash on life loss — big "you lost one!" cue
+	if _last_lives >= 0 and amount < _last_lives:
+		_flash_life_lost()
+	_last_lives = amount
+
+
+func _flash_life_lost() -> void:
+	var flash := ColorRect.new()
+	flash.color = Color(1.0, 0.15, 0.1, 0.35)
+	flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	flash.anchors_preset = Control.PRESET_FULL_RECT
+	flash.anchor_right = 1.0
+	flash.anchor_bottom = 1.0
+	add_child(flash)
+	var tween := flash.create_tween()
+	tween.tween_property(flash, "color:a", 0.0, 0.35)
+	tween.tween_callback(flash.queue_free)
 
 
 func _on_tower_button_pressed(td: TowerData) -> void:
