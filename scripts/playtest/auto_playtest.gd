@@ -31,7 +31,7 @@ func _ready() -> void:
 	if "--playtest" in args or "--headless-playtest" in args:
 		_active = true
 		_start_ms = Time.get_ticks_msec()
-		print("[playtest v3] bot activated — 6 scenarios")
+		print("[playtest v4] bot activated — full coverage (all 7 levels + UI + new towers)")
 		DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(SHOT_DIR))
 		call_deferred("_run_all")
 
@@ -45,10 +45,18 @@ func _run_all() -> void:
 	await get_tree().process_frame
 	_snapshot("00_menu")
 
-	await _run_healthy_level(1)
-	await _run_healthy_level(2)
-	await _run_healthy_level(3)
+	# UI tour: capture the menu surfaces before any gameplay.
+	await _run_ui_tour()
+
+	# All 7 levels get a healthy run — previously only L1-L3 were covered
+	# so L4-L7 regressions shipped undetected. Each level rotates its
+	# placement comp to exercise different towers (including the new
+	# joe/justus/seve).
+	for level_id in range(1, 8):
+		await _run_healthy_level(level_id)
+
 	await _run_upgrade_flow()
+	await _run_new_towers_showcase()
 	await _run_stress_test()
 	await _run_bug_hunt()
 
@@ -116,6 +124,94 @@ func _run_healthy_level(level_id: int) -> void:
 
 	Engine.time_scale = 1.0
 	_snapshot("%s_final" % _scenario_name)
+	_record_scenario(t0)
+	_cleanup_scene()
+	await get_tree().create_timer(0.3).timeout
+
+
+# --- UI tour: menus, level-select, options, story ---
+
+func _run_ui_tour() -> void:
+	_scenario_name = "ui_tour"
+	_fps_samples.clear()
+	var t0 := Time.get_ticks_msec()
+
+	# Main menu already captured as 00_menu — walk into the other surfaces.
+	var menu_scenes := [
+		["level_select", "res://scenes/ui/level_select.tscn"],
+		["options",      "res://scenes/ui/options_menu.tscn"],
+		["story",        "res://scenes/ui/story_screen.tscn"],
+	]
+	for pair in menu_scenes:
+		var label: String = pair[0]
+		var scene_path: String = pair[1]
+		if ResourceLoader.exists(scene_path):
+			get_tree().change_scene_to_file(scene_path)
+			await get_tree().create_timer(0.6).timeout
+			_snapshot("ui_%s" % label)
+
+	_record_scenario(t0)
+	_cleanup_scene()
+	await get_tree().create_timer(0.3).timeout
+
+
+# --- New-tower showcase: one of each new tower placed + upgraded ---
+
+func _run_new_towers_showcase() -> void:
+	_scenario_name = "new_towers"
+	_fps_samples.clear()
+	var t0 := Time.get_ticks_msec()
+
+	GameManager.current_level = 1
+	GameManager.start_level(1)
+	CurrencyManager.gold = 9999
+	get_tree().change_scene_to_file("res://scenes/game/level_1.tscn")
+	await get_tree().create_timer(1.5).timeout
+
+	var game_root := get_tree().current_scene
+	var path := game_root.get_node_or_null("EnemyPath") as Path2D if game_root else null
+	var showcase_ids := ["joe", "justus", "seve"]
+	var placements: Array = []
+	if path and path.curve and path.curve.get_baked_length() > 100:
+		placements = _sample_placements_along(path, showcase_ids)
+	else:
+		# spread-out fallback
+		var base_pos := Vector2(400, 360)
+		for i in showcase_ids.size():
+			placements.append({"id": showcase_ids[i], "pos": base_pos + Vector2(i * 180, 0)})
+
+	var placed_towers: Array = []
+	for entry in placements:
+		var data_path := "res://resources/tower_data/%s.tres" % entry.id
+		if ResourceLoader.exists(data_path):
+			var td = load(data_path)
+			var t = _instantiate_tower(game_root, td, entry.pos)
+			if t != null:
+				placed_towers.append(t)
+			await get_tree().create_timer(0.25).timeout
+	_snapshot("new_towers_placed")
+
+	# Walk each one to tier 2 path A so we see their upgraded look.
+	for tower in placed_towers:
+		if tower and is_instance_valid(tower) and tower.has_method("upgrade_path"):
+			tower.upgrade_path("a")
+			await get_tree().create_timer(0.3).timeout
+			tower.upgrade_path("a")
+			await get_tree().create_timer(0.3).timeout
+	_snapshot("new_towers_upgraded")
+
+	# Kick off a wave so we see them firing.
+	var wm := game_root.get_node_or_null("WaveManager") as Node
+	if wm and wm.has_method("start_next_wave"):
+		wm.set("auto_start_waves", true)
+		wm.call("start_next_wave")
+	Engine.time_scale = 3.0
+	for i in 5:
+		await get_tree().create_timer(1.2).timeout
+		_snapshot("new_towers_fight_t%d" % i)
+	Engine.time_scale = 1.0
+	_snapshot("new_towers_final")
+
 	_record_scenario(t0)
 	_cleanup_scene()
 	await get_tree().create_timer(0.3).timeout
@@ -282,8 +378,12 @@ func _placements_for_level(level_id: int) -> Array:
 		# and consumed the budget before basic/sniper could go down.
 		match level_id:
 			1: ids = ["basic", "basic", "sniper", "splash"]
-			2: ids = ["basic", "sniper", "slow", "splash"]
-			3: ids = ["basic", "basic", "sniper", "cordula", "splash", "slow"]
+			2: ids = ["basic", "sniper", "slow", "joe"]
+			3: ids = ["basic", "sniper", "cordula", "justus", "splash"]
+			4: ids = ["basic", "sniper", "slow", "seve", "splash", "joe"]
+			5: ids = ["justus", "sniper", "cordula", "seve", "splash"]
+			6: ids = ["joe", "slow", "basic", "justus", "cordula", "sniper"]
+			7: ids = ["justus", "cordula", "seve", "splash", "joe", "slow", "sniper"]
 			_: ids = ["basic", "sniper", "splash"]
 		return _sample_placements_along(path, ids)
 	# Fallback (path missing or degenerate)
