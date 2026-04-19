@@ -3,7 +3,44 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
-## 2026-04-19
+## 2026-04-19 (afternoon session — side-shop sprint + audits)
+
+- feat(hud): BTD-style side-shop refactor in 3 PRs (#110 scene + populate,
+  #111 per-row StyleBox + affordability visuals, #112 collapsible handle
+  + responsive width) — shop now right-anchored scrollable widget with
+  per-friend tint, whole-row dim on unaffordable, ▶/◀ collapse toggle
+  with 0.22s cubic slide, width clamped `[136, 190]` by viewport.
+- fix: single-toast policy — rapid-fire invalid placements no longer
+  stack frozen "Z'nöch am Wäg!" labels (playtest-feedback #104) (#113)
+- fix: playtest observability commit robustness — snapshot-and-reset
+  approach replaces the fragile `git checkout main` dance that was
+  silently eating the commit (#113)
+- feat: Level 7 "S'Dach vo de Migros" + tier pips + boss-kill
+  celebration (#109). MAX_LEVELS 6 → 7. Tier pips draw colored dots
+  around tower pedestal showing upgrade tier at a glance.
+- feat: Level 6 "S'Parkhuus" bonus stage — 5-boss finale, 16-point
+  serpentine path, enemy drop shadows (#100). MAX_LEVELS 5 → 6.
+- fix: audit round 3 — hide/show flash on tower re-tap, screen-shake
+  concurrency guard, options-menu double-instance guard, focus-loss
+  ghost cleanup, CLAUDE.md cleanup (duplicate Pitfalls removed,
+  9-autoload list, correct UI file list) (#108)
+- fix: deep-audit mega-batch — pause-menu Godot 3 API crash,
+  drag-drop tap-to-buy regression, star save/load key inflation,
+  boss HP bar NaN guard, HUD WaveManager group-lookup robustness,
+  swarm scale 0.9 → 1.4, L6 balance 1100 → 1500g + 5 → 4 bosses (#107)
+- feat: per-tower kill counter — projectile credits source tower on
+  kill, shown on tower-info stats line (#102)
+- feat(ux): persistent stats badge on main menu + level select
+  (★ / ☠) + "Wälle gschafft!" celebration between waves (#97)
+- feat: drag-and-drop tower placement + tower-meme taunts
+  ("BIO BANANE!" / "LOTTO!" / "ATSCHII!") + tower pedestal/shadow
+  polish + Level 2 pretzel path (#99)
+- feat: Level 5 "D'Kasse — Endkampf" + wave progress bar +
+  tower-info viewport clamp (#87)
+- feat: Level 4 "D'Chäsi-Keller" + chapter 4 lore + MAX_LEVELS 3→4
+  (#84)
+
+## 2026-04-19 (morning)
 
 - fix(perf): pool PROCESS_MODE_DISABLED propagates to children (ProgressBar + Area2D no longer processed while idle); enemy pool size 60→100; wave_manager preloads enemy .tres resources at setup_waves() to eliminate L1 wave-1 freeze; upgrade tints more saturated for Lemurius/Cordula so tiers are visually distinct (closes #71 #72 #73)
 
