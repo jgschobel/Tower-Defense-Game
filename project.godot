@@ -5,6 +5,11 @@
 ; Format:
 ;   [section] ; section goes between []
 ;   param=value ; assign values to parameters
+;
+; Playtest-trigger bump 2026-04-19T14:50Z — force a fresh playtest run
+; after 15+ merges since 13:43 UTC didn't fire the bot. Concurrency
+; lock suspected; this bump pushes directly on main through a
+; playtest-path-filtered file.
 
 config_version=5
 
