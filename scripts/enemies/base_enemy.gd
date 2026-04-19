@@ -172,6 +172,12 @@ func die() -> void:
 	_show_gold_earned()
 	SfxManager.play_death(data.max_health if data else 100.0)
 
+	# Boss celebration — massive impact spark burst + screen shake
+	# + floating "TÜÜFEL GSTÜRZT!" text. Only for boss enemies so
+	# small kills don't spam the effects.
+	if data and data.id == "boss":
+		_celebrate_boss_death()
+
 	# Spawn children on death if configured
 	if data and data.spawns_on_death != "" and data.spawn_count > 0:
 		_spawn_children()
@@ -498,6 +504,38 @@ func _show_mini_pop() -> void:
 	tween.tween_property(label, "position:y", label.position.y - 20.0, 0.4)
 	tween.tween_property(label, "modulate:a", 0.0, 0.4)
 	tween.chain().tween_callback(label.queue_free)
+
+
+func _celebrate_boss_death() -> void:
+	# Big impact burst + screen shake — makes toppling the M-Tüüfel feel
+	# like an event rather than another tick in the enemy counter.
+	if EffectPlayer:
+		if EffectPlayer.has_method("spawn_impact_sparks"):
+			EffectPlayer.spawn_impact_sparks(global_position, Color(1, 0.9, 0.3))
+			EffectPlayer.spawn_impact_sparks(global_position + Vector2(-20, -20), Color(1, 0.4, 0.2))
+			EffectPlayer.spawn_impact_sparks(global_position + Vector2(20, -20), Color(1, 0.6, 0.2))
+		if EffectPlayer.has_method("screen_shake"):
+			EffectPlayer.screen_shake(9.0, 0.5)
+	# Floating "TÜÜFEL GSTÜRZT!" label at the death position
+	var lbl := Label.new()
+	lbl.text = "TÜÜFEL GSTÜRZT!"
+	lbl.add_theme_font_size_override("font_size", 32)
+	lbl.add_theme_color_override("font_color", Color(1, 0.9, 0.2))
+	lbl.add_theme_color_override("font_outline_color", Color(0.3, 0.1, 0))
+	lbl.add_theme_constant_override("outline_size", 6)
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.position = Vector2(-120, -90)
+	lbl.size = Vector2(240, 40)
+	lbl.z_index = 30
+	var parent := get_parent()
+	if parent:
+		parent.add_child(lbl)
+		lbl.global_position = global_position + Vector2(-120, -90)
+		var tw := get_tree().create_tween()
+		tw.set_parallel(true)
+		tw.tween_property(lbl, "position:y", lbl.position.y - 60.0, 1.2)
+		tw.tween_property(lbl, "modulate:a", 0.0, 1.2)
+		tw.chain().tween_callback(lbl.queue_free)
 
 
 func _show_gold_earned() -> void:
