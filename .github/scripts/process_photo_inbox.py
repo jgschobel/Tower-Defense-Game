@@ -36,19 +36,46 @@ OUT_DIR = pathlib.Path("assets/textures/towers")
 
 
 DEFAULT_PROMPT = (
-    "chibi cartoon character tower defense game icon, round face, big expressive eyes, "
-    "bright bold colors, thick black outline, transparent background, centered, "
-    "Swiss alpine village vibe, high-quality digital art, no text, no watermark"
+    "full-body chibi cartoon tower defense character, hand-drawn cel-shaded "
+    "illustration, thick black outlines, bright saturated colors, big head "
+    "small body proportions, large expressive eyes, friendly smile, dynamic "
+    "action pose, standing on pure black background, vector art style, "
+    "BTD6 Bloons tower defense aesthetic, cute mascot, no text, no watermark, "
+    "clean edges, sharp linework, strong rim lighting"
 )
 
 NEGATIVE_PROMPT = (
-    "photorealistic, photograph, realistic skin, nsfw, nude, text, watermark, logo, "
-    "multiple characters, deformed hands, blurry, low quality"
+    "photograph, photorealistic, realistic skin, 3d render, blurry, grainy, "
+    "low resolution, text, watermark, logo, signature, multiple characters, "
+    "deformed hands, extra limbs, nsfw, nude, background clutter, furniture, "
+    "wall, mirror, selfie framing, phone in hand, flat frontal portrait"
 )
 
 
 def log(msg: str) -> None:
     print(f"[photo_inbox] {msg}", flush=True)
+
+
+def remove_background(png_path: pathlib.Path) -> None:
+    # Strip the background so the character sits on transparency — matches
+    # the Amösius/Lemurius reference style and makes the icon ready for
+    # compositing onto tiles without a matte box.
+    try:
+        from rembg import remove
+        from PIL import Image
+        import io
+        src = png_path.read_bytes()
+        out_bytes = remove(src)
+        # rembg may return bytes or PIL; normalize to bytes via PIL
+        if isinstance(out_bytes, bytes):
+            png_path.write_bytes(out_bytes)
+        else:
+            buf = io.BytesIO()
+            out_bytes.save(buf, format="PNG")
+            png_path.write_bytes(buf.getvalue())
+        log(f"rembg: cleared background on {png_path.name}")
+    except Exception as e:
+        log(f"rembg skipped for {png_path.name}: {e}")
 
 
 def emit_output(key: str, value: str) -> None:
@@ -119,7 +146,7 @@ def call_stability_img2img(photo: pathlib.Path, prompt: str, out: pathlib.Path) 
             "prompt": prompt,
             "negative_prompt": NEGATIVE_PROMPT,
             "mode": "image-to-image",
-            "strength": "0.75",
+            "strength": "0.85",
             "output_format": "png",
             "model": "sd3.5-large",
         }
@@ -219,6 +246,7 @@ def main() -> int:
                 ok = call_stability_img2img(photo, prompt, out_path)
 
         if ok:
+            remove_background(out_path)
             any_success = True
             photo.unlink()
             if sidecar.exists():
