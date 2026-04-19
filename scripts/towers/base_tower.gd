@@ -65,18 +65,15 @@ func _start_idle_animation() -> void:
 	# scale, so tower-specific sizing (data.sprite_scale) is preserved.
 	if sprite == null:
 		return
-	var base_scale: Vector2 = sprite.scale
 	var base_y: float = sprite.position.y
 	# Per-tower phase offset so the herd doesn't sync up
 	var phase: float = randf() * PI * 2.0
 	# Stagger cycle length a touch for variety
 	var cycle: float = randf_range(1.8, 2.4)
-	var breath := create_tween().set_loops()
-	breath.set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
-	# Delay the start so freshly-placed towers don't snap mid-breath
-	breath.tween_interval(phase / (PI * 2.0) * cycle)
-	breath.tween_property(sprite, "scale", base_scale * 1.03, cycle * 0.5)
-	breath.tween_property(sprite, "scale", base_scale, cycle * 0.5)
+	# Idle animation only bobs position — NEVER touches sprite.scale.
+	# The attack/upgrade/sell tweens all animate sprite.scale, and running
+	# a looping scale tween here caused runaway compounding (tower filled
+	# the screen when shooting). Position-only bob is enough "alive".
 	var bob := create_tween().set_loops()
 	bob.set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
 	bob.tween_interval((phase + PI * 0.5) / (PI * 2.0) * cycle)
@@ -384,10 +381,12 @@ func upgrade() -> bool:
 	SfxManager.play_upgrade()
 	# Upgrade celebration animation
 	if sprite:
+		var base_sc: Vector2 = Vector2.ONE
+		if data and "sprite_scale" in data and typeof(data.sprite_scale) == TYPE_VECTOR2:
+			base_sc = data.sprite_scale
 		var upg_tween := create_tween()
-		upg_tween.tween_property(sprite, "scale", sprite.scale * 1.5, 0.15)
-		upg_tween.tween_property(sprite, "scale", sprite.scale, 0.2)
-		# Flash gold
+		upg_tween.tween_property(sprite, "scale", base_sc * 1.3, 0.15)
+		upg_tween.tween_property(sprite, "scale", base_sc, 0.2)
 		upg_tween.parallel().tween_property(sprite, "modulate", Color(1.5, 1.3, 0.5), 0.15)
 		upg_tween.tween_property(sprite, "modulate", Color.WHITE, 0.2)
 
@@ -494,9 +493,12 @@ func upgrade_path(path_letter: String) -> bool:
 	SfxManager.play_upgrade()
 
 	if sprite:
+		var base_sc2: Vector2 = Vector2.ONE
+		if data and "sprite_scale" in data and typeof(data.sprite_scale) == TYPE_VECTOR2:
+			base_sc2 = data.sprite_scale
 		var upg_tween := create_tween()
-		upg_tween.tween_property(sprite, "scale", sprite.scale * 1.3, 0.15)
-		upg_tween.tween_property(sprite, "scale", sprite.scale, 0.2)
+		upg_tween.tween_property(sprite, "scale", base_sc2 * 1.2, 0.15)
+		upg_tween.tween_property(sprite, "scale", base_sc2, 0.2)
 
 	var upg_label := Label.new()
 	var tier_name := ""
