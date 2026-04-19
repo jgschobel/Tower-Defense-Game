@@ -50,6 +50,18 @@ func play_place() -> void:
 	_play_sweep(220.0, 440.0, 0.12, 0.35)
 
 
+func play_boss_roar() -> void:
+	# Deep falling rumble for boss reveal / death. Pitch descends from
+	# sub-bass into the floor, amplitude ~0.5 for punch.
+	_play_sweep(95.0, 42.0, 0.8, 0.55)
+
+
+func play_life_lost() -> void:
+	# Heartbeat thump + dip — low double-tap to mark a life drain.
+	# Pairs with the red screen flash. Short so it doesn't overwhelm.
+	_play_sweep(180.0, 70.0, 0.18, 0.45)
+
+
 func _play_tone(freq: float, duration: float, volume: float, noise: bool = false) -> void:
 	var samples := int(_sample_rate * duration)
 	var audio := AudioStreamWAV.new()
