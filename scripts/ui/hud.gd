@@ -48,7 +48,12 @@ func _start_threat_watcher() -> void:
 	# Poll every 0.5s for active healer/flying enemies and show a warning
 	# badge top-right. Cheap enough at this cadence; avoids wiring a
 	# dedicated signal chain through the pool.
+	# Audit P1 #4: idempotency guard — without it, a re-ready would add
+	# another Timer child and double the poll rate.
+	if has_node("ThreatTimer"):
+		return
 	var t := Timer.new()
+	t.name = "ThreatTimer"
 	t.wait_time = 0.5
 	t.autostart = true
 	t.one_shot = false
@@ -106,11 +111,17 @@ func _build_boss_hpbar() -> Control:
 	var wrap := PanelContainer.new()
 	wrap.name = "BossHPBar"
 	wrap.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	wrap.anchors_preset = Control.PRESET_TOP_WIDE
-	wrap.anchor_right = 1.0
-	wrap.offset_left = 340.0
+	# Responsive anchoring — 20% left / 80% right instead of hard-coded
+	# 340px insets so narrower viewports don't produce a negative-width
+	# bar (audit P1 #6). Top offset still uses a pixel for now; the
+	# safe-area pass will replace that in a follow-up.
+	wrap.anchor_left = 0.2
+	wrap.anchor_top = 0.0
+	wrap.anchor_right = 0.8
+	wrap.anchor_bottom = 0.0
+	wrap.offset_left = 0.0
 	wrap.offset_top = 72.0
-	wrap.offset_right = -340.0
+	wrap.offset_right = 0.0
 	wrap.offset_bottom = 130.0
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = Color(0.15, 0.05, 0.05, 0.85)
@@ -146,12 +157,12 @@ func _build_boss_hpbar() -> Control:
 	return wrap
 
 
-func _set_threat_badge(badge_name: String, show: bool, text: String, color: Color) -> void:
+func _set_threat_badge(badge_name: String, visible_flag: bool, text: String, color: Color) -> void:
 	var top_bar: Node = get_node_or_null("TopBar")
 	if top_bar == null:
 		return
 	var existing: Label = top_bar.get_node_or_null(badge_name) as Label
-	if not show:
+	if not visible_flag:
 		if existing:
 			existing.queue_free()
 		return
@@ -462,22 +473,28 @@ func _show_wave_announcement(current: int, _total: int) -> void:
 func show_next_wave_button(visible_flag: bool) -> void:
 	if next_wave_button:
 		next_wave_button.visible = visible_flag
+		# Kill any live pulse tween before creating a new one so rapid
+		# auto-wave toggles don't stack fighting tweens on modulate.
+		# Audit P1 #8.
+		if _next_wave_pulse_tween and _next_wave_pulse_tween.is_valid():
+			_next_wave_pulse_tween.kill()
+			_next_wave_pulse_tween = null
 		if visible_flag:
-			# Pulse animation to draw attention
-			var pulse := next_wave_button.create_tween().set_loops(3)
-			pulse.tween_property(next_wave_button, "modulate", Color(1.3, 1.2, 0.8), 0.4)
-			pulse.tween_property(next_wave_button, "modulate", Color.WHITE, 0.4)
+			next_wave_button.modulate = Color.WHITE
+			_next_wave_pulse_tween = next_wave_button.create_tween().set_loops(3)
+			_next_wave_pulse_tween.tween_property(next_wave_button, "modulate", Color(1.3, 1.2, 0.8), 0.4)
+			_next_wave_pulse_tween.tween_property(next_wave_button, "modulate", Color.WHITE, 0.4)
 	_refresh_next_wave_preview(visible_flag)
 
 
-func _refresh_next_wave_preview(show: bool) -> void:
+func _refresh_next_wave_preview(visible_flag: bool) -> void:
 	# Shows a compact panel above the Next Wave button with the enemy
 	# composition of the upcoming wave — "Chunt: 15x Brötli, 3x Cervelat".
 	# Hidden while a wave is in progress.
 	var existing: Node = get_node_or_null("NextWavePreview")
 	if existing:
 		existing.queue_free()
-	if not show:
+	if not visible_flag:
 		return
 	# Find the game's WaveManager via the scene tree
 	var game: Node = get_tree().current_scene
@@ -696,12 +713,29 @@ func _refresh_tower_info() -> void:
 			upgrade_btn.disabled = not _selected_tower.can_upgrade()
 
 	if sell_btn:
-		var sell_val: int
-		if td.has_branching_upgrades():
-			sell_val = td.get_sell_value_branched(_selected_tower.path_a_tier, _selected_tower.path_b_tier)
-		else:
-			sell_val = td.get_sell_value(_selected_tower.upgrade_level)
-		sell_btn.text = "Verchaufe %d" % sell_val
+		_paint_sell_button(sell_btn)
+
+
+func _paint_sell_button(sell_btn: Button) -> void:
+	# Centralized sell-button styling so _refresh_tower_info (fired on
+	# every gold change) doesn't silently overwrite the armed "Sicher? ✖"
+	# state. Audit P0 #1: without this, a kill during the 2s arm window
+	# reverted the label to "Verchaufe X" but left _sell_armed=true, so
+	# the next tap sold with no visible warning.
+	if _sell_armed:
+		sell_btn.text = "Sicher? ✖"
+		sell_btn.modulate = Color(1.0, 0.5, 0.3)
+		return
+	sell_btn.modulate = Color.WHITE
+	if not _selected_tower or not _selected_tower.data:
+		return
+	var td := _selected_tower.data
+	var sell_val: int
+	if td.has_branching_upgrades():
+		sell_val = td.get_sell_value_branched(_selected_tower.path_a_tier, _selected_tower.path_b_tier)
+	else:
+		sell_val = td.get_sell_value(_selected_tower.upgrade_level)
+	sell_btn.text = "Verchaufe %d" % sell_val
 
 
 func _ensure_linear_upgrade_button(upgrade_btn: Button) -> void:
@@ -785,6 +819,7 @@ func _on_path_b_button_pressed() -> void:
 
 var _last_gold: int = -1
 var _last_lives: int = -1
+var _next_wave_pulse_tween: Tween = null
 
 
 func _on_gold_changed(amount: int) -> void:
@@ -909,8 +944,7 @@ func _on_sell_button_pressed() -> void:
 		return
 	_sell_armed = true
 	if sell_btn:
-		sell_btn.text = "Sicher? ✖"
-		sell_btn.modulate = Color(1.0, 0.5, 0.3)
+		_paint_sell_button(sell_btn)
 	# Auto-disarm after 2s
 	_sell_arm_timer = get_tree().create_timer(2.0)
 	_sell_arm_timer.timeout.connect(_disarm_sell)
@@ -922,9 +956,7 @@ func _disarm_sell() -> void:
 	if tower_info and tower_info.visible:
 		var sell_btn: Button = tower_info.get_node_or_null("VBox/HBox/SellButton") as Button
 		if sell_btn:
-			sell_btn.modulate = Color.WHITE
-			# refresh puts the proper "Verchaufe X" text back
-			_refresh_tower_info()
+			_paint_sell_button(sell_btn)
 
 
 func _on_close_button_pressed() -> void:
