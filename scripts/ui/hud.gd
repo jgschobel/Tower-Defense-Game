@@ -542,11 +542,21 @@ func _short_name_for_enemy(enemy_id: String) -> String:
 
 
 func update_enemy_count(count: int) -> void:
-	if enemy_count_label:
-		if count > 0:
-			enemy_count_label.text = "%d übrig" % count
-		else:
-			enemy_count_label.text = ""
+	if not enemy_count_label:
+		return
+	if count > 0:
+		enemy_count_label.text = "%d übrig" % count
+		enemy_count_label.add_theme_color_override("font_color", Color(1, 0.9, 0.8))
+	else:
+		# Briefly celebrate wave clear before going blank
+		if enemy_count_label.text != "":
+			enemy_count_label.text = "Wälle gschafft! ★"
+			enemy_count_label.add_theme_color_override("font_color", Color(1, 0.85, 0.3))
+			var fade := enemy_count_label.create_tween()
+			fade.tween_interval(1.6)
+			fade.tween_callback(func():
+				if enemy_count_label:
+					enemy_count_label.text = "")
 
 
 func set_placing(placing: bool) -> void:
