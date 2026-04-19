@@ -12,6 +12,32 @@ func _ready() -> void:
 	if bg and ResourceLoader.exists(bg_path):
 		bg.texture = load(bg_path)
 	_populate_levels()
+	_show_totals()
+
+
+func _show_totals() -> void:
+	# Top-right total stars + kills summary so the player sees their
+	# cumulative progress while browsing levels.
+	if has_node("TotalsBadge"):
+		return
+	var lbl := Label.new()
+	lbl.name = "TotalsBadge"
+	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var max_stars: int = GameManager.MAX_LEVELS * 3
+	lbl.text = "★ %d / %d   ☠ %d" % [GameManager.total_stars, max_stars, GameManager.total_kills]
+	lbl.add_theme_font_size_override("font_size", 18)
+	lbl.add_theme_color_override("font_color", Color(1, 0.9, 0.4))
+	lbl.add_theme_color_override("font_outline_color", Color.BLACK)
+	lbl.add_theme_constant_override("outline_size", 3)
+	lbl.anchors_preset = Control.PRESET_TOP_RIGHT
+	lbl.anchor_left = 1.0
+	lbl.anchor_right = 1.0
+	lbl.offset_left = -260
+	lbl.offset_top = 20
+	lbl.offset_right = -20
+	lbl.offset_bottom = 50
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	add_child(lbl)
 
 
 func _populate_levels() -> void:
