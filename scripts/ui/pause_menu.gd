@@ -31,6 +31,18 @@ func _on_restart_button_pressed() -> void:
 	get_tree().reload_current_scene()
 
 
+func _on_options_button_pressed() -> void:
+	# Open options menu on top of the pause overlay without un-pausing.
+	# The options_menu autoloads its values from GameManager, no extra
+	# wiring needed beyond instancing + reparenting.
+	var options_scene: PackedScene = preload("res://scenes/ui/options_menu.tscn")
+	var opts = options_scene.instantiate()
+	opts.process_mode = Node.PROCESS_MODE_ALWAYS  # survive pause
+	add_child(opts)
+	if opts.has_signal("closed"):
+		opts.closed.connect(func(): opts.queue_free())
+
+
 func _on_quit_button_pressed() -> void:
 	get_tree().paused = false
 	Engine.time_scale = 1.0
