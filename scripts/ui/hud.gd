@@ -693,11 +693,13 @@ func _refresh_tower_info() -> void:
 			name_lbl.text = "%s (Lv %d)" % [td.display_name, _selected_tower.upgrade_level + 1]
 	if stats_lbl:
 		var dps: float = _selected_tower.effective_damage * _selected_tower.effective_speed
-		stats_lbl.text = "Schade: %.0f  Tempo: %.1f  Riichwiiti: %.0f\nDPS: %.1f" % [
+		var kills: int = _selected_tower.kill_count if "kill_count" in _selected_tower else 0
+		stats_lbl.text = "Schade: %.0f  Tempo: %.1f  Riichwiiti: %.0f\nDPS: %.1f  •  Kills: %d" % [
 			_selected_tower.effective_damage,
 			_selected_tower.effective_speed,
 			_selected_tower.effective_range,
 			dps,
+			kills,
 		]
 
 	if td.has_branching_upgrades():

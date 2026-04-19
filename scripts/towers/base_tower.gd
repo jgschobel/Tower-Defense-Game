@@ -14,6 +14,7 @@ var path_b_tier: int = 0            # branching, 0-3
 var current_target: BaseEnemy = null
 var attack_timer: float = 0.0
 var is_placed: bool = false
+var kill_count: int = 0             # enemies killed by this tower
 
 # Computed stats (base + upgrades)
 var effective_damage: float = 0.0
@@ -271,6 +272,9 @@ func _attack() -> void:
 			# Pathological case — no current scene. Bail rather than crash.
 			projectile.queue_free()
 			return
+	# Credit kills from this projectile back to us (used by tower-info
+	# panel for the per-tower kill counter)
+	projectile.set_meta("source_tower", self)
 	# setup() must not throw. If it does, quietly release the projectile.
 	if projectile.has_method("setup"):
 		projectile.setup(
