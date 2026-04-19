@@ -251,7 +251,29 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout main
-          git pull origin main --rebase || true
           git add docs/observability/
-          git commit -m "chore(observability): playtest ${{ github.run_id }} ($STATUS) + 7 key screenshots" || echo "no changes"
-          git push origin main || echo "push failed — non-fatal"
+          git commit -m "chore(observability): playtest ${{ github.run_id }} ($STATUS) + 7 key screenshots" || { echo "no changes to commit"; exit 0; }
+          # Retry loop — main often diverges during the 6-min playtest so
+          # a naive push fails. Rebase + push up to 5 times with exponential
+          # backoff. The observability ledger was going unwritten because
+          # this step silently ate the failure.
+          PUSHED=0
+          for attempt in 1 2 3 4 5; do
+            git fetch origin main
+            if git rebase origin/main; then
+              if git push origin main; then
+                echo "pushed on attempt $attempt"
+                PUSHED=1
+                break
+              fi
+            else
+              echo "rebase conflict attempt $attempt — aborting"
+              git rebase --abort 2>/dev/null || true
+            fi
+            SLEEP=$((2 ** attempt))
+            echo "retry in ${SLEEP}s"
+            sleep $SLEEP
+          done
+          if [ "$PUSHED" != "1" ]; then
+            echo "::warning::observability commit failed after 5 retries"
+          fi
