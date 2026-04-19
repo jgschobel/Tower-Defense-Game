@@ -9,7 +9,7 @@ extends Node
 ##
 ## Falls back to instantiation if pool is exhausted — never hard-fails.
 
-const POOL_SIZE: int = 60
+const POOL_SIZE: int = 100
 const ENEMY_SCENE_PATH: String = "res://scenes/enemies/base_enemy.tscn"
 
 var _free: Array = []
@@ -84,18 +84,20 @@ func release(e: Node) -> void:
 
 
 func _activate(e: Node) -> void:
+	# PROCESS_MODE_INHERIT re-enables the node and ALL its children
+	# (health bar, physics body, etc.) in one call — avoids the prior bug
+	# where set_process(false) left child Control/Area2D nodes running.
+	e.process_mode = Node.PROCESS_MODE_INHERIT
 	if e is Node2D:
 		e.visible = true
-	e.set_process(true)
-	e.set_physics_process(true)
-	# Path progress reset is handled by reset_for_pool() on the enemy
 
 
 func _deactivate(e: Node) -> void:
+	# PROCESS_MODE_DISABLED propagates to all children, so the ProgressBar
+	# and Area2D inside each idle pool enemy stop consuming CPU/physics time.
 	if e is Node2D:
 		e.visible = false
-	e.set_process(false)
-	e.set_physics_process(false)
+	e.process_mode = Node.PROCESS_MODE_DISABLED
 
 
 func stats() -> Dictionary:
