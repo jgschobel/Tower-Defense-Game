@@ -70,7 +70,7 @@ scripts/
   towers/           → BaseTower, TowerData (Resource class)
   projectiles/      → BaseProjectile
   systems/          → WaveManager, TowerPlacement, GameLevel, LevelData
-  ui/               → MainMenu, LevelSelect, HUD, GameOver, PauseMenu, TowerInfoPanel, FriendPhotoManager
+  ui/               → MainMenu, LevelSelect, HUD, GameOver, PauseMenu, StoryScreen, OptionsMenu
 scenes/
   enemies/          → base_enemy.tscn
   towers/           → base_tower.tscn
@@ -79,7 +79,7 @@ scenes/
   ui/               → main_menu.tscn, level_select.tscn, hud.tscn, etc.
 resources/
   enemy_data/       → .tres files per enemy type (basic, fast, tank, healer, flying, boss)
-  tower_data/       → .tres files per tower type (basic, sniper, splash, slow, support)
+  tower_data/       → .tres files per tower (basic=Lemurius, sniper=Kühne, splash=JoJo, cordula, slow=Amösius)
   level_data/       → .tres files per level (level_1, level_2, level_3)
 assets/
   textures/         → towers/, enemies/, ui/, maps/, projectiles/
@@ -87,7 +87,7 @@ assets/
 ```
 
 ## Architecture
-- **Autoloads**: `GameManager` (game state, save/load, lives, levels) and `CurrencyManager` (gold economy) are global singletons
+- **Autoloads** (9, see `project.godot`): `GameManager` (state/save), `CurrencyManager` (gold), `MusicManager`, `SfxManager`, `AutoPlaytest`, `WaveSimulator`, `ProjectilePool`, `EnemyPool`, `EffectPlayer` (combat vfx)
 - **Data-driven design**: Tower types, enemy types, and levels are defined as Godot `Resource` (.tres) files — add new content by creating new .tres files, no code changes needed
 - **Scene composition**: Base scenes (base_tower.tscn, base_enemy.tscn) are reused with different data resources attached
 - **Signal-based communication**: Systems communicate via signals, not direct references
@@ -105,13 +105,7 @@ assets/
 - **Adding a new tower**: Create a new .tres file in `resources/tower_data/` using the TowerData resource type, add its ID to `_shop_tower_ids` in hud.gd
 - **Adding a new enemy**: Create a new .tres file in `resources/enemy_data/`, then reference its ID in level wave definitions
 - **Adding a new level**: Create `resources/level_data/level_N.tres`, optionally create `scenes/game/level_N.tscn`
-- **Friend photos**: Assigned via FriendPhotoManager UI, stored in `user://photos/`, mapped by character_id in GameManager
-
-## Common Pitfalls
-- Enemies are `PathFollow2D` nodes — they must be children of a `Path2D` to work
-- The `DetectionArea` on towers uses `body_entered`/`body_exited` — enemies need a physics body to be detected
-- Autoloads reference each other (GameManager ↔ CurrencyManager) — ensure both are registered in project.godot
-- When using `.bind()` on signal connections, bound args come AFTER the signal's own args in the callback
+- **Friend photos**: Uploaded to `.github/friend_photos_inbox/` (see that README); processed into `assets/textures/towers/`. `GameManager.assign_friend_photo` / `get_friend_photo` map `character_id → texture path`.
 
 ## AI Agent Architecture
 This project uses a multi-agent workflow. See `AGENTS.md` for full details.
