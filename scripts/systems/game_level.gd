@@ -13,6 +13,7 @@ extends Node2D
 @onready var pause_menu: Control = $PauseMenu
 
 var wave_definitions: Array = []
+var _adjacency_viz: Node2D = null
 
 
 func _ready() -> void:
@@ -44,6 +45,7 @@ func _ready() -> void:
 	hud.auto_wave_toggled.connect(_on_auto_wave_toggled)
 
 	tower_placement.tower_placed.connect(_on_tower_placed)
+	tower_placement.tower_removed.connect(_on_tower_removed)
 	tower_placement.placement_invalid.connect(_on_placement_invalid)
 	tower_placement.placement_cancelled.connect(_on_tower_placement_cancelled)
 
@@ -181,6 +183,28 @@ func _on_placement_cancelled() -> void:
 
 func _on_tower_placed(_tower: Node2D) -> void:
 	hud.set_placing(false)
+	_ensure_adjacency_viz()
+	if _adjacency_viz:
+		_adjacency_viz.refresh()
+
+
+func _on_tower_removed(_tower: Node2D) -> void:
+	if _adjacency_viz:
+		_adjacency_viz.refresh()
+
+
+func _ensure_adjacency_viz() -> void:
+	# Lazily spawn the AdjacencyVisualizer the first time a tower is
+	# placed. Lives at the level root so it draws in world coordinates.
+	if _adjacency_viz != null and is_instance_valid(_adjacency_viz):
+		return
+	var script: Script = load("res://scripts/systems/adjacency_visualizer.gd")
+	if script == null:
+		return
+	_adjacency_viz = Node2D.new()
+	_adjacency_viz.set_script(script)
+	_adjacency_viz.name = "AdjacencyVisualizer"
+	add_child(_adjacency_viz)
 
 
 func _on_placement_invalid(reason: String) -> void:
