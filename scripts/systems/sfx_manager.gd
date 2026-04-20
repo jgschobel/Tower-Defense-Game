@@ -31,7 +31,9 @@ func play_shoot(tower_id: String = "", tier: int = 0) -> void:
 
 
 func play_hit() -> void:
-	_play_tone(440.0, 0.04, 0.2)
+	# Soft body-hit — warm 340Hz damped sine, short. Used as generic
+	# fallback when per-enemy hit SFX is unavailable.
+	_play_tone(340.0, 0.05, 0.22)
 
 
 func play_enemy_hit(enemy_id: String = "") -> void:
@@ -67,13 +69,18 @@ func play_death(enemy_health: float = 100.0) -> void:
 
 
 func play_wave_start() -> void:
-	# Rising tone
-	_play_sweep(440.0, 880.0, 0.2, 0.5)
+	# Warm rising announcement — starts on a low horn, ascends a perfect
+	# fifth. Two-note stack (fundamental + fifth) replaces the previous
+	# bright 880Hz chirp which hurt on speakers.
+	_play_sweep(220.0, 330.0, 0.28, 0.42)
 
 
 func play_upgrade() -> void:
-	# Ascending chime
-	_play_sweep(523.0, 1047.0, 0.3, 0.4)
+	# Gentle ascending chime, octave leap from A3 to A4. Previous version
+	# shot up to 1047Hz which was shrill; this stays in the warm-body
+	# register and layers a soft fifth for harmonic sweetness.
+	_play_sweep(220.0, 440.0, 0.32, 0.38)
+	_play_tone(330.0, 0.22, 0.20)
 
 
 func play_click() -> void:
@@ -112,53 +119,15 @@ func _play_soft_pluck() -> void:
 	player.finished.connect(player.queue_free)
 
 
-func _play_tick() -> void:
-	# Softer "tock" — warm damped sine (~240 Hz body) mixed with a tiny
-	# low-passed noise whisper, ~55ms. Previous version was a 25ms
-	# noise burst with an instant attack which felt piercing; the ramp
-	# in the first 4ms plus the low-frequency body removes the bite.
-	var duration: float = 0.055
-	var samples := int(_sample_rate * duration)
-	var audio := AudioStreamWAV.new()
-	audio.format = AudioStreamWAV.FORMAT_8_BITS
-	audio.mix_rate = int(_sample_rate)
-	audio.stereo = false
-	var data := PackedByteArray()
-	var freq: float = 240.0
-	var noise_avg: float = 0.0
-	var attack_samples: float = float(_sample_rate) * 0.004  # 4ms ramp in
-	for i in samples:
-		var t := float(i) / _sample_rate
-		# Attack ramp then exponential decay — no sharp transient
-		var attack: float = clamp(float(i) / attack_samples, 0.0, 1.0)
-		var tail: float = pow(1.0 - (t / duration), 3.0)
-		var env: float = attack * tail
-		# Warm body — damped sine at 240 Hz
-		var body: float = sin(t * freq * TAU) * 0.55
-		# Noise whisper, lightly low-pass filtered via rolling average,
-		# ducked well below the body so it reads as "texture" not "shh"
-		var raw_noise: float = randf() * 2.0 - 1.0
-		noise_avg = noise_avg * 0.7 + raw_noise * 0.3
-		var noise: float = noise_avg * 0.18
-		var sample: float = (body + noise) * env * 0.08
-		data.append(int(clamp(sample * 0.5 + 0.5, 0.0, 1.0) * 255))
-	audio.data = data
-	var player := AudioStreamPlayer.new()
-	player.stream = audio
-	player.volume_db = _db_with_user_volume(-6.0)
-	add_child(player)
-	player.play()
-	player.finished.connect(player.queue_free)
-
-
 func play_sell() -> void:
-	_play_sweep(660.0, 330.0, 0.15, 0.3)
+	# Coin-drop — descending warm tone, not the previous chirpy 660Hz.
+	_play_sweep(440.0, 220.0, 0.18, 0.32)
 
 
 func play_place() -> void:
-	# Placement confirmation — short "thunk" that rises then settles.
-	# Gives tactile feedback on successful drop.
-	_play_sweep(220.0, 440.0, 0.12, 0.35)
+	# Placement confirmation — low "thunk" that rises into the body
+	# register. Pairs with the drop tween; must feel grounded, not bouncy.
+	_play_sweep(140.0, 240.0, 0.14, 0.38)
 
 
 func play_boss_roar() -> void:
@@ -174,6 +143,10 @@ func play_life_lost() -> void:
 
 
 func _play_tone(freq: float, duration: float, volume: float, noise: bool = false) -> void:
+	# Warm tone generator (ROADMAP #25). Replaces the previous square-wave
+	# blip which was thin and piercing. Now: sine fundamental + soft 2nd
+	# harmonic at 1/3 amplitude + 4ms attack ramp + quadratic decay tail.
+	# Noise mode keeps raw noise for crunch SFX but still gets envelope ramp.
 	var samples := int(_sample_rate * duration)
 	var audio := AudioStreamWAV.new()
 	audio.format = AudioStreamWAV.FORMAT_8_BITS
@@ -181,22 +154,32 @@ func _play_tone(freq: float, duration: float, volume: float, noise: bool = false
 	audio.stereo = false
 
 	var data := PackedByteArray()
+	var attack_samples: float = float(_sample_rate) * 0.004  # 4ms ramp-in
+	var noise_avg: float = 0.0
 	for i in samples:
 		var t := float(i) / _sample_rate
-		var env := 1.0 - (t / duration)  # linear decay
+		var progress: float = t / duration
+		var attack: float = clamp(float(i) / attack_samples, 0.0, 1.0)
+		var tail: float = pow(1.0 - progress, 2.0)
+		var env: float = attack * tail
 		var sample: float
 		if noise:
-			sample = (randf() * 2.0 - 1.0) * env * volume
+			# Lightly low-passed noise — softer than raw white
+			var raw: float = randf() * 2.0 - 1.0
+			noise_avg = noise_avg * 0.6 + raw * 0.4
+			sample = noise_avg * env * volume
 		else:
-			var phase := fmod(t * freq, 1.0)
-			sample = (1.0 if phase < 0.5 else -1.0) * env * volume
-		data.append(int((sample * 0.5 + 0.5) * 255))
+			# Sine fundamental + gentle 2nd harmonic for body
+			var body: float = sin(t * freq * TAU)
+			var harm: float = sin(t * freq * 2.0 * TAU) * 0.33
+			sample = (body + harm) * env * volume * 0.6
+		data.append(int(clamp(sample * 0.5 + 0.5, 0.0, 1.0) * 255))
 
 	audio.data = data
 
 	var player := AudioStreamPlayer.new()
 	player.stream = audio
-	player.volume_db = _db_with_user_volume(-6.0)
+	player.volume_db = _db_with_user_volume(-8.0)
 	add_child(player)
 	player.play()
 	player.finished.connect(player.queue_free)
@@ -213,6 +196,10 @@ func _db_with_user_volume(base_db: float) -> float:
 
 
 func _play_sweep(freq_start: float, freq_end: float, duration: float, volume: float) -> void:
+	# Warm sweep generator (ROADMAP #25). Replaces the square-wave sweep
+	# with phase-accumulated sine to avoid audible clicks at the frequency
+	# transition. 4ms attack ramp + quadratic decay; 2nd harmonic adds
+	# body without harshness.
 	var samples := int(_sample_rate * duration)
 	var audio := AudioStreamWAV.new()
 	audio.format = AudioStreamWAV.FORMAT_8_BITS
@@ -220,20 +207,26 @@ func _play_sweep(freq_start: float, freq_end: float, duration: float, volume: fl
 	audio.stereo = false
 
 	var data := PackedByteArray()
+	var attack_samples: float = float(_sample_rate) * 0.004
+	var phase: float = 0.0
+	var dt: float = 1.0 / _sample_rate
 	for i in samples:
-		var t := float(i) / _sample_rate
-		var progress_pct := t / duration
-		var freq := freq_start + (freq_end - freq_start) * progress_pct
-		var env := 1.0 - progress_pct
-		var phase := fmod(t * freq, 1.0)
-		var sample := (1.0 if phase < 0.5 else -1.0) * env * volume
-		data.append(int((sample * 0.5 + 0.5) * 255))
+		var progress_pct: float = float(i) / float(samples)
+		var freq: float = freq_start + (freq_end - freq_start) * progress_pct
+		phase += freq * dt
+		var attack: float = clamp(float(i) / attack_samples, 0.0, 1.0)
+		var tail: float = pow(1.0 - progress_pct, 2.0)
+		var env: float = attack * tail
+		var body: float = sin(phase * TAU)
+		var harm: float = sin(phase * 2.0 * TAU) * 0.28
+		var sample: float = (body + harm) * env * volume * 0.6
+		data.append(int(clamp(sample * 0.5 + 0.5, 0.0, 1.0) * 255))
 
 	audio.data = data
 
 	var player := AudioStreamPlayer.new()
 	player.stream = audio
-	player.volume_db = _db_with_user_volume(-6.0)
+	player.volume_db = _db_with_user_volume(-8.0)
 	add_child(player)
 	player.play()
 	player.finished.connect(player.queue_free)
