@@ -135,6 +135,12 @@ func complete_level() -> void:
 	if current_level >= levels_unlocked and current_level < MAX_LEVELS:
 		levels_unlocked = current_level + 1
 
+	# Aminos yield (ROADMAP #48). Scales with level_id + stars so later
+	# levels + perfect clears reward more. Awarded every clear, but the
+	# same level never double-dips within a run.
+	if AminosManager and AminosManager.has_method("award_for_level_clear"):
+		AminosManager.award_for_level_clear(current_level, stars)
+
 	set_state(GameState.WON)
 	level_completed.emit(current_level)
 	save_game()
