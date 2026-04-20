@@ -6,7 +6,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="4"]
 [ext_resource type="PackedScene" path="res://scenes/ui/game_over_screen.tscn" id="5"]
 [ext_resource type="PackedScene" path="res://scenes/ui/pause_menu.tscn" id="6"]
-[ext_resource type="Texture2D" path="res://assets/textures/maps/level3_bg.png" id="7"]
+[ext_resource type="Texture2D" path="res://assets/textures/maps_v3/level_3_chemikalien.png" id="7"]
 
 [sub_resource type="Curve2D" id="curve_3"]
 point_count = 11
@@ -48,13 +48,9 @@ point_10/out = Vector2(0, 0)
 script = ExtResource("1")
 level_id = 3
 
-[node name="Background" type="TextureRect" parent="."]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
+[node name="Background" type="Sprite2D" parent="."]
+position = Vector2(640, 360)
 texture = ExtResource("7")
-expand_mode = 1
-stretch_mode = 6
 
 [node name="PathBorder" type="Line2D" parent="."]
 points = PackedVector2Array(-40, 200, 150, 600, 350, 120, 500, 580, 640, 360, 700, 100, 850, 600, 950, 150, 1050, 550, 1180, 200, 1320, 400)

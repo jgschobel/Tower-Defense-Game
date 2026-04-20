@@ -219,6 +219,7 @@ func reset_for_pool() -> void:
 	# Resets all transient runtime state so the next spawn is clean.
 	if data:
 		_apply_data()
+		_update_visual()
 	is_dead = false
 	progress = 0.0
 	progress_ratio = 0.0

@@ -42,7 +42,7 @@ func _process(_delta: float) -> void:
 
 
 func _run_all() -> void:
-	await get_tree().process_frame
+	await get_tree().create_timer(0.5).timeout
 	_snapshot("00_menu")
 
 	# UI tour: capture the menu surfaces before any gameplay.
