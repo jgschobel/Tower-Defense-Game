@@ -1,8 +1,49 @@
 extends Node
 
-## Procedural sound effects manager. Generates short beeps/pops at runtime.
+## Sound effects manager. Prefers baked audio files (Kenney packs,
+## AI-generated .ogg) declared in resources/audio_config.tres. Falls
+## back to procedural synthesis when no baked entry exists or the
+## referenced file is missing. This lets us migrate to real audio
+## incrementally — ROADMAP #25 / #35.
+
+const AUDIO_CONFIG_PATH := "res://resources/audio_config.tres"
 
 var _sample_rate: float = 22050.0
+var _config: AudioConfig = null
+var _stream_cache: Dictionary = {}  # path -> AudioStream
+
+
+func _ready() -> void:
+	_load_config()
+
+
+func _load_config() -> void:
+	if ResourceLoader.exists(AUDIO_CONFIG_PATH):
+		var res: Resource = load(AUDIO_CONFIG_PATH)
+		if res is AudioConfig:
+			_config = res
+
+
+func _try_play_baked(id: String, volume_db: float = -6.0) -> bool:
+	# Returns true if a baked audio file for `id` was found and played.
+	if _config == null:
+		return false
+	var path: String = _config.get_sfx(id)
+	if path == "" or not ResourceLoader.exists(path):
+		return false
+	var stream: AudioStream = _stream_cache.get(path, null)
+	if stream == null:
+		stream = load(path)
+		if stream == null:
+			return false
+		_stream_cache[path] = stream
+	var player := AudioStreamPlayer.new()
+	player.stream = stream
+	player.volume_db = _db_with_user_volume(volume_db)
+	add_child(player)
+	player.play()
+	player.finished.connect(player.queue_free)
+	return true
 
 
 func play_shoot(tower_id: String = "", tier: int = 0) -> void:
@@ -10,6 +51,10 @@ func play_shoot(tower_id: String = "", tier: int = 0) -> void:
 	# distinct timbre; tiers bump pitch + add a bit of bite. Falls back
 	# to a generic warm pluck if tower_id is unknown.
 	var t: int = clampi(tier, 0, 3)
+	if _try_play_baked("tower.%s.shoot.t%d" % [tower_id, t]):
+		return
+	if _try_play_baked("tower.%s.shoot" % tower_id):
+		return
 	match tower_id:
 		"basic":
 			# Lemurius — bio-banana soft thump. Low warm body, quick mute.
@@ -33,12 +78,16 @@ func play_shoot(tower_id: String = "", tier: int = 0) -> void:
 func play_hit() -> void:
 	# Soft body-hit — warm 340Hz damped sine, short. Used as generic
 	# fallback when per-enemy hit SFX is unavailable.
+	if _try_play_baked("hit"):
+		return
 	_play_tone(340.0, 0.05, 0.22)
 
 
 func play_enemy_hit(enemy_id: String = "") -> void:
 	# Per-enemy hit/death variation (ROADMAP #27) — short pop tinted by
 	# the enemy's material.
+	if _try_play_baked("enemy.%s.hit" % enemy_id):
+		return
 	match enemy_id:
 		"basic":   # Brötli — dry bread crunch
 			_play_tone(360.0, 0.03, 0.18, true)
@@ -62,6 +111,8 @@ func play_death(enemy_health: float = 100.0) -> void:
 	# Soft downward sweep with pitch modulated by enemy size.
 	# Small enemies (low health) = higher pitch "pop", big enemies =
 	# deep "thump". Adds rhythm as waves progress from tofu to boss.
+	if _try_play_baked("death"):
+		return
 	var size_factor: float = clampf(enemy_health / 100.0, 0.4, 3.0)
 	var base_freq: float = 220.0 / sqrt(size_factor)  # bigger → lower
 	var end_freq: float = base_freq * 0.4
@@ -72,6 +123,8 @@ func play_wave_start() -> void:
 	# Warm rising announcement — starts on a low horn, ascends a perfect
 	# fifth. Two-note stack (fundamental + fifth) replaces the previous
 	# bright 880Hz chirp which hurt on speakers.
+	if _try_play_baked("wave_start"):
+		return
 	_play_sweep(220.0, 330.0, 0.28, 0.42)
 
 
@@ -79,6 +132,8 @@ func play_upgrade() -> void:
 	# Gentle ascending chime, octave leap from A3 to A4. Previous version
 	# shot up to 1047Hz which was shrill; this stays in the warm-body
 	# register and layers a soft fifth for harmonic sweetness.
+	if _try_play_baked("upgrade"):
+		return
 	_play_sweep(220.0, 440.0, 0.32, 0.38)
 	_play_tone(330.0, 0.22, 0.20)
 
@@ -88,6 +143,8 @@ func play_click() -> void:
 	# Tried full silence, user wanted a subtle tone back but absolutely not
 	# anything bright or percussive. Low fundamental + long ramp-in + short
 	# decay removes the "bite" entirely.
+	if _try_play_baked("ui.click", -10.0):
+		return
 	_play_soft_pluck()
 
 
@@ -121,24 +178,32 @@ func _play_soft_pluck() -> void:
 
 func play_sell() -> void:
 	# Coin-drop — descending warm tone, not the previous chirpy 660Hz.
+	if _try_play_baked("sell"):
+		return
 	_play_sweep(440.0, 220.0, 0.18, 0.32)
 
 
 func play_place() -> void:
 	# Placement confirmation — low "thunk" that rises into the body
 	# register. Pairs with the drop tween; must feel grounded, not bouncy.
+	if _try_play_baked("place"):
+		return
 	_play_sweep(140.0, 240.0, 0.14, 0.38)
 
 
 func play_boss_roar() -> void:
 	# Deep falling rumble for boss reveal / death. Pitch descends from
 	# sub-bass into the floor, amplitude ~0.5 for punch.
+	if _try_play_baked("boss_roar"):
+		return
 	_play_sweep(95.0, 42.0, 0.8, 0.55)
 
 
 func play_life_lost() -> void:
 	# Heartbeat thump + dip — low double-tap to mark a life drain.
 	# Pairs with the red screen flash. Short so it doesn't overwhelm.
+	if _try_play_baked("life_lost"):
+		return
 	_play_sweep(180.0, 70.0, 0.18, 0.45)
 
 
