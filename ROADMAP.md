@@ -64,6 +64,64 @@ the user for anything unless explicitly noted.
 16. **Playtest concurrency investigation** — push-triggered playtest ran once at 13:43Z then appeared blocked for ~1h despite 15+ merges. Suspected: GitHub's 1-queued-run concurrency limit OR minutes-quota hit. The `cancel-in-progress: false` on group `playtest` may need `cancel-in-progress: true` OR the workflow needs to check `github.repository_runs_remaining` before starting. Force-trigger commit `f65c3146` verified it still fires on direct push.
 17. **PAT-based user-attachment fetch** — `photo_to_character.py` tries `USER_ATTACHMENT_PAT` secret first. Unblocks friend-photo issue template. Requires user to create the PAT.
 18. **Scrollable side-shop extras** — smooth scroll when tower button goes above viewport; scroll indicator when content extends.
+19. **Re-process tower icons with alpha_matting** — the canonical `cordula.png` / `jojo.png` / `kuhne.png` (and possibly others) had background removed with a tool that also ate interior "transparent-looking" pixels — eyes + highlights got cut out, leaving spooky empty sockets. Workaround shipped: .tres files now point at `*_img2img.png` variants (pre-bg-removal originals with intact eyes but with backgrounds). Proper fix: write a Python script using `rembg` with `alpha_matting=True` + `u2net_human_seg` model (tuned for people, preserves interior detail) to reprocess the `_img2img` sources cleanly, then swap back to transparent `.png` canonical names.
+
+---
+
+## 🔥 P0 — User directive 2026-04-20 (post-laptop session)
+
+User review after playing on laptop. Massive rebalance + audio overhaul
+requested. Loop picks these up one-by-one; each is a PR-sized slice.
+
+### Pacing + economy (P0)
+20. **30 waves per level** (currently 10). Extend every `resources/level_data/level_N.tres` wave array from 10 → 30. Gradient of difficulty: waves 1-10 tutorial/early, 11-20 mid-game, 21-30 escalation → boss(es) in 30. Keep existing 10 as a skeleton and interpolate. Player should feel progression arc, not 10-wave sprint.
+21. **Starting gold: tighter early budget** — across all levels, reduce `starting_gold` so the player can afford 1 cheap tower + save ~50g. Currently L1=200g, bumped to 600g for some. Target: L1=120g (1 basic Lemurius = 100g, 20g saved). L2=130, L3=140, L4=150, L5=160, L6=170, L7=180. Harder early → gold feels earned.
+22. **Upgrade cost curve steeper** — upgrades currently feel cheap once gold flowing. Bump costs ~40%: path tier 1 was 120-200g, make 180-300; tier 2 was 260-420, make 400-600; tier 3 was 650-920, make 950-1400. User wants upgrades to feel earned.
+23. **Upgrade visual delta — MUCH bigger** — user says "man sieht Unterschiede der Upgrades kaum". Today tier pips are small dots + subtle tint. Need: per-tier sprite scale change (tier 1 = +8%, tier 2 = +16%, tier 3 = +25%), per-tier glow ring (pulse, brighter per tier), per-tier projectile size + trail length, path-specific crown/hat badge (one of 3 hats per path when tier≥1). Tier should READ from across the map, not require squinting.
+
+### Audio overhaul (P0)
+24. **Per-tower shoot SFX variation** — today every tower uses the same `play_shoot()` (880Hz square 0.06s). Each tower + each TIER should sound distinct:
+    - Lemurius: soft thump (bio banana) → rubberier as it upgrades
+    - Kühne: pollen whoosh → chime on higher tiers
+    - JoJo: glass clink + fizz → bigger boom at tier 3
+    - Cordula: volleyball pop → crowd cheer at tier 3
+    - Amösius: sticky "schleck" → tongue-whip at tier 3
+    Wire via `SfxManager.play_shoot(tower_id, tier)`. Add 15 new procedural variants.
+25. **SFX audit + cleanup** — user says "fast alle aktuellen sounds sind kurra scheisse". Run a full review of `scripts/systems/sfx_manager.gd`:
+    - Re-record every procedural SFX (shoot, hit, death, upgrade, sell, place, click, wave_start, boss_roar, life_lost)
+    - Goal: warm, non-piercing, sub-200Hz fundamentals where possible, always with envelope ramps (no instant attacks)
+    - Use Minecraft / Slay-the-Spire / BTD6 as reference — subtle, layered, never thin-beep-y
+    - Delete `_play_tick` and unify on `_play_soft_pluck` family
+26. **Per-wave / per-level music change** — music track currently binary (menu vs game). Want per-level mood variation: L1 cheery, L2 icy ambient, L3 bakery-organ, L4 cellar-dub, L5 boss-intense, L6 parkhuus-industrial, L7 rooftop-cinematic. `MusicManager.set_level_track(level_id)` with 7 procedural variants.
+27. **Per-enemy hit/death SFX** — today all enemies share size-based pitch. Differentiate: basic = bread crunch, fast = wrapper crinkle, tank = meat slap, healer = bottle clink, flying = wet splat, boss = demonic roar (already partial), swarm = tiny squeak.
+28. **Reorganize sfx_manager.gd** — split into sfx_manager.gd (public API), sfx_library.gd (per-effect data dicts), sfx_synth.gd (waveform helpers). Today one 200-line file mixes public + internal.
+
+### Art (P0)
+29. **Generate dedicated backgrounds for ALL levels via Gemini** — all 7 maps need better art. Use Gemini Imagen 4 (or Stability) at 1280×720 with Swiss-themed prompts:
+    - L1 Migros entrance: auto-doors + shopping carts, midday bright
+    - L2 Tiefchüel-Abteilig: frozen aisle, icy blue, breath fog
+    - L3 Bäckerei: warm lit bakery, bread racks, flour dust
+    - L4 Chäsi-Keller: dim cellar, cheese wheels, green acid glow
+    - L5 Kasse: cash registers, Cumulus sign, warm orange
+    - L6 Parkhuus: neon parking garage, concrete, rain
+    - L7 S'Dach: rooftop sunset, Migros sign silhouette, birds
+    Each level scene should reference `res://assets/textures/maps/level_N_bg.png` directly (not the placeholder reuse).
+30. **Regenerate tower icons with alpha_matting** — see item #19. This is part of the art batch now, higher priority.
+31. **New enemy variants per level** — each level should have at least ONE exclusive enemy:
+    - L1 Brötli (already), L2 add Glacé-Golem (ice flying), L3 add Kamikaze-Gipfeli (fast exploder), L4 add Fondue-Bomb (splash on death), L5 add Quittung-Geist (ghost — partial immune), L6 add Coupon-Cyborg (tank+fast hybrid), L7 add Sturmmöwe (flying+fast). One new enemy .tres + .png per level.
+
+### Playtest bot (P1)
+32. **Playtest bot captures per-level screenshots** — today the bot runs all 7 levels but only commits 7 key shots. Extend to commit one final screenshot per level (`L1_final.png` ... `L7_final.png`) + one `upgrade_comparison.png` showing tier 0/1/2/3 side by side. User wants visual proof the level art + upgrade visuals actually changed.
+33. **Playtest coverage: run upgrade flow for EACH tower** — today only Lemurius gets upgraded through paths. Add loop: per tower (basic/sniper/splash/cordula/slow/joe/justus/seve), place + tier up to A3 + capture shot.
+34. **Audit screenshot grid** — workflow stitches 7 level screenshots + 8 upgrade screenshots into a 4×4 grid PNG so chat-session Claude can Read a single image and see the whole game state.
+
+### General organization (P1)
+35. **Sound + music config file** — `resources/audio_config.tres` with every SFX / music track referenced by id, tunable from the editor without touching code. Current state: everything hardcoded in sfx_manager.gd.
+
+### Wave pacing (P0 new)
+36. **Level 1-4 all start with Brötli** — user reported: "alle Levels zeigen am Anfang die Brote". Confirmed: L1 / L2 / L3 / L4 wave 1 all use `enemy_id: "basic"`. Only L5 (fast), L6 (swarm), L7 (flying) vary. Fix: give each level a thematic opener matching its theme — L2 should open with `fast` (frozen aisle = things slipping), L3 with `healer` (bakery = Dr. Rivella), L4 with `tank` (cellar = Cervelat).
+37. **Early-wave enemy variety knob** — within a level's first 3 waves, rotate at least 2 enemy types so the opener doesn't feel monotonous. Today L1 first 3 waves: all basic / all basic / basic+fast. Better: wave 1 basic, wave 2 fast-only, wave 3 basic+fast-tank. Makes the 30-wave arc (item #20) feel crafted.
+
 
 ---
 
