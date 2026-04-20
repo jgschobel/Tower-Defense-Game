@@ -412,6 +412,15 @@ func _populate_tower_shop() -> void:
 		var td: TowerData = load(data_path)
 		tower_data_list.append(td)
 
+		# Tower unlock gating (ROADMAP #49). Locked rows render disabled
+		# with a padlock overlay + required-stars hint instead of hiding,
+		# so players know what's coming.
+		var is_locked: bool = false
+		var stars_req: int = 0
+		if GameManager and GameManager.has_method("is_tower_unlocked"):
+			is_locked = not GameManager.is_tower_unlocked(tower_id)
+			stars_req = GameManager.stars_required_for(tower_id)
+
 		var btn := Button.new()
 		# BTD-style side-shop row: full container width, 76px tall —
 		# big enough for a 60px icon on the left with name/cost/DPS
@@ -419,6 +428,9 @@ func _populate_tower_shop() -> void:
 		btn.custom_minimum_size = Vector2(0, 76)
 		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		btn.clip_contents = true
+		btn.disabled = is_locked
+		if is_locked:
+			btn.tooltip_text = "Brich %d Stärn zum z'freischalte" % stars_req
 		# Per-tier faint tint on the row background so the 5 friends are
 		# visually distinguishable even when the icons are loading.
 		_style_shop_button(btn, td)
@@ -494,6 +506,20 @@ func _populate_tower_shop() -> void:
 
 		row.add_child(text_col)
 		btn.add_child(row)
+		# Locked overlay — padlock + stars-required hint. Kept outside
+		# the HBox so it sits on top of the whole button.
+		if is_locked:
+			var lock_label := Label.new()
+			lock_label.text = "LOCK  %d*" % stars_req
+			lock_label.set_anchors_preset(Control.PRESET_CENTER)
+			lock_label.add_theme_font_size_override("font_size", 14)
+			lock_label.add_theme_color_override("font_color", Color(1, 0.95, 0.4))
+			lock_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
+			lock_label.add_theme_constant_override("outline_size", 3)
+			lock_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			btn.add_child(lock_label)
+			# Dim the row contents so the lock reads clearly.
+			row.modulate = Color(0.5, 0.5, 0.5, 0.9)
 		tower_shop.add_child(btn)
 
 
