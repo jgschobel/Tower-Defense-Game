@@ -181,7 +181,17 @@ func _try_place(screen_pos: Vector2) -> void:
 	SfxManager.play_place()
 	tower_placed.emit(tower)
 	_just_placed = true
+	# Adjacency buffs (ROADMAP #38/#41): recompute stats on every
+	# placed tower so newly-placed support towers immediately boost
+	# neighbors + existing towers pick up new support coverage.
+	_refresh_adjacency()
 	cancel_placement()
+
+
+func _refresh_adjacency() -> void:
+	for t in get_tree().get_nodes_in_group("towers"):
+		if t is BaseTower and t.has_method("_apply_data"):
+			t._apply_data()
 
 
 func _can_place_at(pos: Vector2) -> bool:
@@ -207,3 +217,4 @@ func _get_placement_error(pos: Vector2) -> String:
 
 func _on_tower_sold(tower: Node2D) -> void:
 	placed_towers.erase(tower)
+	_refresh_adjacency()
