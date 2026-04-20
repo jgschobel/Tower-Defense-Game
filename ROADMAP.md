@@ -118,6 +118,140 @@ requested. Loop picks these up one-by-one; each is a PR-sized slice.
 ### General organization (P1)
 35. **Sound + music config file** — `resources/audio_config.tres` with every SFX / music track referenced by id, tunable from the editor without touching code. Current state: everything hardcoded in sfx_manager.gd.
 
+### 🔥 User directive 2026-04-20 late — "copy BTD5" deep pass (P0)
+
+User playtests say the game is still too shallow. Each item below is a
+PR-sized slice for the autonomous loop.
+
+38. **Tower mechanical diversity — BTD5 parity.** "Rn all basically just
+    shoot." Each tower needs a fundamentally different *mechanic*, not
+    just different stats on the same shoot-projectile loop. Target:
+    - **Lemurius (banana)**: piercing projectile (bananas pass through
+      up to N enemies at higher tiers — like dart monkey).
+    - **Kühne (pollen sniper)**: first-strike + camo-detection + crit
+      (like sniper monkey / ninja monkey hybrid).
+    - **JoJo (acid flask)**: lingering ground puddle that DoTs
+      (already partial — ensure puddle scales with tier) + corrosion
+      debuff (enemies take +X% from all sources while acid-coated).
+    - **Cordula (volleyball)**: wide arc burst hitting N targets in a
+      cone (like boomerang monkey). Tier 3 = full-screen spike.
+    - **Amösius (tongue)**: single-target reel-in *pull* mechanic —
+      grabs farthest enemy, drags back 30% of path. Tier 3 = eats
+      small enemies whole (instant kill ≤50 HP). Like glue gunner +
+      tack shooter hybrid.
+    - Plus a **farm tower** (non-combat, generates gold per round —
+      BTD5 banana farm) and a **support tower** (buffs adjacent in
+      ~200px radius — BTD5 village). These are new .tres files.
+39. **Path A vs Path B = fundamentally different roles, not stat
+    bumps.** Today A is "more damage" and B is "more speed". Need:
+    - A-path = single-target specialist (damage, crit, armor-pierce)
+    - B-path = crowd-control specialist (multi-shot, slow, AoE, debuff)
+    So player actually makes a choice per tower. Each tier adds a
+    NEW visible behavior (not a +% stat), e.g. A1 = projectile gets
+    longer range, A2 = piercing, A3 = crit; B1 = extra shot, B2 =
+    slow on hit, B3 = full cone.
+40. **Per-tier art — real image variations, not color tint.** User:
+    "right now they just slightly change their color which looks
+    absolutely horrendous." Need: per-tier img2img generations using
+    the existing character face as source, adding tier-appropriate
+    gear/pose/accessories. Example: Lemurius tier-1 wears a headband,
+    tier-2 holds a bigger banana, tier-3 sits on a banana throne.
+    Generate 5 towers × 2 paths × 3 tiers = 30 img2img variants via
+    the existing `art-request` workflow. base_tower._update_visual()
+    already supports path_a_textures / path_b_textures arrays — just
+    need to populate them.
+41. **Tower synergies / adjacency effects (BTD5 village-style).**
+    Placing tower X within ~150px of tower Y grants a visible buff:
+    - Lemurius + Kühne → Lemurius bananas +15% range + pierce
+    - Cordula + Amösius → Cordula attack speed +20% while Amösius
+      has a target glued
+    - JoJo + farm tower → JoJo acid puddles give +1 gold per pop
+    - Kühne + support tower → Kühne crit chance +10%
+    - Farm + support tower → farm pays +25%
+    Render as faint gold lines between synergy pairs + small icon
+    on each tower sprite.
+42. **Regular screenshot-based playtest analysis loop.** User:
+    "you REALLY NEED to take screenshots and really look at them!"
+    Every N autonomous runs (N=3), run the playtest bot with
+    --capture-per-level flag (ROADMAP #32) that saves 7 final-wave
+    screenshots + 1 upgrade-comparison grid, commits them under
+    `docs/playtest_shots/YYYY-MM-DD/`. Chat-session Claude can then
+    `Read` the grid image and evaluate visual regressions without
+    running the game. Add an "audit-via-screenshots" mode to the
+    autonomous-dev workflow that pipes the grid into a Claude
+    inference call with prompt "list 5 visual issues in this image".
+43. **Level difficulty curve — BTD5 reference.** User: "the levels
+    still look ass — for difficulty and how fast happens copy
+    BTD5." BTD5 curve: wave 1 = easy warmup (5-8 enemies), wave 10 =
+    first real threat, wave 20 = first boss, wave 30 = first ceramic
+    bloon equivalent (Cervelat tier?), wave 40 = MOAB (boss fight),
+    wave 50 = BFB. Apply to our 30-wave extension (#20): wave 1 = 1
+    enemy, wave 5 = first real group, wave 10 = first tank, wave 15
+    = first healer, wave 20 = first boss, wave 25 = boss+minions,
+    wave 30 = gauntlet finale. Document the curve as a constant
+    `DIFFICULTY_WAVES` table in `scripts/systems/wave_curve.gd` and
+    have level_N.tres builders pull from it.
+44. **Side-widget shop not actually scrollable.** User reports
+    dragging to scroll doesn't work on touch. Fix: ensure the
+    ScrollContainer has `scroll_deadzone = 8` + `touch_scroll =
+    true` (Godot 4.x flag), and that child buttons don't eat the
+    scroll gesture. Verify on mobile Chrome via DevTools device
+    emulation.
+45. **More maps + more levels.** User: "not enough maps and
+    levels." Target: Level 8 (Coop-Einbruch), Level 9 (Cumulus-
+    Punkte-Kern), Level 10 (Finale Tüüfel-Äste — multi-path like
+    BTD5's "Workshop"). Each with 30 waves. Plus 3 bonus-mode
+    levels from section E (Self-Scan-Hölli, Banani-Träume, De
+    Tüüfel kommt heim).
+46. **Backgrounds look boring.** User: "background images and maps
+    look very boring." Combine with ROADMAP #29 but require: each
+    background needs at least 2 visible parallax layers + 1
+    particle effect (frost for L2, flour for L3, etc.). Not just a
+    single flat painting. `scenes/game/level_N.tscn` should layer:
+    - back layer (distant building / sky)
+    - mid layer (shelves / props, parallax_scale = 0.5)
+    - front overlay (CPUParticles2D for atmosphere)
+47. **Story evolves across levels — multiple characters.** User:
+    "intro talk / level intros need to be more varied and with
+    other characters as well, evolve the story!" Today each level
+    has 1 Swiss-German text block. Target: 3-5 page dialogue
+    with:
+    - rotating narrator (Lemurius → Kühne → Cordula → JoJo →
+      Amösius → back to Lemurius) per level
+    - a new supporting character every 2-3 levels
+      (e.g. Micheli-the-security-guard L3, Trudi-the-cashier L5,
+      Beni-the-parking-attendant L6)
+    - plot arc: wake up (L1) → realize the curse (L3) → confront
+      De Vegan-Tüüfel (L5) → chase through parkhuus (L6) → rooftop
+      showdown (L7)
+    Extends the story-screen-rework item already in P0 bugs.
+48. **Extra persistent currency per level-clear (Aminos).** User
+    wants a second currency (name suggestion: "Aminos" — since
+    Amösius has "amino") that accumulates across runs, spent in a
+    dedicated shop on permanent upgrades. Distinct from the
+    existing Spezial-Münzen concept — Aminos are earned
+    automatically (not mission-gated) at 5 per level clear,
+    scaling with difficulty. Spend in `scenes/ui/aminos_shop.tscn`
+    on: unlock new towers, unlock new map backgrounds, unlock new
+    tier-3 projectile skins.
+49. **Tower roster is progression-gated.** User: "initially not
+    all towers available — need to play to get them." Day-one
+    roster: Lemurius + Cordula only. Unlock order (by total
+    stars): 3 stars unlocks Kühne, 6 stars unlocks Amösius, 10
+    stars unlocks JoJo, 15 stars unlocks farm tower, 20 stars
+    unlocks support tower. Shop rows for locked towers show a
+    padlock icon + "Brich 3 Stärn um z'unlocke".
+50. **BTD5 feature parity pass — compile + pick.** Audit BTD5's
+    feature list and port what fits: Monkey Knowledge (passive
+    tree — we have Cumulus for that), Abilities (we have P0 "Active
+    Powers"), Hero Monkey (we have P0 hero system), MOABs (#20
+    boss-wave arc), camo bloons (nominate one enemy type to be
+    camo-until-revealed, e.g. "Schatte-Tofu"), regrow bloons (one
+    enemy that resurrects mid-path unless killed with specific
+    damage type), lead bloons (one enemy immune to physical
+    damage unless magic/explosion). Three new enemy behaviors
+    total — add to enemy_data.gd + wave_manager hooks.
+
 ### Wave pacing (P0 new)
 36. **Level 1-4 all start with Brötli** — user reported: "alle Levels zeigen am Anfang die Brote". Confirmed: L1 / L2 / L3 / L4 wave 1 all use `enemy_id: "basic"`. Only L5 (fast), L6 (swarm), L7 (flying) vary. Fix: give each level a thematic opener matching its theme — L2 should open with `fast` (frozen aisle = things slipping), L3 with `healer` (bakery = Dr. Rivella), L4 with `tank` (cellar = Cervelat).
 37. **Early-wave enemy variety knob** — within a level's first 3 waves, rotate at least 2 enemy types so the opener doesn't feel monotonous. Today L1 first 3 waves: all basic / all basic / basic+fast. Better: wave 1 basic, wave 2 fast-only, wave 3 basic+fast-tank. Makes the 30-wave arc (item #20) feel crafted.
