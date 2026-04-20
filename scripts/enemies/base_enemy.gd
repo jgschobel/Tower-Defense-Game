@@ -149,6 +149,30 @@ func apply_slow(factor: float, duration: float) -> void:
 	modulate = Color(0.6, 0.7, 1.0, 1.0)
 
 
+func flash_crit() -> void:
+	# Visual callback for crit hits (ROADMAP #38, Kühne). Big yellow
+	# "KRIT!" pop + brief sprite scale-punch. Called from base_tower
+	# before the damage is applied.
+	var label := Label.new()
+	label.text = "KRIT!"
+	label.add_theme_font_size_override("font_size", 24)
+	label.add_theme_color_override("font_color", Color(1, 0.95, 0.15))
+	label.add_theme_color_override("font_outline_color", Color(0.3, 0.1, 0, 1))
+	label.add_theme_constant_override("outline_size", 4)
+	label.position = Vector2(-24, -70)
+	label.z_index = 11
+	add_child(label)
+	var tw := create_tween().set_parallel(true)
+	tw.tween_property(label, "position:y", -110.0, 0.6)
+	tw.tween_property(label, "modulate:a", 0.0, 0.6)
+	tw.chain().tween_callback(label.queue_free)
+	if sprite:
+		var base_scale: Vector2 = sprite.scale
+		var punch := create_tween()
+		punch.tween_property(sprite, "scale", base_scale * 1.25, 0.08).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		punch.tween_property(sprite, "scale", base_scale, 0.14).set_trans(Tween.TRANS_SINE)
+
+
 func show_hit_reaction() -> void:
 	# Show a floating angry/sad label above the enemy
 	var reaction := Label.new()
