@@ -14,6 +14,7 @@ extends Node2D
 ##      for cases where release event is lost — press also fires a place.
 
 signal tower_placed(tower: Node2D)
+signal tower_removed(tower: Node2D)
 signal placement_cancelled
 signal placement_invalid(reason: String)
 
@@ -218,3 +219,4 @@ func _get_placement_error(pos: Vector2) -> String:
 func _on_tower_sold(tower: Node2D) -> void:
 	placed_towers.erase(tower)
 	_refresh_adjacency()
+	tower_removed.emit(tower)
