@@ -305,7 +305,9 @@ func _attack() -> void:
 	else:
 		origin_pos = global_position
 
-	SfxManager.play_shoot()
+	# Per-tower + per-tier shoot voice (ROADMAP #24)
+	var shoot_tier: int = max(path_a_tier, path_b_tier) if data.has_branching_upgrades() else upgrade_level
+	SfxManager.play_shoot(data.id, shoot_tier)
 	# Muzzle flash — colored burst in the direction of the target
 	if EffectPlayer and is_instance_valid(current_target):
 		var flash_dir := (current_target.global_position - origin_pos).normalized()

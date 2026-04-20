@@ -5,12 +5,55 @@ extends Node
 var _sample_rate: float = 22050.0
 
 
-func play_shoot() -> void:
-	_play_tone(880.0, 0.06, 0.3)
+func play_shoot(tower_id: String = "", tier: int = 0) -> void:
+	# Per-tower + per-tier shoot voice (ROADMAP #24). Each friend gets a
+	# distinct timbre; tiers bump pitch + add a bit of bite. Falls back
+	# to a generic warm pluck if tower_id is unknown.
+	var t: int = clampi(tier, 0, 3)
+	match tower_id:
+		"basic":
+			# Lemurius — bio-banana soft thump. Low warm body, quick mute.
+			_play_sweep(260.0 + t * 30.0, 180.0 + t * 20.0, 0.05, 0.24)
+		"sniper":
+			# Kühne — pollen whoosh + subtle chime layer per tier
+			_play_sweep(620.0 + t * 80.0, 360.0, 0.07, 0.20)
+		"splash":
+			# JoJo — glass clink / fizz, sharper at higher tiers
+			_play_tone(780.0 + t * 120.0, 0.045 + t * 0.01, 0.22)
+		"cordula":
+			# Cordula — volleyball pop, rubbery
+			_play_sweep(360.0, 180.0 + t * 40.0, 0.06, 0.28)
+		"slow":
+			# Amösius — sticky tongue schleck; lower + slower per tier
+			_play_sweep(500.0 - t * 60.0, 120.0, 0.08 + t * 0.01, 0.22)
+		_:
+			_play_tone(440.0, 0.05, 0.22)
 
 
 func play_hit() -> void:
 	_play_tone(440.0, 0.04, 0.2)
+
+
+func play_enemy_hit(enemy_id: String = "") -> void:
+	# Per-enemy hit/death variation (ROADMAP #27) — short pop tinted by
+	# the enemy's material.
+	match enemy_id:
+		"basic":   # Brötli — dry bread crunch
+			_play_tone(360.0, 0.03, 0.18, true)
+		"fast":    # Toblerone — wrapper crinkle
+			_play_tone(920.0, 0.03, 0.14, true)
+		"tank":    # Cervelat — meat slap
+			_play_sweep(220.0, 90.0, 0.06, 0.25)
+		"healer":  # Dr.Rivella — bottle clink
+			_play_tone(1400.0, 0.035, 0.18)
+		"flying":  # Fondue — wet splat
+			_play_tone(220.0, 0.045, 0.2, true)
+		"swarm":   # Tofu — tiny squeak
+			_play_tone(1650.0, 0.02, 0.12)
+		"boss":    # M-Tüüfel — deep hit (partial, real roar on death)
+			_play_sweep(180.0, 60.0, 0.07, 0.45)
+		_:
+			_play_tone(440.0, 0.04, 0.2)
 
 
 func play_death(enemy_health: float = 100.0) -> void:
