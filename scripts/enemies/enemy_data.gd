@@ -25,3 +25,18 @@ extends Resource
 @export var heal_radius: float = 60.0
 @export var spawns_on_death: String = "" # enemy id to spawn when this dies
 @export var spawn_count: int = 0
+
+# Camo (ROADMAP #50). Invisible to towers unless at least one placed
+# tower has `can_detect_camo` true. Visual: semi-transparent + dashed
+# outline so players can see it too. Kühne is the intended detector.
+@export var is_camo: bool = false
+
+# Regrow (ROADMAP #50). If healing, enemy resurrects once at
+# `regrow_hp_pct` of max_health if killed by non-PURE damage. Set by
+# killing damage_type in base_enemy.die().
+@export var can_regrow: bool = false
+@export var regrow_hp_pct: float = 0.4
+
+# Lead (ROADMAP #50). If true, only MAGIC or PURE damage deals full
+# damage. PHYSICAL damage is reduced to 15% before armor.
+@export var is_lead: bool = false
