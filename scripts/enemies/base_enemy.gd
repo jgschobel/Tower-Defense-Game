@@ -19,6 +19,7 @@ var _walk_phase: float = 0.0
 var _base_v_offset: float = 0.0
 var slow_timer: float = 0.0
 var is_dead: bool = false
+var _has_regrown: bool = false  # Regrow mechanic allows only one resurrect
 var _health_bar_tween: Tween = null
 
 @onready var sprite: Sprite2D = $Sprite2D
@@ -147,7 +148,36 @@ func take_damage(amount: float, damage_type: int = 0) -> void:
 	tween.tween_property(self, "modulate", restore_color, 0.15)
 
 	if health <= 0.0:
+		# Regrow (ROADMAP #50): non-PURE damage allows one resurrect per
+		# life at regrow_hp_pct of max. PURE damage (burn / holy) always
+		# permakills. Visual: green flash + "ZRUGG!" label so the player
+		# sees why the enemy didn't die.
+		if data and data.can_regrow and not _has_regrown and damage_type != 2:
+			_has_regrown = true
+			health = maxf(1.0, max_health * data.regrow_hp_pct)
+			_update_health_bar()
+			_play_regrow_effect()
+			return
 		die()
+
+
+func _play_regrow_effect() -> void:
+	modulate = Color(0.5, 1.4, 0.6)
+	var tw := create_tween()
+	tw.tween_property(self, "modulate", Color.WHITE, 0.4)
+	var label := Label.new()
+	label.text = "ZRUGG!"
+	label.add_theme_font_size_override("font_size", 20)
+	label.add_theme_color_override("font_color", Color(0.5, 1.0, 0.4))
+	label.add_theme_color_override("font_outline_color", Color(0.1, 0.25, 0, 1))
+	label.add_theme_constant_override("outline_size", 3)
+	label.position = Vector2(-30, -60)
+	label.z_index = 11
+	add_child(label)
+	var lt := create_tween().set_parallel(true)
+	lt.tween_property(label, "position:y", -100.0, 0.7)
+	lt.tween_property(label, "modulate:a", 0.0, 0.7)
+	lt.chain().tween_callback(label.queue_free)
 
 
 func apply_slow(factor: float, duration: float) -> void:
@@ -272,6 +302,7 @@ func reset_for_pool() -> void:
 		_apply_data()
 		_update_visual()
 	is_dead = false
+	_has_regrown = false
 	progress = 0.0
 	progress_ratio = 0.0
 	slow_factor = 1.0
