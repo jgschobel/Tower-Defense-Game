@@ -33,6 +33,37 @@ enum DamageType { PHYSICAL, MAGIC, PURE }
 @export var buff_damage_pct: float = 0.0
 @export var buff_speed_pct: float = 0.0
 
+# Farm tower (ROADMAP #38). If > 0, the tower generates `gold_per_round`
+# at the start of each wave instead of shooting. `damage` and
+# `attack_speed` are ignored. Upgrades increase the yield via
+# `upgrade_damage_bonus` (repurposed as "gold bonus per tier").
+@export var gold_per_round: int = 0
+
+# Support tower (ROADMAP #38). If true, the tower has no offensive
+# attack but emits a visible buff aura of radius `buff_range` that
+# boosts nearby towers' damage/speed (via `buff_damage_pct` /
+# `buff_speed_pct`). Effect applied by adjacency_manager.
+@export var is_support: bool = false
+
+# Projectile pierce count (ROADMAP #38, Lemurius). 1 = hit one enemy
+# then despawn (default). 2+ = pass through that many targets before
+# expiring, ignoring already-hit enemies.
+@export var pierce_count: int = 1
+
+# Crit chance (ROADMAP #38, Kühne). 0.0 = no crit, 0.25 = 25% chance
+# of 2x damage, etc. Tiers can bump via `path_b_crit_bonus`.
+@export var crit_chance: float = 0.0
+@export var crit_multiplier: float = 2.0
+
+# Pull mechanic (ROADMAP #38, Amösius). If > 0, the tower drags its
+# target backwards along the path by this fraction of total path on
+# every hit. 0.05 = reel back 5% per tick.
+@export var pull_path_fraction: float = 0.0
+
+# Cone burst (ROADMAP #38, Cordula). If > 0, projectile hits all
+# enemies within this cone half-angle (radians) from aim direction.
+@export var cone_half_angle: float = 0.0
+
 # Visual projectile style — how the base_projectile draws itself.
 # Each tower is thematically distinct: only Lemurius throws actual bananas.
 # Options: "banana" (default), "volleyball", "flask", "pollen", "tongue"

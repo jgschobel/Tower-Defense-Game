@@ -125,6 +125,31 @@ func _on_wave_started(wave_num: int, total: int) -> void:
 	hud.update_wave_info(wave_num, total)
 	hud.show_next_wave_button(false)
 	SfxManager.play_wave_start()
+	_pay_farm_towers()
+
+
+func _pay_farm_towers() -> void:
+	# Farm towers (ROADMAP #38) produce gold at the start of every wave.
+	# Yield = gold_per_round + sum of tier bonuses from upgrade_damage_bonus
+	# (repurposed as "gold bonus per tier" for farms).
+	for tower in get_tree().get_nodes_in_group("towers"):
+		if tower is BaseTower and tower.data and tower.data.gold_per_round > 0:
+			var yield_amount: int = tower.data.gold_per_round
+			# Branching: each path tier adds its damage_bonus as gold
+			if tower.data.has_branching_upgrades():
+				for i in tower.path_a_tier:
+					if i < tower.data.path_a_damage_bonus.size():
+						yield_amount += int(tower.data.path_a_damage_bonus[i])
+				for i in tower.path_b_tier:
+					if i < tower.data.path_b_damage_bonus.size():
+						yield_amount += int(tower.data.path_b_damage_bonus[i])
+			else:
+				for i in tower.upgrade_level:
+					if i < tower.data.upgrade_damage_bonus.size():
+						yield_amount += int(tower.data.upgrade_damage_bonus[i])
+			CurrencyManager.add_gold(yield_amount)
+			if tower.has_method("flash_earn"):
+				tower.flash_earn(yield_amount)
 
 
 func _on_wave_completed(_wave_num: int) -> void:
