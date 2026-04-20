@@ -3,6 +3,11 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-04-20 (audit-polish — L6 balance + level-select star glyphs)
+
+- balance(level): L6 "S'Parkhuus ★" rebalanced — starting_gold 1500→1800 (matches L7), all wave counts reduced ~25% so the bonus level is clearly easier than the L7 finale; wave-1 swarm dropped 60→30; description updated to mention bonus-challenge nature; closes ROADMAP balance item #15
+- polish(ui): level_select _stars_text now uses real Unicode star glyphs ★/☆ instead of */- (comment already said "Unicode stars" but code still used ASCII)
+
 ## 2026-04-19 (self-improve — placement toast clears on cancel)
 
 - fix(placement): toast now dismisses immediately when placement is

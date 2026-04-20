@@ -82,8 +82,7 @@ func _get_level_name(level_id: int) -> String:
 
 
 func _stars_text(count: int) -> String:
-	# Unicode stars — zero-asset visual upgrade over plain ASCII asterisks.
-	return "*".repeat(count) + "-".repeat(3 - count)
+	return "★".repeat(count) + "☆".repeat(3 - count)
 
 
 func _on_level_pressed(level_id: int) -> void:

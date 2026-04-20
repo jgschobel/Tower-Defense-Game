@@ -58,7 +58,7 @@ the user for anything unless explicitly noted.
 14. **`docs/design_polish.md`** — palette rules, shadow/highlight tokens, typography stack. Informs every subsequent visual PR.
 
 #### Balance drift
-15. **L6 "Bonus" vs L7 progression** — L6 is labeled Bonus but harder than L7 (1500g/15 lives vs 1800g/14 lives). Either rebalance L6 down or rename "S'Parkhuus ★" / reposition in menu.
+15. ~~**L6 "Bonus" vs L7 progression**~~ ✅ Fixed: L6 starting_gold 1500→1800, all wave counts reduced ~25% so L6 is clearly easier than L7 finale. L6 description updated to call it a bonus challenge.
 
 #### Infrastructure (not auto-pickable)
 16. **Playtest concurrency investigation** — push-triggered playtest ran once at 13:43Z then appeared blocked for ~1h despite 15+ merges. Suspected: GitHub's 1-queued-run concurrency limit OR minutes-quota hit. The `cancel-in-progress: false` on group `playtest` may need `cancel-in-progress: true` OR the workflow needs to check `github.repository_runs_remaining` before starting. Force-trigger commit `f65c3146` verified it still fires on direct push.
