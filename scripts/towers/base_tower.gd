@@ -347,10 +347,17 @@ func _attack() -> void:
 	projectile.set_meta("source_tower", self)
 	# setup() must not throw. If it does, quietly release the projectile.
 	if projectile.has_method("setup"):
+		# Crit roll (ROADMAP #38). Kühne pulls 2× damage at configured
+		# chance; other towers skip by default (crit_chance = 0).
+		var outbound_damage: float = effective_damage
+		if data.crit_chance > 0.0 and randf() < data.crit_chance:
+			outbound_damage *= data.crit_multiplier
+			if current_target and current_target.has_method("flash_crit"):
+				current_target.flash_crit()
 		projectile.setup(
 			origin_pos,
 			current_target,
-			effective_damage,
+			outbound_damage,
 			data.damage_type,
 			data.projectile_color,
 			data.is_splash,
@@ -364,6 +371,9 @@ func _attack() -> void:
 			data.ground_pool_damage_per_tick,
 			data.ground_pool_radius
 		)
+		# Carry pierce budget across to the projectile (Lemurius).
+		if "remaining_pierce" in projectile:
+			projectile.remaining_pierce = max(0, data.pierce_count - 1)
 	else:
 		push_warning("[tower] projectile has no setup() — releasing")
 		if ProjectilePool:
