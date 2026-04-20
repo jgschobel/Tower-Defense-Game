@@ -7,6 +7,26 @@ extends RefCounted
 const GAME_TITLE := "Affoltern Banani Raubzug"
 const GAME_SUBTITLE := "De Grooss Banane-Raubzug vo Züri-Affoltern"
 
+## Multi-page dialogue scaffolding (ROADMAP #47). Each level can now
+## provide a `pages` array (optional) in its intro dict. story_screen
+## advances through them one tap at a time. Page = {speaker, text}
+## where speaker rotates across the 5 friends + guest characters so
+## the plot actually evolves instead of reading like one monologue.
+##
+## Falls back to the legacy single `text` field if `pages` is absent,
+## so old levels still render. Migration is per-level, incremental.
+static func get_level_pages(level_id: int) -> Array:
+	var intro: Dictionary = get_level_intro(level_id)
+	if intro.has("pages") and intro["pages"] is Array:
+		return intro["pages"]
+	# Legacy conversion: wrap the flat `text` block as a single page
+	# spoken by Lemurius so the new UI has something to render.
+	var legacy_text: String = intro.get("text", "")
+	if legacy_text == "":
+		return []
+	return [{"speaker": "Lemurius", "text": legacy_text}]
+
+
 static func get_level_intro(level_id: int) -> Dictionary:
 	# Kept tight per user feedback — no fluff, one punchy beat per page.
 	match level_id:
@@ -16,6 +36,13 @@ static func get_level_intro(level_id: int) -> Dictionary:
 				"subtitle": "19:47. Chaos im Laden.",
 				"text": "D'Regäl sind läbig. D'Banane isch ide Tiefchüel-Abteilig. Das gaht gar nöd.\n\n\"Amösius — die Brötli händ Auge.\"\n\"...und Zähn.\"\n\"Mir bruuched meh Banane.\"",
 				"enemy_preview": "Bösi Brötli • Turbo Toblerone • Beefy Cervelat",
+				"pages": [
+					{"speaker": "Lemurius", "text": "D'Regäl sind läbig. Öpper het d'Banane ide Tiefchüel-Abteilig versteckt. Das gaht gar nöd."},
+					{"speaker": "Amösius", "text": "Lemurius — die Brötli händ Auge."},
+					{"speaker": "Lemurius", "text": "...und Zähn."},
+					{"speaker": "Cordula", "text": "Dä M-Tüüfel isch wider am Werch. Mir bruuched ä Plan."},
+					{"speaker": "Lemurius", "text": "Ich han scho eine. Meh Banane."},
+				],
 			}
 		2:
 			return {
