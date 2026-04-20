@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-04-20
+
+- fix(enemy): set EnemyData before add_child in enemy_pool so _ready() sees correct data and custom textures apply; add _update_visual() call in reset_for_pool so pooled enemies also get their sprite texture updated on reuse — fixes X-circle placeholder bug (playtest-feedback #135)
+
 ## 2026-04-19 (self-improve — placement toast clears on cancel)
 
 - fix(placement): toast now dismisses immediately when placement is

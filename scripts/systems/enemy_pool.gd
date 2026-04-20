@@ -55,8 +55,10 @@ func acquire(data, path_node) -> Node:
 	# Mark origin so release() knows whether to pool-park or queue_free.
 	# Mixing pool + non-pool instances was audit finding #5.
 	e.set_meta("pooled", from_pool)
-	path_node.add_child(e)
+	# Set data BEFORE add_child so _ready() sees it for fresh instances,
+	# allowing _update_visual() to apply the correct texture immediately.
 	e.data = data
+	path_node.add_child(e)
 	if e.has_method("reset_for_pool"):
 		e.call("reset_for_pool")
 	_activate(e)
