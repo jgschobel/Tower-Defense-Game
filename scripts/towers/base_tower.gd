@@ -374,6 +374,9 @@ func _attack() -> void:
 		# Carry pierce budget across to the projectile (Lemurius).
 		if "remaining_pierce" in projectile:
 			projectile.remaining_pierce = max(0, data.pierce_count - 1)
+		# Amösius pull fraction.
+		if "pull_path_fraction" in projectile:
+			projectile.pull_path_fraction = data.pull_path_fraction
 	else:
 		push_warning("[tower] projectile has no setup() — releasing")
 		if ProjectilePool:
