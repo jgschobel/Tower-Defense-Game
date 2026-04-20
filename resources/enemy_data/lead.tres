@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "lead"
+display_name = "Büchse-Brätzeli"
+friend_character_id = "enemy_tank"
+max_health = 140.0
+move_speed = 80.0
+armor = 2.0
+gold_reward = 18
+base_color = Color(0.55, 0.55, 0.6, 1)
+scale_factor = 1.25
+is_flying = false
+heals_nearby = false
+is_lead = true
