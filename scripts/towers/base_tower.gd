@@ -313,6 +313,25 @@ func _attack() -> void:
 	# Per-tower + per-tier shoot voice (ROADMAP #24)
 	var shoot_tier: int = max(path_a_tier, path_b_tier) if data.has_branching_upgrades() else upgrade_level
 	SfxManager.play_shoot(data.id, shoot_tier)
+
+	# Cordula cone burst (ROADMAP #38). Any enemy within data.cone_half_angle
+	# of the aim direction takes 60% damage instantly, in addition to the
+	# main projectile hit. No visible extra projectile — the main burst
+	# animation already reads as an arc.
+	if data.cone_half_angle > 0.0 and current_target:
+		var aim: Vector2 = (current_target.global_position - global_position).normalized()
+		var range_sq: float = data.attack_range * data.attack_range
+		for enemy_node in get_tree().get_nodes_in_group("enemies"):
+			var enemy := enemy_node as BaseEnemy
+			if enemy == null or enemy == current_target or enemy.is_dead:
+				continue
+			var delta: Vector2 = enemy.global_position - global_position
+			if delta.length_squared() > range_sq:
+				continue
+			var angle_to: float = acos(clamp(aim.dot(delta.normalized()), -1.0, 1.0))
+			if angle_to <= data.cone_half_angle:
+				enemy.take_damage(effective_damage * 0.6, data.damage_type)
+				enemy.show_hit_reaction()
 	# Muzzle flash — colored burst in the direction of the target
 	if EffectPlayer and is_instance_valid(current_target):
 		var flash_dir := (current_target.global_position - origin_pos).normalized()
