@@ -24,6 +24,7 @@ config/icon="res://icon.svg"
 
 GameManager="*res://scripts/autoload/game_manager.gd"
 CurrencyManager="*res://scripts/autoload/currency_manager.gd"
+AminosManager="*res://scripts/autoload/aminos_manager.gd"
 MusicManager="*res://scripts/systems/music_manager.gd"
 SfxManager="*res://scripts/systems/sfx_manager.gd"
 AutoPlaytest="*res://scripts/playtest/auto_playtest.gd"
