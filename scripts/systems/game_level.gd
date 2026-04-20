@@ -24,7 +24,10 @@ func _ready() -> void:
 		GameManager.start_level(level_id)
 
 	Engine.time_scale = 1.0
-	MusicManager.play_music()
+	if MusicManager.has_method("set_level_track"):
+		MusicManager.set_level_track(level_id)
+	else:
+		MusicManager.play_music()
 
 	wave_manager.enemy_path = enemy_path
 	wave_manager.wave_started.connect(_on_wave_started)

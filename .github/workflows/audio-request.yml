@@ -1,0 +1,66 @@
+name: Audio Request (HuggingFace)
+
+# Self-triggering: runs on push-to-main whenever requests.yaml or the
+# generator script changes. Calls HuggingFace Inference API
+# (AudioGen for SFX, MusicGen for music, both free tier) to bake any
+# entries whose target file doesn't yet exist. Opens an auto-merge PR
+# with the new audio + updated resources/audio_config.tres.
+#
+# Requires repository secret HUGGINGFACE_API_KEY. If unset, the script
+# no-ops — safe default. Grab a free token at
+# https://huggingface.co/settings/tokens (role: read).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "resources/audio/requests.yaml"
+      - "scripts/audio_tools/generate_ai_audio.py"
+      - ".github/workflows/audio-request.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: audio-request
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate AI audio
+        env:
+          HUGGINGFACE_API_KEY: ${{ secrets.HUGGINGFACE_API_KEY }}
+        run: |
+          set -e
+          python3 scripts/audio_tools/generate_ai_audio.py
+
+      - name: Open PR if anything changed
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          if [[ -z "$(git status --porcelain)" ]]; then
+            echo "No audio changes (token absent or all files present)."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          BRANCH="audio-request/ai-$(date +%s)"
+          git checkout -b "$BRANCH"
+          git add assets/audio/ resources/audio_config.tres
+          git commit -m "chore(audio): bake AI-generated clips from requests.yaml"
+          git push -u origin "$BRANCH"
+          gh pr create \
+            --title "chore(audio): bake AI-generated audio" \
+            --body "Automated: HuggingFace Inference (AudioGen + MusicGen) generated per-tower / per-enemy / per-level audio from resources/audio/requests.yaml." \
+            --base main \
+            --head "$BRANCH"
+          gh pr merge --squash --auto "$BRANCH" || true

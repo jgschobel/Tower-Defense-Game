@@ -1,0 +1,135 @@
+# Declarative AI audio requests (ROADMAP #25 / #35).
+#
+# Processed by scripts/audio_tools/generate_ai_audio.py via the
+# audio-request workflow. For each entry, if the target_path file is
+# missing the script calls HuggingFace Inference API (AudioGen for
+# SFX, MusicGen for music) and writes the .ogg to target_path, then
+# wires the id into resources/audio_config.tres. Existing files are
+# never overwritten — to regenerate, delete the file first.
+#
+# Pricing: HuggingFace Inference free tier covers ~30k requests/mo.
+# One-time bake of this file uses <50 requests. Keep prompts short
+# and specific — AudioGen struggles with vague input.
+
+sfx:
+  # --- Per-tower shoots (per tier) ---
+  # Lemurius (basic) — bio-banana thump
+  - id: tower.basic.shoot.t0
+    prompt: "short soft thump of a banana hitting a surface, cartoon"
+    duration: 0.5
+    target_path: assets/audio/sfx/ai/tower_basic_shoot_t0.ogg
+  - id: tower.basic.shoot.t1
+    prompt: "rubbery banana toss, short, punchy, cartoon"
+    duration: 0.5
+    target_path: assets/audio/sfx/ai/tower_basic_shoot_t1.ogg
+  - id: tower.basic.shoot.t2
+    prompt: "banana cannon firing, short, woody thump with rubber tail"
+    duration: 0.6
+    target_path: assets/audio/sfx/ai/tower_basic_shoot_t2.ogg
+  - id: tower.basic.shoot.t3
+    prompt: "explosive khaki bomb launch, short boom with cartoon pitch"
+    duration: 0.6
+    target_path: assets/audio/sfx/ai/tower_basic_shoot_t3.ogg
+  # Kühne (sniper) — pollen whoosh
+  - id: tower.sniper.shoot.t0
+    prompt: "short sharp pollen whoosh, subtle chime, airy"
+    duration: 0.5
+    target_path: assets/audio/sfx/ai/tower_sniper_shoot_t0.ogg
+  - id: tower.sniper.shoot.t3
+    prompt: "fire lily bloom firing, short hot whoosh with bright chime"
+    duration: 0.6
+    target_path: assets/audio/sfx/ai/tower_sniper_shoot_t3.ogg
+  # JoJo (splash) — glass clink + fizz
+  - id: tower.splash.shoot.t0
+    prompt: "short glass flask thrown, clink and fizz"
+    duration: 0.5
+    target_path: assets/audio/sfx/ai/tower_splash_shoot_t0.ogg
+  - id: tower.splash.shoot.t3
+    prompt: "chemistry explosion, short boom with bubbling tail"
+    duration: 0.6
+    target_path: assets/audio/sfx/ai/tower_splash_shoot_t3.ogg
+  # Cordula — volleyball pop
+  - id: tower.cordula.shoot.t0
+    prompt: "short volleyball spike pop, rubbery, crowd hint"
+    duration: 0.5
+    target_path: assets/audio/sfx/ai/tower_cordula_shoot_t0.ogg
+  - id: tower.cordula.shoot.t3
+    prompt: "party cannon fire, short boom with crowd cheer tail"
+    duration: 0.6
+    target_path: assets/audio/sfx/ai/tower_cordula_shoot_t3.ogg
+  # Amösius (slow) — tongue schleck
+  - id: tower.slow.shoot.t0
+    prompt: "short sticky tongue slap, wet schleck, cartoon"
+    duration: 0.5
+    target_path: assets/audio/sfx/ai/tower_slow_shoot_t0.ogg
+  - id: tower.slow.shoot.t3
+    prompt: "long reeling tongue whip, wet thwip with pull tail"
+    duration: 0.7
+    target_path: assets/audio/sfx/ai/tower_slow_shoot_t3.ogg
+
+  # --- Per-enemy hit voices ---
+  - id: enemy.basic.hit
+    prompt: "dry bread crunch, short and crisp"
+    duration: 0.3
+    target_path: assets/audio/sfx/ai/enemy_basic_hit.ogg
+  - id: enemy.fast.hit
+    prompt: "candy bar wrapper crinkle, short and sharp"
+    duration: 0.3
+    target_path: assets/audio/sfx/ai/enemy_fast_hit.ogg
+  - id: enemy.tank.hit
+    prompt: "heavy meat slap, wet and meaty"
+    duration: 0.4
+    target_path: assets/audio/sfx/ai/enemy_tank_hit.ogg
+  - id: enemy.healer.hit
+    prompt: "glass bottle clink, short bright"
+    duration: 0.3
+    target_path: assets/audio/sfx/ai/enemy_healer_hit.ogg
+  - id: enemy.flying.hit
+    prompt: "wet cheese fondue splat, thick and viscous"
+    duration: 0.4
+    target_path: assets/audio/sfx/ai/enemy_flying_hit.ogg
+  - id: enemy.swarm.hit
+    prompt: "tofu squeak, tiny rubbery pop"
+    duration: 0.25
+    target_path: assets/audio/sfx/ai/enemy_swarm_hit.ogg
+  - id: enemy.boss.hit
+    prompt: "deep demonic thud, short menacing"
+    duration: 0.5
+    target_path: assets/audio/sfx/ai/enemy_boss_hit.ogg
+
+  # --- Setpieces ---
+  - id: boss_roar
+    prompt: "deep demonic roar, rumbling descent, cinematic"
+    duration: 1.5
+    target_path: assets/audio/sfx/ai/boss_roar.ogg
+
+# Per-level background music (MusicGen). Each track ~20s, loops seamlessly.
+music:
+  - id: music.level_1
+    prompt: "cheery 8-bit supermarket jingle, upbeat, playful, 100bpm"
+    duration: 20
+    target_path: assets/audio/music/ai/level_1.ogg
+  - id: music.level_2
+    prompt: "icy ambient chiptune, cold shimmer, slow 80bpm, mysterious"
+    duration: 20
+    target_path: assets/audio/music/ai/level_2.ogg
+  - id: music.level_3
+    prompt: "warm bakery organ chiptune, cozy, medium 90bpm"
+    duration: 20
+    target_path: assets/audio/music/ai/level_3.ogg
+  - id: music.level_4
+    prompt: "dark dub cellar groove, heavy bass, 85bpm, moody"
+    duration: 20
+    target_path: assets/audio/music/ai/level_4.ogg
+  - id: music.level_5
+    prompt: "intense boss battle chiptune, driving drums, 120bpm, urgent"
+    duration: 20
+    target_path: assets/audio/music/ai/level_5.ogg
+  - id: music.level_6
+    prompt: "industrial parking garage chiptune, neon, 100bpm, gritty"
+    duration: 20
+    target_path: assets/audio/music/ai/level_6.ogg
+  - id: music.level_7
+    prompt: "cinematic rooftop finale, sweeping chiptune, 110bpm, triumphant"
+    duration: 25
+    target_path: assets/audio/music/ai/level_7.ogg

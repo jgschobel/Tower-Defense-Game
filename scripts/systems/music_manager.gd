@@ -6,8 +6,11 @@ extends Node
 ##   - "game"  — energetic, faster (inside gameplay levels)
 ## Switches automatically based on GameManager.current_state transitions.
 
+const AUDIO_CONFIG_PATH := "res://resources/audio_config.tres"
+
 var _player: AudioStreamPlayer
 var _playback: AudioStreamGeneratorPlayback
+var _baked_player: AudioStreamPlayer = null
 var _sample_rate: float = 22050.0
 var _time: float = 0.0
 var _beat_duration: float = 0.21
@@ -16,6 +19,7 @@ var _note_time: float = 0.0
 var _is_playing: bool = false
 var _volume: float = 0.22  # softer default (was 0.3 — user said it was cheap)
 var _current_track: String = ""
+var _audio_config: AudioConfig = null
 
 # --- MENU TRACK: slow, mellow, welcoming (C major pentatonic, 100 BPM) ---
 var _menu_melody: Array = [
@@ -97,6 +101,17 @@ func _ready() -> void:
 	add_child(_player)
 	_apply_user_volume()
 
+	# Secondary player for baked (AI-generated) level music tracks.
+	# Procedural player stays alive as fallback.
+	_baked_player = AudioStreamPlayer.new()
+	_baked_player.bus = "Master"
+	add_child(_baked_player)
+
+	if ResourceLoader.exists(AUDIO_CONFIG_PATH):
+		var cfg: Resource = load(AUDIO_CONFIG_PATH)
+		if cfg is AudioConfig:
+			_audio_config = cfg
+
 	# Auto-start the menu track. Persists across scene changes because
 	# MusicManager is an autoload singleton.
 	set_track("menu")
@@ -106,6 +121,31 @@ func _ready() -> void:
 		GameManager.game_state_changed.connect(_on_game_state_changed)
 
 
+func set_level_track(level_id: int) -> void:
+	# Switch to a baked per-level .ogg (ROADMAP #26) if AudioConfig
+	# declares one, otherwise fall back to the procedural "game" track.
+	if _audio_config != null:
+		var path: String = _audio_config.get_music("music.level_%d" % level_id)
+		if path != "" and ResourceLoader.exists(path):
+			var stream: AudioStream = load(path)
+			if stream != null:
+				# OGG loop flag — Godot plays to end then restarts.
+				if stream is AudioStreamOggVorbis:
+					stream.loop = true
+				_player.stop()
+				_is_playing = false
+				_baked_player.stream = stream
+				_apply_user_volume()
+				_baked_player.play()
+				_current_track = "baked_level_%d" % level_id
+				return
+	# Fallback
+	if _baked_player != null and _baked_player.playing:
+		_baked_player.stop()
+	set_track("game")
+	play_music()
+
+
 func _apply_user_volume() -> void:
 	if not _player:
 		return
@@ -113,10 +153,10 @@ func _apply_user_volume() -> void:
 	if GameManager:
 		user_vol = GameManager.music_volume
 	var effective := _volume * user_vol
-	if effective <= 0.0001:
-		_player.volume_db = -80.0
-	else:
-		_player.volume_db = linear_to_db(effective)
+	var db: float = -80.0 if effective <= 0.0001 else linear_to_db(effective)
+	_player.volume_db = db
+	if _baked_player:
+		_baked_player.volume_db = db
 
 
 func refresh_volume() -> void:
