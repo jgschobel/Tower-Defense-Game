@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-04-20
+
+- fix(backgrounds+menu): level backgrounds now render using Sprite2D (TextureRect-child-of-Node2D had 0×0 size in GL Compat); wired maps_v3 textures (all 7 levels); L6 FloorPattern seam removed; main_menu BG ColorRect prevents blank-white screenshot; playtester waits 0.5s before menu capture — closes playtest-feedback #134 #139 #140 #142
+
 ## 2026-04-19 (self-improve — placement toast clears on cancel)
 
 - fix(placement): toast now dismisses immediately when placement is
