@@ -1,0 +1,59 @@
+name: Audio Fetch (Kenney CC0)
+
+# Self-triggering: runs on every push to main whenever the fetch
+# script or audio config changes, plus manual dispatch for debugging.
+# Downloads Kenney.nl CC0 audio packs and bakes the selected clips
+# into assets/audio/sfx/kenney/, updating resources/audio_config.tres.
+# Safe to re-run — script is idempotent.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/audio_tools/fetch_kenney.py"
+      - ".github/workflows/audio-fetch.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: audio-fetch
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch & bake Kenney audio
+        run: |
+          set -e
+          python3 scripts/audio_tools/fetch_kenney.py
+
+      - name: Open PR if anything changed
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          if [[ -z "$(git status --porcelain)" ]]; then
+            echo "No audio changes to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          BRANCH="audio-fetch/kenney-$(date +%s)"
+          git checkout -b "$BRANCH"
+          git add assets/audio/sfx/kenney/ resources/audio_config.tres
+          git commit -m "chore(audio): bake Kenney CC0 clips into audio_config"
+          git push -u origin "$BRANCH"
+          gh pr create \
+            --title "chore(audio): bake Kenney CC0 SFX" \
+            --body "Automated: downloaded Kenney.nl CC0 audio packs and wired them into \`resources/audio_config.tres\`. Per-sfx attribution lives in \`assets/audio/sfx/kenney/README.md\`." \
+            --base main \
+            --head "$BRANCH"
+          gh pr merge --squash --auto "$BRANCH" || true
