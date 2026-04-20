@@ -64,6 +64,10 @@ enum DamageType { PHYSICAL, MAGIC, PURE }
 # enemies within this cone half-angle (radians) from aim direction.
 @export var cone_half_angle: float = 0.0
 
+# Camo detection (ROADMAP #50). Towers with this flag see camo
+# enemies + can propagate detection to non-detectors within buff_range.
+@export var can_detect_camo: bool = false
+
 # Visual projectile style — how the base_projectile draws itself.
 # Each tower is thematically distinct: only Lemurius throws actual bananas.
 # Options: "banana" (default), "volleyball", "flask", "pollen", "tongue"
