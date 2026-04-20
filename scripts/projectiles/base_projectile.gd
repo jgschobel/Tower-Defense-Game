@@ -30,6 +30,13 @@ var _spin_speed: float = 12.0
 var _is_tongue: bool = false
 var _origin_pos: Vector2 = Vector2.ZERO
 
+# Pierce (ROADMAP #38, Lemurius). remaining_pierce > 0 means the
+# projectile keeps flying after each hit, chaining to the next
+# unhit enemy within a small detection radius until the budget
+# runs out or no eligible targets remain.
+var remaining_pierce: int = 0
+var _pierced_enemies: Array = []
+
 # Styles that render themselves via _draw() — the Sprite2D is hidden for
 # these. Hoisted to module scope so adding a new style only requires one
 # edit instead of three (audit P2 drift risk).
@@ -203,6 +210,7 @@ func _hit() -> void:
 		var was_alive: bool = not target.is_dead
 		target.take_damage(damage, damage_type)
 		target.show_hit_reaction()
+		_pierced_enemies.append(target)
 		# Impact sparks at the hit position, tinted by this projectile's color
 		if EffectPlayer:
 			EffectPlayer.spawn_impact_sparks(global_position, color)
@@ -215,6 +223,17 @@ func _hit() -> void:
 			var src = get_meta("source_tower")
 			if src != null and is_instance_valid(src) and "kill_count" in src:
 				src.kill_count += 1
+
+	# Pierce (ROADMAP #38): if budget remains, pick a nearby unhit enemy
+	# and keep flying instead of releasing.
+	if remaining_pierce > 0:
+		remaining_pierce -= 1
+		var next: BaseEnemy = _find_pierce_target()
+		if next != null:
+			target = next
+			_last_target_pos = next.global_position
+			_direction = (next.global_position - global_position).normalized()
+			return
 
 	if is_splash and splash_radius > 0.0:
 		var src_tower = get_meta("source_tower") if has_meta("source_tower") else null
@@ -265,10 +284,26 @@ func _spawn_acid_pool() -> void:
 	host.add_child(pool)
 
 
+func _find_pierce_target() -> BaseEnemy:
+	var best: BaseEnemy = null
+	var best_dist: float = 220.0  # cap how far pierce-chains reach
+	for enemy_node in get_tree().get_nodes_in_group("enemies"):
+		var enemy := enemy_node as BaseEnemy
+		if enemy == null or enemy.is_dead or enemy in _pierced_enemies:
+			continue
+		var d: float = global_position.distance_to(enemy.global_position)
+		if d < best_dist:
+			best_dist = d
+			best = enemy
+	return best
+
+
 func reset_for_pool() -> void:
 	target = null
 	damage = 0.0
 	damage_type = 0
+	remaining_pierce = 0
+	_pierced_enemies.clear()
 	is_splash = false
 	splash_radius = 0.0
 	splash_damage_pct = 0.5
