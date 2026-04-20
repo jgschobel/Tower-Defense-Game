@@ -123,7 +123,14 @@ func take_damage(amount: float, damage_type: int = 0) -> void:
 		2: effective_armor = 0.0
 		_: effective_armor = armor
 
-	var actual_damage := maxf(1.0, amount - effective_armor)
+	# Lead (ROADMAP #50): physical weapons bounce. Magic / pure pass
+	# through normally. Reduces pre-armor damage to 15% so the enemy
+	# feels like it REALLY wants a magic friend to counter it.
+	var pre_armor: float = amount
+	if data and data.is_lead and damage_type == 0:
+		pre_armor *= 0.15
+
+	var actual_damage := maxf(1.0, pre_armor - effective_armor)
 	health -= actual_damage
 	_update_health_bar()
 
