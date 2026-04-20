@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "camo"
+display_name = "Schatte-Tofu"
+friend_character_id = "enemy_swarm"
+max_health = 45.0
+move_speed = 160.0
+armor = 0.0
+gold_reward = 12
+base_color = Color(0.4, 0.4, 0.5, 1)
+scale_factor = 1.2
+is_flying = false
+heals_nearby = false
+is_camo = true

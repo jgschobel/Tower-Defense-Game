@@ -27,6 +27,7 @@ buff_damage_pct = 0.0
 buff_speed_pct = 0.0
 crit_chance = 0.2
 crit_multiplier = 2.0
+can_detect_camo = true
 base_color = Color(0.9, 0.8, 0.2, 1)
 projectile_color = Color(1, 0.95, 0.3, 1)
 custom_texture = ExtResource("2")

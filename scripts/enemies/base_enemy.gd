@@ -50,6 +50,14 @@ func _apply_data() -> void:
 	armor = data.armor
 	gold_reward = data.gold_reward
 
+	# Camo visual (ROADMAP #50) — ghostly, lower opacity so the player
+	# sees something but towers without can_detect_camo won't target.
+	if sprite:
+		if data.is_camo:
+			sprite.modulate = Color(1, 1, 1, 0.35)
+		else:
+			sprite.modulate = Color(1, 1, 1, 1)
+
 	if heal_timer_node:
 		# Always stop first — if this enemy was reused from pool, the
 		# timer may still be live from its previous life. For non-
