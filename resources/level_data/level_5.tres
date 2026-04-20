@@ -7,7 +7,7 @@ script = ExtResource("1")
 level_id = 5
 level_name = "D'Kasse — Endkampf"
 description = "D'Kasse 8 spuckt verfluechti Quittige. Coupon-Tüüfel marschiered. Cumulus-Punkte explodiered."
-starting_gold = 900
+starting_gold = 220
 starting_lives = 18
 waves = [
 	{"groups": [{"enemy_id": "fast", "count": 25, "spawn_delay": 0.3}]},

@@ -7,7 +7,7 @@ script = ExtResource("1")
 level_id = 6
 level_name = "S'Parkhuus ★"
 description = "Nach de Kasse chömed sie dur's Parkhuus zrugg. S'Parkhuus isch e Bonus-Level — hert, aber fair. Wenn du hie überläbsch bisch en echte Migros-Veteran."
-starting_gold = 1800
+starting_gold = 280
 starting_lives = 15
 waves = [
 	{"groups": [{"enemy_id": "swarm", "count": 30, "spawn_delay": 0.15}]},
