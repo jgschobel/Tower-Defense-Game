@@ -3,6 +3,13 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-04-20 (audit-polish — P0 playtest fixes: backgrounds, enemies, main menu)
+
+- fix(backgrounds): all 7 levels now use maps_v3 AI-generated art via Sprite2D at (640,360); L4 CellarTiles + L6 FloorPattern seam nodes removed; closes #147 #140 #149 #142
+- fix(enemy): enemy_pool.gd sets e.data before add_child so _ready() applies texture immediately; base_enemy.reset_for_pool() calls _update_visual() after _apply_data() for pool reuse; closes #141
+- fix(main-menu): added dark BG ColorRect as first child so menu is never blank-white; closes #146 #139
+- fix(playtest): auto_playtest.gd waits 0.5s before menu screenshot instead of 1 process_frame (was capturing before renderer completed)
+
 ## 2026-04-20 (audit-polish — L6 balance + level-select star glyphs)
 
 - balance(level): L6 "S'Parkhuus ★" rebalanced — starting_gold 1500→1800 (matches L7), all wave counts reduced ~25% so the bonus level is clearly easier than the L7 finale; wave-1 swarm dropped 60→30; description updated to mention bonus-challenge nature; closes ROADMAP balance item #15
