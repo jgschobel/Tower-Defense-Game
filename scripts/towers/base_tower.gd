@@ -206,6 +206,11 @@ func _process(delta: float) -> void:
 	if not is_placed or not data:
 		return
 
+	# Farm + support towers have no offensive loop (ROADMAP #38). Idle bob
+	# tween keeps them "alive"; gold/buff effects fire from signal hooks.
+	if data.gold_per_round > 0 or data.is_support:
+		return
+
 	# Clean up dead enemies from range list
 	var valid_enemies: Array = []
 	for e in _enemies_in_range:
