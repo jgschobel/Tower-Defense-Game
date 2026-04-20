@@ -26,7 +26,7 @@ var _game_speed: float = 1.0
 var _selected_tower: BaseTower = null
 var _is_placing: bool = false
 
-var _shop_tower_ids: Array = ["basic", "sniper", "splash", "cordula", "slow", "joe", "justus", "seve"]
+var _shop_tower_ids: Array = ["basic", "sniper", "splash", "cordula", "slow", "farm", "joe", "justus", "seve"]
 
 # Side-shop collapse state + responsive sizing. `shop_collapsed` persists
 # across one session only (not saved). Shop width is computed per-viewport
