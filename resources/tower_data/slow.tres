@@ -25,6 +25,7 @@ can_target_flying = true
 buff_range = 0.0
 buff_damage_pct = 0.0
 buff_speed_pct = 0.0
+pull_path_fraction = 0.05
 base_color = Color(0.3, 0.8, 0.4, 1)
 projectile_color = Color(1, 0.5, 0.6, 1)
 custom_texture = ExtResource("2")

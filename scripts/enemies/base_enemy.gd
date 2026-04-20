@@ -149,6 +149,20 @@ func apply_slow(factor: float, duration: float) -> void:
 	modulate = Color(0.6, 0.7, 1.0, 1.0)
 
 
+func pull_back(fraction: float) -> void:
+	# Amösius tongue pull (ROADMAP #38). Reduces progress_ratio by the
+	# given fraction of total path, floored at 0. Small tween on
+	# modulate briefly tints the enemy cyan to signal the grab.
+	if fraction <= 0.0 or is_dead:
+		return
+	progress_ratio = max(0.0, progress_ratio - fraction)
+	if sprite:
+		var base_mod: Color = sprite.modulate
+		var tw := create_tween()
+		tw.tween_property(sprite, "modulate", Color(0.4, 0.8, 1.0, 1), 0.08)
+		tw.tween_property(sprite, "modulate", base_mod, 0.25)
+
+
 func flash_crit() -> void:
 	# Visual callback for crit hits (ROADMAP #38, Kühne). Big yellow
 	# "KRIT!" pop + brief sprite scale-punch. Called from base_tower

@@ -37,6 +37,10 @@ var _origin_pos: Vector2 = Vector2.ZERO
 var remaining_pierce: int = 0
 var _pierced_enemies: Array = []
 
+# Amösius pull (ROADMAP #38). > 0 = on hit, reel enemy back this
+# fraction of the path via BaseEnemy.pull_back().
+var pull_path_fraction: float = 0.0
+
 # Styles that render themselves via _draw() — the Sprite2D is hidden for
 # these. Hoisted to module scope so adding a new style only requires one
 # edit instead of three (audit P2 drift risk).
@@ -218,6 +222,9 @@ func _hit() -> void:
 		if slow_amount > 0.0 and slow_duration > 0.0:
 			target.apply_slow(1.0 - slow_amount, slow_duration)
 
+		if pull_path_fraction > 0.0 and target.has_method("pull_back"):
+			target.pull_back(pull_path_fraction)
+
 		# If the target just died, credit the kill to the owning tower
 		if was_alive and target.is_dead and has_meta("source_tower"):
 			var src = get_meta("source_tower")
@@ -304,6 +311,7 @@ func reset_for_pool() -> void:
 	damage_type = 0
 	remaining_pierce = 0
 	_pierced_enemies.clear()
+	pull_path_fraction = 0.0
 	is_splash = false
 	splash_radius = 0.0
 	splash_damage_pct = 0.5
