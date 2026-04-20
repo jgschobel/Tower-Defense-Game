@@ -3,6 +3,11 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-04-20 (audit-polish — playtest bug fixes)
+
+- fix(hud): enemy intro overlay now zooms IN (0.5x→1.0x) instead of OUT (2.0x→1.0x), preventing it from filling the viewport before tweening; TextureRect constrained to 80×80 with SIZE_SHRINK_CENTER to stop expansion (closes playtest-feedback #129)
+- fix(tower): upgrade floating labels clear immediately when next upgrade purchased — old fading labels no longer accumulate above tower; tween callback uses is_instance_valid guard (closes playtest-feedback #130)
+
 ## 2026-04-19 (self-improve — placement toast clears on cancel)
 
 - fix(placement): toast now dismisses immediately when placement is

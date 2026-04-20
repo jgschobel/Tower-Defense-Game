@@ -594,8 +594,11 @@ func show_enemy_intro(enemy_id: String, enemy_data: Resource) -> void:
 		if SfxManager and SfxManager.has_method("play_boss_roar"):
 			SfxManager.play_boss_roar()
 
-	# Zoom-in + fade — 0.25s in, 0.7s hold, 0.25s out
-	overlay.scale = Vector2(2.0, 2.0)
+	# Zoom-in + fade — start small (0.5x), grow to 1.0x over 0.25s, hold, fade out.
+	# Previously started at 2.0x which filled the viewport before tweening down
+	# (playtest-feedback #129: overlay appeared as zoomed-in tower portrait).
+	overlay.scale = Vector2(0.5, 0.5)
+	overlay.modulate = Color(1, 1, 1, 0)
 	var tw := overlay.create_tween()
 	tw.set_parallel(true)
 	tw.tween_property(overlay, "modulate:a", 1.0, 0.25)
@@ -614,13 +617,22 @@ func _build_enemy_preview(enemy_data: Resource) -> Control:
 	if not enemy_data:
 		return null
 	var wrap := CenterContainer.new()
-	wrap.custom_minimum_size = Vector2(96, 96)
+	wrap.custom_minimum_size = Vector2(80, 80)
+	# Prevent the wrap from expanding to fill the VBox width (which would
+	# make the overlay taller than intended when the texture is large).
+	wrap.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	wrap.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	if "custom_texture" in enemy_data and enemy_data.custom_texture:
 		var tex_rect := TextureRect.new()
 		tex_rect.texture = enemy_data.custom_texture
-		tex_rect.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+		# EXPAND_KEEP_SIZE: don't stretch texture to fill container width.
+		# Previously EXPAND_FIT_WIDTH_PROPORTIONAL caused the TextureRect to
+		# expand to the overlay's full width, making the panel very tall.
+		tex_rect.expand_mode = TextureRect.EXPAND_KEEP_SIZE
 		tex_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		tex_rect.custom_minimum_size = Vector2(90, 90)
+		tex_rect.custom_minimum_size = Vector2(80, 80)
+		tex_rect.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		tex_rect.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		wrap.add_child(tex_rect)
 	else:
 		# Colored disc as fallback (base_color from EnemyData)

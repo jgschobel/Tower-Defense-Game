@@ -365,6 +365,12 @@ func _attack() -> void:
 			projectile.queue_free()
 
 
+func _clear_upgrade_float_labels() -> void:
+	for child in get_children():
+		if child.has_meta("upgrade_float_label"):
+			child.queue_free()
+
+
 func upgrade() -> bool:
 	if upgrade_level >= data.upgrade_costs.size():
 		return false
@@ -391,8 +397,13 @@ func upgrade() -> bool:
 		upg_tween.parallel().tween_property(sprite, "modulate", Color(1.5, 1.3, 0.5), 0.15)
 		upg_tween.tween_property(sprite, "modulate", Color.WHITE, 0.2)
 
-	# Floating upgrade text
+	# Clear any lingering upgrade labels before creating a new one.
+	# Rapid upgrades (playtester, fast players) can stack multiple fading
+	# labels above the tower — clear them immediately on new purchase.
+	_clear_upgrade_float_labels()
+
 	var upg_label := Label.new()
+	upg_label.set_meta("upgrade_float_label", true)
 	if upgrade_level <= data.upgrade_names.size():
 		upg_label.text = data.upgrade_names[upgrade_level - 1]
 	else:
@@ -409,7 +420,7 @@ func upgrade() -> bool:
 	lbl_tween.set_parallel(true)
 	lbl_tween.tween_property(upg_label, "position:y", -100.0, 1.0)
 	lbl_tween.tween_property(upg_label, "modulate:a", 0.0, 1.0)
-	lbl_tween.chain().tween_callback(upg_label.queue_free)
+	lbl_tween.chain().tween_callback(func(): if is_instance_valid(upg_label): upg_label.queue_free())
 
 	return true
 
@@ -500,7 +511,10 @@ func upgrade_path(path_letter: String) -> bool:
 		upg_tween.tween_property(sprite, "scale", base_sc2 * 1.2, 0.15)
 		upg_tween.tween_property(sprite, "scale", base_sc2, 0.2)
 
+	_clear_upgrade_float_labels()
+
 	var upg_label := Label.new()
+	upg_label.set_meta("upgrade_float_label", true)
 	var tier_name := ""
 	if path_letter == "a" and path_a_tier > 0 and path_a_tier - 1 < data.path_a_tier_names.size():
 		tier_name = data.path_a_tier_names[path_a_tier - 1]
@@ -518,7 +532,7 @@ func upgrade_path(path_letter: String) -> bool:
 	lbl_tween.set_parallel(true)
 	lbl_tween.tween_property(upg_label, "position:y", -100.0, 1.0)
 	lbl_tween.tween_property(upg_label, "modulate:a", 0.0, 1.0)
-	lbl_tween.chain().tween_callback(upg_label.queue_free)
+	lbl_tween.chain().tween_callback(func(): if is_instance_valid(upg_label): upg_label.queue_free())
 
 	return true
 
