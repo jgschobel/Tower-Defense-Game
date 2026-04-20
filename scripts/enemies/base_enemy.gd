@@ -121,6 +121,11 @@ func take_damage(amount: float, damage_type: int = 0) -> void:
 	# Show floating damage number, color-coded by type
 	_show_damage_number(actual_damage, damage_type)
 
+	# Per-enemy hit pop (ROADMAP #27). Skipped if this hit kills — the
+	# death sound via SfxManager.play_death takes over on kill.
+	if health > 0 and data and SfxManager.has_method("play_enemy_hit"):
+		SfxManager.play_enemy_hit(data.id)
+
 	# Juice: tiny +1 gold floater on every non-killing hit. Adds dopamine
 	# drip between kills. Actual gold is only awarded on kill (_on_killed)
 	# — this is purely visual/audio feedback, no economy change.
