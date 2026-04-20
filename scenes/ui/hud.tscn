@@ -90,6 +90,8 @@ layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
 vertical_scroll_mode = 3
+scroll_deadzone = 12
+follow_focus = true
 
 [node name="TowerShop" type="VBoxContainer" parent="SideShop/SideShopVBox/ShopScroll"]
 layout_mode = 2
