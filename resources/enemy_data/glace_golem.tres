@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/enemy_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/textures/enemies/glace_golem.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "glace_golem"
+display_name = "Glace-Golem"
+friend_character_id = "enemy_glace"
+max_health = 120.0
+move_speed = 95.0
+armor = 8.0
+gold_reward = 25
+base_color = Color(0.4, 0.8, 1.0, 1)
+scale_factor = 2.0
+custom_texture = ExtResource("2")
+is_flying = true
+heals_nearby = false

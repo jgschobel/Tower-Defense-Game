@@ -108,7 +108,12 @@ requested. Loop picks these up one-by-one; each is a PR-sized slice.
     Each level scene should reference `res://assets/textures/maps/level_N_bg.png` directly (not the placeholder reuse).
 30. **Regenerate tower icons with alpha_matting** — see item #19. This is part of the art batch now, higher priority.
 31. **New enemy variants per level** — each level should have at least ONE exclusive enemy:
-    - L1 Brötli (already), L2 add Glacé-Golem (ice flying), L3 add Kamikaze-Gipfeli (fast exploder), L4 add Fondue-Bomb (splash on death), L5 add Quittung-Geist (ghost — partial immune), L6 add Coupon-Cyborg (tank+fast hybrid), L7 add Sturmmöwe (flying+fast). One new enemy .tres + .png per level.
+    - [x] L2 Glacé-Golem (ice flying, armor 8) — sprite + .tres + wired into L2 waves 5/7/9/10
+    - [x] L3 Kamikaze-Gipfeli (fast exploder, spawns 2 basic on death) — sprite + .tres + wired into L3 waves 4/6/8/10
+    - [ ] L4 Fondue-Bomb (splash on death)
+    - [ ] L5 Quittung-Geist (ghost — partial immune)
+    - [ ] L6 Coupon-Cyborg (tank+fast hybrid)
+    - [ ] L7 Sturmmöwe (flying+fast)
 
 ### Playtest bot (P1)
 32. **Playtest bot captures per-level screenshots** — today the bot runs all 7 levels but only commits 7 key shots. Extend to commit one final screenshot per level (`L1_final.png` ... `L7_final.png`) + one `upgrade_comparison.png` showing tier 0/1/2/3 side by side. User wants visual proof the level art + upgrade visuals actually changed.

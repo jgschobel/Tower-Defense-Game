@@ -3,6 +3,12 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-04-20 (generate-art — Glacé-Golem + Kamikaze-Gipfeli new enemies)
+
+- art(enemy): generate + wire Glace-Golem (ice flying, armor 8, 120hp) for L2 waves 5/7/9/10 — Stability SD3.5 Core 1:1 PNG; enemy_data .tres created
+- art(enemy): generate + wire Kamikaze-Gipfeli (fast 200px/s, spawns 2 basic on death, 45hp) for L3 waves 4/6/8/10 — Stability SD3.5 Core 1:1 PNG; enemy_data .tres created
+- fix(waves): L2 wave-1 opener changed basic→fast (thematic: frozen aisle = slippery); L3 wave-1 opener changed basic→healer (bakery = Dr. Rivella first); ROADMAP item #31 L2+L3 ticked; item #36 L2+L3 addressed
+
 ## 2026-04-20 (audit-polish — P0 playtest fixes: backgrounds, enemies, main menu)
 
 - fix(backgrounds): all 7 levels now use maps_v3 AI-generated art via Sprite2D at (640,360); L4 CellarTiles + L6 FloorPattern seam nodes removed; closes #147 #140 #149 #142
