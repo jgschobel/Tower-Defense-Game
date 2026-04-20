@@ -19,6 +19,29 @@ var max_lives: int = 20
 var lives: int = 20
 var levels_unlocked: int = 1
 var total_stars: int = 0
+
+# Tower unlock gating (ROADMAP #49). Maps tower id → required total_stars
+# before the tower appears unlocked in the shop. Omitted towers are
+# free from day one. User directive: "initially not all towers available —
+# need to play to get them."
+const TOWER_UNLOCK_STARS: Dictionary = {
+	"basic": 0,
+	"cordula": 0,
+	"sniper": 3,
+	"slow": 6,
+	"splash": 10,
+	"farm": 15,
+	"support": 20,
+}
+
+
+func is_tower_unlocked(tower_id: String) -> bool:
+	var required: int = int(TOWER_UNLOCK_STARS.get(tower_id, 0))
+	return total_stars >= required
+
+
+func stars_required_for(tower_id: String) -> int:
+	return int(TOWER_UNLOCK_STARS.get(tower_id, 0))
 var level_stars: Dictionary = {}
 
 var friend_photos: Dictionary = {}
