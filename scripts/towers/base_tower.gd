@@ -377,6 +377,7 @@ func upgrade() -> bool:
 	_recalculate_stats()
 	_update_range_collider()
 	_update_visual()
+	_apply_tier_scale()
 	_rebuild_pip_cache()
 	queue_redraw()  # refresh tier pips from cache
 	tower_upgraded.emit(self, upgrade_level)
@@ -489,6 +490,7 @@ func upgrade_path(path_letter: String) -> bool:
 	_recalculate_stats()
 	_update_range_collider()
 	_apply_path_tint()
+	_apply_tier_scale()
 	_rebuild_pip_cache()
 	queue_redraw()  # refresh tier pips from cache
 	tower_upgraded.emit(self, upgrade_level)
@@ -558,6 +560,29 @@ func _apply_path_tint() -> void:
 	var tinted: Color = Color.WHITE.lerp(blended, strength)
 	# Apply brightness by scaling RGB (keep alpha)
 	sprite.modulate = Color(tinted.r * brightness, tinted.g * brightness, tinted.b * brightness, tinted.a)
+
+
+func _apply_tier_scale() -> void:
+	# Per-tier sprite scale — user directive: upgrades need to READ from
+	# across the map, not require squinting. Each tier adds ~8%/16%/25%
+	# to the baseline scale. Also tween the change so it reads as a
+	# satisfying growth on purchase.
+	if sprite == null:
+		return
+	var tier: int = max(path_a_tier, path_b_tier)
+	if not (data and data.has_branching_upgrades()):
+		tier = upgrade_level
+	var scale_factor: float = 1.0
+	match tier:
+		0: scale_factor = 1.0
+		1: scale_factor = 1.08
+		2: scale_factor = 1.18
+		_: scale_factor = 1.28   # tier 3+
+	var target: Vector2 = _baseline_scale * scale_factor
+	# Pop tween: quick bounce past target, settle back — "level up!" feel
+	var tw := create_tween()
+	tw.tween_property(sprite, "scale", target * 1.15, 0.14).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(sprite, "scale", target, 0.18).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
 
 func show_range(visible_flag: bool) -> void:
