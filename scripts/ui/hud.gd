@@ -39,6 +39,8 @@ var _shop_collapse_tween: Tween = null
 func _ready() -> void:
 	CurrencyManager.gold_changed.connect(_on_gold_changed)
 	GameManager.lives_changed.connect(_on_lives_changed)
+	if ComboTracker:
+		ComboTracker.combo_changed.connect(_on_combo_changed)
 
 	_on_gold_changed(CurrencyManager.gold)
 	_on_lives_changed(GameManager.lives)
@@ -696,6 +698,40 @@ func _build_enemy_preview(enemy_data: Resource) -> Control:
 
 
 var _wave_progress_bar: ProgressBar = null
+var _combo_badge: Label = null
+
+
+func _ensure_combo_badge() -> Label:
+	if _combo_badge and is_instance_valid(_combo_badge):
+		return _combo_badge
+	var lbl := Label.new()
+	lbl.name = "ComboBadge"
+	lbl.anchors_preset = Control.PRESET_CENTER_TOP
+	lbl.offset_top = 12
+	lbl.add_theme_font_size_override("font_size", 26)
+	lbl.add_theme_color_override("font_color", Color(1, 0.95, 0.4))
+	lbl.add_theme_color_override("font_outline_color", Color(0.2, 0.1, 0, 1))
+	lbl.add_theme_constant_override("outline_size", 4)
+	lbl.modulate.a = 0.0
+	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(lbl)
+	_combo_badge = lbl
+	return lbl
+
+
+func _on_combo_changed(counter: int, multiplier: float) -> void:
+	var badge := _ensure_combo_badge()
+	if counter <= 0:
+		var fade := badge.create_tween()
+		fade.tween_property(badge, "modulate:a", 0.0, 0.25)
+		return
+	badge.text = "RUUSCH! x%d  ·  %.1fx Gold" % [counter, multiplier]
+	var tw := badge.create_tween().set_parallel(true)
+	tw.tween_property(badge, "modulate:a", 1.0, 0.1)
+	# Tiny scale punch on each kill so the badge feels reactive.
+	badge.pivot_offset = badge.size * 0.5
+	tw.tween_property(badge, "scale", Vector2(1.15, 1.15), 0.08)
+	tw.chain().tween_property(badge, "scale", Vector2.ONE, 0.12).set_trans(Tween.TRANS_SINE)
 
 
 func _ensure_wave_progress_bar() -> ProgressBar:
