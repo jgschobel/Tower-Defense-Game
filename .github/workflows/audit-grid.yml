@@ -9,9 +9,11 @@ name: Screenshot Audit Grid
 # manual dispatch.
 
 on:
-  workflow_run:
-    workflows: ["Autonomous Playtester"]
-    types: [completed]
+  # PAUSED until 2026-04-23 23:00 UTC — user quota conservation (PR #196).
+  # Uncomment the blocks below to resume automatic runs.
+  # workflow_run:
+  #   workflows: ["Autonomous Playtester"]
+  #   types: [completed]
   workflow_dispatch:
 
 permissions:
