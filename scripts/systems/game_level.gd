@@ -35,6 +35,8 @@ func _ready() -> void:
 	wave_manager.wave_completed.connect(_on_wave_completed)
 	wave_manager.all_waves_completed.connect(_on_all_waves_completed)
 	wave_manager.enemies_remaining_changed.connect(_on_enemies_remaining_changed)
+	if wave_manager.has_signal("wave_progress_changed"):
+		wave_manager.wave_progress_changed.connect(_on_wave_progress_changed)
 	# HUD shows big reveal the first time each enemy type spawns
 	wave_manager.enemy_introduced.connect(_on_enemy_introduced)
 
@@ -236,6 +238,11 @@ func _on_auto_wave_toggled(enabled: bool) -> void:
 
 func _on_enemies_remaining_changed(count: int) -> void:
 	hud.update_enemy_count(count)
+
+
+func _on_wave_progress_changed(pct: float) -> void:
+	if hud.has_method("update_wave_progress"):
+		hud.update_wave_progress(pct)
 
 
 func _on_enemy_introduced(enemy_id: String, enemy_data: Resource) -> void:

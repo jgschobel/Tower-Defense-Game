@@ -7,6 +7,7 @@ signal wave_started(wave_number: int, total_waves: int)
 signal wave_completed(wave_number: int)
 signal all_waves_completed
 signal enemies_remaining_changed(count: int)
+signal wave_progress_changed(pct: float)  # ROADMAP #8: sub-wave progress
 # First time each enemy type shows up in this level — HUD builds an intro
 signal enemy_introduced(enemy_id: String, enemy_data: Resource)
 
@@ -26,6 +27,8 @@ var all_done: bool = false
 
 var _wave_data: Array = []
 var _spawn_queue: Array = []
+var _wave_total_enemies: int = 0
+var _wave_defeated_enemies: int = 0
 var _spawn_timer: float = 0.0
 var _base_enemy_scene: PackedScene
 
@@ -102,6 +105,9 @@ func start_next_wave() -> void:
 
 	var wave: Dictionary = _wave_data[current_wave - 1]
 	_build_spawn_queue(wave)
+	_wave_total_enemies = _spawn_queue.size()
+	_wave_defeated_enemies = 0
+	wave_progress_changed.emit(0.0)
 
 	wave_started.emit(current_wave, total_waves)
 
@@ -200,6 +206,9 @@ func _on_enemy_reached_end(_enemy: Node) -> void:
 func _decrement_enemies() -> void:
 	enemies_alive -= 1
 	enemies_remaining_changed.emit(enemies_alive)
+	_wave_defeated_enemies += 1
+	if _wave_total_enemies > 0:
+		wave_progress_changed.emit(clampf(float(_wave_defeated_enemies) / float(_wave_total_enemies), 0.0, 1.0))
 
 	if enemies_alive <= 0 and not is_spawning:
 		wave_in_progress = false

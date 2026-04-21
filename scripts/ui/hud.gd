@@ -675,6 +675,38 @@ func _build_enemy_preview(enemy_data: Resource) -> Control:
 	return wrap
 
 
+var _wave_progress_bar: ProgressBar = null
+
+
+func _ensure_wave_progress_bar() -> ProgressBar:
+	if _wave_progress_bar and is_instance_valid(_wave_progress_bar):
+		return _wave_progress_bar
+	# Lazily create, anchored just below the wave label at top. No
+	# .tscn edit needed — all settings applied here.
+	var bar := ProgressBar.new()
+	bar.name = "WaveProgress"
+	bar.min_value = 0.0
+	bar.max_value = 1.0
+	bar.value = 0.0
+	bar.custom_minimum_size = Vector2(260, 10)
+	bar.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
+	bar.offset_top = 48
+	bar.offset_bottom = 58
+	bar.offset_left = 240
+	bar.offset_right = 500
+	bar.show_percentage = false
+	bar.modulate = Color(1, 1, 1, 0.85)
+	add_child(bar)
+	_wave_progress_bar = bar
+	return bar
+
+
+func update_wave_progress(pct: float) -> void:
+	var bar := _ensure_wave_progress_bar()
+	var tw := create_tween()
+	tw.tween_property(bar, "value", clampf(pct, 0.0, 1.0), 0.2)
+
+
 func update_wave_info(current: int, total: int) -> void:
 	if wave_label:
 		if current == 0:
@@ -683,6 +715,9 @@ func update_wave_info(current: int, total: int) -> void:
 			wave_label.text = "Welle %d/%d" % [current, total]
 			# Wave announcement — big text that fades
 			_show_wave_announcement(current, total)
+			# Reset sub-wave bar to 0 for the new wave
+			var bar := _ensure_wave_progress_bar()
+			bar.value = 0.0
 	_update_wave_progress_bar(current, total)
 
 
