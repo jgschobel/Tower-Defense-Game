@@ -259,7 +259,13 @@ func die() -> void:
 	# death animation, wasting cycles (audit #14)
 	if heal_timer_node:
 		heal_timer_node.stop()
-	CurrencyManager.add_gold(gold_reward)
+	# Combo multiplier applied to gold (ROADMAP combo system). note_kill
+	# BEFORE add_gold so the new streak's multiplier applies to this kill.
+	var mult: float = 1.0
+	if ComboTracker:
+		ComboTracker.note_kill()
+		mult = ComboTracker.current_multiplier()
+	CurrencyManager.add_gold(int(round(gold_reward * mult)))
 	GameManager.record_kill()
 	_show_gold_earned()
 	SfxManager.play_death(data.max_health if data else 100.0)
