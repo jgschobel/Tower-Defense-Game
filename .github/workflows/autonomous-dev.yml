@@ -1,9 +1,11 @@
 name: Autonomous Development Loop
 
 on:
-  schedule:
-    # Every 4 hours UTC — 6 runs per day, one per mode
-    - cron: '0 */4 * * *'
+  # PAUSED until 2026-04-23 23:00 UTC — user quota conservation (PR #196).
+  # Uncomment the blocks below to resume automatic runs.
+  # schedule:
+  #   # Every 4 hours UTC — 6 runs per day, one per mode
+  #   - cron: '0 */4 * * *'
   workflow_dispatch:
     inputs:
       task_mode:

@@ -6,15 +6,17 @@ name: PR Preview Deploy
 #   jgschobel.github.io/Tower-Defense-Game/pr-42/
 
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - 'scripts/**'
-      - 'scenes/**'
-      - 'resources/**'
-      - 'project.godot'
-      - 'export_presets.cfg'
-      - 'assets/**'
+  # PAUSED until 2026-04-23 23:00 UTC — user quota conservation (PR #196).
+  # Uncomment the blocks below to resume automatic runs.
+  # pull_request:
+  #   branches: [main]
+  #   paths:
+  #     - 'scripts/**'
+  #     - 'scenes/**'
+  #     - 'resources/**'
+  #     - 'project.godot'
+  #     - 'export_presets.cfg'
+  #     - 'assets/**'
 
 permissions:
   contents: write
