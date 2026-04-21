@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="LevelData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/systems/level_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+level_id = 10
+level_name = "Finale im Tüüfel-Äste"
+description = "D'letzt Schlacht. De M-Tüüfel isch i sim eigene Reich. Jedi verhext Produkt, jedi camo-Geist, alles chunt auf eini Bahn. Wenn du hie gwünsch bisch de Held vom Banani-Raubzug."
+starting_gold = 300
+starting_lives = 12
+waves = [
+	{"groups": [{"enemy_id": "fast", "count": 14, "spawn_delay": 0.2}, {"enemy_id": "camo", "count": 8, "spawn_delay": 0.38}]},
+	{"groups": [{"enemy_id": "swarm", "count": 40, "spawn_delay": 0.12}, {"enemy_id": "regrow", "count": 10, "spawn_delay": 0.38}]},
+	{"groups": [{"enemy_id": "tank", "count": 12, "spawn_delay": 0.5}, {"enemy_id": "lead", "count": 8, "spawn_delay": 0.6}]},
+	{"groups": [{"enemy_id": "healer", "count": 12, "spawn_delay": 0.42}, {"enemy_id": "flying", "count": 25, "spawn_delay": 0.22}, {"enemy_id": "camo", "count": 12, "spawn_delay": 0.35}]},
+	{"groups": [{"enemy_id": "boss", "count": 2, "spawn_delay": 3.0}, {"enemy_id": "regrow", "count": 14, "spawn_delay": 0.33}]},
+	{"groups": [{"enemy_id": "lead", "count": 14, "spawn_delay": 0.48}, {"enemy_id": "healer", "count": 12, "spawn_delay": 0.42}, {"enemy_id": "camo", "count": 16, "spawn_delay": 0.3}]},
+	{"groups": [{"enemy_id": "boss", "count": 3, "spawn_delay": 3.5}, {"enemy_id": "tank", "count": 14, "spawn_delay": 0.48}, {"enemy_id": "flying", "count": 30, "spawn_delay": 0.2}]},
+	{"groups": [{"enemy_id": "regrow", "count": 20, "spawn_delay": 0.3}, {"enemy_id": "lead", "count": 14, "spawn_delay": 0.48}, {"enemy_id": "camo", "count": 20, "spawn_delay": 0.28}, {"enemy_id": "healer", "count": 12, "spawn_delay": 0.4}]},
+	{"groups": [{"enemy_id": "boss", "count": 4, "spawn_delay": 4.0}, {"enemy_id": "tank", "count": 16, "spawn_delay": 0.46}, {"enemy_id": "flying", "count": 30, "spawn_delay": 0.2}, {"enemy_id": "swarm", "count": 50, "spawn_delay": 0.12}]},
+	{"groups": [{"enemy_id": "boss", "count": 5, "spawn_delay": 4.5}, {"enemy_id": "lead", "count": 16, "spawn_delay": 0.45}, {"enemy_id": "regrow", "count": 20, "spawn_delay": 0.3}, {"enemy_id": "camo", "count": 24, "spawn_delay": 0.26}, {"enemy_id": "tank", "count": 16, "spawn_delay": 0.44}, {"enemy_id": "healer", "count": 14, "spawn_delay": 0.38}, {"enemy_id": "flying", "count": 35, "spawn_delay": 0.18}, {"enemy_id": "swarm", "count": 60, "spawn_delay": 0.11}]}
+]
+background_color = Color(0.35, 0.05, 0.08, 1)
+path_color = Color(0.85, 0.25, 0.1, 1)
