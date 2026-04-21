@@ -33,9 +33,31 @@ func _show_run_stats() -> void:
 	stats.offset_top = 20
 	add_child(stats)
 
+	# Aminos entry button (ROADMAP #48). Lives next to stats so it's
+	# always reachable without a scene edit.
+	if not has_node("AminosButton"):
+		var aminos_btn := Button.new()
+		aminos_btn.name = "AminosButton"
+		aminos_btn.text = "Aminos-Lade"
+		aminos_btn.anchors_preset = Control.PRESET_TOP_LEFT
+		aminos_btn.offset_left = 20
+		aminos_btn.offset_top = 48
+		aminos_btn.offset_right = 200
+		aminos_btn.offset_bottom = 96
+		aminos_btn.pressed.connect(_on_aminos_button_pressed)
+		add_child(aminos_btn)
+
 
 func _on_play_button_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/ui/level_select.tscn")
+
+
+func _on_aminos_button_pressed() -> void:
+	# Routed from a button added dynamically by _show_run_stats
+	# (ROADMAP #48). Kept as a named handler so the Editor can also
+	# wire a .tscn button to it if a manual button is added later.
+	SfxManager.play_click()
+	get_tree().change_scene_to_file("res://scenes/ui/aminos_shop.tscn")
 
 
 func _on_lore_button_pressed() -> void:
