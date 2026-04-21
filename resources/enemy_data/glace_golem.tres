@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "glace_golem"
+display_name = "Glacé-Golem"
+friend_character_id = "enemy_flying"
+max_health = 180.0
+move_speed = 70.0
+armor = 4.0
+gold_reward = 22
+base_color = Color(0.72, 0.88, 1.0, 1)
+scale_factor = 1.45
+is_flying = true
+heals_nearby = false
+is_lead = true
