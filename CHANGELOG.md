@@ -3,6 +3,11 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-04-21 (audit-polish — options menu visual theming + pause menu polish)
+
+- polish(ui): options_menu.tscn — dark warm panel (Color 0.1/0.07/0.05) with golden border, rounded corners, HSeparator under title, warm-white label colors, styled "Zrugg" close button; closes #153
+- polish(ui): pause_menu.tscn — matching dark/gold panel style, HSeparator under "PAUSIERT" title, all buttons styled with warm hover; fixes "Istelligä" → "Iistellige" Swiss German typo
+
 ## 2026-04-20 (audit-polish — P0 playtest fixes: backgrounds, enemies, main menu)
 
 - fix(backgrounds): all 7 levels now use maps_v3 AI-generated art via Sprite2D at (640,360); L4 CellarTiles + L6 FloorPattern seam nodes removed; closes #147 #140 #149 #142

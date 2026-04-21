@@ -628,7 +628,7 @@ than 5 more levels because it fixes "why play again" not "what to play".
 - [x] Floating `+gold` labels don't disappear when monster dies (tween was self-bound to freed enemy)
 - [x] Death SFX was grating noise burst — replaced with soft 180→70Hz sweep at 0.15 volume
 - [ ] Story screen rework — multi-page dialogue boxes instead of one cramped panel. User reports text is too small to read and skips show immediately. Bloons/Monaco-style typewriter across 3-5 pages with big tap-to-advance buttons. Swiss German content unchanged, presentation rebuilt.
-- [ ] **Options menu** (music volume, SFX volume, master volume) accessible from main menu AND pause menu. Use AudioServer buses: add "Music" and "SFX" buses, route MusicManager/SfxManager players through them, expose sliders that call `AudioServer.set_bus_volume_db`.
+- [x] **Options menu** (music volume, SFX volume, master volume) accessible from main menu AND pause menu. Use AudioServer buses: add "Music" and "SFX" buses, route MusicManager/SfxManager players through them, expose sliders that call `AudioServer.set_bus_volume_db`. Visual theming done (dark panel, golden border, styled buttons) — #153 closed.
 - [x] Enemy pathing bug: at level 2+, enemies stack up at spawn — fixed in #43 with MIN_DELAY=0.35s floor in wave_manager spawn queue builder.
 
 ## 🎨 P0 — Map Backgrounds (each level needs real personality)
