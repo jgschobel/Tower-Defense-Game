@@ -640,6 +640,57 @@ func _apply_tier_scale() -> void:
 	var tw := create_tween()
 	tw.tween_property(sprite, "scale", target * 1.15, 0.14).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tw.tween_property(sprite, "scale", target, 0.18).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_update_tier_glow(tier)
+
+
+func _update_tier_glow(tier: int) -> void:
+	# Per-tier glow ring (ROADMAP #23). Ring radius + alpha scale with
+	# tier so upgrades READ from across the map. Uses a single Node2D
+	# with custom _draw cached as _glow_node; recreated on tier change.
+	var glow: Node2D = get_node_or_null("TierGlow")
+	if glow:
+		glow.queue_free()
+	if tier <= 0 or data == null:
+		return
+	glow = Node2D.new()
+	glow.name = "TierGlow"
+	glow.z_index = -2  # below sprite
+	var ring_color: Color = data.projectile_color
+	ring_color.a = 0.0  # alpha driven by _draw
+	var tier_radius: float = 30.0 + tier * 14.0
+	var tier_alpha: float = 0.25 + tier * 0.15
+	var pulse_speed: float = 2.0 + tier * 0.5
+	glow.set_meta("ring_color", ring_color)
+	glow.set_meta("radius", tier_radius)
+	glow.set_meta("alpha", tier_alpha)
+	glow.set_script(_glow_script())
+	add_child(glow)
+	# Pulse tween
+	var pulse := create_tween().set_loops()
+	pulse.tween_method(func(v: float): glow.modulate.a = v, 0.55, 1.0, 1.0 / pulse_speed).set_trans(Tween.TRANS_SINE)
+	pulse.tween_method(func(v: float): glow.modulate.a = v, 1.0, 0.55, 1.0 / pulse_speed).set_trans(Tween.TRANS_SINE)
+
+
+func _glow_script() -> Script:
+	# Tiny inline script so the glow Node2D draws its own ring without
+	# needing a dedicated .gd file — keeps the feature self-contained.
+	var src := """
+extends Node2D
+func _draw() -> void:
+	var r: float = get_meta(\"radius\", 40.0)
+	var c: Color = get_meta(\"ring_color\", Color.YELLOW)
+	var a: float = get_meta(\"alpha\", 0.4)
+	var layers := 5
+	for i in layers:
+		var t: float = float(i) / float(layers - 1)
+		var radius: float = r * (0.85 + t * 0.35)
+		var alpha: float = a * (1.0 - t) * 0.8
+		draw_arc(Vector2.ZERO, radius, 0.0, TAU, 48, Color(c.r, c.g, c.b, alpha), 4.0, true)
+"""
+	var s := GDScript.new()
+	s.source_code = src
+	s.reload()
+	return s
 
 
 func show_range(visible_flag: bool) -> void:
