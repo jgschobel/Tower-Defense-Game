@@ -1,0 +1,58 @@
+name: Screenshot Audit Grid
+
+# Daisy-chained after the playtester finishes. Stitches per-level
+# screenshots into a 4x4 grid under docs/playtest_shots/<date>/ so
+# chat-session Claude can Read one image and judge visual state
+# (ROADMAP #42).
+#
+# Runs on workflow_run completion (from Autonomous Playtester) plus
+# manual dispatch.
+
+on:
+  workflow_run:
+    workflows: ["Autonomous Playtester"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: audit-grid
+  cancel-in-progress: false
+
+jobs:
+  stitch:
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install Pillow
+        run: python3 -m pip install pillow
+      - name: Stitch grid
+        run: python3 scripts/playtest_tools/stitch_audit_grid.py
+      - name: Commit grid if changed
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          if [[ -z "$(git status --porcelain)" ]]; then
+            echo "No grid changes."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          BRANCH="audit-grid/$(date +%Y%m%d-%H%M%S)"
+          git checkout -b "$BRANCH"
+          git add docs/playtest_shots/
+          git commit -m "chore(audit): refresh playtest screenshot grid"
+          git push -u origin "$BRANCH"
+          gh pr create \
+            --title "chore(audit): refresh playtest screenshot grid" \
+            --body "Automated: stitched the latest playtester screenshots into a 4x4 grid for visual audit." \
+            --base main \
+            --head "$BRANCH"
+          gh pr merge --squash --auto "$BRANCH" || true
