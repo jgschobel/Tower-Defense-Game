@@ -7,7 +7,7 @@ script = ExtResource("1")
 level_id = 7
 level_name = "S'Dach vo de Migros"
 description = "De Tüüfel flüücht aufs Dach. Wind, Mööwe, uses Neon. Hoch obe uf em Affoltern Einkaufszentrum."
-starting_gold = 250
+starting_gold = 180
 starting_lives = 14
 waves = [
 	{"groups": [{"enemy_id": "flying", "count": 8, "spawn_delay": 0.6}]},

@@ -3,6 +3,11 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-04-21 (audit-polish — economy rebalance: tighter starting gold + steeper upgrade costs)
+
+- balance(economy): starting_gold reduced L2→L7 to match ROADMAP targets (L1=120, L2=130 … L7=180) — player opens each level with just enough for 1 cheap tower; closes ROADMAP P0 #21
+- balance(economy): all tower path_a_costs, path_b_costs, and upgrade_costs bumped ~40% — tier-3 upgrades now cost 870–1960g depending on tower; upgrades feel earned not free; closes ROADMAP P0 #22
+
 ## 2026-04-20 (audit-polish — P0 playtest fixes: backgrounds, enemies, main menu)
 
 - fix(backgrounds): all 7 levels now use maps_v3 AI-generated art via Sprite2D at (640,360); L4 CellarTiles + L6 FloorPattern seam nodes removed; closes #147 #140 #149 #142

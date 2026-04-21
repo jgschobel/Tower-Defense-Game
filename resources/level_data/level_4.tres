@@ -7,7 +7,7 @@ script = ExtResource("1")
 level_id = 4
 level_name = "D'Chäsi-Keller"
 description = "Im Chäsi-Keller gärt's. Fondue-Tröpfli flüüged, Raclette-Bomben rolle, de Tüüfel isch persönlich da."
-starting_gold = 180
+starting_gold = 150
 starting_lives = 20
 waves = [
 	{"groups": [{"enemy_id": "tank", "count": 3, "spawn_delay": 1.2}, {"enemy_id": "basic", "count": 10, "spawn_delay": 0.7}]},

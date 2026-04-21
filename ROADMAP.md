@@ -75,8 +75,8 @@ requested. Loop picks these up one-by-one; each is a PR-sized slice.
 
 ### Pacing + economy (P0)
 20. **30 waves per level** (currently 10). Extend every `resources/level_data/level_N.tres` wave array from 10 → 30. Gradient of difficulty: waves 1-10 tutorial/early, 11-20 mid-game, 21-30 escalation → boss(es) in 30. Keep existing 10 as a skeleton and interpolate. Player should feel progression arc, not 10-wave sprint.
-21. **Starting gold: tighter early budget** — across all levels, reduce `starting_gold` so the player can afford 1 cheap tower + save ~50g. Currently L1=200g, bumped to 600g for some. Target: L1=120g (1 basic Lemurius = 100g, 20g saved). L2=130, L3=140, L4=150, L5=160, L6=170, L7=180. Harder early → gold feels earned.
-22. **Upgrade cost curve steeper** — upgrades currently feel cheap once gold flowing. Bump costs ~40%: path tier 1 was 120-200g, make 180-300; tier 2 was 260-420, make 400-600; tier 3 was 650-920, make 950-1400. User wants upgrades to feel earned.
+21. ~~**Starting gold: tighter early budget**~~ ✅ Done: L1=120, L2=130, L3=140, L4=150, L5=160, L6=170, L7=180 — tight opening budget, 1 cheap tower + save ~50g.
+22. ~~**Upgrade cost curve steeper**~~ ✅ Done: all path_a/path_b/upgrade_costs bumped ~40%; tier 3 upgrades now cost 870–1960g. Upgrades must be earned.
 23. **Upgrade visual delta — MUCH bigger** — user says "man sieht Unterschiede der Upgrades kaum". Today tier pips are small dots + subtle tint. Need: per-tier sprite scale change (tier 1 = +8%, tier 2 = +16%, tier 3 = +25%), per-tier glow ring (pulse, brighter per tier), per-tier projectile size + trail length, path-specific crown/hat badge (one of 3 hats per path when tier≥1). Tier should READ from across the map, not require squinting.
 
 ### Audio overhaul (P0)
