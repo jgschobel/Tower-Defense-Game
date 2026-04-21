@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="LevelData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/systems/level_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+level_id = 9
+level_name = "Cumulus-Punkte-Kern"
+description = "Tief im Loyalty-System. Glitchi Neon-Gäng, Daten-Tüüfel, Quittige-Geister. De Tüüfel programmiert d'Welt um."
+starting_gold = 240
+starting_lives = 13
+waves = [
+	{"groups": [{"enemy_id": "swarm", "count": 32, "spawn_delay": 0.12}]},
+	{"groups": [{"enemy_id": "flying", "count": 18, "spawn_delay": 0.28}, {"enemy_id": "camo", "count": 8, "spawn_delay": 0.4}]},
+	{"groups": [{"enemy_id": "regrow", "count": 14, "spawn_delay": 0.35}, {"enemy_id": "swarm", "count": 25, "spawn_delay": 0.14}]},
+	{"groups": [{"enemy_id": "healer", "count": 10, "spawn_delay": 0.4}, {"enemy_id": "fast", "count": 24, "spawn_delay": 0.2}]},
+	{"groups": [{"enemy_id": "lead", "count": 12, "spawn_delay": 0.55}, {"enemy_id": "flying", "count": 20, "spawn_delay": 0.22}]},
+	{"groups": [{"enemy_id": "boss", "count": 2, "spawn_delay": 3.0}, {"enemy_id": "camo", "count": 14, "spawn_delay": 0.3}, {"enemy_id": "fast", "count": 20, "spawn_delay": 0.2}]},
+	{"groups": [{"enemy_id": "tank", "count": 14, "spawn_delay": 0.5}, {"enemy_id": "healer", "count": 12, "spawn_delay": 0.4}, {"enemy_id": "regrow", "count": 12, "spawn_delay": 0.35}]},
+	{"groups": [{"enemy_id": "boss", "count": 3, "spawn_delay": 3.8}, {"enemy_id": "lead", "count": 12, "spawn_delay": 0.5}, {"enemy_id": "flying", "count": 25, "spawn_delay": 0.2}]},
+	{"groups": [{"enemy_id": "camo", "count": 20, "spawn_delay": 0.25}, {"enemy_id": "regrow", "count": 18, "spawn_delay": 0.3}, {"enemy_id": "lead", "count": 10, "spawn_delay": 0.5}, {"enemy_id": "healer", "count": 10, "spawn_delay": 0.4}]},
+	{"groups": [{"enemy_id": "boss", "count": 4, "spawn_delay": 4.0}, {"enemy_id": "tank", "count": 14, "spawn_delay": 0.48}, {"enemy_id": "lead", "count": 12, "spawn_delay": 0.5}, {"enemy_id": "camo", "count": 20, "spawn_delay": 0.25}, {"enemy_id": "swarm", "count": 45, "spawn_delay": 0.13}]}
+]
+background_color = Color(0.12, 0.05, 0.25, 1)
+path_color = Color(0.4, 0.25, 0.8, 1)
