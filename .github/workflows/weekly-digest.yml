@@ -12,8 +12,10 @@ name: Weekly Digest
 # Without those secrets the issue is still filed; email step skips.
 
 on:
-  schedule:
-    - cron: '0 6 * * 1'
+  # PAUSED until 2026-04-23 23:00 UTC — user quota conservation (PR #196).
+  # Uncomment the blocks below to resume automatic runs.
+  # schedule:
+  #   - cron: '0 6 * * 1'
   workflow_dispatch:
 
 permissions:

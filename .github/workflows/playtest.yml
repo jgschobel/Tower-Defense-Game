@@ -1,31 +1,33 @@
 name: Autonomous Playtester
 
 on:
-  schedule:
-    # Every 6 hours (was 3h). Private repo = 2000 free GitHub Actions
-    # minutes/month. Each playtest run ~6 min. At 8 cron/day + push-
-    # triggered we'd burn through quota in a week. 4 cron/day is the
-    # sustainable rate.
-    - cron: '30 */6 * * *'
+  # PAUSED until 2026-04-23 23:00 UTC — user quota conservation (PR #196).
+  # Uncomment the blocks below to resume automatic runs.
+  # schedule:
+  #   # Every 6 hours (was 3h). Private repo = 2000 free GitHub Actions
+  #   # minutes/month. Each playtest run ~6 min. At 8 cron/day + push-
+  #   # triggered we'd burn through quota in a week. 4 cron/day is the
+  #   # sustainable rate.
+  #   - cron: '30 */6 * * *'
   workflow_dispatch:
   # Push-triggered: only fires on changes that could affect gameplay
   # visually. Trims out ROADMAP / docs / workflow churn from triggering
   # 6-min Godot runs. Saves ~30% of push-triggered minutes.
-  push:
-    branches: [main]
-    paths:
-      - 'scripts/towers/**'
-      - 'scripts/enemies/**'
-      - 'scripts/projectiles/**'
-      - 'scripts/systems/**'
-      - 'scripts/ui/**'
-      - 'scenes/**'
-      - 'resources/tower_data/**'
-      - 'resources/enemy_data/**'
-      - 'resources/level_data/**'
-      - 'project.godot'
-      - 'export_presets.cfg'
-      - 'assets/textures/**'
+  # push:
+  #   branches: [main]
+  #   paths:
+  #     - 'scripts/towers/**'
+  #     - 'scripts/enemies/**'
+  #     - 'scripts/projectiles/**'
+  #     - 'scripts/systems/**'
+  #     - 'scripts/ui/**'
+  #     - 'scenes/**'
+  #     - 'resources/tower_data/**'
+  #     - 'resources/enemy_data/**'
+  #     - 'resources/level_data/**'
+  #     - 'project.godot'
+  #     - 'export_presets.cfg'
+  #     - 'assets/textures/**'
 
 permissions:
   contents: read
