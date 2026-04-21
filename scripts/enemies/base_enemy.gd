@@ -280,7 +280,26 @@ func die() -> void:
 	if data and data.spawns_on_death != "" and data.spawn_count > 0:
 		_spawn_children()
 
+	# Fondue-Bomb (ROADMAP #31): on death, heal nearby enemies.
+	if data and data.splash_on_death_radius > 0.0 and data.splash_on_death_heal_pct > 0.0:
+		_splash_heal_nearby()
+
 	enemy_died.emit(self)
+
+
+func _splash_heal_nearby() -> void:
+	var radius_sq: float = data.splash_on_death_radius * data.splash_on_death_radius
+	var heal_pct: float = data.splash_on_death_heal_pct
+	for n in get_tree().get_nodes_in_group("enemies"):
+		var e := n as BaseEnemy
+		if e == null or e == self or e.is_dead:
+			continue
+		if global_position.distance_squared_to(e.global_position) > radius_sq:
+			continue
+		var heal: float = e.max_health * heal_pct
+		e.health = clampf(e.health + heal, 0.0, e.max_health)
+		if e.has_method("_update_health_bar"):
+			e._update_health_bar()
 
 	# Death animation with spin and pop
 	var tween := create_tween()
