@@ -19,7 +19,7 @@ waves = [
 	{"groups": [{"enemy_id": "fast", "count": 20, "spawn_delay": 0.25}, {"enemy_id": "flying", "count": 10, "spawn_delay": 0.4}, {"enemy_id": "swarm", "count": 25, "spawn_delay": 0.2}]},
 	{"groups": [{"enemy_id": "flying", "count": 14, "spawn_delay": 0.35}, {"enemy_id": "tank", "count": 4, "spawn_delay": 1.0}, {"enemy_id": "healer", "count": 3, "spawn_delay": 0.9}]},
 	{"groups": [{"enemy_id": "tank", "count": 8, "spawn_delay": 0.7}, {"enemy_id": "healer", "count": 6, "spawn_delay": 0.7}, {"enemy_id": "fast", "count": 12, "spawn_delay": 0.35}]},
-	{"groups": [{"enemy_id": "boss", "count": 2, "spawn_delay": 6.0}, {"enemy_id": "tank", "count": 5, "spawn_delay": 1.0}, {"enemy_id": "flying", "count": 10, "spawn_delay": 0.4}, {"enemy_id": "healer", "count": 4, "spawn_delay": 0.8}]}
+	{"groups": [{"enemy_id": "boss", "count": 2, "spawn_delay": 6.0}, {"enemy_id": "tank", "count": 5, "spawn_delay": 1.0}, {"enemy_id": "flying", "count": 10, "spawn_delay": 0.4}, {"enemy_id": "healer", "count": 4, "spawn_delay": 0.8}, {"enemy_id": "fondue_bomb", "count": 4, "spawn_delay": 1.0}]}
 ]
 background_color = Color(0.55, 0.45, 0.35, 1)
 path_color = Color(0.35, 0.25, 0.2, 1)

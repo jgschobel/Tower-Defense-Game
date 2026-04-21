@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "fondue_bomb"
+display_name = "Fondue-Bomb"
+friend_character_id = "enemy_tank"
+max_health = 120.0
+move_speed = 95.0
+armor = 1.0
+gold_reward = 16
+base_color = Color(0.95, 0.82, 0.45, 1)
+scale_factor = 1.2
+is_flying = false
+heals_nearby = false
+splash_on_death_radius = 120.0
+splash_on_death_heal_pct = 0.25

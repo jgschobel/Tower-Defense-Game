@@ -40,3 +40,9 @@ extends Resource
 # Lead (ROADMAP #50). If true, only MAGIC or PURE damage deals full
 # damage. PHYSICAL damage is reduced to 15% before armor.
 @export var is_lead: bool = false
+
+# Fondue-Bomb (ROADMAP #31). On death, heal all enemies within
+# splash_on_death_radius by splash_on_death_heal_pct of THEIR max
+# health. Feels like the ceramic-bloon annoyance of BTD.
+@export var splash_on_death_radius: float = 0.0
+@export var splash_on_death_heal_pct: float = 0.0
