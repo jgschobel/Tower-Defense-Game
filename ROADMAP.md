@@ -8,6 +8,185 @@ Within a priority, top-of-list wins.
 
 ---
 
+## 🎨 DESIGN — 30 new tasks (added 2026-04-21)
+
+User directive: "add 30 design change tasks" after PRs #180-#194
+shipped the BTD5-parity mechanical pass. These focus on VISUAL /
+UX / FEEL — independent of the gameplay-mechanic fixes below.
+
+### Tier art + upgrade visuals (D1-D8)
+- [ ] **D1** Generate tier-1 variant PNGs via Gemini img2img for all
+  5 friend towers (basic/sniper/splash/cordula/slow) — add belt,
+  headband, small badge. Populate `path_a_textures[0]` /
+  `path_b_textures[0]`. Source: existing `*_img2img.png`.
+- [ ] **D2** Tier-2 variants — bigger accessory (cape, bandolier,
+  hat with single plume). `path_a_textures[1]` / `[1]`.
+- [ ] **D3** Tier-3 variants — full transformation (throne, glow,
+  crown, duplicate clones, particle trail). Path A ↔ B should look
+  dramatically different — not same silhouette with different tint.
+- [ ] **D4** Projectile tier skins — Lemurius: normal banana →
+  big banana → khaki missile. Kühne: pollen → icy flower → fire
+  lily. Etc. New sprites under `assets/textures/projectiles/`.
+- [ ] **D5** Per-path particle trail colors — A = warm (orange/red),
+  B = cold (blue/violet). Already wired via projectile_color;
+  ensure the tint shifts live on upgrade.
+- [ ] **D6** Muzzle-flash shape per projectile_style — banana burst,
+  pollen puff, flask crack, volleyball star, tongue slurp-ring.
+  Today EffectPlayer.spawn_muzzle_flash is one blob.
+- [ ] **D7** Tier-3 unique death-cam effect on boss kill by tier-3
+  tower — 0.4s freeze + zoom + tower name bubble.
+- [ ] **D8** Crown / hat overlay Sprite2D on tower head at tier ≥ 1,
+  synced with _apply_tier_scale. 8 hats total (2 per path per tower).
+
+### Backgrounds + environment (D9-D15)
+- [ ] **D9** Replace L1 background with a bespoke Imagen 4 paint:
+  Migros-Affoltern automatic doors, shopping carts, orange accent
+  lighting. 1280×720 with transparency around the path.
+- [ ] **D10** L2 frozen-aisle background: pale blue, frost mist,
+  vertical freezer doors, Haribo-blue palette.
+- [ ] **D11** L3 bakery bg: warm amber, bread racks, flour drift.
+- [ ] **D12** L4 cellar bg: dim, cheese wheels stacked, acid-green
+  glow leaking from corner.
+- [ ] **D13** L5 kasse bg: cash registers, Cumulus sign, fluorescent
+  overhead, queue ropes.
+- [ ] **D14** L6 parkhuus bg: neon concrete, rain-wet floor, glow
+  reflections.
+- [ ] **D15** L7 rooftop bg: sunset sky, Migros-Affoltern logo
+  silhouette, birds.
+
+### Parallax + atmosphere layers (D16-D19)
+- [ ] **D16** ParallaxBackground node on each level scene with at
+  least 2 layers (distant sky / mid props) scrolling at 0.3×/0.6×.
+- [ ] **D17** CPUParticles2D overlay per level — L2 frost, L3 flour,
+  L4 acid bubbles, L5 cumulus-receipt confetti, L6 rain, L7 wind
+  leaves. 30-50 particles @ low rate, softly tinted.
+- [ ] **D18** CanvasModulate tint per level — L2 cool blue, L4 acid
+  green, L6 neon cyan. Stack over backgrounds for mood.
+- [ ] **D19** Animated light flicker on L1 fluorescents + L6 neon
+  via a Color tween on CanvasModulate.
+
+### Story / narrative visuals (D20-D23)
+- [ ] **D20** Portrait row in story_screen shows the current page's
+  speaker highlighted (100% opacity) with the others dimmed to 40%.
+- [ ] **D21** Typewriter font SFX tick (very quiet soft_pluck) per
+  rendered character — feels Undertale-y, subtle not spammy.
+- [ ] **D22** Migrate L2-L7 intros to multi-character `pages` format
+  (L1 done in #176). Rotate speakers, add 2 guest characters across
+  the campaign (Micheli-security L3, Trudi-Kasse L5).
+- [ ] **D23** Transition fade-to-black between story pages so the
+  background can shift mood per speaker.
+
+### Shop + HUD polish (D24-D27)
+- [ ] **D24** Shop row hover preview — hovering a tower icon shows
+  its range circle on the map (desktop / web). Touch equivalent:
+  long-press (800ms) to preview.
+- [ ] **D25** Tower-info panel redesign — larger portrait, path icons
+  with mini-tree lines showing tier unlock flow (tier 1 → 2 → 3).
+- [ ] **D26** Gold-gain floater restyle — single floaty "+N" with
+  a tiny coin icon prefix, not raw text. Matching style for Aminos.
+- [ ] **D27** Wave-start banner: 800ms slide-in from right with
+  wave number in BIG type + enemy composition preview beneath.
+
+### Tower placement visuals (D28-D30)
+- [ ] **D28** Placement ghost: tint green when valid, red X when
+  invalid (already partial — polish the red state with a crossed-
+  out circle overlay).
+- [ ] **D29** On successful place: 0.3s ring expand + drop-dust
+  particle at the tower base.
+- [ ] **D30** Range circle render style: animated dashed border
+  rotating slowly instead of static filled circle — reads better
+  over busy backgrounds.
+
+---
+
+## 🛠 FUNCTIONAL FIXES — 20 new tasks (added 2026-04-21)
+
+User directive: "add 20 functional fix tasks". These are bugs,
+race conditions, state leaks, perf issues, or correctness gaps —
+discovered via transcript review of the last 30 PRs.
+
+### Pipeline / pool correctness (F1-F5)
+- [ ] **F1** Enemy pool may reuse camo enemies without resetting
+  `sprite.modulate` set by `_apply_data` for camo; ensure
+  reset_for_pool restores Color.WHITE before the next _apply_data.
+- [ ] **F2** `_has_regrown` guard resets in reset_for_pool (#172)
+  but regrow health restoration may leave sprite mid-fade from
+  the death tween. Need to kill any death tween before regrow.
+- [ ] **F3** Pierce projectiles return to pool via _hit() ordinary
+  path on final hit. Verify `_pierced_enemies` cleared on
+  reset_for_pool (shipped in #166 — audit-required).
+- [ ] **F4** Adjacency refresh (#165) calls `_apply_data()` on every
+  tower on every place. _apply_data re-runs _apply_tier_scale which
+  re-spawns the glow ring (#180). At 10+ towers placed this could
+  stutter. Batch into a deferred call.
+- [ ] **F5** Farm tower gold payout calls `tower.flash_earn` but
+  BaseTower has no such method. Remove the dead call or implement
+  a gold-pop animation.
+
+### Projectile + combat bugs (F6-F10)
+- [ ] **F6** Crit multiplier (#167) applies only to direct hit —
+  splash damage stays base. Decide: should crit propagate to splash?
+  If yes, pass along the multiplier; if no, document.
+- [ ] **F7** Cordula cone burst (#169) damages enemies but doesn't
+  route kills through `source_tower` kill_count. Orphaned kills
+  stack up for the main target only.
+- [ ] **F8** Pull projectiles that hit a dead target mid-flight
+  still call target.pull_back — pull_back guards is_dead so it
+  silently no-ops, but the .tres pull_path_fraction still flows.
+  Audit for double-pulls.
+- [ ] **F9** Lead enemies (#173) reduce PHYSICAL to 15%, then the
+  existing armor formula subtracts armor. Stacked with `is_lead`
+  armor 2 + 15% of a 20 dmg hit = 3 dmg pre-armor - 2 armor = 1.
+  Likely too strong — verify intended math vs armor's current role.
+- [ ] **F10** Splash damage (JoJo, Cordula cone) doesn't check
+  `is_camo`. A camo-immune tower can still AoE-kill camo enemies
+  via splash from a non-detector friend. Gate by detector.
+
+### Economy + persistence (F11-F14)
+- [ ] **F11** AminosManager.award_for_level_clear (#174) fires every
+  clear — replaying an already-cleared level re-awards. Should be
+  capped at 1 award per (level_id, stars_tier) pair.
+- [ ] **F12** Combo multiplier (#186) applies globally — Farm gold
+  payouts also multiply. Decide: intentional? If no, gate
+  `CurrencyManager.add_gold` with a "from_kill" parameter.
+- [ ] **F13** Aminos shop (#185) `unlock_node` returns false if
+  already unlocked OR unaffordable. UI shows "Gchauft" only on
+  the success branch — insufficient-funds case shows no feedback.
+  Add a red flash + toast.
+- [ ] **F14** Aminos unlocked_nodes JSON-round-trip: Array[String]
+  becomes Array after save+load. `is_unlocked(x)` compares with
+  `in` which works, but `Array.has(String)` is more defensive.
+
+### UI + HUD state (F15-F18)
+- [ ] **F15** Sub-wave progress bar (#182) resets on new wave to 0,
+  but `_wave_total_enemies` is the queue size AT wave start and
+  doesn't account for spawns_on_death children. Progress can
+  exceed 100% mid-wave.
+- [ ] **F16** Combo badge (#194) creates a new tween on every
+  kill — 20 kills/sec = 20 tweens fighting on the same Label.
+  Kill outstanding tweens before starting the next scale-punch.
+- [ ] **F17** Tower unlock gating (#175) disables the button but
+  the padlock Label ignores theme changes — on theme reload it
+  keeps its hardcoded gold color. Use add_theme_color_override in
+  `_on_theme_changed` if one exists.
+- [ ] **F18** Shop-scroll deadzone (#162) fixes touch, but
+  ScrollContainer now consumes wheel events on desktop preventing
+  click-through to the tower button. Switch scroll_deadzone back
+  to 0 for mouse input (check by event type).
+
+### Workflow / CI (F19-F20)
+- [ ] **F19** Audit-grid workflow (#190) depends on
+  docs/playtest_shots/latest/ existing. The playtester currently
+  writes to docs/observability/screenshots/ with different
+  filenames. Reconcile the paths OR add a migration step in the
+  stitcher.
+- [ ] **F20** HF audio workflow (#160) requires HUGGINGFACE_API_KEY
+  secret. Log explicitly "secret not set — skipping N requests"
+  so the CI run UI shows why no audio files land. Currently it
+  silently no-ops which makes debugging hard.
+
+---
+
 ## 📋 Session handoff — 2026-04-19 17:00Z (loop takes over)
 
 Chat-session Claude is logging off. Everything below is for the
