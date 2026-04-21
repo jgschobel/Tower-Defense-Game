@@ -238,6 +238,8 @@ func _on_auto_wave_toggled(enabled: bool) -> void:
 
 func _on_enemies_remaining_changed(count: int) -> void:
 	hud.update_enemy_count(count)
+	if hud.has_method("on_enemy_count_changed"):
+		hud.on_enemy_count_changed()
 
 
 func _on_wave_progress_changed(pct: float) -> void:
