@@ -56,20 +56,27 @@ func _ready() -> void:
 
 
 func _start_threat_watcher() -> void:
-	# Poll every 0.5s for active healer/flying enemies and show a warning
-	# badge top-right. Cheap enough at this cadence; avoids wiring a
-	# dedicated signal chain through the pool.
-	# Audit P1 #4: idempotency guard — without it, a re-ready would add
-	# another Timer child and double the poll rate.
-	if has_node("ThreatTimer"):
+	# ROADMAP #5: was a 0.5s poll; now driven by enemy spawn/death events.
+	# Threat badges refresh on wave_manager.enemies_remaining_changed
+	# (wired by game_level). Boss HP bar keeps a 0.25s timer because it
+	# needs smooth HP updates while bosses are being damaged.
+	if has_node("BossHPTimer"):
 		return
 	var t := Timer.new()
-	t.name = "ThreatTimer"
-	t.wait_time = 0.5
+	t.name = "BossHPTimer"
+	t.wait_time = 0.25
 	t.autostart = true
 	t.one_shot = false
 	add_child(t)
-	t.timeout.connect(_refresh_threat_badges)
+	t.timeout.connect(_refresh_boss_hpbar_live)
+
+
+func on_enemy_count_changed() -> void:
+	# Called from game_level when wave_manager emits
+	# enemies_remaining_changed. Re-scans the enemy group once per event
+	# instead of every 0.5s. Same _refresh_threat_badges body, renamed
+	# so the poll-driven and event-driven paths are obvious.
+	_refresh_threat_badges()
 
 
 func _refresh_threat_badges() -> void:
@@ -86,6 +93,19 @@ func _refresh_threat_badges() -> void:
 				boss_refs.append(e)
 	_set_threat_badge("HealerBadge", has_healer, "+ HEAL", Color(0.4, 1.0, 0.5))
 	_set_threat_badge("BossBadge", not boss_refs.is_empty(), "! BOSS", Color(1.0, 0.35, 0.25))
+	_refresh_boss_hpbar(boss_refs)
+
+
+func _refresh_boss_hpbar_live() -> void:
+	# Faster-cadence tick just for the boss HP bar (bosses take time to
+	# kill, HP bar needs smooth updates). Threat badges don't need this.
+	var boss_refs: Array = []
+	for n in get_tree().get_nodes_in_group("enemies"):
+		var e := n as BaseEnemy
+		if e == null or e.is_dead or not e.data:
+			continue
+		if e.data.id == "boss":
+			boss_refs.append(e)
 	_refresh_boss_hpbar(boss_refs)
 
 
