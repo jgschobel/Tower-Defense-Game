@@ -63,13 +63,13 @@ UX / FEEL — independent of the gameplay-mechanic fixes below.
 - [x] **D18** CanvasModulate tint per level — L2 cool blue, L4 acid
   green, L6 neon cyan. Stack over backgrounds for mood.
   ✓ Implemented 2026-04-27: game_level._apply_level_tint() reads background_color from level_N.tres, adds CanvasModulate at 30% blend.
-- [ ] **D19** Animated light flicker on L1 fluorescents + L6 neon
+- [x] **D19** Animated light flicker on L1 fluorescents + L6 neon
   via a Color tween on CanvasModulate.
 
 ### Story / narrative visuals (D20-D23)
 - [ ] **D20** Portrait row in story_screen shows the current page's
   speaker highlighted (100% opacity) with the others dimmed to 40%.
-- [ ] **D21** Typewriter font SFX tick (very quiet soft_pluck) per
+- [x] **D21** Typewriter font SFX tick (very quiet soft_pluck) per
   rendered character — feels Undertale-y, subtle not spammy.
 - [ ] **D22** Migrate L2-L7 intros to multi-character `pages` format
   (L1 done in #176). Rotate speakers, add 2 guest characters across
@@ -82,9 +82,9 @@ UX / FEEL — independent of the gameplay-mechanic fixes below.
   its range circle on the map (desktop / web). Touch equivalent:
   long-press (800ms) to preview.
   ✓ Implemented 2026-04-27: shop button tooltip_text shows damage/range/fire-rate/cost/special for all unlocked towers.
-- [ ] **D25** Tower-info panel redesign — larger portrait, path icons
+- [x] **D25** Tower-info panel redesign — larger portrait, path icons
   with mini-tree lines showing tier unlock flow (tier 1 → 2 → 3).
-- [ ] **D26** Gold-gain floater restyle — single floaty "+N" with
+- [x] **D26** Gold-gain floater restyle — single floaty "+N" with
   a tiny coin icon prefix, not raw text. Matching style for Aminos.
 - [x] **D27** Wave-start banner: 800ms slide-in from right with
   wave number in BIG type + enemy composition preview beneath.
@@ -159,7 +159,7 @@ discovered via transcript review of the last 30 PRs.
   ✓ Fixed 2026-04-27: lead's 15% resistance now replaces armor for
   physical hits (effective_armor = 0). Gives 3 damage instead of 1
   from a 20-hit, making high-pierce/fast towers viable against lead.
-- [ ] **F10** Splash damage (JoJo, Cordula cone) doesn't check
+- [x] **F10** Splash damage (JoJo, Cordula cone) doesn't check
   `is_camo`. A camo-immune tower can still AoE-kill camo enemies
   via splash from a non-detector friend. Gate by detector.
 
@@ -176,7 +176,7 @@ discovered via transcript review of the last 30 PRs.
   base_enemy.die() before CurrencyManager.add_gold. Farm towers in
   game_level._pay_farm_towers() call add_gold directly — no multiplier
   applied. Non-issue; current implementation is correct.
-- [ ] **F13** Aminos shop (#185) `unlock_node` returns false if
+- [x] **F13** Aminos shop (#185) `unlock_node` returns false if
   already unlocked OR unaffordable. UI shows "Gchauft" only on
   the success branch — insufficient-funds case shows no feedback.
   Add a red flash + toast.
