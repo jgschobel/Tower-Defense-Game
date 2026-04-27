@@ -348,8 +348,11 @@ func _attack() -> void:
 				continue
 			var angle_to: float = acos(clamp(aim.dot(delta.normalized()), -1.0, 1.0))
 			if angle_to <= data.cone_half_angle:
+				var cone_was_alive: bool = not enemy.is_dead
 				enemy.take_damage(effective_damage * 0.6, data.damage_type)
 				enemy.show_hit_reaction()
+				if cone_was_alive and enemy.is_dead:
+					kill_count += 1
 	# Muzzle flash — colored burst in the direction of the target
 	if EffectPlayer and is_instance_valid(current_target):
 		var flash_dir := (current_target.global_position - origin_pos).normalized()
