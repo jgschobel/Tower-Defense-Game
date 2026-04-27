@@ -7,8 +7,31 @@ autonomous or manual. Update only when the user explicitly changes them.
 
 - **Scope target**: Bloons TD-style depth, in a small Swiss-German
   package. No scope is "too big" if justified — ship it in slices.
-- **Subscription**: Claude Max → use parallel Sonnet subagents freely,
-  use Opus 4.7 for planning and architecture, Sonnet 4.6 for execution.
+- **Subscription**: Claude Max — quota is finite, spend it on value.
+  Model discipline (non-negotiable):
+  - **Haiku 4.5** for all file-exploration / search subagents (Explore agent,
+    Code Scout, grep/find tasks). 5× cheaper than Sonnet, fully capable.
+  - **Sonnet 4.6** for code writing, bug fixing, content creation, git ops.
+    This is the default for almost everything.
+  - **Opus 4.7** ONLY for genuinely novel architecture decisions affecting
+    5+ files or introducing a new system. At most once per week.
+  - Never spawn Opus for a task Sonnet can handle. Never spawn Sonnet for
+    a task Haiku can handle.
+  Read discipline (non-negotiable):
+  - Always `grep` before `Read`. Never read a file speculatively.
+  - When reading, target the exact line range needed (±10 lines). Never
+    read a 700-line file when you need 20 lines.
+  - Max 3-4 file reads per fix before writing code and committing.
+  Agent discipline:
+  - Max 2-3 parallel subagents per turn. Never spawn 6 in parallel.
+  - Give subagents tight, specific prompts — not "explore the codebase".
+  Commit rhythm:
+  - One logical fix = one commit. Do not accumulate 10 fixes then commit.
+  - Commit and push after each standalone change. This also keeps context
+    lean as the conversation compresses around commit boundaries.
+  Autonomous run scope:
+  - Each autonomous loop run should complete ~5-10 meaningful tasks then
+    stop. Do not chain indefinitely — quota is shared with manual sessions.
 - **Review appetite**: none. Do not ask the user to review PRs. The
   autonomous loop auto-merges validated changes. User manages from
   phone via GitHub mobile.
@@ -110,10 +133,10 @@ assets/
 ## AI Agent Architecture
 This project uses a multi-agent workflow. See `AGENTS.md` for full details.
 
-- **Conductor (Opus)** — architecture, code, creative, git, user communication
-- **Art Factory (Sonnet, background)** — image generation via Stability AI, background removal, batch processing
-- **Code Scout (Sonnet, on-demand)** — codebase exploration, file searches, path validation
-- **Build Tester (Sonnet, pre-push)** — validates signal connections, file paths, node references
+- **Conductor (Sonnet 4.6)** — architecture, code, creative, git, user communication
+- **Art Factory (Sonnet 4.6, background)** — image generation via Stability AI, background removal, batch processing
+- **Code Scout (Haiku 4.5, on-demand)** — file searches, grep, path validation. Use Haiku — it's sufficient and 5× cheaper.
+- **Build Tester (Haiku 4.5, pre-push)** — validates signal connections, file paths, node references
 
 API keys stored at `C:/Users/josef/.api_keys/keys.json` (outside repo).
 
