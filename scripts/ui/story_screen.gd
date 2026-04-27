@@ -21,6 +21,7 @@ var _pages: Array = []
 var _current_page: int = 0
 var _char_index: int = 0
 var _typing: bool = false
+var _last_tick_char: int = -1  # last _char_index at which a typewriter tick played
 var _chars_per_second: float = 60.0
 
 
@@ -115,8 +116,14 @@ func _update_page_indicator() -> void:
 func _process(delta: float) -> void:
 	if not _typing:
 		return
+	var prev_char: int = _char_index
 	_char_index += int(_chars_per_second * delta)
 	var current_text: String = _current_page_text()
+	# D21: quiet typewriter tick every 3 chars so it's rhythmic not spammy
+	var tick_interval: int = 3
+	if _char_index / tick_interval != prev_char / tick_interval:
+		if SfxManager and SfxManager.has_method("play_soft_pluck"):
+			SfxManager.play_soft_pluck()
 	if _char_index >= current_text.length():
 		_char_index = current_text.length()
 		_typing = false
