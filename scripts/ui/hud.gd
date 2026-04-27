@@ -452,7 +452,21 @@ func _populate_tower_shop() -> void:
 		btn.clip_contents = true
 		btn.disabled = is_locked
 		if is_locked:
-			btn.tooltip_text = "Brich %d Stärn zum z'freischalte" % stars_req
+			btn.tooltip_text = "🔒 Brich %d Stärn zum z'freischalte" % stars_req
+		else:
+			# D24: hover preview showing key stats at a glance
+			var tip_lines: Array = [
+				td.display_name if "display_name" in td else tower_id,
+				"Kosch:   %d G" % td.buy_cost,
+				"Schade: %d" % td.damage,
+				"Reichwiiti: %d px" % int(td.attack_range),
+				"Schussrate: %.1f/s" % (1.0 / maxf(td.attack_speed, 0.01)),
+			]
+			if "gold_per_round" in td and td.gold_per_round > 0:
+				tip_lines.append("+%d G / Welle" % td.gold_per_round)
+			if "is_support" in td and td.is_support:
+				tip_lines.append("Buff: +25% Schade i de Nöchi")
+			btn.tooltip_text = "\n".join(tip_lines)
 		# Per-tier faint tint on the row background so the 5 friends are
 		# visually distinguishable even when the icons are loading.
 		_style_shop_button(btn, td)
