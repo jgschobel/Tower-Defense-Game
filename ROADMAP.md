@@ -106,49 +106,69 @@ race conditions, state leaks, perf issues, or correctness gaps —
 discovered via transcript review of the last 30 PRs.
 
 ### Pipeline / pool correctness (F1-F5)
-- [ ] **F1** Enemy pool may reuse camo enemies without resetting
+- [x] **F1** Enemy pool may reuse camo enemies without resetting
   `sprite.modulate` set by `_apply_data` for camo; ensure
   reset_for_pool restores Color.WHITE before the next _apply_data.
-- [ ] **F2** `_has_regrown` guard resets in reset_for_pool (#172)
+  ✓ Fixed 2026-04-27: kill _death_tween + _health_bar_tween in reset_for_pool
+  before _apply_data runs; camo modulate now correctly restored.
+- [x] **F2** `_has_regrown` guard resets in reset_for_pool (#172)
   but regrow health restoration may leave sprite mid-fade from
   the death tween. Need to kill any death tween before regrow.
-- [ ] **F3** Pierce projectiles return to pool via _hit() ordinary
+  ✓ Fixed 2026-04-27: _death_tween stored as member, killed in reset_for_pool.
+  Critical fix: death animation was inside _splash_heal_nearby() — moved to
+  die() so all enemies get spin+fade and actually return to the pool.
+- [x] **F3** Pierce projectiles return to pool via _hit() ordinary
   path on final hit. Verify `_pierced_enemies` cleared on
   reset_for_pool (shipped in #166 — audit-required).
+  ✓ Audited 2026-04-27: _pierced_enemies.clear() at line 313 confirmed;
+  remaining_pierce = 0 also reset. No action needed.
 - [ ] **F4** Adjacency refresh (#165) calls `_apply_data()` on every
   tower on every place. _apply_data re-runs _apply_tier_scale which
   re-spawns the glow ring (#180). At 10+ towers placed this could
   stutter. Batch into a deferred call.
-- [ ] **F5** Farm tower gold payout calls `tower.flash_earn` but
+- [x] **F5** Farm tower gold payout calls `tower.flash_earn` but
   BaseTower has no such method. Remove the dead call or implement
   a gold-pop animation.
+  ✓ Fixed 2026-04-27: BaseTower.flash_earn(amount) implemented — yellow
+  "+N G" label floats up from the tower on each wave payout.
 
 ### Projectile + combat bugs (F6-F10)
 - [ ] **F6** Crit multiplier (#167) applies only to direct hit —
   splash damage stays base. Decide: should crit propagate to splash?
   If yes, pass along the multiplier; if no, document.
-- [ ] **F7** Cordula cone burst (#169) damages enemies but doesn't
+- [x] **F7** Cordula cone burst (#169) damages enemies but doesn't
   route kills through `source_tower` kill_count. Orphaned kills
   stack up for the main target only.
+  ✓ Fixed 2026-04-27: cone burst loop checks was_alive/is_dead and
+  increments kill_count directly on the tower for each cone kill.
 - [ ] **F8** Pull projectiles that hit a dead target mid-flight
   still call target.pull_back — pull_back guards is_dead so it
   silently no-ops, but the .tres pull_path_fraction still flows.
   Audit for double-pulls.
-- [ ] **F9** Lead enemies (#173) reduce PHYSICAL to 15%, then the
+- [x] **F9** Lead enemies (#173) reduce PHYSICAL to 15%, then the
   existing armor formula subtracts armor. Stacked with `is_lead`
   armor 2 + 15% of a 20 dmg hit = 3 dmg pre-armor - 2 armor = 1.
   Likely too strong — verify intended math vs armor's current role.
+  ✓ Fixed 2026-04-27: lead's 15% resistance now replaces armor for
+  physical hits (effective_armor = 0). Gives 3 damage instead of 1
+  from a 20-hit, making high-pierce/fast towers viable against lead.
 - [ ] **F10** Splash damage (JoJo, Cordula cone) doesn't check
   `is_camo`. A camo-immune tower can still AoE-kill camo enemies
   via splash from a non-detector friend. Gate by detector.
 
 ### Economy + persistence (F11-F14)
-- [ ] **F11** AminosManager.award_for_level_clear (#174) fires every
+- [x] **F11** AminosManager.award_for_level_clear (#174) fires every
   clear — replaying an already-cleared level re-awards. Should be
   capped at 1 award per (level_id, stars_tier) pair.
-- [ ] **F12** Combo multiplier (#186) applies globally — Farm gold
+  ✓ Fixed 2026-04-27: cleared_levels Array added, persisted in aminos.save.
+  First clear of each level_id awards; replays grant 0.
+- [x] **F12** Combo multiplier (#186) applies globally — Farm gold
   payouts also multiply. Decide: intentional? If no, gate
   `CurrencyManager.add_gold` with a "from_kill" parameter.
+  ✓ Audited 2026-04-27: combo multiplier is applied ONLY in
+  base_enemy.die() before CurrencyManager.add_gold. Farm towers in
+  game_level._pay_farm_towers() call add_gold directly — no multiplier
+  applied. Non-issue; current implementation is correct.
 - [ ] **F13** Aminos shop (#185) `unlock_node` returns false if
   already unlocked OR unaffordable. UI shows "Gchauft" only on
   the success branch — insufficient-funds case shows no feedback.
@@ -162,9 +182,11 @@ discovered via transcript review of the last 30 PRs.
   but `_wave_total_enemies` is the queue size AT wave start and
   doesn't account for spawns_on_death children. Progress can
   exceed 100% mid-wave.
-- [ ] **F16** Combo badge (#194) creates a new tween on every
+- [x] **F16** Combo badge (#194) creates a new tween on every
   kill — 20 kills/sec = 20 tweens fighting on the same Label.
   Kill outstanding tweens before starting the next scale-punch.
+  ✓ Fixed 2026-04-27: _combo_tween member added to HUD; killed before each
+  new scale-punch via _combo_tween.kill().
 - [ ] **F17** Tower unlock gating (#175) disables the button but
   the padlock Label ignores theme changes — on theme reload it
   keeps its hardcoded gold color. Use add_theme_color_override in
@@ -175,11 +197,13 @@ discovered via transcript review of the last 30 PRs.
   to 0 for mouse input (check by event type).
 
 ### Workflow / CI (F19-F20)
-- [ ] **F19** Audit-grid workflow (#190) depends on
+- [x] **F19** Audit-grid workflow (#190) depends on
   docs/playtest_shots/latest/ existing. The playtester currently
   writes to docs/observability/screenshots/ with different
   filenames. Reconcile the paths OR add a migration step in the
   stitcher.
+  ✓ Fixed 2026-04-27: stitch_audit_grid.py SRC_DIR updated to
+  docs/observability/screenshots/; globs all *.png alphabetically.
 - [ ] **F20** HF audio workflow (#160) requires HUGGINGFACE_API_KEY
   secret. Log explicitly "secret not set — skipping N requests"
   so the CI run UI shows why no audio files land. Currently it
