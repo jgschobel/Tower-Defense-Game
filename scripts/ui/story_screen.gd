@@ -106,6 +106,24 @@ func _start_page() -> void:
 		story_label.text = ""
 	continue_button.text = "Tippä zum wiiterläse…"
 	_update_page_indicator()
+	_update_speaker_highlight()
+
+
+# D20: highlight the speaking portrait, dim the other.
+# Left = odd-numbered friends (Lemurius, Kühne, JoJo).
+# Right = even (Amösius, Cordula) + unknown speakers.
+const _LEFT_SPEAKERS: Array = ["Lemurius", "Kühne", "JoJo"]
+func _update_speaker_highlight() -> void:
+	if not left_portrait or not right_portrait:
+		return
+	var speaker: String = _current_page_speaker()
+	if speaker == "":
+		left_portrait.modulate = Color.WHITE
+		right_portrait.modulate = Color.WHITE
+		return
+	var left_active: bool = speaker in _LEFT_SPEAKERS
+	left_portrait.modulate = Color.WHITE if left_active else Color(1, 1, 1, 0.35)
+	right_portrait.modulate = Color(1, 1, 1, 0.35) if left_active else Color.WHITE
 
 
 func _update_page_indicator() -> void:
@@ -157,8 +175,17 @@ func _on_continue_button_pressed() -> void:
 		return
 
 	if _current_page < _pages.size() - 1:
+		# D23: brief fade-to-black between pages so the background can shift.
+		if story_label:
+			var fade_out := story_label.create_tween()
+			fade_out.tween_property(story_label, "modulate:a", 0.0, 0.12)
+			await fade_out.finished
 		_current_page += 1
 		_start_page()
+		if story_label:
+			story_label.modulate.a = 0.0
+			var fade_in := story_label.create_tween()
+			fade_in.tween_property(story_label, "modulate:a", 1.0, 0.18)
 	else:
 		var level_path := "res://scenes/game/level_%d.tscn" % _level_id
 		if ResourceLoader.exists(level_path):
