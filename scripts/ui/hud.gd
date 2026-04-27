@@ -1101,24 +1101,53 @@ func _refresh_tower_info() -> void:
 	var upgrade_btn: Button = tower_info.get_node_or_null("VBox/HBox/UpgradeButton")
 	var sell_btn: Button = tower_info.get_node_or_null("VBox/HBox/SellButton")
 
+	# D25: portrait — lazy-create a TextureRect above the name label
+	var vbox: VBoxContainer = tower_info.get_node_or_null("VBox")
+	if vbox:
+		var portrait: TextureRect = vbox.get_node_or_null("Portrait")
+		if portrait == null:
+			portrait = TextureRect.new()
+			portrait.name = "Portrait"
+			portrait.custom_minimum_size = Vector2(0, 72)
+			portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			portrait.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+			vbox.add_child(portrait)
+			vbox.move_child(portrait, 0)
+		if td.custom_texture:
+			portrait.texture = td.custom_texture
+		elif portrait.texture == null:
+			portrait.visible = false
+
 	if name_lbl:
 		if td.has_branching_upgrades():
-			name_lbl.text = "%s  (A%d / B%d)" % [
+			name_lbl.text = "%s  ·  A%d / B%d" % [
 				td.display_name,
 				_selected_tower.path_a_tier,
 				_selected_tower.path_b_tier,
 			]
 		else:
-			name_lbl.text = "%s (Lv %d)" % [td.display_name, _selected_tower.upgrade_level + 1]
+			name_lbl.text = "%s  ·  Lv %d" % [td.display_name, _selected_tower.upgrade_level + 1]
 	if stats_lbl:
 		var dps: float = _selected_tower.effective_damage * _selected_tower.effective_speed
 		var kills: int = _selected_tower.kill_count if "kill_count" in _selected_tower else 0
-		stats_lbl.text = "Schade: %.0f  Tempo: %.1f  Riichwiiti: %.0f\nDPS: %.1f  •  Kills: %d" % [
+		# D25: tier pip row — ● filled tiers, ○ remaining, A/B separate
+		var pip_str: String = ""
+		if td.has_branching_upgrades():
+			var max_tier: int = 3
+			var pips_a: String = "A: "
+			for i in max_tier:
+				pips_a += "●" if i < _selected_tower.path_a_tier else "○"
+			var pips_b: String = "  B: "
+			for i in max_tier:
+				pips_b += "●" if i < _selected_tower.path_b_tier else "○"
+			pip_str = pips_a + pips_b + "\n"
+		stats_lbl.text = "%sSchade: %.0f  DPS: %.1f  Kills: %d\nTempo: %.1f  Riichwiiti: %.0f" % [
+			pip_str,
 			_selected_tower.effective_damage,
-			_selected_tower.effective_speed,
-			_selected_tower.effective_range,
 			dps,
 			kills,
+			_selected_tower.effective_speed,
+			_selected_tower.effective_range,
 		]
 
 	if td.has_branching_upgrades():
