@@ -109,6 +109,24 @@ func _row(spec: Dictionary) -> Control:
 				btn.text = "Gchauft"
 				btn.disabled = true
 			else:
-				SfxManager.play_hit())
+				# F13: red flash + toast when insufficient Aminos
+				SfxManager.play_hit()
+				var orig: Color = btn.modulate
+				btn.modulate = Color(1.6, 0.3, 0.3)
+				var tw := btn.create_tween()
+				tw.tween_property(btn, "modulate", orig, 0.45)
+				var toast := Label.new()
+				toast.text = "Z'wenig Aminos!"
+				toast.add_theme_font_size_override("font_size", 16)
+				toast.add_theme_color_override("font_color", Color(1, 0.35, 0.35))
+				toast.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
+				toast.add_theme_constant_override("outline_size", 3)
+				toast.z_index = 30
+				btn.add_child(toast)
+				toast.position = Vector2(0, -28)
+				var tw2 := toast.create_tween().set_parallel(true)
+				tw2.tween_property(toast, "position:y", -50.0, 0.6)
+				tw2.tween_property(toast, "modulate:a", 0.0, 0.6).set_delay(0.2)
+				tw2.chain().tween_callback(toast.queue_free))
 	row.add_child(btn)
 	return panel

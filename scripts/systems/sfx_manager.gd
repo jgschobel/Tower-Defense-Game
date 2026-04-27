@@ -148,6 +148,10 @@ func play_click() -> void:
 	_play_soft_pluck()
 
 
+func play_soft_pluck() -> void:
+	_play_soft_pluck()
+
+
 func _play_soft_pluck() -> void:
 	var duration: float = 0.04
 	var samples := int(_sample_rate * duration)
