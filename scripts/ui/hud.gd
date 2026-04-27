@@ -699,6 +699,7 @@ func _build_enemy_preview(enemy_data: Resource) -> Control:
 
 var _wave_progress_bar: ProgressBar = null
 var _combo_badge: Label = null
+var _combo_tween: Tween = null
 
 
 func _ensure_combo_badge() -> Label:
@@ -721,17 +722,18 @@ func _ensure_combo_badge() -> Label:
 
 func _on_combo_changed(counter: int, multiplier: float) -> void:
 	var badge := _ensure_combo_badge()
+	if _combo_tween and _combo_tween.is_valid():
+		_combo_tween.kill()
 	if counter <= 0:
-		var fade := badge.create_tween()
-		fade.tween_property(badge, "modulate:a", 0.0, 0.25)
+		_combo_tween = badge.create_tween()
+		_combo_tween.tween_property(badge, "modulate:a", 0.0, 0.25)
 		return
 	badge.text = "RUUSCH! x%d  ·  %.1fx Gold" % [counter, multiplier]
-	var tw := badge.create_tween().set_parallel(true)
-	tw.tween_property(badge, "modulate:a", 1.0, 0.1)
-	# Tiny scale punch on each kill so the badge feels reactive.
 	badge.pivot_offset = badge.size * 0.5
-	tw.tween_property(badge, "scale", Vector2(1.15, 1.15), 0.08)
-	tw.chain().tween_property(badge, "scale", Vector2.ONE, 0.12).set_trans(Tween.TRANS_SINE)
+	_combo_tween = badge.create_tween().set_parallel(true)
+	_combo_tween.tween_property(badge, "modulate:a", 1.0, 0.1)
+	_combo_tween.tween_property(badge, "scale", Vector2(1.15, 1.15), 0.08)
+	_combo_tween.chain().tween_property(badge, "scale", Vector2.ONE, 0.12).set_trans(Tween.TRANS_SINE)
 
 
 func _ensure_wave_progress_bar() -> ProgressBar:

@@ -472,6 +472,22 @@ func upgrade() -> bool:
 	return true
 
 
+func flash_earn(amount: int) -> void:
+	var label := Label.new()
+	label.text = "+%d G" % amount
+	label.add_theme_font_size_override("font_size", 20)
+	label.add_theme_color_override("font_color", Color(1, 0.9, 0.1))
+	label.add_theme_color_override("font_outline_color", Color(0.1, 0.05, 0, 1))
+	label.add_theme_constant_override("outline_size", 3)
+	label.position = Vector2(-20, -60)
+	label.z_index = 12
+	add_child(label)
+	var tw := create_tween().set_parallel(true)
+	tw.tween_property(label, "position:y", -95.0, 0.7)
+	tw.tween_property(label, "modulate:a", 0.0, 0.7)
+	tw.chain().tween_callback(label.queue_free)
+
+
 func sell() -> void:
 	var refund: int
 	if data.has_branching_upgrades():
