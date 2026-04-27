@@ -6,17 +6,15 @@ name: PR Preview Deploy
 #   jgschobel.github.io/Tower-Defense-Game/pr-42/
 
 on:
-  # PAUSED until 2026-04-23 23:00 UTC — user quota conservation (PR #196).
-  # Uncomment the blocks below to resume automatic runs.
-  # pull_request:
-  #   branches: [main]
-  #   paths:
-  #     - 'scripts/**'
-  #     - 'scenes/**'
-  #     - 'resources/**'
-  #     - 'project.godot'
-  #     - 'export_presets.cfg'
-  #     - 'assets/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/**'
+      - 'scenes/**'
+      - 'resources/**'
+      - 'project.godot'
+      - 'export_presets.cfg'
+      - 'assets/**'
 
 permissions:
   contents: write
@@ -71,11 +69,11 @@ jobs:
           PR_NUM: ${{ github.event.pull_request.number }}
         run: |
           set -e
-          # Clone gh-pages branch (or create empty if missing)
+          Clone gh-pages branch (or create empty if missing)
           git clone --branch gh-pages --depth 1 "https://x-access-token:$GH_TOKEN@github.com/${{ github.repository }}.git" gh-pages 2>/dev/null \
             || git clone --depth 1 "https://x-access-token:$GH_TOKEN@github.com/${{ github.repository }}.git" gh-pages
           cd gh-pages
-          # If we cloned default branch (no gh-pages yet), create orphan
+          If we cloned default branch (no gh-pages yet), create orphan
           if [ ! -d ".git" ] || ! git rev-parse --abbrev-ref HEAD | grep -q gh-pages; then
             git checkout --orphan gh-pages
             git rm -rf . 2>/dev/null || true
@@ -85,7 +83,7 @@ jobs:
           rm -rf "pr-${PR_NUM}"
           mkdir -p "pr-${PR_NUM}"
           cp -r ../build/web/* "pr-${PR_NUM}/"
-          # Add a small index landing page if missing at root
+          Add a small index landing page if missing at root
           if [ ! -f index.html ]; then
             echo "<h1>Tower Defense Game — PR Previews</h1><p>Visit /pr-N/ for a specific PR build.</p>" > index.html
           fi

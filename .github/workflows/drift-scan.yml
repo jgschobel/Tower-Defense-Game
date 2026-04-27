@@ -8,10 +8,8 @@ name: Weekly Drift Scan
 # Files an issue with findings — next self-improve cron run picks it up.
 
 on:
-  # PAUSED until 2026-04-23 23:00 UTC — user quota conservation (PR #196).
-  # Uncomment the blocks below to resume automatic runs.
-  # schedule:
-  #   - cron: '0 7 * * 1'  # Mondays 07:00 UTC, after weekly-digest at 06:00
+  schedule:
+    - cron: '0 7 * * 1'  # Mondays 07:00 UTC, after weekly-digest at 06:00
   workflow_dispatch:
 
 permissions:
@@ -34,10 +32,10 @@ jobs:
         id: dead_funcs
         run: |
           set -e
-          # Naive heuristic: every `func name(` defined in scripts/, then
-          # check if `name(` appears anywhere else (other files OR same
-          # file as a call). Excludes Godot lifecycle hooks (_ready,
-          # _process, _input, etc.) and common signal handlers.
+          Naive heuristic: every `func name(` defined in scripts/, then
+          check if `name(` appears anywhere else (other files OR same
+          file as a call). Excludes Godot lifecycle hooks (_ready,
+          _process, _input, etc.) and common signal handlers.
           DEAD=""
           IGNORE='_ready|_process|_input|_unhandled_input|_physics_process|_draw|_init|_enter_tree|_exit_tree|_notification|_get_property|_set_property|_to_string|_get|_set'
           while IFS= read -r line; do
@@ -45,7 +43,7 @@ jobs:
             fn=$(echo "$line" | grep -oE 'func [a-zA-Z_][a-zA-Z0-9_]*' | sed 's/func //')
             if [ -z "$fn" ]; then continue; fi
             if echo "$fn" | grep -qE "^($IGNORE)$"; then continue; fi
-            # Count callsites OUTSIDE the defining file
+            Count callsites OUTSIDE the defining file
             CALLS=$(grep -rE "\b${fn}\s*\(" --include='*.gd' scripts/ scenes/ resources/ 2>/dev/null \
               | grep -v "^${file}:" \
               | grep -vE "^[^:]+:[0-9]+:func ${fn}" \
@@ -63,18 +61,18 @@ jobs:
         run: |
           set -e
           ORPHANS=""
-          # For each .tscn or .tres outside scenes/ui/main_menu (the entry
-          # point) check if it's referenced anywhere
+          For each .tscn or .tres outside scenes/ui/main_menu (the entry
+          point) check if it's referenced anywhere
           for f in $(find scenes resources -name '*.tscn' -o -name '*.tres' 2>/dev/null); do
             base="res://$f"
             REFS=$(grep -rl --include='*.tscn' --include='*.tres' --include='*.gd' --include='*.godot' "$base" . 2>/dev/null | wc -l | tr -d ' ')
-            # Account for self-reference (the file's own header)
+            Account for self-reference (the file's own header)
             EFFECTIVE=$((REFS - 1))
             if [ "$EFFECTIVE" -le 0 ]; then
               ORPHANS="${ORPHANS}- ${f}"$'\n'
             fi
           done
-          # Filter out main_menu (entry point) and base_*.tscn (instantiated dynamically)
+          Filter out main_menu (entry point) and base_*.tscn (instantiated dynamically)
           ORPHANS_FILTERED=$(echo "$ORPHANS" | grep -vE 'main_menu|base_enemy|base_tower|base_projectile' || true)
           echo "$ORPHANS_FILTERED" > /tmp/orphans.txt
           OCOUNT=$(echo -n "$ORPHANS_FILTERED" | grep -c '^-' || echo 0)

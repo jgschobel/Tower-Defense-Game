@@ -1,11 +1,9 @@
 name: Autonomous Development Loop
 
 on:
-  # PAUSED until 2026-04-23 23:00 UTC — user quota conservation (PR #196).
-  # Uncomment the blocks below to resume automatic runs.
-  # schedule:
-  #   # Every 4 hours UTC — 6 runs per day, one per mode
-  #   - cron: '0 */4 * * *'
+  schedule:
+    # Every 4 hours UTC — 6 runs per day, one per mode
+    - cron: '0 */4 * * *'
   workflow_dispatch:
     inputs:
       task_mode:
@@ -66,19 +64,19 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -e
-          # User has Claude Max → € cost is 0. Two real limits matter:
-          # (1) Max's 5h-window quota — if loop hammers Opus, blocks
-          #     user's own chat sessions
-          # (2) Velocity sanity — runaway cron should still fail loud
+          User has Claude Max → € cost is 0. Two real limits matter:
+          (1) Max's 5h-window quota — if loop hammers Opus, blocks
+              user's own chat sessions
+          (2) Velocity sanity — runaway cron should still fail loud
           DAY_AGO=$(date -u -d '24 hours ago' +%Y-%m-%dT%H:%M:%SZ)
           FIVE_HOURS_AGO=$(date -u -d '5 hours ago' +%Y-%m-%dT%H:%M:%SZ)
 
-          # Total merges in last 24h
+          Total merges in last 24h
           TOTAL=$(gh pr list --state merged --search "merged:>=$DAY_AGO" --limit 100 \
             --json headRefName \
             | jq '[.[] | select(.headRefName | startswith("claude/auto/"))] | length' || echo 0)
 
-          # Opus-mode merges in last 5h (ideate / self-improve / build-content)
+          Opus-mode merges in last 5h (ideate / self-improve / build-content)
           OPUS_RECENT=$(gh pr list --state merged --search "merged:>=$FIVE_HOURS_AGO" --limit 100 \
             --json headRefName \
             | jq '[.[] | select(.headRefName | test("claude/auto/(ideate|self-improve|build-content)"))] | length' || echo 0)
@@ -203,18 +201,18 @@ jobs:
             exit 0
           fi
           echo "Validating PR #$PR_NUM"
-          # Use gh pr checkout — it uses GH_TOKEN directly and avoids the
-          # stale git-credential issue that breaks `git fetch origin` after
-          # the Claude action runs.
+          Use gh pr checkout — it uses GH_TOKEN directly and avoids the
+          stale git-credential issue that breaks `git fetch origin` after
+          the Claude action runs.
           gh pr checkout "$PR_NUM"
           chmod +x .github/autonomous/validate.sh
           if .github/autonomous/validate.sh; then
             echo "Validation passed — queuing auto-merge on PR #$PR_NUM"
-            # --auto: tells GitHub to merge once required checks (if any)
-            # pass. Works immediately if no branch protection. Previous
-            # plain --squash was racing with sim-gate / gitleaks / deploy
-            # workflows that hadn't finished when this step ran, leaving
-            # PRs #44 and #49 stuck open.
+            --auto: tells GitHub to merge once required checks (if any)
+            pass. Works immediately if no branch protection. Previous
+            plain --squash was racing with sim-gate / gitleaks / deploy
+            workflows that hadn't finished when this step ran, leaving
+            PRs #44 and #49 stuck open.
             gh pr merge "$PR_NUM" --squash --delete-branch --auto \
               || gh pr merge "$PR_NUM" --squash --delete-branch
           else
