@@ -8,9 +8,9 @@ on:
     # sustainable rate.
     - cron: '30 */6 * * *'
   workflow_dispatch:
-  Push-triggered: only fires on changes that could affect gameplay
-  visually. Trims out ROADMAP / docs / workflow churn from triggering
-  6-min Godot runs. Saves ~30% of push-triggered minutes.
+  # Push-triggered: only fires on changes that could affect gameplay
+  # visually. Trims out ROADMAP / docs / workflow churn from triggering
+  # 6-min Godot runs. Saves ~30% of push-triggered minutes.
   push:
     branches: [main]
     paths:
