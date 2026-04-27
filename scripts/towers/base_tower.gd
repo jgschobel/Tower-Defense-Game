@@ -242,7 +242,7 @@ func _process(delta: float) -> void:
 		attack_timer = 1.0 / effective_speed
 
 
-func _has_camo_detection() -> bool:
+func has_camo_detection() -> bool:
 	if data and data.can_detect_camo:
 		return true
 	# Share detection with nearby detector towers (buff-range scoped).
@@ -262,7 +262,7 @@ func _find_target() -> BaseEnemy:
 	# Filter flying + camo (ROADMAP #50). Camo enemies are invisible
 	# unless this tower has detection or a nearby tower with detection
 	# + buff_range that reaches us shares it.
-	var detects_camo: bool = _has_camo_detection()
+	var detects_camo: bool = has_camo_detection()
 	var valid: Array = []
 	for e in _enemies_in_range:
 		var enemy := e as BaseEnemy

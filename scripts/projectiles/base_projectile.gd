@@ -249,6 +249,11 @@ func _hit() -> void:
 			var enemy := enemy_node as BaseEnemy
 			if enemy == null or enemy == target or enemy.is_dead:
 				continue
+			# F10: camo enemies are invisible to towers without detection.
+			# Splash from a non-detector tower must not reveal/damage camo.
+			if enemy.data and enemy.data.is_camo:
+				if src_tower == null or not src_tower.has_method("has_camo_detection") or not src_tower.has_camo_detection():
+					continue
 			if global_position.distance_to(enemy.global_position) <= splash_radius:
 				var splash_was_alive: bool = not enemy.is_dead
 				enemy.take_damage(damage * splash_damage_pct, damage_type)
