@@ -685,23 +685,23 @@ func _celebrate_boss_death() -> void:
 
 
 func _show_gold_earned() -> void:
+	# D26: styled gold floater — coin prefix, bolder size, arc trajectory.
 	var label := Label.new()
-	label.text = "+%d" % gold_reward
-	label.add_theme_font_size_override("font_size", 16)
-	label.add_theme_color_override("font_color", Color(1, 0.9, 0.2))
-	label.add_theme_color_override("font_outline_color", Color.BLACK)
-	label.add_theme_constant_override("outline_size", 3)
-	label.position = Vector2(0, -50)
+	label.text = "✦ +%d G" % gold_reward
+	var font_size: int = 18 if gold_reward < 25 else 22  # bigger pop for large rewards
+	label.add_theme_font_size_override("font_size", font_size)
+	label.add_theme_color_override("font_color", Color(1.0, 0.88, 0.15))
+	label.add_theme_color_override("font_outline_color", Color(0.25, 0.12, 0.0))
+	label.add_theme_constant_override("outline_size", 4)
 	label.z_index = 20
-	# Add to parent so it persists after enemy freed
 	get_parent().add_child(label)
-	label.global_position = global_position + Vector2(0, -30)
-	# Bind tween to the tree (not self) — enemy is about to queue_free
-	# and a self-bound tween would die with it, leaving the label stranded.
-	var tween := get_tree().create_tween()
-	tween.set_parallel(true)
-	tween.tween_property(label, "position:y", label.position.y - 50.0, 0.8)
-	tween.tween_property(label, "modulate:a", 0.0, 0.8)
+	label.global_position = global_position + Vector2(randf_range(-12, 12), -30)
+	# Slight horizontal drift for variety — floats up and fades.
+	var drift_x: float = randf_range(-18.0, 18.0)
+	var tween := get_tree().create_tween().set_parallel(true)
+	tween.tween_property(label, "position:y", label.position.y - 55.0, 0.75)
+	tween.tween_property(label, "position:x", label.position.x + drift_x, 0.75)
+	tween.tween_property(label, "modulate:a", 0.0, 0.75).set_delay(0.25)
 	tween.chain().tween_callback(label.queue_free)
 
 
