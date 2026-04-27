@@ -85,6 +85,20 @@ func _apply_level_tint() -> void:
 	cm.name = "LevelTint"
 	cm.color = tint
 	add_child(cm)
+	# D19: light flicker for fluorescent (L1) and neon (L6) atmospheres.
+	# Tiny colour oscillation on the CanvasModulate — just enough to feel
+	# alive without being distracting. Not applied to other levels.
+	if level_id == 1 or level_id == 6:
+		var flicker_speed: float = 0.9 if level_id == 1 else 0.45
+		var flicker_depth: float = 0.06 if level_id == 1 else 0.10
+		var dim := tint.darkened(flicker_depth)
+		var flicker := cm.create_tween().set_loops()
+		flicker.tween_property(cm, "color", dim, flicker_speed).set_trans(Tween.TRANS_SINE)
+		flicker.tween_property(cm, "color", tint, flicker_speed * 0.7).set_trans(Tween.TRANS_SINE)
+		# Occasional deeper dip (simulates ballast buzz on fluorescents)
+		if level_id == 1:
+			flicker.tween_property(cm, "color", tint.darkened(flicker_depth * 2.5), 0.05)
+			flicker.tween_property(cm, "color", tint, 0.08)
 
 
 func _spawn_path_direction_arrows() -> void:
