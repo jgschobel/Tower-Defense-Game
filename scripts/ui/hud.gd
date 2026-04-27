@@ -809,28 +809,27 @@ func _update_wave_progress_bar(current: int, total: int) -> void:
 
 func _show_wave_announcement(current: int, _total: int) -> void:
 	var announce := Label.new()
-	announce.text = "WELLE %d!" % current
-	announce.add_theme_font_size_override("font_size", 52)
-	announce.add_theme_color_override("font_color", Color(1, 0.9, 0.2))
-	announce.add_theme_color_override("font_outline_color", Color(0.2, 0.1, 0))
-	announce.add_theme_constant_override("outline_size", 5)
+	announce.text = "— WELLE %d —" % current
+	var is_danger: bool = current >= 7
+	announce.add_theme_font_size_override("font_size", 54 if not is_danger else 62)
+	var txt_color := Color(1, 0.3, 0.2) if is_danger else Color(1, 0.92, 0.2)
+	announce.add_theme_color_override("font_color", txt_color)
+	announce.add_theme_color_override("font_outline_color", Color(0.15, 0.05, 0))
+	announce.add_theme_constant_override("outline_size", 6)
 	announce.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	announce.anchors_preset = Control.PRESET_CENTER
-	announce.anchor_left = 0.5
-	announce.anchor_top = 0.4
-	announce.anchor_right = 0.5
-	announce.anchor_bottom = 0.4
-	announce.offset_left = -150
-	announce.offset_right = 150
-	announce.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	announce.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	announce.custom_minimum_size = Vector2(700, 80)
+	announce.set_anchors_preset(Control.PRESET_CENTER)
+	announce.pivot_offset = Vector2(350, 40)
 	add_child(announce)
-	# For later waves (7+), make the text red and bigger
-	if current >= 7:
-		announce.add_theme_color_override("font_color", Color(1, 0.3, 0.2))
-		announce.add_theme_font_size_override("font_size", 60)
-	var tween := announce.create_tween()
-	tween.tween_property(announce, "modulate:a", 0.0, 1.5).set_delay(0.5)
-	tween.tween_callback(announce.queue_free)
+	# Slide in from the right, hold, then fade out — D27
+	announce.position.x = 1400.0
+	announce.position.y = -40.0
+	var tw := announce.create_tween()
+	tw.tween_property(announce, "position:x", -350.0, 0.22).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tw.tween_property(announce, "position:x", -350.0, 0.55)  # hold
+	tw.tween_property(announce, "modulate:a", 0.0, 0.35)
+	tw.tween_callback(announce.queue_free)
 
 
 func show_next_wave_button(visible_flag: bool) -> void:

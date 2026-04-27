@@ -491,6 +491,16 @@ func flash_earn(amount: int) -> void:
 	tw.chain().tween_callback(label.queue_free)
 
 
+func play_place_animation() -> void:
+	if sprite == null:
+		return
+	var base_sc: Vector2 = _baseline_scale
+	scale = Vector2.ZERO
+	var tw := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(self, "scale", base_sc * 1.15, 0.18)
+	tw.tween_property(self, "scale", base_sc, 0.12).set_trans(Tween.TRANS_SINE)
+
+
 func sell() -> void:
 	var refund: int
 	if data.has_branching_upgrades():

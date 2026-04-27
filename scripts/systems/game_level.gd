@@ -57,10 +57,34 @@ func _ready() -> void:
 	pause_menu.visible = false
 
 	_load_wave_data()
+	_apply_level_tint()
 	wave_manager.setup_waves(wave_definitions)
 	hud.show_next_wave_button(true)
 	hud.update_wave_info(0, wave_manager.total_waves)
 	_spawn_path_direction_arrows()
+
+
+func _apply_level_tint() -> void:
+	# D18: CanvasModulate tint per level using background_color from level_data.
+	# Gives each level a distinct atmospheric colour cast without needing
+	# per-level scene files. Skipped for levels with no .tres or neutral white.
+	var path := "res://resources/level_data/level_%d.tres" % level_id
+	if not ResourceLoader.exists(path):
+		return
+	var res = load(path)
+	if res == null or not ("background_color" in res):
+		return
+	var bg: Color = res.background_color
+	# Only apply if non-trivially different from white (neutral level)
+	if bg.is_equal_approx(Color.WHITE):
+		return
+	# Blend toward white so the tint is atmospheric, not overwhelming.
+	# 70% white + 30% level colour keeps sprites readable.
+	var tint := bg.lerp(Color.WHITE, 0.7)
+	var cm := CanvasModulate.new()
+	cm.name = "LevelTint"
+	cm.color = tint
+	add_child(cm)
 
 
 func _spawn_path_direction_arrows() -> void:

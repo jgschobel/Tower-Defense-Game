@@ -23,6 +23,7 @@ signal placement_invalid(reason: String)
 
 var is_placing: bool = false
 var ghost_tower: Node2D = null
+var _ghost_x_label: Label = null  # red ✕ overlay when placement invalid (D28)
 var selected_tower_data: TowerData = null
 var placed_towers: Array = []
 
@@ -92,6 +93,7 @@ func cancel_placement() -> void:
 	if ghost_tower:
 		ghost_tower.queue_free()
 		ghost_tower = null
+	_ghost_x_label = null
 	is_placing = false
 	selected_tower_data = null
 	placement_cancelled.emit()
@@ -149,8 +151,22 @@ func _update_ghost_position(screen_pos: Vector2) -> void:
 
 		if _can_place_at(world_pos):
 			ghost_tower.modulate = Color(0.5, 1.0, 0.5, 0.6)
+			if _ghost_x_label:
+				_ghost_x_label.visible = false
 		else:
 			ghost_tower.modulate = Color(1.0, 0.3, 0.3, 0.6)
+			if _ghost_x_label == null or not is_instance_valid(_ghost_x_label):
+				_ghost_x_label = Label.new()
+				_ghost_x_label.text = "✕"
+				_ghost_x_label.add_theme_font_size_override("font_size", 48)
+				_ghost_x_label.add_theme_color_override("font_color", Color(1, 0.15, 0.15))
+				_ghost_x_label.add_theme_color_override("font_outline_color", Color(0.4, 0, 0))
+				_ghost_x_label.add_theme_constant_override("outline_size", 4)
+				_ghost_x_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+				_ghost_x_label.position = Vector2(-24, -52)
+				_ghost_x_label.z_index = 15
+				ghost_tower.add_child(_ghost_x_label)
+			_ghost_x_label.visible = true
 
 
 func _try_place(screen_pos: Vector2) -> void:
@@ -180,6 +196,9 @@ func _try_place(screen_pos: Vector2) -> void:
 	placed_towers.append(tower)
 
 	SfxManager.play_place()
+	_spawn_place_ring(world_pos)
+	if tower.has_method("play_place_animation"):
+		tower.play_place_animation()
 	tower_placed.emit(tower)
 	_just_placed = true
 	# Adjacency buffs (ROADMAP #38/#41): recompute stats on every
@@ -187,6 +206,26 @@ func _try_place(screen_pos: Vector2) -> void:
 	# neighbors + existing towers pick up new support coverage.
 	_refresh_adjacency()
 	cancel_placement()
+
+
+func _spawn_place_ring(pos: Vector2) -> void:
+	# D29: pop animation on the placed tower — scale 0→1.25→1 + green flash.
+	# Uses a separate Label as a "ring" stand-in since Node2D inline draw
+	# scripts can't easily be tweened. The tower node is freshly placed so
+	# we animate it directly once we find it at pos.
+	var flash := Label.new()
+	flash.text = "✓"
+	flash.add_theme_font_size_override("font_size", 36)
+	flash.add_theme_color_override("font_color", Color(0.4, 1.0, 0.5, 1.0))
+	flash.add_theme_color_override("font_outline_color", Color(0.0, 0.3, 0.1))
+	flash.add_theme_constant_override("outline_size", 4)
+	flash.z_index = 20
+	get_parent().add_child(flash)
+	flash.global_position = pos + Vector2(-12, -70)
+	var tw := flash.create_tween().set_parallel(true)
+	tw.tween_property(flash, "position:y", flash.position.y - 30.0, 0.4)
+	tw.tween_property(flash, "modulate:a", 0.0, 0.4).set_delay(0.15)
+	tw.chain().tween_callback(flash.queue_free)
 
 
 func _refresh_adjacency() -> void:
