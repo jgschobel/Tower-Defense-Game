@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Stitch per-level playtest screenshots into a 4x4 audit grid.
 
-Reads PNGs from docs/playtest_shots/latest/ (matching level_*.png +
-upgrade_*.png), composes a single docs/playtest_shots/<YYYY-MM-DD>/
-audit_grid.png so the next session can Read it and see the whole
-game state in one image. Part of ROADMAP #42.
+Reads PNGs from docs/observability/screenshots/ (the canonical path
+written by the Autonomous Playtester workflow). Composes a single
+docs/playtest_shots/<YYYY-MM-DD>/audit_grid.png plus an always-current
+docs/playtest_shots/audit_grid_latest.png so chat-session Claude can
+Read one image and judge the full visual state. Part of ROADMAP #42.
 
 Requires Pillow. Workflow installs it before running.
 """
@@ -22,8 +23,10 @@ except ImportError:
     sys.exit(1)
 
 ROOT = Path(__file__).resolve().parents[2]
+# Source: where the playtester writes key screenshots (playtest.yml).
+SRC_DIR = ROOT / "docs" / "observability" / "screenshots"
+# Output: dated folder + always-current copy.
 SHOTS_ROOT = ROOT / "docs" / "playtest_shots"
-SRC_DIR = SHOTS_ROOT / "latest"
 TODAY = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 OUT_DIR = SHOTS_ROOT / TODAY
 OUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -37,11 +40,10 @@ PADDING = 8
 
 def collect_tiles() -> list[Path]:
     if not SRC_DIR.exists():
+        print(f"[stitch] source dir missing: {SRC_DIR.relative_to(ROOT)}")
         return []
-    # Prefer level_*.png then upgrade_*.png, deterministic order.
-    levels = sorted(SRC_DIR.glob("level_*.png"))
-    upgrades = sorted(SRC_DIR.glob("upgrade_*.png"))
-    tiles = (levels + upgrades)[: COLS * ROWS]
+    # All .png files in alphabetical order, capped to the grid capacity.
+    tiles = sorted(SRC_DIR.glob("*.png"))[: COLS * ROWS]
     return tiles
 
 
@@ -72,10 +74,10 @@ def main() -> int:
     out_path = OUT_DIR / "audit_grid.png"
     grid.save(out_path, optimize=True)
     print(f"[stitch] wrote {out_path.relative_to(ROOT)} with {len(tiles)} tiles")
-    # Keep a "latest" symlink-ish copy for chat agents that always Read
-    # the same path.
+    # Keep a stable path for chat agents that always Read the same file.
     latest_copy = SHOTS_ROOT / "audit_grid_latest.png"
     grid.save(latest_copy, optimize=True)
+    print(f"[stitch] also wrote {latest_copy.relative_to(ROOT)}")
     return 0
 
 

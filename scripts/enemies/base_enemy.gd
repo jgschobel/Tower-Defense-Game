@@ -21,6 +21,7 @@ var slow_timer: float = 0.0
 var is_dead: bool = false
 var _has_regrown: bool = false  # Regrow mechanic allows only one resurrect
 var _health_bar_tween: Tween = null
+var _death_tween: Tween = null
 
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var health_bar: ProgressBar = $HealthBar
@@ -286,6 +287,14 @@ func die() -> void:
 
 	enemy_died.emit(self)
 
+	# Death animation — spin + shrink + fade, then return to pool or free.
+	_death_tween = create_tween()
+	_death_tween.set_parallel(true)
+	_death_tween.tween_property(self, "scale", Vector2.ZERO, 0.35).set_ease(Tween.EASE_IN)
+	_death_tween.tween_property(self, "rotation", randf_range(-1.5, 1.5), 0.35)
+	_death_tween.tween_property(self, "modulate:a", 0.0, 0.35)
+	_death_tween.chain().tween_callback(_return_to_pool_or_free)
+
 
 func _splash_heal_nearby() -> void:
 	var radius_sq: float = data.splash_on_death_radius * data.splash_on_death_radius
@@ -300,14 +309,6 @@ func _splash_heal_nearby() -> void:
 		e.health = clampf(e.health + heal, 0.0, e.max_health)
 		if e.has_method("_update_health_bar"):
 			e._update_health_bar()
-
-	# Death animation with spin and pop
-	var tween := create_tween()
-	tween.set_parallel(true)
-	tween.tween_property(self, "scale", Vector2.ZERO, 0.35).set_ease(Tween.EASE_IN)
-	tween.tween_property(self, "rotation", randf_range(-1.5, 1.5), 0.35)
-	tween.tween_property(self, "modulate:a", 0.0, 0.35)
-	tween.chain().tween_callback(_return_to_pool_or_free)
 
 
 func _reached_end() -> void:
@@ -330,6 +331,14 @@ func _return_to_pool_or_free() -> void:
 func reset_for_pool() -> void:
 	# Called by EnemyPool when this enemy is about to be reused.
 	# Resets all transient runtime state so the next spawn is clean.
+	# Kill the death tween first — if still running it would fade out
+	# the reused enemy or leave sprite.modulate at 0 (F1/F2 fix).
+	if _death_tween and _death_tween.is_valid():
+		_death_tween.kill()
+	_death_tween = null
+	if _health_bar_tween and _health_bar_tween.is_valid():
+		_health_bar_tween.kill()
+	_health_bar_tween = null
 	if data:
 		_apply_data()
 		_update_visual()

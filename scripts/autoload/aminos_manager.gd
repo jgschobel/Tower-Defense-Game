@@ -13,6 +13,7 @@ const SAVE_PATH := "user://aminos.save"
 var balance: int = 0
 var total_earned: int = 0
 var unlocked_nodes: Array = []
+var cleared_levels: Array = []  # level_ids already awarded (F11 — no re-award on replay)
 
 
 func _ready() -> void:
@@ -56,9 +57,12 @@ func unlock_node(node_id: String, cost: int) -> bool:
 
 
 ## Called from GameManager.complete_level(). Yield = 5 per level clear +
-## 3 per star earned on that clear. Cap protects against accidental
-## multi-award from re-running the same level.
+## 3 per star earned on that clear. Capped at 1 award per level_id —
+## replaying an already-cleared level grants no additional Aminos (F11).
 func award_for_level_clear(level_id: int, stars: int) -> int:
+	if level_id in cleared_levels:
+		return 0
+	cleared_levels.append(level_id)
 	var yield_amount: int = 5 + level_id + (stars * 3)
 	add(yield_amount, "level_%d_clear" % level_id)
 	return yield_amount
@@ -69,6 +73,7 @@ func _save() -> void:
 		"balance": balance,
 		"total_earned": total_earned,
 		"unlocked_nodes": unlocked_nodes,
+		"cleared_levels": cleared_levels,
 	}
 	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if f:
@@ -91,3 +96,6 @@ func _load() -> void:
 		var nodes: Variant = parsed.get("unlocked_nodes", [])
 		if nodes is Array:
 			unlocked_nodes = nodes
+		var cleared: Variant = parsed.get("cleared_levels", [])
+		if cleared is Array:
+			cleared_levels = cleared
