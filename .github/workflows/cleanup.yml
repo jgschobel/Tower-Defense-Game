@@ -5,10 +5,8 @@ name: Daily Cleanup
 # for any reason.
 
 on:
-  # PAUSED until 2026-04-23 23:00 UTC — user quota conservation (PR #196).
-  # Uncomment the blocks below to resume automatic runs.
-  # schedule:
-  #   - cron: '0 5 * * *'  # Daily at 05:00 UTC (~07:00 CEST)
+  schedule:
+    - cron: '0 5 * * *'  # Daily at 05:00 UTC (~07:00 CEST)
   workflow_dispatch:
 
 permissions:
@@ -35,7 +33,7 @@ jobs:
           set -e
           THREE_DAYS_AGO=$(date -u -d '3 days ago' +%Y-%m-%dT%H:%M:%SZ)
           echo "Closing autonomous PRs updated before $THREE_DAYS_AGO"
-          # Only touch PRs with claude/auto/* head branches — never user PRs.
+          Only touch PRs with claude/auto/* head branches — never user PRs.
           gh pr list --state open --limit 100 \
             --json number,headRefName,updatedAt \
             | jq -r --arg cutoff "$THREE_DAYS_AGO" '
@@ -55,7 +53,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -e
-          # List remote branches under claude/auto/ then check if commit is on main
+          List remote branches under claude/auto/ then check if commit is on main
           git fetch --all --prune
           for BRANCH in $(git branch -r | grep 'origin/claude/auto/' | sed 's|origin/||' | tr -d ' '); do
             LAST_SHA=$(git rev-parse "origin/$BRANCH" 2>/dev/null || echo "")

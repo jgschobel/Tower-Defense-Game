@@ -1,16 +1,14 @@
 name: Deploy Web Build to GitHub Pages
 
 on:
-  # PAUSED until 2026-04-23 23:00 UTC — user quota conservation (PR #196).
-  # Uncomment the blocks below to resume automatic runs.
-  # push:
-  #   branches: [main]
-  #   paths-ignore:
-  #     - 'docs/observability/**'
-  #     - 'CHANGELOG.md'
-  #     - 'ROADMAP.md'
-  #     - 'docs/audits/**'
-  #     - '.github/friend_photos_inbox/README.md'
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'docs/observability/**'
+      - 'CHANGELOG.md'
+      - 'ROADMAP.md'
+      - 'docs/audits/**'
+      - '.github/friend_photos_inbox/README.md'
   workflow_dispatch:
 
 permissions:
@@ -34,9 +32,9 @@ jobs:
         id: godot
         run: |
           set -e
-          # SoT: .github/godot-version.txt. Bump that one file when you
-          # want to migrate. deploy-web AND playtest read the same value
-          # so they're never on different engines.
+          SoT: .github/godot-version.txt. Bump that one file when you
+          want to migrate. deploy-web AND playtest read the same value
+          so they're never on different engines.
           PINNED=$(cat .github/godot-version.txt | tr -d '[:space:]')
           if [ -z "$PINNED" ]; then
             echo "ERROR: .github/godot-version.txt is empty"; exit 1
@@ -58,16 +56,16 @@ jobs:
           echo "Installing Godot ${GODOT_TAG}"
           BASE="https://github.com/godotengine/godot/releases/download/${GODOT_TAG}"
 
-          # Godot binary (-f makes curl fail on 404 instead of saving HTML)
+          Godot binary (-f makes curl fail on 404 instead of saving HTML)
           curl -fsSL -o godot.zip "${BASE}/Godot_v${GODOT_TAG}_linux.x86_64.zip"
           unzip -q godot.zip
           mv "Godot_v${GODOT_TAG}_linux.x86_64" /usr/local/bin/godot
           chmod +x /usr/local/bin/godot
           godot --version
 
-          # Export templates — Godot expects the folder name with DOT
-          # separator (e.g. "4.6.2.stable") not the tag's DASH form
-          # ("4.6.2-stable"). This is a long-standing Godot quirk.
+          Export templates — Godot expects the folder name with DOT
+          separator (e.g. "4.6.2.stable") not the tag's DASH form
+          ("4.6.2-stable"). This is a long-standing Godot quirk.
           curl -fsSL -o templates.tpz "${BASE}/Godot_v${GODOT_TAG}_export_templates.tpz"
           VER_DIR="$(echo "${GODOT_TAG}" | sed 's/-/./g')"
           echo "Installing templates to ~/.local/share/godot/export_templates/${VER_DIR}/"
