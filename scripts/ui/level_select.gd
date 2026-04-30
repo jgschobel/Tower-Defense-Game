@@ -64,7 +64,7 @@ func _populate_levels() -> void:
 		if unlocked:
 			btn.pressed.connect(_on_level_pressed.bind(i))
 			# Color hint per level theme
-			var level_colors := {1: Color(0.9, 0.85, 0.7), 2: Color(0.7, 0.85, 1.0), 3: Color(0.95, 0.8, 0.6), 4: Color(0.8, 0.65, 0.85), 5: Color(1.0, 0.5, 0.4), 6: Color(0.5, 0.5, 0.6), 7: Color(0.55, 0.8, 0.95)}
+			var level_colors := {1: Color(0.9, 0.85, 0.7), 2: Color(0.7, 0.85, 1.0), 3: Color(0.95, 0.8, 0.6), 4: Color(0.8, 0.65, 0.85), 5: Color(1.0, 0.5, 0.4), 6: Color(0.5, 0.5, 0.6), 7: Color(0.55, 0.8, 0.95), 8: Color(0.6, 0.75, 1.0), 9: Color(0.75, 0.55, 1.0), 10: Color(1.0, 0.45, 0.4)}
 			btn.modulate = level_colors.get(i, Color.WHITE)
 		else:
 			btn.modulate = Color(0.4, 0.4, 0.4, 0.6)
