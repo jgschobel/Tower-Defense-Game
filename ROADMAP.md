@@ -262,7 +262,7 @@ the user for anything unless explicitly noted.
 #### UX
 7. **Next-wave button fade** — `_refresh_next_wave_preview(false)` queue_frees without tween. Add `modulate:a → 0` over 0.2s before free.
 8. **Sub-wave progress bar** — currently jumps 10%/wave. Track enemies-defeated / total-enemies within current wave.
-9. **Shop row-selected highlight while placing** — mark the active row gold-bordered during `_is_placing`.
+9. ✅ **Shop row-selected highlight while placing** — gold border + warm bg on the active shop row while placement is in progress. Cleared on cancel/place. (2026-04-30)
 
 #### Ideas (nice-to-have)
 10. **Enemy icons in next-wave preview** — prepend 20×20 thumbnail per group instead of text-only.
