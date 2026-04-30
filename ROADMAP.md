@@ -57,9 +57,10 @@ UX / FEEL — independent of the gameplay-mechanic fixes below.
 ### Parallax + atmosphere layers (D16-D19)
 - [ ] **D16** ParallaxBackground node on each level scene with at
   least 2 layers (distant sky / mid props) scrolling at 0.3×/0.6×.
-- [ ] **D17** CPUParticles2D overlay per level — L2 frost, L3 flour,
+- [x] **D17** CPUParticles2D overlay per level — L2 frost, L3 flour,
   L4 acid bubbles, L5 cumulus-receipt confetti, L6 rain, L7 wind
   leaves. 30-50 particles @ low rate, softly tinted.
+  ✓ Implemented 2026-04-30: game_level._spawn_atmosphere_particles() adds per-level CPUParticles2D. L8 blue sparks, L9 purple glitch, L10 rising embers also included.
 - [x] **D18** CanvasModulate tint per level — L2 cool blue, L4 acid
   green, L6 neon cyan. Stack over backgrounds for mood.
   ✓ Implemented 2026-04-27: game_level._apply_level_tint() reads background_color from level_N.tres, adds CanvasModulate at 30% blend.
