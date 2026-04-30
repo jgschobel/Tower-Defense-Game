@@ -930,14 +930,55 @@ func _refresh_next_wave_preview(visible_flag: bool) -> void:
 	prefix.add_theme_color_override("font_color", Color(1, 0.85, 0.3))
 	hbox.add_child(prefix)
 	for group in preview:
+		var enemy_id: String = group.get("enemy_id", "")
+		var icon_tex: Texture2D = _enemy_icon_texture(enemy_id)
+		if icon_tex:
+			var icon := TextureRect.new()
+			icon.texture = icon_tex
+			icon.custom_minimum_size = Vector2(22, 22)
+			icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+			icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+			hbox.add_child(icon)
+		else:
+			var swatch := ColorRect.new()
+			swatch.custom_minimum_size = Vector2(14, 14)
+			swatch.color = _enemy_preview_color(enemy_id)
+			swatch.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+			hbox.add_child(swatch)
 		var entry := Label.new()
-		var display_name: String = _short_name_for_enemy(group.get("enemy_id", ""))
+		var display_name: String = _short_name_for_enemy(enemy_id)
 		entry.text = "%dx %s" % [group.get("count", 0), display_name]
 		entry.add_theme_font_size_override("font_size", 16)
 		entry.add_theme_color_override("font_color", Color(1, 0.95, 0.8))
 		hbox.add_child(entry)
 	panel.add_child(hbox)
 	add_child(panel)
+
+
+func _enemy_icon_texture(enemy_id: String) -> Texture2D:
+	var data_path := "res://resources/enemy_data/%s.tres" % enemy_id
+	if not ResourceLoader.exists(data_path):
+		return null
+	var ed = load(data_path)
+	if ed and "custom_texture" in ed and ed.custom_texture is Texture2D:
+		return ed.custom_texture
+	return null
+
+
+func _enemy_preview_color(enemy_id: String) -> Color:
+	match enemy_id:
+		"basic": return Color(0.9, 0.8, 0.5)
+		"fast": return Color(0.8, 0.5, 0.2)
+		"tank": return Color(0.5, 0.35, 0.25)
+		"healer": return Color(0.4, 0.7, 0.95)
+		"flying": return Color(0.3, 0.75, 0.35)
+		"boss": return Color(0.9, 0.2, 0.15)
+		"swarm": return Color(0.9, 0.9, 0.75)
+		"camo": return Color(0.3, 0.4, 0.3)
+		"lead": return Color(0.5, 0.5, 0.55)
+		"regrow": return Color(0.5, 0.8, 0.4)
+		_: return Color(0.6, 0.6, 0.7)
 
 
 func _short_name_for_enemy(enemy_id: String) -> String:
