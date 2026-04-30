@@ -67,15 +67,18 @@ UX / FEEL — independent of the gameplay-mechanic fixes below.
   via a Color tween on CanvasModulate.
 
 ### Story / narrative visuals (D20-D23)
-- [ ] **D20** Portrait row in story_screen shows the current page's
+- [x] **D20** Portrait row in story_screen shows the current page's
   speaker highlighted (100% opacity) with the others dimmed to 40%.
+  ✓ Implemented 2026-04-27: _update_speaker_highlight() dims non-speaker to 35% alpha; Lemurius/Kühne/JoJo on left, Amösius/Cordula/guests on right.
 - [x] **D21** Typewriter font SFX tick (very quiet soft_pluck) per
   rendered character — feels Undertale-y, subtle not spammy.
-- [ ] **D22** Migrate L2-L7 intros to multi-character `pages` format
+- [x] **D22** Migrate L2-L7 intros to multi-character `pages` format
   (L1 done in #176). Rotate speakers, add 2 guest characters across
   the campaign (Micheli-security L3, Trudi-Kasse L5).
-- [ ] **D23** Transition fade-to-black between story pages so the
+  ✓ Implemented 2026-04-30: lore.gd L2-L7 all have `pages` arrays with rotating cast. Micheli (L3 security) and Trudi (L5 Kasse) added as right-side guests.
+- [x] **D23** Transition fade-to-black between story pages so the
   background can shift mood per speaker.
+  ✓ Implemented 2026-04-27: story_screen._on_continue_button_pressed fades story_label alpha 0→1 over 0.12s/0.18s between pages.
 
 ### Shop + HUD polish (D24-D27)
 - [x] **D24** Shop row hover preview — hovering a tower icon shows
@@ -200,10 +203,11 @@ discovered via transcript review of the last 30 PRs.
   keeps its hardcoded gold color. Use add_theme_color_override in
   `_on_theme_changed` if one exists.
   ✓ Non-issue: lock_label already uses add_theme_color_override() which persists through theme reloads. No action needed.
-- [ ] **F18** Shop-scroll deadzone (#162) fixes touch, but
+- [x] **F18** Shop-scroll deadzone (#162) fixes touch, but
   ScrollContainer now consumes wheel events on desktop preventing
   click-through to the tower button. Switch scroll_deadzone back
   to 0 for mouse input (check by event type).
+  ✓ Fixed 2026-04-30: hud.gd _input() sets shop_scroll.scroll_deadzone=0 on mouse events, 12 on touch. Deadzone only affects drag initiation, not wheel scroll.
 
 ### Workflow / CI (F19-F20)
 - [x] **F19** Audit-grid workflow (#190) depends on
