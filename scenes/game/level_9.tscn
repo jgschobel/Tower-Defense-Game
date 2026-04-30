@@ -1,0 +1,128 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/systems/game_level.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/systems/wave_manager.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/systems/tower_placement.gd" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/ui/game_over_screen.tscn" id="5"]
+[ext_resource type="PackedScene" path="res://scenes/ui/pause_menu.tscn" id="6"]
+[ext_resource type="Texture2D" path="res://assets/textures/maps_v3/level_2_tiefkuehl.png" id="7"]
+
+[sub_resource type="Curve2D" id="curve_9"]
+point_count = 16
+point_0/position = Vector2(-40, 360)
+point_0/in = Vector2(0, 0)
+point_0/out = Vector2(40, -30)
+point_1/position = Vector2(160, 120)
+point_1/in = Vector2(-30, 40)
+point_1/out = Vector2(40, -10)
+point_2/position = Vector2(440, 80)
+point_2/in = Vector2(-40, 0)
+point_2/out = Vector2(40, 10)
+point_3/position = Vector2(720, 180)
+point_3/in = Vector2(-40, -20)
+point_3/out = Vector2(30, 30)
+point_4/position = Vector2(880, 360)
+point_4/in = Vector2(-20, -40)
+point_4/out = Vector2(20, 40)
+point_5/position = Vector2(720, 560)
+point_5/in = Vector2(30, -30)
+point_5/out = Vector2(-40, 10)
+point_6/position = Vector2(440, 640)
+point_6/in = Vector2(40, 0)
+point_6/out = Vector2(-40, 0)
+point_7/position = Vector2(240, 520)
+point_7/in = Vector2(40, 20)
+point_7/out = Vector2(-20, -30)
+point_8/position = Vector2(240, 300)
+point_8/in = Vector2(0, 40)
+point_8/out = Vector2(20, -30)
+point_9/position = Vector2(400, 220)
+point_9/in = Vector2(-30, 20)
+point_9/out = Vector2(30, -10)
+point_10/position = Vector2(580, 300)
+point_10/in = Vector2(-30, -20)
+point_10/out = Vector2(20, 30)
+point_11/position = Vector2(580, 480)
+point_11/in = Vector2(10, -40)
+point_11/out = Vector2(30, 20)
+point_12/position = Vector2(780, 520)
+point_12/in = Vector2(-30, 20)
+point_12/out = Vector2(30, -20)
+point_13/position = Vector2(980, 420)
+point_13/in = Vector2(-30, 20)
+point_13/out = Vector2(30, -30)
+point_14/position = Vector2(1120, 260)
+point_14/in = Vector2(-20, 40)
+point_14/out = Vector2(40, -10)
+point_15/position = Vector2(1320, 240)
+point_15/in = Vector2(-50, 0)
+point_15/out = Vector2(0, 0)
+
+[node name="GameLevel" type="Node2D"]
+script = ExtResource("1")
+level_id = 9
+
+[node name="Background" type="Sprite2D" parent="."]
+position = Vector2(640, 360)
+modulate = Color(0.6, 0.5, 0.9, 1)
+texture = ExtResource("7")
+
+[node name="GlitchBar1" type="ColorRect" parent="."]
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 1280.0
+offset_bottom = 8.0
+color = Color(0.6, 0.2, 1.0, 0.6)
+
+[node name="GlitchBar2" type="ColorRect" parent="."]
+offset_left = 0.0
+offset_top = 712.0
+offset_right = 1280.0
+offset_bottom = 720.0
+color = Color(0.6, 0.2, 1.0, 0.6)
+
+[node name="GlitchLine1" type="ColorRect" parent="."]
+offset_left = 0.0
+offset_top = 180.0
+offset_right = 1280.0
+offset_bottom = 182.0
+color = Color(0.4, 0.1, 0.8, 0.35)
+
+[node name="GlitchLine2" type="ColorRect" parent="."]
+offset_left = 0.0
+offset_top = 540.0
+offset_right = 1280.0
+offset_bottom = 542.0
+color = Color(0.4, 0.1, 0.8, 0.35)
+
+[node name="PathBorder" type="Line2D" parent="."]
+points = PackedVector2Array(-40, 360, 160, 120, 440, 80, 720, 180, 880, 360, 720, 560, 440, 640, 240, 520, 240, 300, 400, 220, 580, 300, 580, 480, 780, 520, 980, 420, 1120, 260, 1320, 240)
+width = 50.0
+default_color = Color(0.25, 0.1, 0.5, 0.5)
+begin_cap_mode = 1
+end_cap_mode = 1
+joint_mode = 2
+
+[node name="PathDraw" type="Line2D" parent="."]
+points = PackedVector2Array(-40, 360, 160, 120, 440, 80, 720, 180, 880, 360, 720, 560, 440, 640, 240, 520, 240, 300, 400, 220, 580, 300, 580, 480, 780, 520, 980, 420, 1120, 260, 1320, 240)
+width = 40.0
+default_color = Color(0.5, 0.25, 0.9, 0.8)
+begin_cap_mode = 1
+end_cap_mode = 1
+joint_mode = 2
+
+[node name="EnemyPath" type="Path2D" parent="."]
+curve = SubResource("curve_9")
+
+[node name="WaveManager" type="Node" parent="."]
+script = ExtResource("2")
+
+[node name="TowerPlacement" type="Node2D" parent="."]
+script = ExtResource("3")
+
+[node name="HUD" parent="." instance=ExtResource("4")]
+
+[node name="GameOverScreen" parent="." instance=ExtResource("5")]
+
+[node name="PauseMenu" parent="." instance=ExtResource("6")]

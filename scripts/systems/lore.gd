@@ -136,6 +136,51 @@ static func get_level_intro(level_id: int) -> Dictionary:
 					{"speaker": "Lemurius", "text": "Letzti Wäll. Für d'Banane vo Affoltern — LOS!"},
 				],
 			}
+		8:
+			return {
+				"title": "Kapitel 8: Coop-Einbruch",
+				"subtitle": "Rivalidierender Supermarkt. Blaui Gäng.",
+				"text": "De Tüüfel het d'Fronte grüschtet im Coop. Blaui Gäng, frischi Wäge, Security-Kameras überall.\n\n\"Mir sind im COOP?!\"\n\"De Tüüfel macht kes Unterschied zwitsche Migros und Coop.\"\n\"ICH SCHO.\"",
+				"enemy_preview": "Coop-Camo-Geist • Lead-Schoggi • 3 Tüüfel",
+				"pages": [
+					{"speaker": "Lemurius", "text": "De Tüüfel het sich i de Coop verzoge. Blaui Gäng. Anderi Wäge. Anderi Atmosphäre."},
+					{"speaker": "JoJo", "text": "Faszinierend — d'Produktchämi isch identisch, aber d'Markenenergie isch fundamental anders."},
+					{"speaker": "Cordula", "text": "Mir sind im COOP?! Mir händ kei Cumulus-Punkte da!"},
+					{"speaker": "Kühne", "text": "Cordula, de Tüüfel macht kes Unterschied zwitsche Migros und Coop. Er ist evil-agnostisch."},
+					{"speaker": "Cordula", "text": "ICH SCHO. Aber d'Banane rette gohts vor."},
+					{"speaker": "Lemurius", "text": "Security-Kameras überall. Mir müend schnell si. LOS!"},
+				],
+			}
+		9:
+			return {
+				"title": "Kapitel 9: Cumulus-Punkte-Kern",
+				"subtitle": "Tief im System. Glitchi Neon-Gäng.",
+				"text": "De Tüüfel programmiert d'Welt um. Mir sind im Innere vo de Cumulus-Datenbank.\n\n\"Mini Punkte! Sie fliend alli!\"\n\"Amösius, das isch nöd d'richtige Zeit—\"\n\"16'000 Punkte! 16 JOHR IICHAUF!\"",
+				"enemy_preview": "Daten-Tüüfel • Quittige-Geist • 4 Tüüfel",
+				"pages": [
+					{"speaker": "Lemurius", "text": "Mir sind im Innere vo de Cumulus-Datenbank. De Tüüfel programmiert d'Welt um."},
+					{"speaker": "Amösius", "text": "Mini Punkte — sie fliend alli weg! 16'000 Punkte! 16 Johr Iichauf!"},
+					{"speaker": "JoJo", "text": "Technisch gsähne isch das kei Verlust — Cumulus-Punkte sind sowieso inflationär entwertet."},
+					{"speaker": "Amösius", "text": "JoJo. Ich han si für en gratis Migros-Tasche spare wölle."},
+					{"speaker": "Lemurius", "text": "Mir kämpfed für d'Punkte! Und für d'Banane. Hauptsachlich d'Banane."},
+					{"speaker": "Amösius", "text": "Und für mini Tasche. Los!"},
+				],
+			}
+		10:
+			return {
+				"title": "Finale: Im Tüüfel-Äste",
+				"subtitle": "D'letzt Schlacht. Für immer.",
+				"text": "De M-Tüüfel isch i sim eigene Reich. Fünf Tüüfel. Alles uf einisch.\n\n\"Das isch das Ende.\"\n\"Näi. Das isch s'Ende vom TÜÜFEL.\"\n\"Mir mached das. Zäme.\"",
+				"enemy_preview": "FÜNF Tüüfel • Alles • Finale Gauntlet",
+				"pages": [
+					{"speaker": "Lemurius", "text": "Das isch s'Äste vom M-Tüüfels Reich. Fünf Tüüfel. Alles uf einisch. D'letzt Wäll."},
+					{"speaker": "Kühne", "text": "Ich spür es — d'ganz Kraft vo de verfluechte Produkt isch hie konzentriert."},
+					{"speaker": "Amösius", "text": "Bin ich de einzige wo Hunger het? Mir kämpfed sit Stunde."},
+					{"speaker": "Cordula", "text": "Nach em Sieg gohts zu McDonald's."},
+					{"speaker": "JoJo", "text": "Das isch ethisch fragwürdig angesichts unserer Mission, aber... ich bin dabei."},
+					{"speaker": "Lemurius", "text": "Mir mached das. Zäme. Für d'Affoltern Banane — FÜR IMMER!"},
+				],
+			}
 		_:
 			return {
 				"title": "Kapitel %d: Tüüfer id Migros" % level_id,

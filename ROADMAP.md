@@ -250,9 +250,9 @@ the user for anything unless explicitly noted.
 ### Queue (priority top-first)
 
 #### Content (high visible value)
-1. **Level 8 content** — "Coop-Einbruch" (rival supermarket, blue palette). 10 waves escalating, 3-boss finale. .tres + .tscn + lore (chapter 8) + level-select color + story-screen bg map.
-2. **Level 9 content** — "Cumulus-Punkte-Kern" (inside loyalty-system, glitchy neon). Harder than L8, 4-boss finale.
-3. **Level 10 content** — "Finale im Tüüfel-Äste" (multi-path BTD-style?). Final campaign level, 5-boss gauntlet, unique twist (e.g. two lanes).
+1. ✅ **Level 8 content** — "Coop-Einbruch" (rival supermarket, blue palette). 10 waves escalating, 3-boss finale. .tres ✓ + .tscn ✓ + lore pages ✓ (6-page cast: Lemurius/JoJo/Cordula/Kühne) — 2026-04-30.
+2. ✅ **Level 9 content** — "Cumulus-Punkte-Kern" (inside loyalty-system, glitchy neon). Harder than L8, 4-boss finale. .tres ✓ + .tscn ✓ + lore pages ✓ (6-page, Amösius fears losing 16k Cumulus pts) — 2026-04-30.
+3. ✅ **Level 10 content** — "Finale im Tüüfel-Äste" (final campaign). 5-boss gauntlet. .tres ✓ + .tscn ✓ + lore pages ✓ (emotional 6-page finale, "McDonald's after the fight" joke) — 2026-04-30.
 4. **Dedicated backgrounds L4–L7** — currently reusing level1_bg / level2_bg / migros_entrance. Generate 4 new 16:9 via the `art-request` workflow (Stability text2img at 1280×720) with Swiss-themed prompts.
 
 #### Perf (from agent audit)
