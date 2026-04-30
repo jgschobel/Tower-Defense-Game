@@ -26,6 +26,7 @@ var _cost_labels: Array = []
 var _game_speed: float = 1.0
 var _selected_tower: BaseTower = null
 var _is_placing: bool = false
+var _placing_button: Button = null
 
 var _shop_tower_ids: Array = ["basic", "sniper", "splash", "cordula", "slow", "farm", "support", "joe", "justus", "seve"]
 
@@ -479,7 +480,7 @@ func _populate_tower_shop() -> void:
 		# Use standard `pressed` (fires on release) — the `button_down`
 		# experiment for drag-from-shop was unreliable on HTML5/touch
 		# and effectively broke tower selection entirely (user report).
-		btn.pressed.connect(_on_tower_button_pressed.bind(td))
+		btn.pressed.connect(func(): _on_shop_tower_selected(td, btn))
 
 		var row := HBoxContainer.new()
 		row.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -593,6 +594,7 @@ func _style_shop_button(btn: Button, td: TowerData) -> void:
 	btn.add_theme_stylebox_override("hover", hover)
 	btn.add_theme_stylebox_override("pressed", pressed)
 	btn.add_theme_stylebox_override("disabled", disabled)
+	btn.set_meta("shop_base_style", base)
 
 
 func show_enemy_intro(enemy_id: String, enemy_data: Resource) -> void:
@@ -976,9 +978,9 @@ func set_placing(placing: bool) -> void:
 	if placing:
 		next_wave_button.visible = false
 	else:
-		# Restore the wave button when done placing
 		cancel_button.visible = false
 		next_wave_button.visible = true
+		_highlight_placing_button(null)
 
 
 var _glow_tween: Tween = null
@@ -1351,6 +1353,38 @@ func _flash_life_lost() -> void:
 	var tween := flash.create_tween()
 	tween.tween_property(flash, "color:a", 0.0, 0.35)
 	tween.tween_callback(flash.queue_free)
+
+
+func _on_shop_tower_selected(td: TowerData, btn: Button) -> void:
+	_highlight_placing_button(btn)
+	_on_tower_button_pressed(td)
+
+
+func _highlight_placing_button(btn: Button) -> void:
+	# Restore the previous button's normal style first.
+	if _placing_button and is_instance_valid(_placing_button):
+		if _placing_button.has_meta("shop_base_style"):
+			_placing_button.add_theme_stylebox_override("normal", _placing_button.get_meta("shop_base_style"))
+	_placing_button = btn
+	if btn == null:
+		return
+	# Gold border to mark the row actively being placed.
+	var sel := StyleBoxFlat.new()
+	sel.bg_color = Color(0.38, 0.26, 0.02, 0.95)
+	sel.border_color = Color(1.0, 0.75, 0.0, 1.0)
+	sel.border_width_top = 2
+	sel.border_width_bottom = 2
+	sel.border_width_left = 3
+	sel.border_width_right = 2
+	sel.corner_radius_top_left = 8
+	sel.corner_radius_top_right = 8
+	sel.corner_radius_bottom_left = 8
+	sel.corner_radius_bottom_right = 8
+	sel.content_margin_left = 8
+	sel.content_margin_right = 6
+	sel.content_margin_top = 4
+	sel.content_margin_bottom = 4
+	btn.add_theme_stylebox_override("normal", sel)
 
 
 func _on_tower_button_pressed(td: TowerData) -> void:
