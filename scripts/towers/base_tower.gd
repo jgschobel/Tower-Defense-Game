@@ -32,6 +32,9 @@ var _projectile_scene: PackedScene
 # so per-frame trig is avoided. ROADMAP PERF #7. Stored as
 # Array[Array] with entries [position: Vector2, tint: Color].
 var _pip_cache: Array = []
+# Per-instance shuffled taunt sub-pool — exhausted before reshuffling so
+# two towers of the same type never chorus the same line (ROADMAP #11).
+var _taunt_pool: Array = []
 # Fitted sprite scale from _update_visual — tweens use this as the idle
 # baseline instead of data.sprite_scale. Friend photos are ~1024px so the
 # fit scale is ~0.12, not 1.0; tweens returning to data.sprite_scale made
@@ -118,7 +121,12 @@ func _maybe_taunt(t: Timer) -> void:
 	# 60% chance to actually fire, so it feels spontaneous
 	if randf() > 0.6:
 		return
-	_float_taunt(lines[randi() % lines.size()])
+	# Refill the per-instance shuffled pool when exhausted so same-type
+	# towers cycle through all lines before repeating any (ROADMAP #11).
+	if _taunt_pool.is_empty():
+		_taunt_pool = lines.duplicate()
+		_taunt_pool.shuffle()
+	_float_taunt(_taunt_pool.pop_back())
 
 
 func _float_taunt(text: String) -> void:

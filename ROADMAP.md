@@ -257,17 +257,17 @@ the user for anything unless explicitly noted.
 4. **Dedicated backgrounds L4–L7** — currently reusing level1_bg / level2_bg / migros_entrance. Generate 4 new 16:9 via the `art-request` workflow (Stability text2img at 1280×720) with Swiss-themed prompts.
 
 #### Perf (from agent audit)
-5. **Signal-based threat badges** — replace 0.5s `get_nodes_in_group("enemies")` polling with WaveManager emitting boss/healer count changes. O(n)×0.5s per poll × 4× time_scale × 80 enemies is measurable.
+5. ✅ **Signal-based threat badges** — already event-driven via enemies_remaining_changed. 0.5s poll eliminated. Boss HP bar retains 0.25s timer for smooth HP updates (intentional). (2026-04-27)
 6. **Next-wave preview cache** — `_refresh_next_wave_preview` tears down + rebuilds 5-10 Labels + StyleBoxFlat on every show. Cache panel, update text only.
 
 #### UX
-7. **Next-wave button fade** — `_refresh_next_wave_preview(false)` queue_frees without tween. Add `modulate:a → 0` over 0.2s before free.
-8. **Sub-wave progress bar** — currently jumps 10%/wave. Track enemies-defeated / total-enemies within current wave.
+7. ✅ **Next-wave button fade** — already implemented: `_refresh_next_wave_preview` fades modulate:a → 0 over 0.2s before queue_free. (2026-04-27)
+8. ✅ **Sub-wave progress bar** — already tracks per-enemy defeats via wave_progress_changed signal. Clamped 0-1. (2026-04-27)
 9. ✅ **Shop row-selected highlight while placing** — gold border + warm bg on the active shop row while placement is in progress. Cleared on cancel/place. (2026-04-30)
 
 #### Ideas (nice-to-have)
-10. **Enemy icons in next-wave preview** — prepend 20×20 thumbnail per group instead of text-only.
-11. **Per-tower taunt persona** — towers of same type share TAUNTS dict; shuffle a persistent sub-pool per tower so chorus effects don't happen.
+10. ✅ **Enemy icons in next-wave preview** — 22×22 TextureRect from enemy .tres custom_texture; colored swatch fallback for enemies without art. (2026-04-30)
+11. ✅ **Per-tower taunt persona** — _taunt_pool Array per instance; shuffled copy of TAUNTS lines, pop_back() until empty then reshuffle. Same-type towers now cycle all lines before repeating. (2026-04-30)
 12. **Tower hover range preview in shop** — hovering a shop row shows the range circle on the map.
 13. **Dust-puff particles on enemy step** — small Particle2D at each bob-bottom when `_walk_phase` crosses zero.
 
