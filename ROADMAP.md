@@ -269,7 +269,7 @@ the user for anything unless explicitly noted.
 10. ✅ **Enemy icons in next-wave preview** — 22×22 TextureRect from enemy .tres custom_texture; colored swatch fallback for enemies without art. (2026-04-30)
 11. ✅ **Per-tower taunt persona** — _taunt_pool Array per instance; shuffled copy of TAUNTS lines, pop_back() until empty then reshuffle. Same-type towers now cycle all lines before repeating. (2026-04-30)
 12. **Tower hover range preview in shop** — hovering a shop row shows the range circle on the map.
-13. **Dust-puff particles on enemy step** — small Particle2D at each bob-bottom when `_walk_phase` crosses zero.
+13. ✅ **Dust-puff particles on enemy step** — zero-crossing detection on sin(_walk_phase) negative→positive triggers EffectPlayer.spawn_step_dust() at enemy feet. 4 particles, 0.22s lifetime, sandy color. Skips flying + tank-slow. (2026-04-30)
 
 #### Design spec
 14. **`docs/design_polish.md`** — palette rules, shadow/highlight tokens, typography stack. Informs every subsequent visual PR.
