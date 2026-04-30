@@ -18,6 +18,7 @@ signal auto_wave_toggled(enabled: bool)
 @onready var next_wave_button: Button = $BottomPanel/BottomBar/ButtonRow/NextWaveButton
 @onready var cancel_button: Button = $BottomPanel/BottomBar/ButtonRow/CancelButton
 @onready var tower_shop: VBoxContainer = $SideShop/SideShopVBox/ShopScroll/TowerShop
+@onready var shop_scroll: ScrollContainer = $SideShop/SideShopVBox/ShopScroll
 @onready var tower_info: PanelContainer = $TowerInfo
 
 var tower_data_list: Array = []
@@ -1089,6 +1090,18 @@ func _tap_is_on_a_tower(screen_pos: Vector2) -> bool:
 		if t and t.global_position.distance_to(world_pos) < 50.0:
 			return true
 	return false
+
+
+# F18: Dynamically switch scroll_deadzone so desktop mouse gets instant
+# drag start (0) while touch keeps the 12px deadzone that prevents
+# accidental scrolls during button taps.
+func _input(event: InputEvent) -> void:
+	if not shop_scroll:
+		return
+	if event is InputEventMouse:
+		shop_scroll.scroll_deadzone = 0
+	elif event is InputEventScreenTouch or event is InputEventScreenDrag:
+		shop_scroll.scroll_deadzone = 12
 
 
 func _refresh_tower_info() -> void:
