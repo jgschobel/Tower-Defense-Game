@@ -1,0 +1,53 @@
+name: Pause Watchdog
+
+# Fails CI on any PR that introduces (or keeps) a "PAUSED" comment in a
+# workflow file older than 7 days. Forces explicit re-pause if the user
+# really wants to keep something paused. Prevents the silent-decay failure
+# mode where pause comments stay forever and nobody notices.
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/**'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for stale paused workflows
+        run: |
+          set -e
+          stale=0
+          msgs=""
+          for f in .github/workflows/*.yml; do
+            # Look for PAUSED markers
+            if grep -qE "^\s*#\s*PAUSED" "$f"; then
+              # When was this PAUSED comment line first introduced?
+              first=$(git log --format=%ct --reverse --all -- "$f" -- 2>/dev/null | head -1)
+              [ -z "$first" ] && first=$(date -u +%s)
+              now=$(date -u +%s)
+              age_days=$(( (now - first) / 86400 ))
+              if [ "$age_days" -gt 7 ]; then
+                stale=$((stale + 1))
+                msgs="$msgs\n  - $f (paused $age_days days)"
+              fi
+            fi
+          done
+          if [ "$stale" -gt 0 ]; then
+            echo "::error::$stale workflow(s) have been paused for >7 days. Either re-enable triggers or delete the workflow:"
+            echo -e "$msgs"
+            exit 1
+          fi
+          echo "✅ No stale workflow pauses detected."

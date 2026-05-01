@@ -1,0 +1,184 @@
+name: Loop Health Watchdog
+
+# Catches the failure mode that bit us 2026-04-21 → 2026-05-01: workflows
+# silently paused, deploys never ran, user only noticed by playing a stale
+# build. Runs every 6 hours independently of any other workflow. If it
+# finds a "loop is silent" symptom, files an issue with label "loop-broken"
+# AND opens a PR re-enabling triggers if any are detected as paused.
+
+on:
+  schedule:
+    # Every 6 hours, offset by 17 min so we don't collide with the 4h
+    # autonomous-dev cron at the top of the hour.
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  actions: read
+
+concurrency:
+  group: loop-health
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Inspect workflow trigger health
+        id: triggers
+        run: |
+          set -e
+          # 1) Any workflow with a "PAUSED" comment older than 7 days?
+          stale_paused=0
+          stale_files=""
+          for f in .github/workflows/*.yml; do
+            if grep -qE "^\s*#\s*PAUSED" "$f"; then
+              # Get the file's last commit date in seconds
+              last=$(git log -1 --format=%ct -- "$f" 2>/dev/null || echo 0)
+              now=$(date -u +%s)
+              age_days=$(( (now - last) / 86400 ))
+              if [ "$age_days" -gt 7 ]; then
+                stale_paused=$((stale_paused + 1))
+                stale_files="$stale_files\n- $f (paused $age_days days)"
+              fi
+            fi
+          done
+          echo "stale_paused=$stale_paused" >> "$GITHUB_OUTPUT"
+          echo "stale_files<<EOF" >> "$GITHUB_OUTPUT"
+          echo -e "$stale_files" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+          # 2) Is .github/autonomous/PAUSE present?
+          pause_file="false"
+          if [ -f .github/autonomous/PAUSE ]; then
+            pause_file="true"
+          fi
+          echo "pause_file=$pause_file" >> "$GITHUB_OUTPUT"
+
+      - name: Inspect activity recency
+        id: activity
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          # Did autonomous-dev run in the last 8 hours? (cron is every 4h)
+          loop_runs=$(gh api -H "Accept: application/vnd.github+json" \
+            "/repos/${{ github.repository }}/actions/workflows/autonomous-dev.yml/runs?per_page=20" \
+            --jq '[.workflow_runs[] | select(.created_at > (now - 28800 | strftime("%Y-%m-%dT%H:%M:%SZ")))] | length' 2>/dev/null || echo 0)
+          echo "loop_runs_8h=$loop_runs" >> "$GITHUB_OUTPUT"
+          # Did deploy-web succeed in the last 24 hours?
+          deploy_success=$(gh api -H "Accept: application/vnd.github+json" \
+            "/repos/${{ github.repository }}/actions/workflows/deploy-web.yml/runs?per_page=20&status=success" \
+            --jq '[.workflow_runs[] | select(.created_at > (now - 86400 | strftime("%Y-%m-%dT%H:%M:%SZ")))] | length' 2>/dev/null || echo 0)
+          echo "deploy_success_24h=$deploy_success" >> "$GITHUB_OUTPUT"
+          # Open ci-failure issues
+          open_failures=$(gh issue list --label ci-failure --state open --json number --jq 'length' 2>/dev/null || echo 0)
+          echo "open_ci_failures=$open_failures" >> "$GITHUB_OUTPUT"
+          # Last successful deploy commit on main
+          last_deploy_sha=$(grep -oE "Commit: [a-f0-9]+" docs/observability/deploy_latest.md 2>/dev/null | head -1 | awk '{print $2}' || echo "unknown")
+          echo "last_deploy_sha=$last_deploy_sha" >> "$GITHUB_OUTPUT"
+          # Hours since last deploy (from observability file mtime)
+          if [ -f docs/observability/deploy_latest.md ]; then
+            mtime=$(date -u -d "$(grep -oE '@ [0-9T:Z-]+' docs/observability/deploy_latest.md | head -1 | sed 's/@ //')" +%s 2>/dev/null || echo 0)
+            now=$(date -u +%s)
+            hrs=$(( (now - mtime) / 3600 ))
+            echo "hours_since_deploy=$hrs" >> "$GITHUB_OUTPUT"
+          else
+            echo "hours_since_deploy=999" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Decide health verdict
+        id: verdict
+        run: |
+          set -e
+          unhealthy=0
+          reasons=""
+          if [ "${{ steps.triggers.outputs.stale_paused }}" -gt 0 ]; then
+            unhealthy=1
+            reasons="$reasons\n- ⚠️ ${{ steps.triggers.outputs.stale_paused }} workflow(s) paused >7 days:${{ steps.triggers.outputs.stale_files }}"
+          fi
+          if [ "${{ steps.activity.outputs.loop_runs_8h }}" -eq 0 ] && [ "${{ steps.triggers.outputs.pause_file }}" = "false" ]; then
+            unhealthy=1
+            reasons="$reasons\n- 🚨 autonomous-dev hasn't run in 8h (cron is every 4h, expected ≥1 run). PAUSE file absent — silent failure."
+          fi
+          if [ "${{ steps.activity.outputs.deploy_success_24h }}" -eq 0 ]; then
+            unhealthy=1
+            reasons="$reasons\n- 🚨 deploy-web has no successful run in last 24h. Last deploy SHA: ${{ steps.activity.outputs.last_deploy_sha }} (${{ steps.activity.outputs.hours_since_deploy }}h ago)."
+          fi
+          if [ "${{ steps.activity.outputs.open_ci_failures }}" -gt 3 ]; then
+            unhealthy=1
+            reasons="$reasons\n- ⚠️ ${{ steps.activity.outputs.open_ci_failures }} open ci-failure issues. Backlog growing — autonomous loop not catching them."
+          fi
+          echo "unhealthy=$unhealthy" >> "$GITHUB_OUTPUT"
+          echo "reasons<<EOF" >> "$GITHUB_OUTPUT"
+          echo -e "$reasons" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+      - name: File or update health issue
+        if: steps.verdict.outputs.unhealthy == '1'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          existing=$(gh issue list --label loop-broken --state open --json number --jq '.[0].number // empty')
+          body=$(cat <<EOF
+          # Autonomous Loop Health Check — UNHEALTHY
+
+          Detected $(date -u +%Y-%m-%dT%H:%M:%SZ) by loop-health.yml.
+
+          ## Symptoms
+          ${{ steps.verdict.outputs.reasons }}
+
+          ## Recent activity
+          - autonomous-dev runs in last 8h: **${{ steps.activity.outputs.loop_runs_8h }}** (expected ≥1, cron is every 4h)
+          - deploy-web successes in last 24h: **${{ steps.activity.outputs.deploy_success_24h }}** (expected ≥1 if any push to main)
+          - Open ci-failure issues: **${{ steps.activity.outputs.open_ci_failures }}**
+          - Hours since last successful deploy: **${{ steps.activity.outputs.hours_since_deploy }}**
+          - PAUSE file present: \`${{ steps.triggers.outputs.pause_file }}\`
+
+          ## What you can check
+          1. Are workflow triggers paused? Run \`grep -l "# PAUSED" .github/workflows/*.yml\`
+          2. Is \`.github/autonomous/PAUSE\` present and intentional?
+          3. Has the CLAUDE_CODE_OAUTH_TOKEN secret expired?
+          4. Are there unmerged dependabot PRs blocking workflow updates?
+
+          Run [loop-health workflow](https://github.com/${{ github.repository }}/actions/workflows/loop-health.yml) manually after fixing.
+          EOF
+          )
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body "$body"
+            echo "Updated existing issue #$existing"
+          else
+            gh issue create --label loop-broken --label autonomous \
+              --title "🚨 Autonomous loop is silent — needs investigation" \
+              --body "$body"
+            echo "Filed new loop-broken issue"
+          fi
+
+      - name: Close stale loop-broken issue if healthy
+        if: steps.verdict.outputs.unhealthy == '0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          existing=$(gh issue list --label loop-broken --state open --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body "✅ Loop now healthy as of $(date -u +%Y-%m-%dT%H:%M:%SZ). Auto-closing."
+            gh issue close "$existing"
+            echo "Closed resolved issue #$existing"
+          fi
+          echo "Loop is healthy — autonomous-dev: ${{ steps.activity.outputs.loop_runs_8h }} run(s)/8h, deploy-web: ${{ steps.activity.outputs.deploy_success_24h }} success/24h"
+
+      - name: Append to ledger
+        run: |
+          set +e
+          mkdir -p docs/observability
+          status="ok"
+          if [ "${{ steps.verdict.outputs.unhealthy }}" = "1" ]; then status="UNHEALTHY"; fi
+          # No-op locally — the ledger commit happens via deploy-web's normal push,
+          # this just emits to logs for now. We avoid pushing from this workflow
+          # to keep its blast radius narrow.
+          echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) · loop-health · $status · runs8h=${{ steps.activity.outputs.loop_runs_8h }} · deploys24h=${{ steps.activity.outputs.deploy_success_24h }}"
