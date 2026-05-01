@@ -89,6 +89,32 @@ jobs:
           godot --headless --path . --export-release "Web" build/web/index.html
           ls -la build/web/
 
+      - name: Emit build-info.json
+        run: |
+          # Phone-checkable build freshness signal. User can curl
+          # jgschobel.github.io/Tower-Defense-Game/build-info.json
+          # and instantly see if a deploy actually went through.
+          set -e
+          # Count content as a sanity check that resources are baked in
+          level_count=$(ls scenes/game/level_*.tscn 2>/dev/null | wc -l | tr -d ' ')
+          tower_count=$(ls resources/tower_data/*.tres 2>/dev/null | wc -l | tr -d ' ')
+          enemy_count=$(ls resources/enemy_data/*.tres 2>/dev/null | wc -l | tr -d ' ')
+          cat > build/web/build-info.json <<EOF
+          {
+            "commit": "${{ github.sha }}",
+            "commit_short": "${GITHUB_SHA:0:7}",
+            "built_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "run_id": "${{ github.run_id }}",
+            "run_url": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+            "godot_version": "$(cat .github/godot-version.txt)",
+            "level_count": ${level_count:-0},
+            "tower_count": ${tower_count:-0},
+            "enemy_count": ${enemy_count:-0},
+            "ref": "${{ github.ref }}"
+          }
+          EOF
+          cat build/web/build-info.json
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:

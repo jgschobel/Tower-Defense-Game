@@ -98,6 +98,26 @@ log_ok "Signal-connection heuristic done (warnings non-fatal)."
 # 4. Run Godot headless parse check if available.
 if command -v godot >/dev/null 2>&1; then
   log_ok "Godot found: $(godot --version 2>&1 | head -1)"
+
+  # 4a. Per-script --check-only pass. Stricter than --quit-after 1 which only
+  #     loads autoloads + main scene. --check-only parses the file standalone.
+  parse_errors=0
+  while IFS= read -r script; do
+    out=$(timeout 15 godot --headless --check-only --script "$script" 2>&1 || true)
+    if echo "$out" | grep -qE "SCRIPT ERROR|PARSE ERROR|Parser Error|Invalid call|Invalid get index|Cannot call method"; then
+      log_fail "Parse error in $script:"
+      echo "$out" | grep -E "SCRIPT ERROR|PARSE ERROR|Parser Error" | head -5
+      parse_errors=$((parse_errors+1))
+    fi
+  done < <(find scripts -name '*.gd' -type f 2>/dev/null)
+  if [ "$parse_errors" -gt 0 ]; then
+    log_fail "$parse_errors GDScript file(s) have parse errors."
+    EXIT=1
+  else
+    log_ok "All GDScript files pass --check-only."
+  fi
+
+  # 4b. Headless launch (autoloads + main scene must boot).
   if timeout 120 godot --headless --path . --quit-after 1 >/tmp/godot_out.txt 2>&1; then
     log_ok "Godot headless launch succeeded."
   else
@@ -108,6 +128,27 @@ if command -v godot >/dev/null 2>&1; then
     else
       log_warn "Godot exited non-zero but no parse errors found (possibly runtime noise)."
     fi
+  fi
+
+  # 4c. Each level scene must load without error. Catches malformed .tscn,
+  #     missing nodes, broken sub-resources — failures the file-existence
+  #     check above misses entirely.
+  scene_errors=0
+  for scene in scenes/game/level_*.tscn scenes/ui/main_menu.tscn; do
+    [ -f "$scene" ] || continue
+    out=$(timeout 30 godot --headless --path . --quit-after 1 --main-pack "" -s "$scene" 2>&1 || true)
+    # Plain --quit-after on a specific scene: any SCRIPT/PARSE error means broken.
+    if echo "$out" | grep -qE "SCRIPT ERROR|PARSE ERROR|Failed to load|Cannot find scene|Resource file not found"; then
+      log_fail "Scene load failed: $scene"
+      echo "$out" | grep -E "SCRIPT ERROR|PARSE ERROR|Failed to load|Cannot find scene|Resource file not found" | head -3
+      scene_errors=$((scene_errors+1))
+    fi
+  done
+  if [ "$scene_errors" -gt 0 ]; then
+    log_fail "$scene_errors scene(s) failed to load."
+    EXIT=1
+  else
+    log_ok "All level + main scenes load."
   fi
 else
   log_warn "Godot not installed on runner — skipping engine parse check."
