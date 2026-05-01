@@ -8,10 +8,8 @@ name: Weekly Drift Scan
 # Files an issue with findings — next self-improve cron run picks it up.
 
 on:
-  # PAUSED until 2026-04-23 23:00 UTC — user quota conservation (PR #196).
-  # Uncomment the blocks below to resume automatic runs.
-  # schedule:
-  #   - cron: '0 7 * * 1'  # Mondays 07:00 UTC, after weekly-digest at 06:00
+  schedule:
+    - cron: '0 7 * * 1'  # Mondays 07:00 UTC, after weekly-digest at 06:00
   workflow_dispatch:
 
 permissions:

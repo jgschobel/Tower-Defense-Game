@@ -1,16 +1,14 @@
 name: Deploy Web Build to GitHub Pages
 
 on:
-  # PAUSED until 2026-04-23 23:00 UTC — user quota conservation (PR #196).
-  # Uncomment the blocks below to resume automatic runs.
-  # push:
-  #   branches: [main]
-  #   paths-ignore:
-  #     - 'docs/observability/**'
-  #     - 'CHANGELOG.md'
-  #     - 'ROADMAP.md'
-  #     - 'docs/audits/**'
-  #     - '.github/friend_photos_inbox/README.md'
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'docs/observability/**'
+      - 'CHANGELOG.md'
+      - 'ROADMAP.md'
+      - 'docs/audits/**'
+      - '.github/friend_photos_inbox/README.md'
   workflow_dispatch:
 
 permissions:

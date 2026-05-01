@@ -5,10 +5,8 @@ name: Daily Cleanup
 # for any reason.
 
 on:
-  # PAUSED until 2026-04-23 23:00 UTC — user quota conservation (PR #196).
-  # Uncomment the blocks below to resume automatic runs.
-  # schedule:
-  #   - cron: '0 5 * * *'  # Daily at 05:00 UTC (~07:00 CEST)
+  schedule:
+    - cron: '0 5 * * *'  # Daily at 05:00 UTC (~07:00 CEST)
   workflow_dispatch:
 
 permissions:
