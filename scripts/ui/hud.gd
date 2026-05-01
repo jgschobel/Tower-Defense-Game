@@ -18,6 +18,7 @@ signal auto_wave_toggled(enabled: bool)
 @onready var next_wave_button: Button = $BottomPanel/BottomBar/ButtonRow/NextWaveButton
 @onready var cancel_button: Button = $BottomPanel/BottomBar/ButtonRow/CancelButton
 @onready var tower_shop: VBoxContainer = $SideShop/SideShopVBox/ShopScroll/TowerShop
+@onready var shop_scroll: ScrollContainer = $SideShop/SideShopVBox/ShopScroll
 @onready var tower_info: PanelContainer = $TowerInfo
 
 var tower_data_list: Array = []
@@ -25,6 +26,7 @@ var _cost_labels: Array = []
 var _game_speed: float = 1.0
 var _selected_tower: BaseTower = null
 var _is_placing: bool = false
+var _placing_button: Button = null
 
 var _shop_tower_ids: Array = ["basic", "sniper", "splash", "cordula", "slow", "farm", "support", "joe", "justus", "seve"]
 
@@ -478,7 +480,7 @@ func _populate_tower_shop() -> void:
 		# Use standard `pressed` (fires on release) — the `button_down`
 		# experiment for drag-from-shop was unreliable on HTML5/touch
 		# and effectively broke tower selection entirely (user report).
-		btn.pressed.connect(_on_tower_button_pressed.bind(td))
+		btn.pressed.connect(func(): _on_shop_tower_selected(td, btn))
 
 		var row := HBoxContainer.new()
 		row.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -592,6 +594,7 @@ func _style_shop_button(btn: Button, td: TowerData) -> void:
 	btn.add_theme_stylebox_override("hover", hover)
 	btn.add_theme_stylebox_override("pressed", pressed)
 	btn.add_theme_stylebox_override("disabled", disabled)
+	btn.set_meta("shop_base_style", base)
 
 
 func show_enemy_intro(enemy_id: String, enemy_data: Resource) -> void:
@@ -927,14 +930,55 @@ func _refresh_next_wave_preview(visible_flag: bool) -> void:
 	prefix.add_theme_color_override("font_color", Color(1, 0.85, 0.3))
 	hbox.add_child(prefix)
 	for group in preview:
+		var enemy_id: String = group.get("enemy_id", "")
+		var icon_tex: Texture2D = _enemy_icon_texture(enemy_id)
+		if icon_tex:
+			var icon := TextureRect.new()
+			icon.texture = icon_tex
+			icon.custom_minimum_size = Vector2(22, 22)
+			icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+			icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+			hbox.add_child(icon)
+		else:
+			var swatch := ColorRect.new()
+			swatch.custom_minimum_size = Vector2(14, 14)
+			swatch.color = _enemy_preview_color(enemy_id)
+			swatch.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+			hbox.add_child(swatch)
 		var entry := Label.new()
-		var display_name: String = _short_name_for_enemy(group.get("enemy_id", ""))
+		var display_name: String = _short_name_for_enemy(enemy_id)
 		entry.text = "%dx %s" % [group.get("count", 0), display_name]
 		entry.add_theme_font_size_override("font_size", 16)
 		entry.add_theme_color_override("font_color", Color(1, 0.95, 0.8))
 		hbox.add_child(entry)
 	panel.add_child(hbox)
 	add_child(panel)
+
+
+func _enemy_icon_texture(enemy_id: String) -> Texture2D:
+	var data_path := "res://resources/enemy_data/%s.tres" % enemy_id
+	if not ResourceLoader.exists(data_path):
+		return null
+	var ed = load(data_path)
+	if ed and "custom_texture" in ed and ed.custom_texture is Texture2D:
+		return ed.custom_texture
+	return null
+
+
+func _enemy_preview_color(enemy_id: String) -> Color:
+	match enemy_id:
+		"basic": return Color(0.9, 0.8, 0.5)
+		"fast": return Color(0.8, 0.5, 0.2)
+		"tank": return Color(0.5, 0.35, 0.25)
+		"healer": return Color(0.4, 0.7, 0.95)
+		"flying": return Color(0.3, 0.75, 0.35)
+		"boss": return Color(0.9, 0.2, 0.15)
+		"swarm": return Color(0.9, 0.9, 0.75)
+		"camo": return Color(0.3, 0.4, 0.3)
+		"lead": return Color(0.5, 0.5, 0.55)
+		"regrow": return Color(0.5, 0.8, 0.4)
+		_: return Color(0.6, 0.6, 0.7)
 
 
 func _short_name_for_enemy(enemy_id: String) -> String:
@@ -975,9 +1019,9 @@ func set_placing(placing: bool) -> void:
 	if placing:
 		next_wave_button.visible = false
 	else:
-		# Restore the wave button when done placing
 		cancel_button.visible = false
 		next_wave_button.visible = true
+		_highlight_placing_button(null)
 
 
 var _glow_tween: Tween = null
@@ -1089,6 +1133,18 @@ func _tap_is_on_a_tower(screen_pos: Vector2) -> bool:
 		if t and t.global_position.distance_to(world_pos) < 50.0:
 			return true
 	return false
+
+
+# F18: Dynamically switch scroll_deadzone so desktop mouse gets instant
+# drag start (0) while touch keeps the 12px deadzone that prevents
+# accidental scrolls during button taps.
+func _input(event: InputEvent) -> void:
+	if not shop_scroll:
+		return
+	if event is InputEventMouse:
+		shop_scroll.scroll_deadzone = 0
+	elif event is InputEventScreenTouch or event is InputEventScreenDrag:
+		shop_scroll.scroll_deadzone = 12
 
 
 func _refresh_tower_info() -> void:
@@ -1338,6 +1394,38 @@ func _flash_life_lost() -> void:
 	var tween := flash.create_tween()
 	tween.tween_property(flash, "color:a", 0.0, 0.35)
 	tween.tween_callback(flash.queue_free)
+
+
+func _on_shop_tower_selected(td: TowerData, btn: Button) -> void:
+	_highlight_placing_button(btn)
+	_on_tower_button_pressed(td)
+
+
+func _highlight_placing_button(btn: Button) -> void:
+	# Restore the previous button's normal style first.
+	if _placing_button and is_instance_valid(_placing_button):
+		if _placing_button.has_meta("shop_base_style"):
+			_placing_button.add_theme_stylebox_override("normal", _placing_button.get_meta("shop_base_style"))
+	_placing_button = btn
+	if btn == null:
+		return
+	# Gold border to mark the row actively being placed.
+	var sel := StyleBoxFlat.new()
+	sel.bg_color = Color(0.38, 0.26, 0.02, 0.95)
+	sel.border_color = Color(1.0, 0.75, 0.0, 1.0)
+	sel.border_width_top = 2
+	sel.border_width_bottom = 2
+	sel.border_width_left = 3
+	sel.border_width_right = 2
+	sel.corner_radius_top_left = 8
+	sel.corner_radius_top_right = 8
+	sel.corner_radius_bottom_left = 8
+	sel.corner_radius_bottom_right = 8
+	sel.content_margin_left = 8
+	sel.content_margin_right = 6
+	sel.content_margin_top = 4
+	sel.content_margin_bottom = 4
+	btn.add_theme_stylebox_override("normal", sel)
 
 
 func _on_tower_button_pressed(td: TowerData) -> void:

@@ -50,6 +50,30 @@ func spawn_impact_sparks(pos: Vector2, spark_color: Color) -> void:
 	get_tree().create_timer(0.6).timeout.connect(p.queue_free)
 
 
+## Tiny dust puff at enemy feet on each step-down (ROADMAP #13).
+func spawn_step_dust(pos: Vector2) -> void:
+	var host := _get_host()
+	if not host:
+		return
+	var p := CPUParticles2D.new()
+	p.global_position = pos
+	p.one_shot = true
+	p.explosiveness = 0.85
+	p.lifetime = 0.22
+	p.amount = 4
+	p.direction = Vector2(0.0, -0.3)
+	p.spread = 70.0
+	p.initial_velocity_min = 12.0
+	p.initial_velocity_max = 28.0
+	p.scale_amount_min = 2.0
+	p.scale_amount_max = 4.5
+	p.color = Color(0.72, 0.65, 0.5, 0.6)
+	p.gravity = Vector2(0.0, 80.0)
+	host.add_child(p)
+	p.emitting = true
+	get_tree().create_timer(0.35).timeout.connect(p.queue_free)
+
+
 ## Briefly jitters the game scene's position (HUD CanvasLayer is unaffected).
 func screen_shake(amplitude: float, duration: float) -> void:
 	var scene := get_tree().current_scene

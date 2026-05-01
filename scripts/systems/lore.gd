@@ -50,6 +50,14 @@ static func get_level_intro(level_id: int) -> Dictionary:
 				"subtitle": "-18°C. Produkt aggressiv.",
 				"text": "Gfrorni Pizza rutschet wie Hockey-Pucks. Fischstäbli händ es Militär.\n\n\"Mini Zunge isch a de Gfrüürer-Türe fescht!\"\n\"Hör uf z'schlecke, Amösius!\"",
 				"enemy_preview": "Gfrorni Pizza • Fischstäbli-Militär • Glacé-Golem",
+				"pages": [
+					{"speaker": "Amösius", "text": "AAAH — mini Zunge isch a de Gfrüürer-Türe fescht!"},
+					{"speaker": "Kühne", "text": "Amösius. S'het minus achzäh Grad. Hör uf z'schlecke."},
+					{"speaker": "Amösius", "text": "Ich han nöd gschleckt. Ich han... probiert z'rieche."},
+					{"speaker": "Lemurius", "text": "Gfrorni Pizza rutschet wie Hockey-Pucks. Fischstäbli händ es Militär gründet. Mir müend durch."},
+					{"speaker": "JoJo", "text": "Faszinierend — dr Glacé-Golem schmilzt erst bi −12°C. Ich bruuch meh Chämi-Fläsche."},
+					{"speaker": "Lemurius", "text": "Nacher. JETZT — LOS!"},
+				],
 			}
 		3:
 			return {
@@ -57,6 +65,15 @@ static func get_level_intro(level_id: int) -> Dictionary:
 				"subtitle": "De Suurteig läbt.",
 				"text": "Zopf-Barrikade. Kamikaze-Gipfeli. De Suurteig LÄBT.\n\n\"Bio-Banane hinder de Feind. CHF 2.95 s'Kilo.\"\n\"Lemurius, jetzt isch nöd—\"\n\"ES ISCH IMMER DE MOMENT FÜR BIO-BANANE.\"",
 				"enemy_preview": "Kamikaze-Gipfeli • Zopf-Barrikade • Dr. Rivella • De Suurteig",
+				"pages": [
+					{"speaker": "Lemurius", "text": "Zopf-Barrikade. Kamikaze-Gipfeli. Und de Suurteig... LÄBT."},
+					{"speaker": "Kühne", "text": "Ich spür sini Energie. Uralti Hefe-Magie. 200 Jaar alt, mindischtens."},
+					{"speaker": "Micheli", "text": "Halt! Nach Läde-schluss isch d'Bäckerei gesperrt. Iir chönd nöd ine!"},
+					{"speaker": "Lemurius", "text": "Micheli — de Suurteig het s'Bewusstsie übercho. Er griift a."},
+					{"speaker": "Micheli", "text": "...Ich ruf mim Vorgesetzte a. Aber schnell — ich han nur no 20 Minute uf de Schicht."},
+					{"speaker": "JoJo", "text": "Bio-Banane hinder de Feind. CHF 2.95 s'Kilo."},
+					{"speaker": "Lemurius", "text": "ES ISCH IMMER DE MOMENT FÜR BIO-BANANE."},
+				],
 			}
 		4:
 			return {
@@ -64,6 +81,14 @@ static func get_level_intro(level_id: int) -> Dictionary:
 				"subtitle": "Es gärt im Undergrund.",
 				"text": "Raclette-Bombe rollet dur de Gang. Fondue-Tröpfli bränned.\n\n\"De Tüüfel isch PERSÖNLICH da unde.\"\n\"Zwei vo denne?! Ich han nur EI Banane übrig!\"\n\"Wirf sie bio. Immer bio.\"",
 				"enemy_preview": "Raclette-Bombe • Fondue-Wolke • Zwei Tüüfel • Chäs-Healer",
+				"pages": [
+					{"speaker": "Amösius", "text": "Rächt nach unde... es gärt. Und s'stinkt. Aber positiv."},
+					{"speaker": "Lemurius", "text": "Raclette-Bombe. Fondue-Tröpfli wo bränned. De Tüüfel isch PERSÖNLICH da une."},
+					{"speaker": "Cordula", "text": "Wart — ZWEI vo dene?! Ich han nur EI Volleyball!"},
+					{"speaker": "Amösius", "text": "Ich han nur ei Zunge. Und die isch no chli gfrore vo vorhin."},
+					{"speaker": "Lemurius", "text": "Mir händ genau was mir bruuched. Wirf bio. Immer bio."},
+					{"speaker": "Cordula", "text": "Ich liebe die Crew."},
+				],
 			}
 		5:
 			return {
@@ -71,6 +96,15 @@ static func get_level_intro(level_id: int) -> Dictionary:
 				"subtitle": "Kasse 8 spukt. DREI Tüüfel.",
 				"text": "D'Coupon-Tüüfel blocke de Uusgang. Cumulus-Punkte explodiered i de Luft.\n\n\"Dr Tüüfel het sich verDREIfacht!\"\n\"Cordula — Volleyball-Zeit.\"\n\"ENDLICH en gschider Endkampf.\"",
 				"enemy_preview": "Coupon-Tüüfel • Quittige-Swarm • DREI Tüüfel zum Schluss",
+				"pages": [
+					{"speaker": "Lemurius", "text": "D'Coupon-Tüüfel blocke de Uusgang. Cumulus-Punkte explodiered i de Luft."},
+					{"speaker": "Trudi", "text": "Achtung — Kasse 8 isch gschlossä wäge übernatürliche Zwischefäll. Bitte d'andere Kasse benütze."},
+					{"speaker": "Cordula", "text": "Trudi! Du häsch us scho immer uf de Schnellchasse ine gloh — au mit 12 Artikle statt 10."},
+					{"speaker": "Trudi", "text": "Mir sind Kolleginne. Aber dr Tüüfel zahlt trotzdem volle Priis."},
+					{"speaker": "Lemurius", "text": "Dr Tüüfel het sich verDREIfacht!"},
+					{"speaker": "Cordula", "text": "Volleyball-Zeit."},
+					{"speaker": "Trudi", "text": "ENDLICH en gschider Endkampf. Ich wart scho dr ganz Abig druf."},
+				],
 			}
 		6:
 			return {
@@ -78,6 +112,14 @@ static func get_level_intro(level_id: int) -> Dictionary:
 				"subtitle": "Neon. Beton. 5 Tüüfel.",
 				"text": "Mir händ dänkt mir sind dure. Falsch.\n\n\"Im Parkhuus? Ernschthaft?\"\n\"Fünf Tüüfel. Bringed eui Cumulus-Karte, wär bruuched Glück.\"\n\"Ich han mini no!\"\n\"Amösius, din Cumulus isch abglaufe sit 2011.\"",
 				"enemy_preview": "FÜNF Tüüfel • Schwärm • Alles uf einisch",
+				"pages": [
+					{"speaker": "Kühne", "text": "Im Parkhuus? Ernschthaft? D'Neon-Energie tötet mini Blueme."},
+					{"speaker": "Amösius", "text": "Fünf Tüüfel. Ich zelle sie. Einer... zwei... ja. Fünf."},
+					{"speaker": "Lemurius", "text": "Bring dini Cumulus-Karte. Wär bruuched Glück."},
+					{"speaker": "Amösius", "text": "Mini isch no gültig! Ich han si 2011 ernüüret... glaub ich."},
+					{"speaker": "Kühne", "text": "Amösius. Dini Cumulus isch abglaufe sit 2011."},
+					{"speaker": "Amösius", "text": "...Ich kämpf trotzdem. Für d'Punkte."},
+				],
 			}
 		7:
 			return {
@@ -85,6 +127,59 @@ static func get_level_intro(level_id: int) -> Dictionary:
 				"subtitle": "Wind. Mööwe. Neon.",
 				"text": "De Tüüfel flüücht aufs Dach. D'Affoltner Skyline bränned im Sunneunergang.\n\n\"Warum flüüchtemer immer uf d'Dächer?\"\n\"Cordula, dis Segel!\"\n\"Ich han kes Segel, ich han en Volleyball.\"\n\"...funktioniert au.\"",
 				"enemy_preview": "Flüügend alles • 4 Tüüfel • Fondue-Bomben vom Himmel",
+				"pages": [
+					{"speaker": "Lemurius", "text": "De Tüüfel flüücht aufs Dach. D'Affoltner Skyline bränned im Sunneunergang."},
+					{"speaker": "JoJo", "text": "Warum flüüchtemer immer uf d'Dächer? Statistisch isch das en schlechti Strategie."},
+					{"speaker": "Lemurius", "text": "Cordula — dis Segel!"},
+					{"speaker": "Cordula", "text": "Ich han kes Segel. Ich han en Volleyball."},
+					{"speaker": "JoJo", "text": "...funktioniert au."},
+					{"speaker": "Lemurius", "text": "Letzti Wäll. Für d'Banane vo Affoltern — LOS!"},
+				],
+			}
+		8:
+			return {
+				"title": "Kapitel 8: Coop-Einbruch",
+				"subtitle": "Rivalidierender Supermarkt. Blaui Gäng.",
+				"text": "De Tüüfel het d'Fronte grüschtet im Coop. Blaui Gäng, frischi Wäge, Security-Kameras überall.\n\n\"Mir sind im COOP?!\"\n\"De Tüüfel macht kes Unterschied zwitsche Migros und Coop.\"\n\"ICH SCHO.\"",
+				"enemy_preview": "Coop-Camo-Geist • Lead-Schoggi • 3 Tüüfel",
+				"pages": [
+					{"speaker": "Lemurius", "text": "De Tüüfel het sich i de Coop verzoge. Blaui Gäng. Anderi Wäge. Anderi Atmosphäre."},
+					{"speaker": "JoJo", "text": "Faszinierend — d'Produktchämi isch identisch, aber d'Markenenergie isch fundamental anders."},
+					{"speaker": "Cordula", "text": "Mir sind im COOP?! Mir händ kei Cumulus-Punkte da!"},
+					{"speaker": "Kühne", "text": "Cordula, de Tüüfel macht kes Unterschied zwitsche Migros und Coop. Er ist evil-agnostisch."},
+					{"speaker": "Cordula", "text": "ICH SCHO. Aber d'Banane rette gohts vor."},
+					{"speaker": "Lemurius", "text": "Security-Kameras überall. Mir müend schnell si. LOS!"},
+				],
+			}
+		9:
+			return {
+				"title": "Kapitel 9: Cumulus-Punkte-Kern",
+				"subtitle": "Tief im System. Glitchi Neon-Gäng.",
+				"text": "De Tüüfel programmiert d'Welt um. Mir sind im Innere vo de Cumulus-Datenbank.\n\n\"Mini Punkte! Sie fliend alli!\"\n\"Amösius, das isch nöd d'richtige Zeit—\"\n\"16'000 Punkte! 16 JOHR IICHAUF!\"",
+				"enemy_preview": "Daten-Tüüfel • Quittige-Geist • 4 Tüüfel",
+				"pages": [
+					{"speaker": "Lemurius", "text": "Mir sind im Innere vo de Cumulus-Datenbank. De Tüüfel programmiert d'Welt um."},
+					{"speaker": "Amösius", "text": "Mini Punkte — sie fliend alli weg! 16'000 Punkte! 16 Johr Iichauf!"},
+					{"speaker": "JoJo", "text": "Technisch gsähne isch das kei Verlust — Cumulus-Punkte sind sowieso inflationär entwertet."},
+					{"speaker": "Amösius", "text": "JoJo. Ich han si für en gratis Migros-Tasche spare wölle."},
+					{"speaker": "Lemurius", "text": "Mir kämpfed für d'Punkte! Und für d'Banane. Hauptsachlich d'Banane."},
+					{"speaker": "Amösius", "text": "Und für mini Tasche. Los!"},
+				],
+			}
+		10:
+			return {
+				"title": "Finale: Im Tüüfel-Äste",
+				"subtitle": "D'letzt Schlacht. Für immer.",
+				"text": "De M-Tüüfel isch i sim eigene Reich. Fünf Tüüfel. Alles uf einisch.\n\n\"Das isch das Ende.\"\n\"Näi. Das isch s'Ende vom TÜÜFEL.\"\n\"Mir mached das. Zäme.\"",
+				"enemy_preview": "FÜNF Tüüfel • Alles • Finale Gauntlet",
+				"pages": [
+					{"speaker": "Lemurius", "text": "Das isch s'Äste vom M-Tüüfels Reich. Fünf Tüüfel. Alles uf einisch. D'letzt Wäll."},
+					{"speaker": "Kühne", "text": "Ich spür es — d'ganz Kraft vo de verfluechte Produkt isch hie konzentriert."},
+					{"speaker": "Amösius", "text": "Bin ich de einzige wo Hunger het? Mir kämpfed sit Stunde."},
+					{"speaker": "Cordula", "text": "Nach em Sieg gohts zu McDonald's."},
+					{"speaker": "JoJo", "text": "Das isch ethisch fragwürdig angesichts unserer Mission, aber... ich bin dabei."},
+					{"speaker": "Lemurius", "text": "Mir mached das. Zäme. Für d'Affoltern Banane — FÜR IMMER!"},
+				],
 			}
 		_:
 			return {
