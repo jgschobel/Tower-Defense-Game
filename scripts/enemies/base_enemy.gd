@@ -16,6 +16,7 @@ var armor: float = 0.0
 var gold_reward: int = 10
 var slow_factor: float = 1.0
 var _walk_phase: float = 0.0
+var _prev_walk_sin: float = 0.0
 var _base_v_offset: float = 0.0
 var slow_timer: float = 0.0
 var is_dead: bool = false
@@ -90,9 +91,18 @@ func _process(delta: float) -> void:
 	# instead of sliding rigidly along the path. Frequency scales with
 	# speed so slow enemies bob slow, fast enemies bob fast.
 	_walk_phase += delta * (speed * 0.04)
+	var curr_sin := sin(_walk_phase)
+	# D13: dust puff when step completes — detected on zero-crossing from
+	# negative (downswing) to positive (upswing = foot just left the ground).
+	# Skip flying enemies and very slow ones (tank bob barely registers).
+	if _prev_walk_sin < 0.0 and curr_sin >= 0.0 and not is_dead:
+		if data and not data.is_flying and speed > 50.0:
+			if EffectPlayer and EffectPlayer.has_method("spawn_step_dust"):
+				EffectPlayer.spawn_step_dust(global_position + Vector2(0.0, 10.0))
+	_prev_walk_sin = curr_sin
 	# Keep the base v_offset (set at spawn for visual separation) as the
 	# midpoint and add the bob on top
-	v_offset = _base_v_offset + sin(_walk_phase) * 4.0
+	v_offset = _base_v_offset + curr_sin * 4.0
 
 	# Healer aura animates via _draw — the pulse is time-driven so 15fps
 	# is plenty for a smooth look. Throttle redraw to every ~4th frame.

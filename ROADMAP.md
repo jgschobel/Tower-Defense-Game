@@ -57,9 +57,10 @@ UX / FEEL — independent of the gameplay-mechanic fixes below.
 ### Parallax + atmosphere layers (D16-D19)
 - [ ] **D16** ParallaxBackground node on each level scene with at
   least 2 layers (distant sky / mid props) scrolling at 0.3×/0.6×.
-- [ ] **D17** CPUParticles2D overlay per level — L2 frost, L3 flour,
+- [x] **D17** CPUParticles2D overlay per level — L2 frost, L3 flour,
   L4 acid bubbles, L5 cumulus-receipt confetti, L6 rain, L7 wind
   leaves. 30-50 particles @ low rate, softly tinted.
+  ✓ Implemented 2026-04-30: game_level._spawn_atmosphere_particles() adds per-level CPUParticles2D. L8 blue sparks, L9 purple glitch, L10 rising embers also included.
 - [x] **D18** CanvasModulate tint per level — L2 cool blue, L4 acid
   green, L6 neon cyan. Stack over backgrounds for mood.
   ✓ Implemented 2026-04-27: game_level._apply_level_tint() reads background_color from level_N.tres, adds CanvasModulate at 30% blend.
@@ -67,15 +68,18 @@ UX / FEEL — independent of the gameplay-mechanic fixes below.
   via a Color tween on CanvasModulate.
 
 ### Story / narrative visuals (D20-D23)
-- [ ] **D20** Portrait row in story_screen shows the current page's
+- [x] **D20** Portrait row in story_screen shows the current page's
   speaker highlighted (100% opacity) with the others dimmed to 40%.
+  ✓ Implemented 2026-04-27: _update_speaker_highlight() dims non-speaker to 35% alpha; Lemurius/Kühne/JoJo on left, Amösius/Cordula/guests on right.
 - [x] **D21** Typewriter font SFX tick (very quiet soft_pluck) per
   rendered character — feels Undertale-y, subtle not spammy.
-- [ ] **D22** Migrate L2-L7 intros to multi-character `pages` format
+- [x] **D22** Migrate L2-L7 intros to multi-character `pages` format
   (L1 done in #176). Rotate speakers, add 2 guest characters across
   the campaign (Micheli-security L3, Trudi-Kasse L5).
-- [ ] **D23** Transition fade-to-black between story pages so the
+  ✓ Implemented 2026-04-30: lore.gd L2-L7 all have `pages` arrays with rotating cast. Micheli (L3 security) and Trudi (L5 Kasse) added as right-side guests.
+- [x] **D23** Transition fade-to-black between story pages so the
   background can shift mood per speaker.
+  ✓ Implemented 2026-04-27: story_screen._on_continue_button_pressed fades story_label alpha 0→1 over 0.12s/0.18s between pages.
 
 ### Shop + HUD polish (D24-D27)
 - [x] **D24** Shop row hover preview — hovering a tower icon shows
@@ -200,10 +204,11 @@ discovered via transcript review of the last 30 PRs.
   keeps its hardcoded gold color. Use add_theme_color_override in
   `_on_theme_changed` if one exists.
   ✓ Non-issue: lock_label already uses add_theme_color_override() which persists through theme reloads. No action needed.
-- [ ] **F18** Shop-scroll deadzone (#162) fixes touch, but
+- [x] **F18** Shop-scroll deadzone (#162) fixes touch, but
   ScrollContainer now consumes wheel events on desktop preventing
   click-through to the tower button. Switch scroll_deadzone back
   to 0 for mouse input (check by event type).
+  ✓ Fixed 2026-04-30: hud.gd _input() sets shop_scroll.scroll_deadzone=0 on mouse events, 12 on touch. Deadzone only affects drag initiation, not wheel scroll.
 
 ### Workflow / CI (F19-F20)
 - [x] **F19** Audit-grid workflow (#190) depends on
@@ -246,25 +251,25 @@ the user for anything unless explicitly noted.
 ### Queue (priority top-first)
 
 #### Content (high visible value)
-1. **Level 8 content** — "Coop-Einbruch" (rival supermarket, blue palette). 10 waves escalating, 3-boss finale. .tres + .tscn + lore (chapter 8) + level-select color + story-screen bg map.
-2. **Level 9 content** — "Cumulus-Punkte-Kern" (inside loyalty-system, glitchy neon). Harder than L8, 4-boss finale.
-3. **Level 10 content** — "Finale im Tüüfel-Äste" (multi-path BTD-style?). Final campaign level, 5-boss gauntlet, unique twist (e.g. two lanes).
+1. ✅ **Level 8 content** — "Coop-Einbruch" (rival supermarket, blue palette). 10 waves escalating, 3-boss finale. .tres ✓ + .tscn ✓ + lore pages ✓ (6-page cast: Lemurius/JoJo/Cordula/Kühne) — 2026-04-30.
+2. ✅ **Level 9 content** — "Cumulus-Punkte-Kern" (inside loyalty-system, glitchy neon). Harder than L8, 4-boss finale. .tres ✓ + .tscn ✓ + lore pages ✓ (6-page, Amösius fears losing 16k Cumulus pts) — 2026-04-30.
+3. ✅ **Level 10 content** — "Finale im Tüüfel-Äste" (final campaign). 5-boss gauntlet. .tres ✓ + .tscn ✓ + lore pages ✓ (emotional 6-page finale, "McDonald's after the fight" joke) — 2026-04-30.
 4. **Dedicated backgrounds L4–L7** — currently reusing level1_bg / level2_bg / migros_entrance. Generate 4 new 16:9 via the `art-request` workflow (Stability text2img at 1280×720) with Swiss-themed prompts.
 
 #### Perf (from agent audit)
-5. **Signal-based threat badges** — replace 0.5s `get_nodes_in_group("enemies")` polling with WaveManager emitting boss/healer count changes. O(n)×0.5s per poll × 4× time_scale × 80 enemies is measurable.
+5. ✅ **Signal-based threat badges** — already event-driven via enemies_remaining_changed. 0.5s poll eliminated. Boss HP bar retains 0.25s timer for smooth HP updates (intentional). (2026-04-27)
 6. **Next-wave preview cache** — `_refresh_next_wave_preview` tears down + rebuilds 5-10 Labels + StyleBoxFlat on every show. Cache panel, update text only.
 
 #### UX
-7. **Next-wave button fade** — `_refresh_next_wave_preview(false)` queue_frees without tween. Add `modulate:a → 0` over 0.2s before free.
-8. **Sub-wave progress bar** — currently jumps 10%/wave. Track enemies-defeated / total-enemies within current wave.
-9. **Shop row-selected highlight while placing** — mark the active row gold-bordered during `_is_placing`.
+7. ✅ **Next-wave button fade** — already implemented: `_refresh_next_wave_preview` fades modulate:a → 0 over 0.2s before queue_free. (2026-04-27)
+8. ✅ **Sub-wave progress bar** — already tracks per-enemy defeats via wave_progress_changed signal. Clamped 0-1. (2026-04-27)
+9. ✅ **Shop row-selected highlight while placing** — gold border + warm bg on the active shop row while placement is in progress. Cleared on cancel/place. (2026-04-30)
 
 #### Ideas (nice-to-have)
-10. **Enemy icons in next-wave preview** — prepend 20×20 thumbnail per group instead of text-only.
-11. **Per-tower taunt persona** — towers of same type share TAUNTS dict; shuffle a persistent sub-pool per tower so chorus effects don't happen.
+10. ✅ **Enemy icons in next-wave preview** — 22×22 TextureRect from enemy .tres custom_texture; colored swatch fallback for enemies without art. (2026-04-30)
+11. ✅ **Per-tower taunt persona** — _taunt_pool Array per instance; shuffled copy of TAUNTS lines, pop_back() until empty then reshuffle. Same-type towers now cycle all lines before repeating. (2026-04-30)
 12. **Tower hover range preview in shop** — hovering a shop row shows the range circle on the map.
-13. **Dust-puff particles on enemy step** — small Particle2D at each bob-bottom when `_walk_phase` crosses zero.
+13. ✅ **Dust-puff particles on enemy step** — zero-crossing detection on sin(_walk_phase) negative→positive triggers EffectPlayer.spawn_step_dust() at enemy feet. 4 particles, 0.22s lifetime, sandy color. Skips flying + tank-slow. (2026-04-30)
 
 #### Design spec
 14. **`docs/design_polish.md`** — palette rules, shadow/highlight tokens, typography stack. Informs every subsequent visual PR.

@@ -58,6 +58,7 @@ func _ready() -> void:
 
 	_load_wave_data()
 	_apply_level_tint()
+	_spawn_atmosphere_particles()
 	wave_manager.setup_waves(wave_definitions)
 	hud.show_next_wave_button(true)
 	hud.update_wave_info(0, wave_manager.total_waves)
@@ -136,6 +137,45 @@ func _spawn_path_direction_arrows() -> void:
 		poly.position = Vector2.ZERO
 		arrows_container.add_child(poly)
 		dist += step
+
+
+func _spawn_atmosphere_particles() -> void:
+	# D17: per-level CPUParticles2D overlay. Particles float across the
+	# viewport giving each level atmospheric life without new art assets.
+	# Spawned here so every level gets them automatically.
+	var cfg: Dictionary = {}
+	match level_id:
+		2: cfg = {"color": Color(0.75, 0.9, 1.0, 0.55), "gravity": Vector2(10, 60), "count": 35, "speed": 30.0, "size": 3.5, "spread": 180.0}  # frost
+		3: cfg = {"color": Color(0.98, 0.96, 0.9, 0.4), "gravity": Vector2(-5, 25), "count": 28, "speed": 20.0, "size": 5.0, "spread": 160.0}  # flour
+		4: cfg = {"color": Color(0.3, 0.9, 0.2, 0.45), "gravity": Vector2(0, -35), "count": 22, "speed": 25.0, "size": 4.0, "spread": 60.0}    # acid bubbles
+		5: cfg = {"color": Color(1.0, 0.8, 0.2, 0.5), "gravity": Vector2(20, -10), "count": 30, "speed": 40.0, "size": 3.0, "spread": 140.0}   # confetti
+		6: cfg = {"color": Color(0.55, 0.7, 1.0, 0.4), "gravity": Vector2(15, 90), "count": 45, "speed": 80.0, "size": 2.0, "spread": 20.0}    # rain
+		7: cfg = {"color": Color(0.6, 0.5, 0.25, 0.5), "gravity": Vector2(60, 15), "count": 25, "speed": 55.0, "size": 4.5, "spread": 40.0}    # wind leaves
+		8: cfg = {"color": Color(0.4, 0.65, 1.0, 0.4), "gravity": Vector2(5, 45), "count": 20, "speed": 30.0, "size": 2.5, "spread": 120.0}   # shopping sparks
+		9: cfg = {"color": Color(0.7, 0.3, 1.0, 0.5), "gravity": Vector2(-8, 30), "count": 40, "speed": 45.0, "size": 2.0, "spread": 180.0}   # data glitch
+		10: cfg = {"color": Color(1.0, 0.45, 0.1, 0.55), "gravity": Vector2(-5, -50), "count": 30, "speed": 40.0, "size": 4.0, "spread": 80.0} # embers
+	if cfg.is_empty():
+		return
+	var particles := CPUParticles2D.new()
+	particles.name = "AtmosphereParticles"
+	particles.emitting = true
+	particles.amount = cfg["count"]
+	particles.lifetime = 6.0
+	particles.one_shot = false
+	particles.explosiveness = 0.0
+	particles.randomness = 1.0
+	particles.emission_shape = CPUParticles2D.EMISSION_SHAPE_RECTANGLE
+	particles.emission_rect_extents = Vector2(640, 360)
+	particles.position = Vector2(640, 360)
+	particles.gravity = cfg["gravity"]
+	particles.initial_velocity_min = cfg["speed"] * 0.5
+	particles.initial_velocity_max = cfg["speed"]
+	particles.spread = cfg["spread"]
+	particles.color = cfg["color"]
+	particles.scale_amount_min = cfg["size"] * 0.6
+	particles.scale_amount_max = cfg["size"]
+	particles.z_index = 10
+	add_child(particles)
 
 
 func _load_wave_data() -> void:
