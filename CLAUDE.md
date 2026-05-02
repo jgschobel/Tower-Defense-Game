@@ -50,6 +50,17 @@ autonomous or manual. Update only when the user explicitly changes them.
   a GitHub Issue with log tails whenever any workflow fails. Before
   starting new work, check `mcp__github__list_issues` with label
   `ci-failure` and fix those first. Close the issue when fixed.
+- **Check CI health on EVERY user message — non-negotiable.**
+  Before responding to a new prompt, FIRST read these files via
+  `mcp__github__get_file_contents` (cheap, one tool call each):
+  - `docs/observability/loop-status.md` — per-workflow last-run status
+  - `docs/observability/failures/INDEX.md` — recent failure log links
+  Also `mcp__github__list_issues` with label `ci-failure` and
+  `loop-broken`. If anything is red, mention it in the FIRST sentence
+  of the response and propose a fix BEFORE doing other work the user
+  asked for. Don't let the user discover failures hours later — they
+  hate that, justifiably. The user said: "everytime i ask you a
+  question, quickly check if stuff went well — read the flag".
 - **Regular codebase audit to prevent chaos.** Every ~3rd self-improve
   run should pick Option 6 in `mode-self-improve.md` — scan for
   unused code, orphaned files, divergent duplicates, drift between

@@ -7,12 +7,12 @@ on:
   workflow_dispatch:
     inputs:
       task_mode:
-        description: 'Override task mode (leave blank to auto-rotate)'
+        description: 'Override task mode (auto = rotate by hour)'
         required: false
-        default: ''
+        default: 'auto'
         type: choice
         options:
-          - ''
+          - auto
           - test-validate
           - audit-polish
           - ideate
@@ -106,7 +106,8 @@ jobs:
           fi
           echo "art_enabled=$ART_ENABLED" >> "$GITHUB_OUTPUT"
 
-          if [ -n "${{ inputs.task_mode }}" ]; then
+          # 'auto' (default) = rotate by hour. Anything else = explicit override.
+          if [ -n "${{ inputs.task_mode }}" ] && [ "${{ inputs.task_mode }}" != "auto" ]; then
             MODE="${{ inputs.task_mode }}"
           else
             HOUR=$(date -u +%H)
