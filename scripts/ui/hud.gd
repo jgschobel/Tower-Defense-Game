@@ -564,6 +564,9 @@ func _populate_tower_shop() -> void:
 			icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 			icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
 			icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			var _im := ShaderMaterial.new()
+			_im.shader = preload("res://assets/shaders/circle_clip.gdshader")
+			icon.material = _im
 			row.add_child(icon)
 		else:
 			var placeholder := ColorRect.new()
@@ -1491,6 +1494,9 @@ func _refresh_tower_info() -> void:
 			portrait.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 			header.add_child(portrait)
 			header.move_child(portrait, 0)
+			var _pm := ShaderMaterial.new()
+			_pm.shader = preload("res://assets/shaders/circle_clip.gdshader")
+			portrait.material = _pm
 		# Clear stale texture FIRST — was reusing the previous selection's
 		# portrait when the new tower's custom_texture was null + the
 		# friend_photo lookup returned null. Visible bug: switching from
@@ -1530,7 +1536,7 @@ func _refresh_tower_info() -> void:
 			for i in max_tier:
 				pip_str += " [#]" if i < _selected_tower.path_b_tier else " [ ]"
 			pip_str += "\n"
-		stats_lbl.text = "%sSchade: %.0f   DPS: %.1f   Kills: %d\nTempo: %.1f   Reichwiiti: %.0f" % [
+		stats_lbl.text = "%sSchade: %.0f   DPS: %.1f   K.O.: %d\nTempo: %.1f   Reichwiiti: %.0f" % [
 			pip_str,
 			_selected_tower.effective_damage,
 			dps,
