@@ -23,7 +23,7 @@ signal placement_invalid(reason: String)
 
 var is_placing: bool = false
 var ghost_tower: Node2D = null
-var _ghost_x_label: Label = null  # red ✕ overlay when placement invalid (D28)
+var _ghost_x_label: TextureRect = null  # red x SVG overlay when placement invalid (D28)
 var selected_tower_data: TowerData = null
 var placed_towers: Array = []
 
@@ -156,14 +156,9 @@ func _update_ghost_position(screen_pos: Vector2) -> void:
 		else:
 			ghost_tower.modulate = Color(1.0, 0.3, 0.3, 0.6)
 			if _ghost_x_label == null or not is_instance_valid(_ghost_x_label):
-				_ghost_x_label = Label.new()
-				_ghost_x_label.text = "✕"
-				_ghost_x_label.add_theme_font_size_override("font_size", 48)
-				_ghost_x_label.add_theme_color_override("font_color", Color(1, 0.15, 0.15))
-				_ghost_x_label.add_theme_color_override("font_outline_color", Color(0.4, 0, 0))
-				_ghost_x_label.add_theme_constant_override("outline_size", 4)
-				_ghost_x_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-				_ghost_x_label.position = Vector2(-24, -52)
+				# SVG x icon — was unicode ✕ which depended on font fallback.
+				_ghost_x_label = IconLibrary.make_rect("x", 48, Color(1, 0.20, 0.20))
+				_ghost_x_label.position = Vector2(-24, -56)
 				_ghost_x_label.z_index = 15
 				ghost_tower.add_child(_ghost_x_label)
 			_ghost_x_label.visible = true
@@ -209,19 +204,12 @@ func _try_place(screen_pos: Vector2) -> void:
 
 
 func _spawn_place_ring(pos: Vector2) -> void:
-	# D29: pop animation on the placed tower — scale 0→1.25→1 + green flash.
-	# Uses a separate Label as a "ring" stand-in since Node2D inline draw
-	# scripts can't easily be tweened. The tower node is freshly placed so
-	# we animate it directly once we find it at pos.
-	var flash := Label.new()
-	flash.text = "✓"
-	flash.add_theme_font_size_override("font_size", 36)
-	flash.add_theme_color_override("font_color", Color(0.4, 1.0, 0.5, 1.0))
-	flash.add_theme_color_override("font_outline_color", Color(0.0, 0.3, 0.1))
-	flash.add_theme_constant_override("outline_size", 4)
+	# D29: pop animation on the placed tower — green check mark drifts up
+	# and fades. Uses SVG check icon (was unicode ✓ which font-fallback'd).
+	var flash := IconLibrary.make_rect("check", 40, Color(0.45, 1.0, 0.55, 1.0))
 	flash.z_index = 20
 	get_parent().add_child(flash)
-	flash.global_position = pos + Vector2(-12, -70)
+	flash.global_position = pos + Vector2(-20, -72)
 	var tw := flash.create_tween().set_parallel(true)
 	tw.tween_property(flash, "position:y", flash.position.y - 30.0, 0.4)
 	tw.tween_property(flash, "modulate:a", 0.0, 0.4).set_delay(0.15)
