@@ -518,11 +518,18 @@ func flash_earn(amount: int) -> void:
 func play_place_animation() -> void:
 	if sprite == null:
 		return
-	var base_sc: Vector2 = _baseline_scale
+	# CRITICAL FIX: previously tweened `self.scale` to `_baseline_scale`,
+	# which is the SPRITE's scale ratio (~0.47 for friend photos at
+	# target_size=240). That left the placed tower at scale=0.47 while
+	# the ghost (which never ran this anim) stayed at scale=1.0 — placed
+	# tower was visibly HALF the size of the ghost. The whole-tower
+	# scale should always be 1.0; only sprite.scale carries the size
+	# fitting. So tween self.scale from ZERO → ONE for the pop, sprite
+	# already has the correct size.
 	scale = Vector2.ZERO
 	var tw := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tw.tween_property(self, "scale", base_sc * 1.15, 0.18)
-	tw.tween_property(self, "scale", base_sc, 0.12).set_trans(Tween.TRANS_SINE)
+	tw.tween_property(self, "scale", Vector2(1.15, 1.15), 0.18)
+	tw.tween_property(self, "scale", Vector2.ONE, 0.12).set_trans(Tween.TRANS_SINE)
 	# Gold sparkle particles at the tower base — "deployed" feedback.
 	if EffectPlayer and EffectPlayer.has_method("spawn_place_sparkles"):
 		EffectPlayer.spawn_place_sparkles(global_position)
