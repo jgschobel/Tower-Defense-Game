@@ -86,6 +86,11 @@ func _fit_viewport() -> void:
 func show_pause() -> void:
 	visible = true
 	_fit_viewport()  # re-snap in case viewport changed while hidden
+	# Hide any active tower-info panel — otherwise it renders alongside
+	# the pause menu in the screen center (visible bug in screenshots).
+	var hud := _find_hud()
+	if hud and hud.has_method("hide_tower_info"):
+		hud.hide_tower_info()
 	modulate = Color(1, 1, 1, 0)
 	# Process this node while the tree is paused so the fade-in tween
 	# can tick. The tween inherits from this node's process_mode.
@@ -94,6 +99,14 @@ func show_pause() -> void:
 	fade.tween_property(self, "modulate:a", 1.0, 0.2)
 	get_tree().paused = true
 	MusicManager.pause_music()
+
+
+func _find_hud() -> CanvasLayer:
+	# Walks up to the GameLevel sibling and returns its HUD CanvasLayer.
+	var parent := get_parent()
+	if parent and parent.has_node("HUD"):
+		return parent.get_node("HUD") as CanvasLayer
+	return null
 
 
 func hide_pause() -> void:
