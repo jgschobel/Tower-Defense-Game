@@ -590,11 +590,12 @@ func _populate_tower_shop() -> void:
 		name_label.add_theme_color_override("font_outline_color", Color(0.05, 0.02, 0, 0.9))
 		name_label.add_theme_constant_override("outline_size", 3)
 		name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		# Truncate (don't autowrap) — autowrap on a narrow column made
-		# 2-line names overflow the row. Ellipsis keeps the row height
-		# stable while still fitting "Banani-Hof" / "Migros-Villa".
-		name_label.clip_text = true
-		name_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		# Allow names to render at full size — clip_text + ellipsis was
+		# truncating short names like "Lemurius" → "Lem" because the
+		# auto-sized column was narrower than expected. The shop is
+		# right-anchored at ~152px, names like "Lemurius"/"Cordula" fit
+		# comfortably. Locked-row names will overlap the lock capsule
+		# slightly but that's better than user seeing "Lem"/"Küh"/etc.
 		text_col.add_child(name_label)
 
 		var cost_label := Label.new()
@@ -857,7 +858,10 @@ func _on_combo_changed(counter: int, multiplier: float) -> void:
 	var badge := _ensure_combo_badge()
 	if _combo_tween and _combo_tween.is_valid():
 		_combo_tween.kill()
-	if counter <= 0:
+	# Hide for counter<2 — "RUUSCH! x1 · 1.0x Gold" was firing on every
+	# single kill (no actual streak). Player only cares about real combos
+	# starting at x≥2 where the multiplier kicks in.
+	if counter < 2:
 		_combo_tween = badge.create_tween()
 		_combo_tween.tween_property(badge, "modulate:a", 0.0, 0.25)
 		_clear_combo_screen_tint()

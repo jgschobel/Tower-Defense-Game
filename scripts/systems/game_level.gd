@@ -68,22 +68,17 @@ func _ready() -> void:
 
 func _soften_background() -> void:
 	# The maps_v3 AI art contains a giant faded "M" / Migros watermark
-	# baked into the texture (visible as a "WW" pattern on the playfield
-	# in screenshots). 0.78 dim wasn't enough — pattern still dominated.
-	# Dropping to 0.55 and overlaying a translucent floor color brings
-	# the watermark down to a barely-visible texture variation while the
-	# fruit crates / path stay readable.
+	# baked into the texture. Modulate dim + translucent overlay weren't
+	# enough — the M shape still dominated. Going nuclear: dim to 0.30
+	# and add a more opaque overlay (alpha 0.55) so the watermark is
+	# essentially invisible. Fruit crates / path are still readable
+	# because their bright colors saturate through.
 	var bg := get_node_or_null("Background")
 	if bg is Sprite2D:
-		bg.modulate = Color(0.55, 0.55, 0.60, 1.0)
-		# Stamp a translucent warm-grey rectangle over the playfield so
-		# the bright M-logo highlights wash into the floor color. The
-		# overlay sits ABOVE the background sprite but BELOW everything
-		# else (z_index = -90 — gameplay layer is 0).
+		bg.modulate = Color(0.35, 0.35, 0.38, 1.0)
 		var overlay := ColorRect.new()
 		overlay.name = "FloorWash"
-		overlay.color = Color(0.50, 0.48, 0.46, 0.30)
-		overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		overlay.color = Color(0.42, 0.40, 0.38, 0.55)
 		overlay.size = Vector2(1280, 720)
 		overlay.position = Vector2.ZERO
 		overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
