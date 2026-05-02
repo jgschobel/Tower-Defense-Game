@@ -141,7 +141,7 @@ jobs:
           retention-days: 14
 
       - name: Run Claude vision analysis
-        if: steps.collect.outputs.count != '0'
+        if: steps.collect.outputs.count != '0' && github.event_name != 'push'
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -201,9 +201,9 @@ jobs:
             SHOT_COUNT=$(ls -1 playtest_output/*.png 2>/dev/null | wc -l | tr -d ' ')
           fi
 
-          --- Copy 7 KEY screenshots into the repo so chat-session
-          # Claude can Read them directly as multimodal images. Same
-          # filenames each run → repo size stays bounded.
+          # Copy 7 KEY screenshots into the repo so chat-session Claude can
+          # Read them directly as multimodal images. Same filenames each
+          # run so repo size stays bounded.
           copy_key_shot() {
             local pattern="$1"; local dest="docs/observability/screenshots/$2"
             local src
@@ -250,11 +250,8 @@ jobs:
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          # Snapshot the new observability files into a temp dir, fetch
-          # the latest main (via fresh clone into tmp worktree), copy the
-          # files over, commit, push. This avoids the "detached HEAD
-          # after checkout main" confusion and makes the retry loop
-          deterministic.
+          # Snapshot obs files → temp dir, fetch fresh main, overwrite, commit+push.
+          # Avoids detached-HEAD confusion after git checkout main inside the run.
           SNAPSHOT_DIR=$(mktemp -d)
           mkdir -p "$SNAPSHOT_DIR/docs/observability"
           cp -r docs/observability/* "$SNAPSHOT_DIR/docs/observability/" 2>/dev/null || true
