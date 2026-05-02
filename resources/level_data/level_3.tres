@@ -14,9 +14,9 @@ waves = [
 	{"groups": [{"enemy_id": "flying", "count": 6, "spawn_delay": 0.6}]},
 	{"groups": [{"enemy_id": "healer", "count": 3, "spawn_delay": 1.0}, {"enemy_id": "basic", "count": 12, "spawn_delay": 0.6}]},
 	{"groups": [{"enemy_id": "fast", "count": 12, "spawn_delay": 0.4}, {"enemy_id": "flying", "count": 4, "spawn_delay": 0.6}]},
-	{"groups": [{"enemy_id": "tank", "count": 5, "spawn_delay": 1.0}, {"enemy_id": "healer", "count": 3, "spawn_delay": 0.8}]},
+	{"groups": [{"enemy_id": "tank", "count": 5, "spawn_delay": 1.0}, {"enemy_id": "healer", "count": 3, "spawn_delay": 0.8}, {"enemy_id": "smoothie_slime", "count": 2, "spawn_delay": 2.0}]},
 	{"groups": [{"enemy_id": "flying", "count": 10, "spawn_delay": 0.4}, {"enemy_id": "fast", "count": 8, "spawn_delay": 0.3}]},
-	{"groups": [{"enemy_id": "basic", "count": 20, "spawn_delay": 0.4}, {"enemy_id": "tank", "count": 4, "spawn_delay": 1.0}]},
+	{"groups": [{"enemy_id": "basic", "count": 20, "spawn_delay": 0.4}, {"enemy_id": "tank", "count": 4, "spawn_delay": 1.0}, {"enemy_id": "berserker", "count": 2, "spawn_delay": 1.5}]},
 	{"groups": [{"enemy_id": "healer", "count": 5, "spawn_delay": 0.7}, {"enemy_id": "flying", "count": 8, "spawn_delay": 0.4}, {"enemy_id": "fast", "count": 10, "spawn_delay": 0.3}]},
 	{"groups": [{"enemy_id": "tank", "count": 6, "spawn_delay": 0.8}, {"enemy_id": "healer", "count": 4, "spawn_delay": 0.7}, {"enemy_id": "basic", "count": 15, "spawn_delay": 0.4}]},
 	{"groups": [{"enemy_id": "boss", "count": 1, "spawn_delay": 3.0}, {"enemy_id": "tank", "count": 3, "spawn_delay": 1.0}, {"enemy_id": "fast", "count": 12, "spawn_delay": 0.3}]}

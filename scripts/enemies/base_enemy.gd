@@ -588,12 +588,13 @@ func _get_base_color() -> Color:
 	return Color.RED
 
 
+const _DAMAGE_STATE_NAMES := ["healthy", "hurt", "injured", "dying"]
+
 func _apply_damage_state_visual() -> void:
 	# BTD MOAB-style: enemy appearance shifts as HP drops, NO health bar.
 	# 4 states: 0=healthy (>66%), 1=hurt (33-66%), 2=injured (10-33%),
-	# 3=dying (<10%). Currently uses tint+desaturation as placeholders;
-	# once AI-generated damage-state variants land they'll swap textures
-	# at the same boundaries via data.damage_variants[i].
+	# 3=dying (<10%). Swaps to AI-generated texture variants when available
+	# (res://assets/textures/variants/enemies/{id}/{id}_state{n}_{name}.png).
 	if sprite == null or max_health <= 0:
 		return
 	var pct: float = clampf(health / max_health, 0.0, 1.0)
@@ -601,11 +602,32 @@ func _apply_damage_state_visual() -> void:
 	if pct < 0.10: state = 3
 	elif pct < 0.33: state = 2
 	elif pct < 0.66: state = 1
+
+	# Berserker: speed ramps up quadratically as HP drops
+	if data and data.berserker_mode:
+		var spd_mult: float = GameManager.difficulty_speed_mult() if GameManager else 1.0
+		var lerp_t := 1.0 - pct
+		move_speed = data.move_speed * spd_mult * lerpf(1.0, data.berserker_speed_mult, lerp_t * lerp_t)
+
 	if state == _damage_state:
 		return
 	_damage_state = state
-	# Future: data.damage_variants[state] swaps the texture
-	# For now: progressive desaturation + warm-blood tint
+
+	# Try to load AI-generated variant texture from standard path
+	if data:
+		var state_name: String = _DAMAGE_STATE_NAMES[state]
+		var variant_path := "res://assets/textures/variants/enemies/%s/%s_state%d_%s.png" % [data.id, data.id, state, state_name]
+		if ResourceLoader.exists(variant_path):
+			sprite.texture = load(variant_path)
+			sprite.modulate = Color.WHITE
+			return
+		# Restore clean texture when healing back to healthy state
+		if state == 0 and data.custom_texture:
+			sprite.texture = data.custom_texture
+			sprite.modulate = Color.WHITE
+			return
+
+	# Fallback tint when no art variants available yet
 	match state:
 		0: sprite.modulate = Color(1.0, 1.0, 1.0, 1.0)
 		1: sprite.modulate = Color(0.95, 0.85, 0.80, 1.0)  # slight bruise

@@ -15,8 +15,8 @@ waves = [
 	{"groups": [{"enemy_id": "swarm", "count": 50, "spawn_delay": 0.12}, {"enemy_id": "healer", "count": 4, "spawn_delay": 0.8}]},
 	{"groups": [{"enemy_id": "tank", "count": 10, "spawn_delay": 0.65}, {"enemy_id": "flying", "count": 22, "spawn_delay": 0.28}]},
 	{"groups": [{"enemy_id": "boss", "count": 2, "spawn_delay": 3.0}, {"enemy_id": "flying", "count": 25, "spawn_delay": 0.22}]},
-	{"groups": [{"enemy_id": "healer", "count": 10, "spawn_delay": 0.45}, {"enemy_id": "tank", "count": 8, "spawn_delay": 0.6}, {"enemy_id": "swarm", "count": 40, "spawn_delay": 0.14}]},
-	{"groups": [{"enemy_id": "flying", "count": 40, "spawn_delay": 0.18}, {"enemy_id": "healer", "count": 8, "spawn_delay": 0.5}, {"enemy_id": "fast", "count": 25, "spawn_delay": 0.22}]},
+	{"groups": [{"enemy_id": "healer", "count": 10, "spawn_delay": 0.45}, {"enemy_id": "tank", "count": 8, "spawn_delay": 0.6}, {"enemy_id": "swarm", "count": 40, "spawn_delay": 0.14}, {"enemy_id": "linsen_golem", "count": 2, "spawn_delay": 2.2}]},
+	{"groups": [{"enemy_id": "flying", "count": 40, "spawn_delay": 0.18}, {"enemy_id": "healer", "count": 8, "spawn_delay": 0.5}, {"enemy_id": "fast", "count": 25, "spawn_delay": 0.22}, {"enemy_id": "tofu_ninja", "count": 8, "spawn_delay": 0.45}, {"enemy_id": "cumulus_blob", "count": 4, "spawn_delay": 1.0}]},
 	{"groups": [{"enemy_id": "boss", "count": 3, "spawn_delay": 3.5}, {"enemy_id": "tank", "count": 10, "spawn_delay": 0.55}, {"enemy_id": "flying", "count": 30, "spawn_delay": 0.22}]},
 	{"groups": [{"enemy_id": "tank", "count": 14, "spawn_delay": 0.5}, {"enemy_id": "healer", "count": 12, "spawn_delay": 0.4}, {"enemy_id": "flying", "count": 25, "spawn_delay": 0.22}, {"enemy_id": "swarm", "count": 40, "spawn_delay": 0.15}]},
 	{"groups": [{"enemy_id": "boss", "count": 4, "spawn_delay": 4.0}, {"enemy_id": "flying", "count": 40, "spawn_delay": 0.18}, {"enemy_id": "tank", "count": 14, "spawn_delay": 0.5}, {"enemy_id": "healer", "count": 12, "spawn_delay": 0.4}, {"enemy_id": "swarm", "count": 50, "spawn_delay": 0.13}, {"enemy_id": "glace_golem", "count": 4, "spawn_delay": 1.2}, {"enemy_id": "lead", "count": 6, "spawn_delay": 0.7}]}
