@@ -7,19 +7,20 @@ extends Control
 ## on permanent unlocks that apply at start_level() via
 ## GameManager.apply_aminos_modifiers().
 
-# Each entry: id, cost, icon (emoji), title, desc, prereq (optional id)
+# Each entry: id, cost, icon (ASCII abbreviation), title, desc, prereq (optional id)
+# Emoji icons removed — bundled web font renders them as tofu boxes.
 const NODES: Array = [
-	{"id": "gold_plus_25",    "cost": 20,  "icon": "💰", "title": "Mini Start-Bonus",   "desc": "+25 Start-Gold jedes Level"},
-	{"id": "gold_plus_50",    "cost": 45,  "icon": "💰", "title": "Grosse Start-Bonus", "desc": "+50 Start-Gold jedes Level"},
-	{"id": "life_plus_1",     "cost": 35,  "icon": "❤", "title": "Zusätzlichs Läbe",  "desc": "+1 Start-Läbe in jedem Level"},
-	{"id": "life_plus_2",     "cost": 80,  "icon": "❤", "title": "Härtere Hand",      "desc": "+2 Start-Läbe in jedem Level", "prereq": "life_plus_1"},
-	{"id": "tower_disc_5",    "cost": 40,  "icon": "🛒", "title": "Mini Rabatt",        "desc": "Türm sind 5% billiger"},
-	{"id": "tower_disc_10",   "cost": 90,  "icon": "🛒", "title": "Grosse Rabatt",      "desc": "Türm sind 10% billiger", "prereq": "tower_disc_5"},
-	{"id": "upgrade_disc_10", "cost": 60,  "icon": "⚡", "title": "Upgrade-Rabatt",     "desc": "Upgrades sind 10% billiger"},
-	{"id": "farm_plus_10",    "cost": 55,  "icon": "🌾", "title": "Farm-Boost",         "desc": "+10 Gold/Welle für Banani-Hof"},
-	{"id": "crit_plus_5",     "cost": 70,  "icon": "🎯", "title": "Glücks-Hand",        "desc": "+5% Krit-Chance für alli Türm"},
-	{"id": "pierce_plus_1",   "cost": 75,  "icon": "🍌", "title": "Banane-Pierce",      "desc": "Lemurius Bananen durchstäche 1 Feind meh"},
-	{"id": "aminos_x1_5",     "cost": 150, "icon": "✨", "title": "Aminos-Multiplikator", "desc": "1.5× Aminos-Bonus (Endgame-Node)"},
+	{"id": "gold_plus_25",    "cost": 20,  "icon": "G+", "title": "Mini Start-Bonus",   "desc": "+25 Start-Gold jedes Level"},
+	{"id": "gold_plus_50",    "cost": 45,  "icon": "G+", "title": "Grosse Start-Bonus", "desc": "+50 Start-Gold jedes Level"},
+	{"id": "life_plus_1",     "cost": 35,  "icon": "HP", "title": "Zusätzlichs Läbe",  "desc": "+1 Start-Läbe in jedem Level"},
+	{"id": "life_plus_2",     "cost": 80,  "icon": "HP", "title": "Härtere Hand",      "desc": "+2 Start-Läbe in jedem Level", "prereq": "life_plus_1"},
+	{"id": "tower_disc_5",    "cost": 40,  "icon": "%",  "title": "Mini Rabatt",        "desc": "Türm sind 5% billiger"},
+	{"id": "tower_disc_10",   "cost": 90,  "icon": "%",  "title": "Grosse Rabatt",      "desc": "Türm sind 10% billiger", "prereq": "tower_disc_5"},
+	{"id": "upgrade_disc_10", "cost": 60,  "icon": "Up", "title": "Upgrade-Rabatt",     "desc": "Upgrades sind 10% billiger"},
+	{"id": "farm_plus_10",    "cost": 55,  "icon": "GW", "title": "Farm-Boost",         "desc": "+10 Gold/Welle für Banani-Hof"},
+	{"id": "crit_plus_5",     "cost": 70,  "icon": "X!", "title": "Glücks-Hand",        "desc": "+5% Krit-Chance für alli Türm"},
+	{"id": "pierce_plus_1",   "cost": 75,  "icon": ">>", "title": "Banane-Pierce",      "desc": "Lemurius Bananen durchstäche 1 Feind meh"},
+	{"id": "aminos_x1_5",     "cost": 150, "icon": "**", "title": "Aminos-Multiplikator", "desc": "1.5× Aminos-Bonus (Endgame-Node)"},
 ]
 
 
@@ -45,7 +46,7 @@ func _build() -> void:
 
 	# Title
 	var title := Label.new()
-	title.text = "✨ Aminos-Lade"
+	title.text = "Aminos-Lade"
 	title.add_theme_font_size_override("font_size", 38)
 	title.add_theme_color_override("font_color", Color(1, 0.88, 0.25))
 	title.add_theme_color_override("font_outline_color", Color(0.25, 0.12, 0))
@@ -91,7 +92,7 @@ func _build() -> void:
 func _refresh_balance(lbl: Label) -> void:
 	var bal: int = AminosManager.balance if AminosManager else 0
 	var tot: int = AminosManager.total_earned if AminosManager else 0
-	lbl.text = "✨ Du hesch  %d  Aminos    (total verdient: %d)" % [bal, tot]
+	lbl.text = "Du hesch  %d  Aminos    (total verdient: %d)" % [bal, tot]
 
 
 func _row(spec: Dictionary) -> Control:
@@ -178,7 +179,7 @@ func _row(spec: Dictionary) -> Control:
 func _state_widget(spec: Dictionary, owned: bool, prereq_met: bool, affordable: bool) -> Control:
 	if owned:
 		var lbl := Label.new()
-		lbl.text = "✅ Gchauft"
+		lbl.text = "[OK] Gchauft"
 		lbl.add_theme_font_size_override("font_size", 17)
 		lbl.add_theme_color_override("font_color", Color(0.5, 1.0, 0.4))
 		lbl.add_theme_color_override("font_outline_color", Color.BLACK)
@@ -193,7 +194,7 @@ func _state_widget(spec: Dictionary, owned: bool, prereq_met: bool, affordable: 
 		var prereq_id: String = spec.get("prereq", "")
 		var prereq_title: String = _label_for_id(prereq_id)
 		var lbl := Label.new()
-		lbl.text = "🔒 zerscht\n%s" % prereq_title
+		lbl.text = "[L] zerscht\n%s" % prereq_title
 		lbl.add_theme_font_size_override("font_size", 12)
 		lbl.add_theme_color_override("font_color", Color(0.85, 0.7, 0.4))
 		lbl.add_theme_color_override("font_outline_color", Color.BLACK)
@@ -206,7 +207,7 @@ func _state_widget(spec: Dictionary, owned: bool, prereq_met: bool, affordable: 
 	# Affordable or too-expensive: a buy button
 	var btn := Button.new()
 	btn.custom_minimum_size = Vector2(140, 44)
-	btn.text = "✨ %d" % int(spec.cost)
+	btn.text = "%d" % int(spec.cost)
 	btn.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	btn.offset_left = -70
 	btn.offset_right = 70

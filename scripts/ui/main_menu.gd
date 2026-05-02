@@ -116,12 +116,12 @@ func _show_run_stats() -> void:
 	stats_panel.add_child(stats_v)
 	var max_stars: int = GameManager.MAX_LEVELS * 3
 	var stars_lbl := Label.new()
-	stars_lbl.text = "★ Sterne: %d / %d" % [GameManager.total_stars, max_stars]
+	stars_lbl.text = "Sterne: %d / %d" % [GameManager.total_stars, max_stars]
 	stars_lbl.add_theme_font_size_override("font_size", 17)
 	stars_lbl.add_theme_color_override("font_color", Color(1, 0.92, 0.45))
 	stats_v.add_child(stars_lbl)
 	var kills_lbl := Label.new()
-	kills_lbl.text = "⚔ Kills: %d" % GameManager.total_kills
+	kills_lbl.text = "Kills: %d" % GameManager.total_kills
 	kills_lbl.add_theme_font_size_override("font_size", 15)
 	kills_lbl.add_theme_color_override("font_color", Color(0.95, 0.75, 0.35))
 	stats_v.add_child(kills_lbl)
@@ -132,7 +132,7 @@ func _show_run_stats() -> void:
 	if not has_node("AminosButton"):
 		var aminos_btn := Button.new()
 		aminos_btn.name = "AminosButton"
-		aminos_btn.text = "✨ Aminos-Lade"
+		aminos_btn.text = "Aminos-Lade"
 		aminos_btn.anchors_preset = Control.PRESET_TOP_LEFT
 		aminos_btn.offset_left = 16
 		aminos_btn.offset_top = 92
