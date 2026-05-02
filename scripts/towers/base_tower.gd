@@ -775,10 +775,12 @@ func _update_visual() -> void:
 	if tex:
 		sprite.texture = tex
 		var max_dim := maxf(tex.get_width(), tex.get_height())
-		# Tower size: 90 → 140 → 185. Even at 140 the towers read tiny
-		# next to the giant fruit crates in maps_v3. 185 fills more of
-		# the path slot so towers register as the player's avatars.
-		var target_size := 185.0
+		# Tower size: 90 → 140 → 185 → 240. Friend photos are 512×512 with
+		# significant transparent padding around the character (rembg
+		# output) — actual visible content is ~60% of the sprite, so
+		# target_size 240 yields ~144px of visible character. Pedestal
+		# scales with this in _draw().
+		var target_size := 240.0
 		var s := target_size / max_dim
 		_baseline_scale = Vector2(s, s)
 		sprite.scale = _baseline_scale
@@ -800,29 +802,31 @@ func _update_visual() -> void:
 func _draw() -> void:
 	if not is_placed:
 		return
+	# Pedestal scales with the larger 240px sprite — was 38 (matched 90px
+	# sprite), now 56 (matches the bigger character + adds visual weight).
 	# Soft ellipse drop-shadow BELOW the tower for grounding
-	draw_circle(Vector2(0, 16), 32.0, Color(0, 0, 0, 0.25))
+	draw_circle(Vector2(0, 22), 48.0, Color(0, 0, 0, 0.28))
 	# Stone pedestal rings — adds weight and separation from the background
-	draw_circle(Vector2.ZERO, 38.0, Color(0.28, 0.22, 0.18, 0.55))
-	draw_circle(Vector2.ZERO, 33.0, Color(0.48, 0.4, 0.32, 0.55))
-	draw_circle(Vector2.ZERO, 29.0, Color(0.62, 0.52, 0.42, 0.35))
+	draw_circle(Vector2.ZERO, 56.0, Color(0.28, 0.22, 0.18, 0.55))
+	draw_circle(Vector2.ZERO, 49.0, Color(0.48, 0.4, 0.32, 0.55))
+	draw_circle(Vector2.ZERO, 43.0, Color(0.62, 0.52, 0.42, 0.35))
 	# Thin highlight along top edge
-	draw_arc(Vector2(-2, -2), 33.0, PI * 1.1, PI * 1.9, 24, Color(1, 0.95, 0.8, 0.25), 2.0)
+	draw_arc(Vector2(-2, -2), 49.0, PI * 1.1, PI * 1.9, 28, Color(1, 0.95, 0.8, 0.25), 2.5)
 	# Tier pips — replay the precomputed cache. Positions + tints are
 	# refreshed in `_rebuild_pip_cache()` on upgrade so _draw never calls
 	# cos()/sin() per frame. ROADMAP PERF #7.
 	for entry in _pip_cache:
 		var p: Vector2 = entry[0]
 		var tint: Color = entry[1]
-		draw_circle(p, 5.0, Color(0, 0, 0, 0.55))
-		draw_circle(p, 3.5, tint)
+		draw_circle(p, 6.0, Color(0, 0, 0, 0.55))
+		draw_circle(p, 4.5, tint)
 
 
 func _rebuild_pip_cache() -> void:
 	_pip_cache.clear()
 	if not data:
 		return
-	const RING_R: float = 42.0
+	const RING_R: float = 60.0  # bumped from 42 to match the bigger pedestal
 	const SPREAD: float = 0.22
 	if data.has_branching_upgrades():
 		_append_pip_arc(path_a_tier, -PI * 0.92, 1.0, data.path_a_tint, RING_R, SPREAD)
