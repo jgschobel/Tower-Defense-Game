@@ -254,7 +254,8 @@ the user for anything unless explicitly noted.
 1. ✅ **Level 8 content** — "Coop-Einbruch" (rival supermarket, blue palette). 10 waves escalating, 3-boss finale. .tres ✓ + .tscn ✓ + lore pages ✓ (6-page cast: Lemurius/JoJo/Cordula/Kühne) — 2026-04-30.
 2. ✅ **Level 9 content** — "Cumulus-Punkte-Kern" (inside loyalty-system, glitchy neon). Harder than L8, 4-boss finale. .tres ✓ + .tscn ✓ + lore pages ✓ (6-page, Amösius fears losing 16k Cumulus pts) — 2026-04-30.
 3. ✅ **Level 10 content** — "Finale im Tüüfel-Äste" (final campaign). 5-boss gauntlet. .tres ✓ + .tscn ✓ + lore pages ✓ (emotional 6-page finale, "McDonald's after the fight" joke) — 2026-04-30.
-4. **Dedicated backgrounds L4–L7** — currently reusing level1_bg / level2_bg / migros_entrance. Generate 4 new 16:9 via the `art-request` workflow (Stability text2img at 1280×720) with Swiss-themed prompts.
+4. ✅ **Dedicated backgrounds L8 + L9** — generated via Stability SD3.5: `level_8_coop.png` (blue Coop supermarket interior) + `level_9_neon.png` (cyberpunk neon loyalty corridor). L4–L7 already had maps_v3 backgrounds. L10 still reuses L1 background. — 2026-05-02.
+   - [ ] **L10 background** — "Finale im Tüüfel-Äste" needs its own boss-arena background (hellish Migros rooftop, fire and smoke, dark sky). Generate via Stability text2img.
 
 #### Perf (from agent audit)
 5. ✅ **Signal-based threat badges** — already event-driven via enemies_remaining_changed. 0.5s poll eliminated. Boss HP bar retains 0.25s timer for smooth HP updates (intentional). (2026-04-27)

@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-05-02 (generate-art — dedicated backgrounds for L8 + L9)
+
+- art(maps): generate dedicated 1344×768 backgrounds for L8 "Coop-Einbruch" (blue Swiss rival supermarket interior) and L9 "Cumulus-Punkte-Kern" (cyberpunk neon loyalty corridor) via Stability SD3.5-large; wire into level_8.tscn + level_9.tscn (was reusing L1/L2 backgrounds)
+
 ## 2026-05-02 (audit-polish — economy balance pass)
 
 - balance(economy): tighten starting gold L1=120→L10=220 ramp (was up to 600g bloating early game); steepen Lemurius upgrade costs ~25% [210,455,1140]/[245,560,1260]; Amösius tier2+3 +15%; fix early-wave variety L1 wave2 + L2 wave2 (closes ROADMAP #21 #22 #36 #37)
