@@ -77,7 +77,7 @@ autonomous or manual. Update only when the user explicitly changes them.
   antagonist. Migros Affoltern as world.
 
 ## Project Overview
-A **landscape** (1280x720) tower defense game built in **Godot 4.6** using GDScript. Set in Migros Affoltern, Zürich. 5 tower characters (Lemurius, Kühne, JoJo, Cordula, Amösius) fight cursed vegan products controlled by De Vegan-Tüüfel. All text in Swiss German. Procedural chiptune music + SFX, AI-generated art, story cutscenes, **7 levels** with 10 waves each (L1-L5 main + L6 bonus parking + L7 rooftop finale). `MAX_LEVELS = 7` in `game_manager.gd`. BTD-style branching upgrades (paths A+B, 3 tiers each) with visible tier pips + drag-and-drop placement from a right-anchored collapsible side-shop.
+A **landscape** (1280x720) tower defense game built in **Godot 4.6** using GDScript. Set in Migros Affoltern, Zürich. 5 tower characters (Lemurius, Kühne, JoJo, Cordula, Amösius) fight cursed vegan products controlled by De Vegan-Tüüfel. All text in Swiss German. Procedural chiptune music + SFX, AI-generated art, story cutscenes with multi-character paginated dialogue, **10 levels** with 10 waves each (L1 Migros-Eingang → L5 Kasse 3-boss finale → L6 Parkhuus bonus → L7 Dach → L8 Coop-Einbruch → L9 Cumulus-Punkte-Kern → L10 Finale 5-boss gauntlet). `MAX_LEVELS = 10` in `game_manager.gd`. BTD-style branching upgrades (paths A+B, 3 tiers each) with visible tier pips + drag-and-drop placement from a right-anchored collapsible side-shop. Per-level atmospheric particles + CanvasModulate tints + dust-puff steps + animated dashed range circles.
 
 ## Tech Stack
 - **Engine**: Godot 4.6 (GL Compatibility renderer for mobile)
@@ -101,9 +101,9 @@ scenes/
   game/             → game.tscn (main gameplay), level_N.tscn (per-level)
   ui/               → main_menu.tscn, level_select.tscn, hud.tscn, etc.
 resources/
-  enemy_data/       → .tres files per enemy type (basic, fast, tank, healer, flying, boss)
-  tower_data/       → .tres files per tower (basic=Lemurius, sniper=Kühne, splash=JoJo, cordula, slow=Amösius)
-  level_data/       → .tres files per level (level_1, level_2, level_3)
+  enemy_data/       → .tres files per enemy type (basic, fast, tank, healer, flying, swarm, camo, lead, regrow, boss + variants)
+  tower_data/       → .tres files per tower (basic=Lemurius, sniper=Kühne, splash=JoJo, cordula, slow=Amösius, farm, support, joe, justus, seve)
+  level_data/       → .tres files per level (level_1 .. level_10)
 assets/
   textures/         → towers/, enemies/, ui/, maps/, projectiles/
   audio/            → sfx/, music/
@@ -133,12 +133,12 @@ assets/
 ## AI Agent Architecture
 This project uses a multi-agent workflow. See `AGENTS.md` for full details.
 
-- **Conductor (Sonnet 4.6)** — architecture, code, creative, git, user communication
-- **Art Factory (Sonnet 4.6, background)** — image generation via Stability AI, background removal, batch processing
-- **Code Scout (Haiku 4.5, on-demand)** — file searches, grep, path validation. Use Haiku — it's sufficient and 5× cheaper.
-- **Build Tester (Haiku 4.5, pre-push)** — validates signal connections, file paths, node references
+- **Conductor (Sonnet 4.6 default; Opus 4.7 only for novel architecture)** — code, creative, git, user communication. Per the model discipline directive above.
+- **Code Scout (Haiku 4.5, on-demand)** — file searches, grep, path validation. Use Haiku — sufficient and 5× cheaper.
+- **Build Tester** — `validate.sh` pre-push validation: ext_resource paths, preload paths, autoload existence, signal heuristic, per-script `godot --check-only`, scene-load smoke test.
+- **Art Factory (background)** — Stability AI / Imagen 4 image generation, background removal, batch processing.
 
-API keys stored at `C:/Users/josef/.api_keys/keys.json` (outside repo).
+API keys stored as GitHub repository secrets: `STABILITY_API_KEY`, `GEMINI_API_KEY`, `HUGGINGFACE_API_KEY`, `RESEND_API_KEY`, `BUTLER_API_KEY` (all optional except `CLAUDE_CODE_OAUTH_TOKEN` which the autonomous loop hard-requires).
 
 ## Common Pitfalls
 - Enemies are `PathFollow2D` nodes — they must be children of a `Path2D` to work

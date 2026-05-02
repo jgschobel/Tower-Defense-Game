@@ -10,21 +10,23 @@ Lemurius (lemur, throws bananas), Amösius (gecko, stuns with tongue), Kühne (f
 
 ## Features
 
-- **5 playable tower characters** with branching BTD-style upgrade paths (A+B), per-tower projectile styles, per-character taunt dialogue
-- **7 enemy types**: Brötli, Turbo-Toblerone, Cervelat, Dr. Rivella (healer, visible aura), Fliegendi Fondue, Tofu-Schwarm, De Vegan-Tüüfel (boss)
-- **7 playable levels** with unique paths + themes:
-  - L1 Migros Eingang, L2 Tiefchüel-Abteilig (pretzel path), L3 Bäckerei, L4 Chäsi-Keller, L5 Kasse (3-boss finale), L6 Parkhuus (bonus, 5-boss), L7 Dach
-- **10 waves per level** escalating through basic → fast → tank → flying → healer → boss
-- **BTD-style side-shop**: right-anchored scrollable tower shop, collapsible handle, drag-and-drop placement from shop button straight to the map
+- **5 playable tower characters** with branching BTD-style upgrade paths (A+B), per-tower projectile styles, per-character taunt dialogue (with per-instance shuffled sub-pools so two same-type towers never chorus)
+- **10 enemy types**: Brötli, Turbo-Toblerone, Cervelat, Dr. Rivella (healer, visible aura), Fliegendi Fondue, Tofu-Schwarm, Schatte-Tofu (camo), Lead, Regrow, De Vegan-Tüüfel (boss)
+- **10 playable levels** with unique paths + themes:
+  - L1 Migros Eingang, L2 Tiefchüel-Abteilig (pretzel path), L3 Bäckerei, L4 Chäsi-Keller, L5 Kasse (3-boss finale), L6 Parkhuus (bonus, 5-boss), L7 Dach, L8 Coop-Einbruch (rival store, blue grid), L9 Cumulus-Punkte-Kern (purple spiral), L10 Finale im Tüüfel-Äste (5-boss epic finale)
+- **10 waves per level** escalating through basic → fast → tank → flying → healer → camo → lead → regrow → boss
+- **BTD-style side-shop**: right-anchored scrollable tower shop, collapsible handle, drag-and-drop placement from shop button straight to the map. Active row gets a gold-bordered highlight while placing.
 - **Landscape orientation** (1280x720) optimized for mobile landscape; responsive safe-area handling
-- **Story cutscenes** — typewriter text + character portraits, Swiss German throughout
+- **Story cutscenes** — multi-character paginated dialogue with rotating speakers, portrait highlights, typewriter text + page-crossfade transitions, guest characters (Micheli L3 security, Trudi L5 cashier). Swiss German throughout.
 - **Procedural chiptune music** with menu/game track switching, drums on the game track
 - **Visual polish**:
-  - Tower: stone pedestal, drop shadow, tier pips showing upgrade state
-  - Enemy: drop shadow, healer heal-aura, bobbing walk, death spin
+  - Per-level CanvasModulate tint (cool blue L2, acid green L4, neon cyan L6) + animated flicker for fluorescent (L1) and neon (L6) atmospheres
+  - Per-level CPUParticles2D atmosphere overlays (frost, flour, acid bubbles, confetti, rain, leaves, sparks, glitch, embers)
+  - Tower: stone pedestal, drop shadow, tier pips, animated dashed range circle, place-pop animation
+  - Enemy: drop shadow, healer heal-aura, bobbing walk + dust-puff particles on each step, death spin
   - Combat: muzzle flash, impact sparks, screen-shake on boss reveal/death
-  - HUD: wave progress bar, next-wave preview panel, ⚕/☠ threat badges, boss HP bar, life-lost red flash, gold pulse
-- **Save/load** with star ratings (1–3 stars per level), lifetime kill counter, total stars badge on menu
+  - HUD: wave progress bar, next-wave preview panel with per-enemy icons, ⚕/☠ threat badges, boss HP bar, life-lost red flash, gold pulse, wave-start banner slide
+- **Save/load** with star ratings (1–3 stars per level), lifetime kill counter, total stars badge on menu, persistent Aminos meta-currency
 
 ## Development
 
@@ -56,10 +58,28 @@ Each tower has branching upgrade paths (A + B, 3 tiers each) with unique tints +
 
 ## Autonomous Loop
 
-The repo runs a 24/7 agent loop via GitHub Actions:
-- `playtest` cron runs 4×/day, spawns 6 scenarios, files issues with `playtest-feedback` label
-- `autonomous-dev` cron picks a ROADMAP item, ships it as a PR, auto-merges on validation pass
-- `deploy-web` publishes to GitHub Pages on every merge to `main`
-- Circuit breaker: max 25 merges / 24h, 4 Opus runs / 5h
+The repo runs a 24/7 agent loop via GitHub Actions (21 workflows total):
 
-Observability at `docs/observability/ledger.md` and `docs/observability/playtest_latest.md`.
+**Production loop:**
+- `autonomous-dev.yml` — every 4h, picks a task mode (test-validate / audit-polish / ideate / build-content / self-improve / generate-art), invokes Claude Code, validates via `validate.sh`, auto-merges on pass. Circuit breaker: max 25 merges / 24h, 4 Opus runs / 5h.
+- `deploy-web.yml` — every push to `main` builds Godot HTML5 export and deploys to GitHub Pages. Emits `build-info.json` next to `index.html` with current commit SHA + build timestamp + content counts (phone-checkable freshness indicator).
+- `playtest.yml` — 6h cron + push trigger. Headless Godot bot runs 6 scenarios (L1/L2/L3 healthy + upgrades + stress + bughunt), Claude vision agent files issues with `playtest-feedback` label.
+- `audit-grid.yml` — chains off playtest, stitches per-level screenshots into a 4×4 grid for visual review.
+- `sim-gate.yml` — wave-balance simulator runs on PRs touching `tower_data` / `enemy_data` / `level_data`, fails the PR if a level is unwinnable or trivially clearable.
+
+**Self-observation:**
+- `loop-health.yml` — every 6h, files a `loop-broken` issue if autonomous-dev hasn't run in 8h, deploy-web has no success in 24h, or any workflow has been paused >7 days. Writes `docs/observability/loop-status.md` with per-workflow last-run + conclusion + last-success — single-file dashboard.
+- `ci-monitor.yml` — listens to all 12 critical workflows; on any failure, files an issue AND mirrors the log tail into `docs/observability/failures/<workflow>__<run_id>.log` so chat-session debugging never depends on the user fetching logs manually. INDEX.md tracks the last 50 failures.
+- `pause-watchdog.yml` — fails CI on any PR that re-introduces a `# PAUSED` comment older than 7 days.
+- `workflow-lint.yml` — `actionlint` + `bash -n` on every `run: |` block on every PR touching `.github/workflows/`. Catches the prose-comment-without-`#` bug class that broke CI for 9 days in 2026-04.
+
+**Hygiene:**
+- `cleanup.yml` daily 05:00 UTC — sweeps stale `claude/auto/*` branches and old PRs.
+- `drift-scan.yml` Mondays 07:00 UTC — flags dead GDScript functions, orphaned assets, ROADMAP-vs-CHANGELOG drift.
+- `weekly-digest.yml` Mondays 06:00 UTC — files a digest issue summarizing the week, optionally emails via Resend.
+
+Observability lives in `docs/observability/`:
+- `loop-status.md` — health dashboard
+- `deploy_latest.md` / `playtest_latest.md` / `sim_latest.md` / `photo_latest.md` — last-run summaries per system
+- `ledger.md` — append-only one-line log per run, capped at 150 lines
+- `failures/INDEX.md` + per-run `.log` files — full failure context for debugging
