@@ -863,6 +863,21 @@ func show_wave_clear_celebration() -> void:
 	tw.chain().tween_callback(lbl.queue_free)
 
 
+func _format_gold(amount: int) -> String:
+	# Swiss thousands separator: 1'234 instead of 1234. Plain digits below
+	# 1000 — adding the apostrophe for sub-thousand looks weird.
+	if amount < 1000:
+		return str(amount)
+	var s: String = str(amount)
+	var out: String = ""
+	var n: int = s.length()
+	for i in n:
+		if i > 0 and ((n - i) % 3 == 0):
+			out += "'"
+		out += s[i]
+	return out
+
+
 func _ensure_wave_progress_bar() -> ProgressBar:
 	if _wave_progress_bar and is_instance_valid(_wave_progress_bar):
 		return _wave_progress_bar
@@ -873,14 +888,29 @@ func _ensure_wave_progress_bar() -> ProgressBar:
 	bar.min_value = 0.0
 	bar.max_value = 1.0
 	bar.value = 0.0
-	bar.custom_minimum_size = Vector2(260, 10)
+	bar.custom_minimum_size = Vector2(280, 14)
 	bar.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
-	bar.offset_top = 48
-	bar.offset_bottom = 58
-	bar.offset_left = 240
-	bar.offset_right = 500
+	bar.offset_top = 46
+	bar.offset_bottom = 60
+	bar.offset_left = 230
+	bar.offset_right = 510
 	bar.show_percentage = false
-	bar.modulate = Color(1, 1, 1, 0.85)
+	# Custom styled fill — was the default light grey blob, barely
+	# readable. Now warm gold gradient with dark backing.
+	var bg := StyleBoxFlat.new()
+	bg.bg_color = Color(0.10, 0.08, 0.06, 0.85)
+	bg.corner_radius_top_left = 4
+	bg.corner_radius_top_right = 4
+	bg.corner_radius_bottom_left = 4
+	bg.corner_radius_bottom_right = 4
+	var fg := StyleBoxFlat.new()
+	fg.bg_color = Color(1.0, 0.78, 0.18, 0.95)
+	fg.corner_radius_top_left = 4
+	fg.corner_radius_top_right = 4
+	fg.corner_radius_bottom_left = 4
+	fg.corner_radius_bottom_right = 4
+	bar.add_theme_stylebox_override("background", bg)
+	bar.add_theme_stylebox_override("fill", fg)
 	add_child(bar)
 	_wave_progress_bar = bar
 	return bar
@@ -1479,7 +1509,7 @@ var _next_wave_pulse_tween: Tween = null
 
 func _on_gold_changed(amount: int) -> void:
 	if gold_label:
-		gold_label.text = "%d" % amount
+		gold_label.text = _format_gold(amount)
 		# Quick pulse on gold gain (not on spend) so the player sees income
 		if _last_gold >= 0 and amount > _last_gold and gold_label.get_parent():
 			var pulse := gold_label.create_tween()
@@ -1616,12 +1646,13 @@ func _on_pause_button_pressed() -> void:
 
 func _on_auto_button_toggled(toggled_on: bool) -> void:
 	auto_wave_toggled.emit(toggled_on)
-	# Visual feedback for auto-wave mode: green tint when active, white
-	# when off. Toggle-buttons in Godot default to a subtle pressed
-	# style but it's easy to miss — color does the work.
+	# Visual feedback for auto-wave mode. When toggled on, add a small
+	# pulsing "●" suffix to the button text + green tint so it's obvious
+	# auto-mode is active even on quick glances.
 	var btn: Button = $TopBar/HBox/AutoButton if has_node("TopBar/HBox/AutoButton") else null
 	if btn:
 		btn.modulate = Color(0.4, 1.0, 0.5) if toggled_on else Color.WHITE
+		btn.text = "AUTO ●" if toggled_on else "AUTO"
 	SfxManager.play_click()
 
 
