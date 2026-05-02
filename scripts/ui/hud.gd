@@ -46,23 +46,20 @@ func _ready() -> void:
 
 	_on_gold_changed(CurrencyManager.gold)
 	_on_lives_changed(GameManager.lives)
-	# Bump top-bar text size for mobile readability — defaults were ~14px
-	# on a 1280×720 phone screen, hard to read at arm's length.
-	for lbl in [gold_label, lives_label, wave_label, enemy_count_label]:
+	# Top bar — design tokens, consistent with all panels.
+	# Lives + wave + enemy count: muted body color so the GOLD counter
+	# pops as the only highlight on the row (clean visual hierarchy).
+	for lbl in [lives_label, wave_label, enemy_count_label]:
 		if lbl:
-			lbl.add_theme_font_size_override("font_size", 22)
-			lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.85))
-			lbl.add_theme_constant_override("outline_size", 3)
+			DesignTokens.style_label(lbl, DesignTokens.FONT_LABEL_LG)
 	if gold_label:
-		gold_label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.25))
-	# Shop section header — match the gold language used across the HUD
+		DesignTokens.style_label(gold_label, DesignTokens.FONT_LABEL_LG)
+		gold_label.add_theme_color_override("font_color", DesignTokens.COL_GOLD)
+	# Shop section header — minimalist label, no emoji prefix
 	var shop_header: Label = get_node_or_null("SideShop/SideShopVBox/ShopHeader")
 	if shop_header:
-		shop_header.add_theme_font_size_override("font_size", 18)
-		shop_header.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
-		shop_header.add_theme_color_override("font_outline_color", Color(0.15, 0.05, 0))
-		shop_header.add_theme_constant_override("outline_size", 3)
-		shop_header.text = "🏰 TÜRM"
+		DesignTokens.style_heading(shop_header, DesignTokens.FONT_LABEL_LG)
+		shop_header.text = "TÜRM"
 	_populate_tower_shop()
 	_apply_safe_area()
 	_build_shop_collapse_handle()
