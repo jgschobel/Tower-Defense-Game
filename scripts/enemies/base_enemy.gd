@@ -232,17 +232,22 @@ func flash_crit() -> void:
 	# before the damage is applied.
 	var label := Label.new()
 	label.text = "KRIT!"
-	label.add_theme_font_size_override("font_size", 24)
-	label.add_theme_color_override("font_color", Color(1, 0.95, 0.15))
-	label.add_theme_color_override("font_outline_color", Color(0.3, 0.1, 0, 1))
-	label.add_theme_constant_override("outline_size", 4)
-	label.position = Vector2(-24, -70)
-	label.z_index = 11
+	label.add_theme_font_size_override("font_size", 38)
+	label.add_theme_color_override("font_color", Color(1, 0.92, 0.12))
+	label.add_theme_color_override("font_outline_color", Color(0.45, 0.18, 0, 1))
+	label.add_theme_constant_override("outline_size", 6)
+	label.position = Vector2(-44, -78)
+	label.z_index = 22
+	label.scale = Vector2(0.4, 0.4)
 	add_child(label)
 	var tw := create_tween().set_parallel(true)
-	tw.tween_property(label, "position:y", -110.0, 0.6)
-	tw.tween_property(label, "modulate:a", 0.0, 0.6)
+	tw.tween_property(label, "scale", Vector2(1.15, 1.15), 0.14).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(label, "position:y", -120.0, 0.7)
+	tw.chain().tween_property(label, "modulate:a", 0.0, 0.25)
 	tw.chain().tween_callback(label.queue_free)
+	# Crit shake — feels weighty without being huge
+	if EffectPlayer and EffectPlayer.has_method("screen_shake"):
+		EffectPlayer.screen_shake(3.5, 0.12)
 	if sprite:
 		var base_scale: Vector2 = sprite.scale
 		var punch := create_tween()

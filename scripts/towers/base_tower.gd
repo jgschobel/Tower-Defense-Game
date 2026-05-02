@@ -521,6 +521,9 @@ func play_place_animation() -> void:
 	var tw := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tw.tween_property(self, "scale", base_sc * 1.15, 0.18)
 	tw.tween_property(self, "scale", base_sc, 0.12).set_trans(Tween.TRANS_SINE)
+	# Gold sparkle particles at the tower base — "deployed" feedback.
+	if EffectPlayer and EffectPlayer.has_method("spawn_place_sparkles"):
+		EffectPlayer.spawn_place_sparkles(global_position)
 
 
 func sell() -> void:

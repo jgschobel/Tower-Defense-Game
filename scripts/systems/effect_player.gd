@@ -108,6 +108,30 @@ func spawn_death_poof(pos: Vector2, tint: Color) -> void:
 	tw.chain().tween_callback(flash.queue_free)
 
 
+## Gold sparkle ring at tower placement.
+func spawn_place_sparkles(pos: Vector2) -> void:
+	var host := _get_host()
+	if not host:
+		return
+	var p := CPUParticles2D.new()
+	p.global_position = pos
+	p.one_shot = true
+	p.explosiveness = 1.0
+	p.lifetime = 0.55
+	p.amount = 16
+	p.direction = Vector2(0.0, -0.6)
+	p.spread = 180.0
+	p.initial_velocity_min = 70.0
+	p.initial_velocity_max = 140.0
+	p.scale_amount_min = 3.0
+	p.scale_amount_max = 6.5
+	p.color = Color(1.0, 0.92, 0.35, 0.9)
+	p.gravity = Vector2(0.0, 280.0)
+	host.add_child(p)
+	p.emitting = true
+	get_tree().create_timer(0.9).timeout.connect(p.queue_free)
+
+
 ## Tiny dust puff at enemy feet on each step-down (ROADMAP #13).
 func spawn_step_dust(pos: Vector2) -> void:
 	var host := _get_host()
