@@ -1,0 +1,96 @@
+name: Tier Art Variants (img2img anchored)
+
+# Generates A1/A2/A3 + B1/B2 tier-upgrade portraits for a friend
+# character via Gemini img2img anchored to that friend's existing photo.
+# Replaces the awful hue-tinted-photo placeholders with real per-tier
+# art that preserves facial likeness.
+#
+# Usage: Actions tab → "Tier Art Variants" → Run workflow → pick char.
+# Or via repository_dispatch with event_type=tier-art and char=<id>.
+# Or via comment on any issue: "/tier-art cordula" (label-bot pattern
+# wired separately if/when needed).
+
+on:
+  workflow_dispatch:
+    inputs:
+      char:
+        description: 'Friend character id (e.g. cordula, kuhne)'
+        required: true
+        type: choice
+        options:
+          - cordula
+          - kuhne
+  repository_dispatch:
+    types: [tier-art]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: tier-art-${{ inputs.char || github.event.client_payload.char }}
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Python deps
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install requests
+
+      - name: Resolve char id
+        id: vars
+        env:
+          DISPATCH_CHAR: ${{ github.event.client_payload.char }}
+          INPUT_CHAR: ${{ inputs.char }}
+        run: |
+          set -e
+          CHAR="${INPUT_CHAR:-$DISPATCH_CHAR}"
+          if [ -z "$CHAR" ]; then
+            echo "::error::no char id provided"
+            exit 1
+          fi
+          echo "char=$CHAR" >> "$GITHUB_OUTPUT"
+          echo "Will generate tier variants for: $CHAR"
+
+      - name: Generate tier variants
+        id: gen
+        env:
+          CHAR_ID: ${{ steps.vars.outputs.char }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          STABILITY_API_KEY: ${{ secrets.STABILITY_API_KEY }}
+        run: |
+          set -e
+          python3 .github/scripts/generate_tier_variants.py
+
+      - name: Open PR with tier variants
+        if: steps.gen.outputs.count != '' && steps.gen.outputs.count != '0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CHAR: ${{ steps.gen.outputs.char_id }}
+          ASSETS: ${{ steps.gen.outputs.asset_paths }}
+          COUNT: ${{ steps.gen.outputs.count }}
+        run: |
+          set -e
+          BRANCH="art-tiers/${CHAR}-$(date +%s)"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          # ASSETS is a comma-separated list — split + add each.
+          IFS=',' read -ra PATHS <<< "$ASSETS"
+          for p in "${PATHS[@]}"; do
+            git add "$p"
+          done
+          git commit -m "art(tiers): img2img-anchored tier variants for $CHAR ($COUNT files)"
+          git push -u origin "$BRANCH"
+          gh pr create \
+            --title "art(tiers): $CHAR upgrade-tier portraits ($COUNT)" \
+            --body "Generated via Gemini img2img anchored to \`assets/textures/towers/${CHAR}_photo.jpg\`. Files: \`$ASSETS\`. Replaces hue-tint placeholders shown in the dev menu Türm × Tier tab." \
+            --base main \
+            --head "$BRANCH"
