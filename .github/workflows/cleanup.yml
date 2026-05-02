@@ -33,7 +33,7 @@ jobs:
           set -e
           THREE_DAYS_AGO=$(date -u -d '3 days ago' +%Y-%m-%dT%H:%M:%SZ)
           echo "Closing autonomous PRs updated before $THREE_DAYS_AGO"
-          Only touch PRs with claude/auto/* head branches — never user PRs.
+          # Only touch PRs with claude/auto/* head branches — never user PRs.
           gh pr list --state open --limit 100 \
             --json number,headRefName,updatedAt \
             | jq -r --arg cutoff "$THREE_DAYS_AGO" '
@@ -53,7 +53,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -e
-          List remote branches under claude/auto/ then check if commit is on main
+          # List remote branches under claude/auto/ then check if commit is on main
           git fetch --all --prune
           for BRANCH in $(git branch -r | grep 'origin/claude/auto/' | sed 's|origin/||' | tr -d ' '); do
             LAST_SHA=$(git rev-parse "origin/$BRANCH" 2>/dev/null || echo "")

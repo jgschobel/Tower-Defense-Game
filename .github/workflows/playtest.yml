@@ -85,8 +85,8 @@ jobs:
       - name: Run playtest bot (renders to Xvfb)
         run: |
           set +e
-          Xvfb gives us a virtual X display so Godot can actually render
-          pixels. --playtest is sniffed by AutoPlaytest autoload.
+          # Xvfb gives us a virtual X display so Godot can actually render
+          # pixels. --playtest is sniffed by AutoPlaytest autoload.
           xvfb-run -a -s "-screen 0 1280x720x24" \
             timeout 120 godot --path . --playtest
           echo "bot exit=$?"
@@ -104,21 +104,21 @@ jobs:
             cp "$SRC"/*.log "$OUT"/ 2>/dev/null || true
           fi
 
-          Stitch each anim_<tag>_*.png group into a GIF for animation-quality
-          review. The vision agent can't see GIFs natively, but the workflow
-          extracts a few sampled frames into the same directory so it can.
+          # Stitch each anim_<tag>_*.png group into a GIF for animation-quality
+          # review. The vision agent can't see GIFs natively, but the workflow
+          # extracts a few sampled frames into the same directory so it can.
           for tag_full in $(ls "$OUT"/anim_*_000.png 2>/dev/null | sed 's|.*anim_||; s|_000\.png$||'); do
             echo "Stitching GIF: $tag_full"
             ffmpeg -y -framerate 8 -i "$OUT/anim_${tag_full}_%03d.png" \
               -vf 'fps=8,scale=640:-1:flags=lanczos' \
               "$OUT/anim_${tag_full}.gif" 2>&1 | tail -3 || true
-            Also extract 4 evenly-spaced sample frames for the vision agent
-            to inspect as PNGs (since it can't see GIFs directly)
+            # Also extract 4 evenly-spaced sample frames for the vision agent
+            # to inspect as PNGs (since it can't see GIFs directly)
             for frame in 000 007 015 023; do
               cp "$OUT/anim_${tag_full}_${frame}.png" \
                  "$OUT/animsample_${tag_full}_f${frame}.png" 2>/dev/null || true
             done
-            Clean up the raw frames — keep only the GIF + sample frames
+            # Clean up the raw frames — keep only the GIF + sample frames
             rm -f "$OUT/anim_${tag_full}"_*.png 2>/dev/null || true
           done
 
@@ -202,8 +202,8 @@ jobs:
           fi
 
           --- Copy 7 KEY screenshots into the repo so chat-session
-          Claude can Read them directly as multimodal images. Same
-          filenames each run → repo size stays bounded.
+          # Claude can Read them directly as multimodal images. Same
+          # filenames each run → repo size stays bounded.
           copy_key_shot() {
             local pattern="$1"; local dest="docs/observability/screenshots/$2"
             local src
@@ -250,10 +250,10 @@ jobs:
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          Snapshot the new observability files into a temp dir, fetch
-          the latest main (via fresh clone into tmp worktree), copy the
-          files over, commit, push. This avoids the "detached HEAD
-          after checkout main" confusion and makes the retry loop
+          # Snapshot the new observability files into a temp dir, fetch
+          # the latest main (via fresh clone into tmp worktree), copy the
+          # files over, commit, push. This avoids the "detached HEAD
+          # after checkout main" confusion and makes the retry loop
           deterministic.
           SNAPSHOT_DIR=$(mktemp -d)
           mkdir -p "$SNAPSHOT_DIR/docs/observability"
