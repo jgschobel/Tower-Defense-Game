@@ -7,7 +7,7 @@ script = ExtResource("1")
 level_id = 8
 level_name = "Coop-Einbruch"
 description = "De Tüüfel het d'Fronte grüschtet im rivalisierende Supermarkt. Blaui Gänge, frischi Wäge, Coop-Security-Kameras überall."
-starting_gold = 260
+starting_gold = 200
 starting_lives = 14
 waves = [
 	{"groups": [{"enemy_id": "fast", "count": 10, "spawn_delay": 0.22}]},

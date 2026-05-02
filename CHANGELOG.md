@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-05-02 (audit-polish — economy balance pass)
+
+- balance(economy): tighten starting gold L1=120→L10=220 ramp (was up to 600g bloating early game); steepen Lemurius upgrade costs ~25% [210,455,1140]/[245,560,1260]; Amösius tier2+3 +15%; fix early-wave variety L1 wave2 + L2 wave2 (closes ROADMAP #21 #22 #36 #37)
+
 ## 2026-05-02 (manual session — autonomous infra rescue + observability tools)
 
 - fix(ci): hash-prefix every prose comment inside `run: |` blocks across 8 workflow files. Root cause of the loop being silent for 9 days (2026-04-21 → 2026-05-02) — bash interpreted unmarked prose lines as commands, exit 127, every cron-triggered run died at preflight. 80/80 run blocks now pass `bash -n`.

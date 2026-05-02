@@ -7,7 +7,7 @@ script = ExtResource("1")
 level_id = 10
 level_name = "Finale im Tüüfel-Äste"
 description = "D'letzt Schlacht. De M-Tüüfel isch i sim eigene Reich. Jedi verhext Produkt, jedi camo-Geist, alles chunt auf eini Bahn. Wenn du hie gwünsch bisch de Held vom Banani-Raubzug."
-starting_gold = 300
+starting_gold = 220
 starting_lives = 12
 waves = [
 	{"groups": [{"enemy_id": "fast", "count": 14, "spawn_delay": 0.2}, {"enemy_id": "camo", "count": 8, "spawn_delay": 0.38}]},

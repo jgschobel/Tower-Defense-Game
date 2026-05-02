@@ -7,7 +7,7 @@ script = ExtResource("1")
 level_id = 9
 level_name = "Cumulus-Punkte-Kern"
 description = "Tief im Loyalty-System. Glitchi Neon-Gäng, Daten-Tüüfel, Quittige-Geister. De Tüüfel programmiert d'Welt um."
-starting_gold = 240
+starting_gold = 200
 starting_lives = 13
 waves = [
 	{"groups": [{"enemy_id": "swarm", "count": 32, "spawn_delay": 0.12}]},

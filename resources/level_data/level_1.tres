@@ -11,7 +11,7 @@ starting_gold = 120
 starting_lives = 25
 waves = [
 	{"groups": [{"enemy_id": "basic", "count": 6, "spawn_delay": 1.2}]},
-	{"groups": [{"enemy_id": "basic", "count": 10, "spawn_delay": 0.9}]},
+	{"groups": [{"enemy_id": "basic", "count": 7, "spawn_delay": 0.9}, {"enemy_id": "fast", "count": 3, "spawn_delay": 0.7}]},
 	{"groups": [{"enemy_id": "basic", "count": 8, "spawn_delay": 0.8}, {"enemy_id": "fast", "count": 3, "spawn_delay": 0.6}]},
 	{"groups": [{"enemy_id": "fast", "count": 6, "spawn_delay": 0.5}]},
 	{"groups": [{"enemy_id": "basic", "count": 12, "spawn_delay": 0.7}, {"enemy_id": "fast", "count": 4, "spawn_delay": 0.5}]},
