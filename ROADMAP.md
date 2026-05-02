@@ -292,8 +292,8 @@ requested. Loop picks these up one-by-one; each is a PR-sized slice.
 
 ### Pacing + economy (P0)
 20. **30 waves per level** (currently 10). Extend every `resources/level_data/level_N.tres` wave array from 10 → 30. Gradient of difficulty: waves 1-10 tutorial/early, 11-20 mid-game, 21-30 escalation → boss(es) in 30. Keep existing 10 as a skeleton and interpolate. Player should feel progression arc, not 10-wave sprint.
-21. **Starting gold: tighter early budget** — across all levels, reduce `starting_gold` so the player can afford 1 cheap tower + save ~50g. Currently L1=200g, bumped to 600g for some. Target: L1=120g (1 basic Lemurius = 100g, 20g saved). L2=130, L3=140, L4=150, L5=160, L6=170, L7=180. Harder early → gold feels earned.
-22. **Upgrade cost curve steeper** — upgrades currently feel cheap once gold flowing. Bump costs ~40%: path tier 1 was 120-200g, make 180-300; tier 2 was 260-420, make 400-600; tier 3 was 650-920, make 950-1400. User wants upgrades to feel earned.
+21. ✅ **Starting gold: tighter early budget** — L1=120, L2=130, L3=140, L4=150, L5=160, L6=170, L7=180, L8=200, L9=200, L10=220. ✓ 2026-05-02.
+22. ✅ **Upgrade cost curve steeper** — Lemurius path_a [210,455,1140] path_b [245,560,1260]; Amösius tier2+3 bumped ~15%. Other towers already in target ranges. ✓ 2026-05-02.
 23. **Upgrade visual delta — MUCH bigger** — user says "man sieht Unterschiede der Upgrades kaum". Today tier pips are small dots + subtle tint. Need: per-tier sprite scale change (tier 1 = +8%, tier 2 = +16%, tier 3 = +25%), per-tier glow ring (pulse, brighter per tier), per-tier projectile size + trail length, path-specific crown/hat badge (one of 3 hats per path when tier≥1). Tier should READ from across the map, not require squinting.
 
 ### Audio overhaul (P0)
@@ -470,8 +470,8 @@ PR-sized slice for the autonomous loop.
     total — add to enemy_data.gd + wave_manager hooks.
 
 ### Wave pacing (P0 new)
-36. **Level 1-4 all start with Brötli** — user reported: "alle Levels zeigen am Anfang die Brote". Confirmed: L1 / L2 / L3 / L4 wave 1 all use `enemy_id: "basic"`. Only L5 (fast), L6 (swarm), L7 (flying) vary. Fix: give each level a thematic opener matching its theme — L2 should open with `fast` (frozen aisle = things slipping), L3 with `healer` (bakery = Dr. Rivella), L4 with `tank` (cellar = Cervelat).
-37. **Early-wave enemy variety knob** — within a level's first 3 waves, rotate at least 2 enemy types so the opener doesn't feel monotonous. Today L1 first 3 waves: all basic / all basic / basic+fast. Better: wave 1 basic, wave 2 fast-only, wave 3 basic+fast-tank. Makes the 30-wave arc (item #20) feel crafted.
+36. ✅ **Level 1-4 all start with Brötli** — L2 opens fast, L3 opens healer+basic, L4 opens tank+basic. ✓ (implemented in prior run, confirmed 2026-05-02)
+37. ✅ **Early-wave enemy variety knob** — L1 wave 2 now basic×7+fast×3; L2 wave 2 now fast×6+basic×3. All levels have ≥2 enemy types in first 3 waves. ✓ 2026-05-02.
 
 
 ---

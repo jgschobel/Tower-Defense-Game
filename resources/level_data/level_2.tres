@@ -7,11 +7,11 @@ script = ExtResource("1")
 level_id = 2
 level_name = "D'Tiefchüel-Abteilig"
 description = "Alles isch chalt und aggressiv. Fischstäbli händ es Militär bildet."
-starting_gold = 140
+starting_gold = 130
 starting_lives = 25
 waves = [
 	{"groups": [{"enemy_id": "fast", "count": 6, "spawn_delay": 0.7}]},
-	{"groups": [{"enemy_id": "fast", "count": 8, "spawn_delay": 0.5}]},
+	{"groups": [{"enemy_id": "fast", "count": 6, "spawn_delay": 0.5}, {"enemy_id": "basic", "count": 3, "spawn_delay": 0.8}]},
 	{"groups": [{"enemy_id": "basic", "count": 10, "spawn_delay": 0.7}, {"enemy_id": "tank", "count": 2, "spawn_delay": 1.5}]},
 	{"groups": [{"enemy_id": "fast", "count": 10, "spawn_delay": 0.4}, {"enemy_id": "healer", "count": 2, "spawn_delay": 1.2}]},
 	{"groups": [{"enemy_id": "tank", "count": 4, "spawn_delay": 1.2}, {"enemy_id": "basic", "count": 8, "spawn_delay": 0.6}]},
