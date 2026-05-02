@@ -129,16 +129,21 @@ func _show_difficulty_picker(level_id: int) -> void:
 	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	DesignTokens.style_label(subtitle, DesignTokens.FONT_LABEL_SM, true)
 	col.add_child(subtitle)
-	# Three buttons: Easy / Normal / Hard with reward preview
+	# Three buttons: Easy / Normal / Hard with diamond-shape SVG icon
+	# (E/N/H badges with semantic gradient: blue/gold/red).
 	var configs := [
-		{"diff": GameManager.Difficulty.EASY,   "label": "EASY",   "subtitle": "Chli langsamer · 0.5× Aminos · 0.8× Gold · max 2★", "primary": false},
-		{"diff": GameManager.Difficulty.NORMAL, "label": "NORMAL", "subtitle": "Standard · 1.0× Aminos · 1.0× Gold · max 3★",       "primary": true},
-		{"diff": GameManager.Difficulty.HARD,   "label": "HARD",   "subtitle": "Brutal · 1.75× Aminos · 1.35× Gold · min 1★ free",  "primary": false},
+		{"diff": GameManager.Difficulty.EASY,   "label": "EASY",   "svg": "difficulty_easy",   "subtitle": "Chli langsamer · 0.5× Aminos · 0.8× Gold · max 2★", "primary": false},
+		{"diff": GameManager.Difficulty.NORMAL, "label": "NORMAL", "svg": "difficulty_normal", "subtitle": "Standard · 1.0× Aminos · 1.0× Gold · max 3★",       "primary": true},
+		{"diff": GameManager.Difficulty.HARD,   "label": "HARD",   "svg": "difficulty_hard",   "subtitle": "Brutal · 1.75× Aminos · 1.35× Gold · min 1★ free",  "primary": false},
 	]
 	for cfg in configs:
 		var btn := Button.new()
 		btn.text = cfg.label + "\n" + cfg.subtitle
 		btn.custom_minimum_size = Vector2(0, 70)
+		btn.icon = IconLibrary.get_icon(cfg.svg)
+		btn.expand_icon = false
+		btn.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
+		btn.add_theme_constant_override("icon_max_width", 44)
 		DesignTokens.style_button(btn, cfg.primary, DesignTokens.FONT_LABEL)
 		btn.pressed.connect(_launch_level.bind(level_id, cfg.diff))
 		col.add_child(btn)
