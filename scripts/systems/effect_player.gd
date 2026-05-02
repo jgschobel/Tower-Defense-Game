@@ -4,7 +4,10 @@ extends Node
 ## spawn_muzzle_flash / spawn_impact_sparks / screen_shake all auto-free.
 
 
-func spawn_muzzle_flash(pos: Vector2, dir: Vector2, flash_color: Color) -> void:
+func spawn_muzzle_flash(pos: Vector2, dir: Vector2, flash_color: Color, projectile_style: String = "") -> void:
+	# D6: shape varies by projectile_style. banana=tight burst, pollen=puff,
+	# flask=jagged crack, volleyball=star, tongue=tight ring. Falls back to
+	# the original wide cone for unknown styles.
 	var host := _get_host()
 	if not host:
 		return
@@ -12,16 +15,34 @@ func spawn_muzzle_flash(pos: Vector2, dir: Vector2, flash_color: Color) -> void:
 	p.global_position = pos
 	p.one_shot = true
 	p.explosiveness = 0.92
-	p.lifetime = 0.22
-	p.amount = 8
-	p.direction = dir.normalized() if dir.length_squared() > 0.0 else Vector2.RIGHT
-	p.spread = 38.0
-	p.initial_velocity_min = 70.0
-	p.initial_velocity_max = 130.0
-	p.scale_amount_min = 3.0
-	p.scale_amount_max = 7.0
 	p.color = flash_color
 	p.gravity = Vector2.ZERO
+	p.direction = dir.normalized() if dir.length_squared() > 0.0 else Vector2.RIGHT
+	match projectile_style:
+		"banana":
+			p.lifetime = 0.18; p.amount = 6; p.spread = 22.0
+			p.initial_velocity_min = 90.0; p.initial_velocity_max = 150.0
+			p.scale_amount_min = 4.0; p.scale_amount_max = 7.5
+		"pollen":
+			p.lifetime = 0.32; p.amount = 14; p.spread = 90.0
+			p.initial_velocity_min = 30.0; p.initial_velocity_max = 75.0
+			p.scale_amount_min = 4.5; p.scale_amount_max = 9.0
+		"flask":
+			p.lifetime = 0.24; p.amount = 10; p.spread = 65.0
+			p.initial_velocity_min = 50.0; p.initial_velocity_max = 160.0
+			p.scale_amount_min = 2.5; p.scale_amount_max = 7.0
+		"volleyball":
+			p.lifetime = 0.22; p.amount = 12; p.spread = 180.0  # full star burst
+			p.initial_velocity_min = 60.0; p.initial_velocity_max = 110.0
+			p.scale_amount_min = 4.0; p.scale_amount_max = 6.5
+		"tongue":
+			p.lifetime = 0.18; p.amount = 7; p.spread = 18.0
+			p.initial_velocity_min = 110.0; p.initial_velocity_max = 160.0
+			p.scale_amount_min = 3.5; p.scale_amount_max = 5.5
+		_:
+			p.lifetime = 0.22; p.amount = 8; p.spread = 38.0
+			p.initial_velocity_min = 70.0; p.initial_velocity_max = 130.0
+			p.scale_amount_min = 3.0; p.scale_amount_max = 7.0
 	host.add_child(p)
 	p.emitting = true
 	get_tree().create_timer(0.5).timeout.connect(p.queue_free)

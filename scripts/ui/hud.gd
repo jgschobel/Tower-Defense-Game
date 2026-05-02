@@ -744,6 +744,7 @@ func _on_combo_changed(counter: int, multiplier: float) -> void:
 	if counter <= 0:
 		_combo_tween = badge.create_tween()
 		_combo_tween.tween_property(badge, "modulate:a", 0.0, 0.25)
+		_clear_combo_screen_tint()
 		return
 	badge.text = "RUUSCH! x%d  ·  %.1fx Gold" % [counter, multiplier]
 	badge.pivot_offset = badge.size * 0.5
@@ -751,6 +752,66 @@ func _on_combo_changed(counter: int, multiplier: float) -> void:
 	_combo_tween.tween_property(badge, "modulate:a", 1.0, 0.1)
 	_combo_tween.tween_property(badge, "scale", Vector2(1.15, 1.15), 0.08)
 	_combo_tween.chain().tween_property(badge, "scale", Vector2.ONE, 0.12).set_trans(Tween.TRANS_SINE)
+	# At combo ≥5, amp the screen with a faint gold vignette so the player
+	# feels the "in the zone" state. Strength scales modestly with counter.
+	if counter >= 5:
+		_apply_combo_screen_tint(counter)
+
+
+var _combo_tint_rect: ColorRect = null
+
+func _apply_combo_screen_tint(counter: int) -> void:
+	if not _combo_tint_rect or not is_instance_valid(_combo_tint_rect):
+		_combo_tint_rect = ColorRect.new()
+		_combo_tint_rect.name = "ComboTint"
+		_combo_tint_rect.anchors_preset = Control.PRESET_FULL_RECT
+		_combo_tint_rect.anchor_right = 1.0
+		_combo_tint_rect.anchor_bottom = 1.0
+		_combo_tint_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_combo_tint_rect.z_index = -10  # behind HUD widgets
+		add_child(_combo_tint_rect)
+		move_child(_combo_tint_rect, 0)
+	var alpha: float = clampf(0.06 + (counter - 5) * 0.012, 0.06, 0.18)
+	_combo_tint_rect.color = Color(1.0, 0.8, 0.2, alpha)
+
+
+func _clear_combo_screen_tint() -> void:
+	if _combo_tint_rect and is_instance_valid(_combo_tint_rect):
+		var fade := _combo_tint_rect.create_tween()
+		fade.tween_property(_combo_tint_rect, "color:a", 0.0, 0.4)
+
+
+func show_wave_clear_celebration() -> void:
+	# Brief big "WÄLLE GSCHAFFT!" text mid-screen at end of each wave.
+	# Cheap mid-game reward — keeps the player feeling progress.
+	var lbl := Label.new()
+	lbl.name = "WaveClearCelebration"
+	lbl.text = "WÄLLE GSCHAFFT!"
+	lbl.add_theme_font_size_override("font_size", 56)
+	lbl.add_theme_color_override("font_color", Color(1, 0.9, 0.25))
+	lbl.add_theme_color_override("font_outline_color", Color(0.2, 0.1, 0))
+	lbl.add_theme_constant_override("outline_size", 6)
+	lbl.anchors_preset = Control.PRESET_CENTER
+	lbl.anchor_left = 0.5
+	lbl.anchor_right = 0.5
+	lbl.anchor_top = 0.5
+	lbl.anchor_bottom = 0.5
+	lbl.offset_left = -260
+	lbl.offset_right = 260
+	lbl.offset_top = -50
+	lbl.offset_bottom = 50
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	lbl.modulate.a = 0.0
+	lbl.scale = Vector2(0.6, 0.6)
+	add_child(lbl)
+	var tw := lbl.create_tween().set_parallel(true)
+	tw.tween_property(lbl, "modulate:a", 1.0, 0.15)
+	tw.tween_property(lbl, "scale", Vector2.ONE, 0.22).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.chain().tween_interval(0.6)
+	tw.chain().tween_property(lbl, "modulate:a", 0.0, 0.35)
+	tw.chain().tween_callback(lbl.queue_free)
 
 
 func _ensure_wave_progress_bar() -> ProgressBar:
