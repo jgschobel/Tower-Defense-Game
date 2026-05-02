@@ -73,6 +73,24 @@ func _ready() -> void:
 
 	if tower_info:
 		tower_info.visible = false
+		# Style the panel — was using default theme transparency that
+		# let the playfield show through and made stats hard to read.
+		var ti_sb := StyleBoxFlat.new()
+		ti_sb.bg_color = Color(0.08, 0.07, 0.06, 0.96)
+		ti_sb.border_color = Color(0.95, 0.78, 0.18, 0.85)
+		ti_sb.border_width_left = 2
+		ti_sb.border_width_right = 2
+		ti_sb.border_width_top = 2
+		ti_sb.border_width_bottom = 2
+		ti_sb.corner_radius_top_left = 12
+		ti_sb.corner_radius_top_right = 12
+		ti_sb.corner_radius_bottom_left = 12
+		ti_sb.corner_radius_bottom_right = 12
+		ti_sb.content_margin_left = 16
+		ti_sb.content_margin_right = 16
+		ti_sb.content_margin_top = 12
+		ti_sb.content_margin_bottom = 12
+		tower_info.add_theme_stylebox_override("panel", ti_sb)
 	cancel_button.visible = false
 
 
@@ -1567,18 +1585,43 @@ func _style_path_button(btn: Button, path_letter: String, td: TowerData) -> void
 	var tier := _selected_tower.path_a_tier if path_letter == "a" else _selected_tower.path_b_tier
 	var cost := _selected_tower.get_path_upgrade_cost(path_letter)
 	var tint: Color = td.path_a_tint if path_letter == "a" else td.path_b_tint
+	var affordable: bool = cost >= 0 and _selected_tower.can_upgrade_path(path_letter)
 	if cost < 0:
-		# MAX tier — ASCII-only glyphs. The previous star glyph (U+2B50)
-		# rendered as a tofu box in the default Godot font (GL Compatibility
-		# / HTML5 especially), which is exactly what the user reported.
 		btn.text = "%s  [MAX]" % display
 		btn.disabled = true
 	else:
 		var next_name := _selected_tower.get_path_next_tier_name(path_letter)
-		# `>>` reads as "upgrade" without needing any unicode arrows.
-		btn.text = ">> %s\n(%dg)" % [next_name if next_name != "" else display, cost]
+		btn.text = ">> %s\n%d G" % [next_name if next_name != "" else display, cost]
 		btn.disabled = not _selected_tower.can_upgrade_path(path_letter)
 	btn.add_theme_color_override("font_color", tint)
+	btn.add_theme_color_override("font_outline_color", Color.BLACK)
+	btn.add_theme_constant_override("outline_size", 2)
+	btn.add_theme_font_size_override("font_size", 14)
+	# Per-state stylebox so disabled buttons read clearly different
+	var base := StyleBoxFlat.new()
+	base.bg_color = Color(0.18, 0.15, 0.10, 0.95) if affordable else Color(0.10, 0.10, 0.10, 0.85)
+	base.border_color = tint if affordable else Color(0.35, 0.30, 0.28, 0.6)
+	base.border_width_left = 2
+	base.border_width_right = 1
+	base.border_width_top = 1
+	base.border_width_bottom = 1
+	base.corner_radius_top_left = 6
+	base.corner_radius_top_right = 6
+	base.corner_radius_bottom_left = 6
+	base.corner_radius_bottom_right = 6
+	base.content_margin_left = 8
+	base.content_margin_right = 8
+	base.content_margin_top = 4
+	base.content_margin_bottom = 4
+	var hover := base.duplicate() as StyleBoxFlat
+	hover.bg_color = Color(0.30, 0.24, 0.10, 1.0)
+	hover.border_color = Color(1.0, 0.95, 0.5, 1.0)
+	var pressed := base.duplicate() as StyleBoxFlat
+	pressed.bg_color = Color(0.46, 0.32, 0.10, 1.0)
+	btn.add_theme_stylebox_override("normal", base)
+	btn.add_theme_stylebox_override("hover", hover)
+	btn.add_theme_stylebox_override("pressed", pressed)
+	btn.add_theme_stylebox_override("disabled", base)
 
 
 func _on_path_a_button_pressed() -> void:
