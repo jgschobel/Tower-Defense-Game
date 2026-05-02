@@ -532,8 +532,13 @@ func _populate_tower_shop() -> void:
 		_cost_labels.append(cost_label)
 
 		var dps_label := Label.new()
-		var base_dps: float = td.damage * td.attack_speed
-		dps_label.text = "DPS %.0f" % base_dps
+		# Farm towers (gold_per_round > 0) deal no DPS — show their economy
+		# stat instead. "DPS 0" was confusing for the Banani-Hof / farm
+		# tower which is meant for income, not killing.
+		if "gold_per_round" in td and td.gold_per_round > 0:
+			dps_label.text = "+%d G/Wälle" % int(td.gold_per_round)
+		else:
+			dps_label.text = "DPS %.0f" % (td.damage * td.attack_speed)
 		dps_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 		dps_label.add_theme_font_size_override("font_size", 10)
 		dps_label.add_theme_color_override("font_color", Color(0.7, 0.85, 1.0, 0.9))
@@ -544,18 +549,35 @@ func _populate_tower_shop() -> void:
 
 		row.add_child(text_col)
 		btn.add_child(row)
-		# Locked overlay — padlock + stars-required hint. Kept outside
-		# the HBox so it sits on top of the whole button.
+		# Locked overlay — padlock + stars-required hint. Anchored to the
+		# right edge with a dark backing so it stops overlapping the cost/
+		# DPS text on narrow shop rows (visible bug in playtest screenshots).
 		if is_locked:
+			var lock_box := PanelContainer.new()
+			lock_box.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
+			lock_box.offset_left = -54
+			lock_box.offset_right = -6
+			lock_box.offset_top = -14
+			lock_box.offset_bottom = 14
+			lock_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			var lock_bg := StyleBoxFlat.new()
+			lock_bg.bg_color = Color(0, 0, 0, 0.65)
+			lock_bg.corner_radius_top_left = 6
+			lock_bg.corner_radius_top_right = 6
+			lock_bg.corner_radius_bottom_left = 6
+			lock_bg.corner_radius_bottom_right = 6
+			lock_bg.content_margin_left = 4
+			lock_bg.content_margin_right = 4
+			lock_bg.content_margin_top = 1
+			lock_bg.content_margin_bottom = 1
+			lock_box.add_theme_stylebox_override("panel", lock_bg)
 			var lock_label := Label.new()
-			lock_label.text = "LOCK  %d*" % stars_req
-			lock_label.set_anchors_preset(Control.PRESET_CENTER)
-			lock_label.add_theme_font_size_override("font_size", 14)
+			lock_label.text = "🔒 %d★" % stars_req
+			lock_label.add_theme_font_size_override("font_size", 13)
 			lock_label.add_theme_color_override("font_color", Color(1, 0.95, 0.4))
-			lock_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
-			lock_label.add_theme_constant_override("outline_size", 3)
 			lock_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			btn.add_child(lock_label)
+			lock_box.add_child(lock_label)
+			btn.add_child(lock_box)
 			# Dim the row contents so the lock reads clearly.
 			row.modulate = Color(0.5, 0.5, 0.5, 0.9)
 		tower_shop.add_child(btn)

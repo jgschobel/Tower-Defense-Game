@@ -11,6 +11,33 @@ func _ready() -> void:
 	# viewport rect keeps the Panel's anchor math correct.
 	_fit_viewport()
 	get_viewport().size_changed.connect(_fit_viewport)
+	# Style the central panel — was default transparent which made the
+	# menu look like floating text on the dimmer. Now a proper rounded
+	# dark panel with a warm gold border.
+	var panel: PanelContainer = get_node_or_null("Panel")
+	if panel:
+		var sb := StyleBoxFlat.new()
+		sb.bg_color = Color(0.12, 0.10, 0.08, 0.95)
+		sb.border_color = Color(0.95, 0.78, 0.18, 0.85)
+		sb.border_width_left = 2
+		sb.border_width_right = 2
+		sb.border_width_top = 2
+		sb.border_width_bottom = 2
+		sb.corner_radius_top_left = 14
+		sb.corner_radius_top_right = 14
+		sb.corner_radius_bottom_left = 14
+		sb.corner_radius_bottom_right = 14
+		sb.content_margin_left = 24
+		sb.content_margin_right = 24
+		sb.content_margin_top = 18
+		sb.content_margin_bottom = 18
+		panel.add_theme_stylebox_override("panel", sb)
+	# Title gold tint
+	var title: Label = get_node_or_null("Panel/VBox/Title")
+	if title:
+		title.add_theme_color_override("font_color", Color(1.0, 0.88, 0.25))
+		title.add_theme_color_override("font_outline_color", Color(0.2, 0.1, 0))
+		title.add_theme_constant_override("outline_size", 4)
 
 
 func _fit_viewport() -> void:
