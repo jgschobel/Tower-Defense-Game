@@ -19,15 +19,32 @@ cd "$ROOT"
 EXIT=0
 
 # 1. Every ext_resource path referenced in .tscn/.tres must exist.
-#    No head-limit — scan the entire repo.
+#    No head-limit — scan the entire repo. Some assets are fetched at
+#    CI build time (Noto Emoji font etc) and won't be on disk locally —
+#    list them in BUILD_TIME_ASSETS so they downgrade to a warning
+#    instead of failing the run.
+BUILD_TIME_ASSETS=(
+  "assets/fonts/NotoEmoji.ttf"
+)
+is_build_time_asset() {
+  local p="$1"
+  for asset in "${BUILD_TIME_ASSETS[@]}"; do
+    if [ "$p" = "$asset" ]; then return 0; fi
+  done
+  return 1
+}
 missing=0
 while IFS= read -r line; do
   path=$(echo "$line" | grep -oE 'path="res://[^"]+"' | sed 's/path="res:\/\///;s/"$//' || true)
   [ -z "$path" ] && continue
   if [ ! -f "$path" ]; then
     file=$(echo "$line" | cut -d: -f1)
-    log_fail "Missing resource: $path (referenced by $file)"
-    missing=$((missing+1))
+    if is_build_time_asset "$path"; then
+      log_warn "Build-time asset missing locally (OK in CI): $path"
+    else
+      log_fail "Missing resource: $path (referenced by $file)"
+      missing=$((missing+1))
+    fi
   fi
 done < <(grep -rn 'path="res://' --include='*.tscn' --include='*.tres' . 2>/dev/null)
 

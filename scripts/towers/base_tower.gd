@@ -782,12 +782,12 @@ func _update_visual() -> void:
 	if tex:
 		sprite.texture = tex
 		var max_dim := maxf(tex.get_width(), tex.get_height())
-		# Tower size: 90 → 140 → 185 → 240. Friend photos are 512×512 with
-		# significant transparent padding around the character (rembg
-		# output) — actual visible content is ~60% of the sprite, so
-		# target_size 240 yields ~144px of visible character. Pedestal
-		# scales with this in _draw().
-		var target_size := 240.0
+		# Tower size: 90 → 140 → 185 → 240 → 175. After the placement-
+		# ghost-vs-placed-tower bug fix (play_place_animation tween),
+		# 240 felt overwhelming on screen — towers were taking up half
+		# the path. 175 is the sweet spot: bigger than enemies, fills
+		# a path tile, doesn't crowd. Pedestal sizes match (radius 42).
+		var target_size := 175.0
 		var s := target_size / max_dim
 		_baseline_scale = Vector2(s, s)
 		sprite.scale = _baseline_scale
@@ -809,16 +809,15 @@ func _update_visual() -> void:
 func _draw() -> void:
 	if not is_placed:
 		return
-	# Pedestal scales with the larger 240px sprite — was 38 (matched 90px
-	# sprite), now 56 (matches the bigger character + adds visual weight).
+	# Pedestal scaled for 175px sprite — radii ~42/36/31, shadow at +18.
 	# Soft ellipse drop-shadow BELOW the tower for grounding
-	draw_circle(Vector2(0, 22), 48.0, Color(0, 0, 0, 0.28))
+	draw_circle(Vector2(0, 18), 38.0, Color(0, 0, 0, 0.28))
 	# Stone pedestal rings — adds weight and separation from the background
-	draw_circle(Vector2.ZERO, 56.0, Color(0.28, 0.22, 0.18, 0.55))
-	draw_circle(Vector2.ZERO, 49.0, Color(0.48, 0.4, 0.32, 0.55))
-	draw_circle(Vector2.ZERO, 43.0, Color(0.62, 0.52, 0.42, 0.35))
+	draw_circle(Vector2.ZERO, 42.0, Color(0.28, 0.22, 0.18, 0.55))
+	draw_circle(Vector2.ZERO, 36.0, Color(0.48, 0.4, 0.32, 0.55))
+	draw_circle(Vector2.ZERO, 31.0, Color(0.62, 0.52, 0.42, 0.35))
 	# Thin highlight along top edge
-	draw_arc(Vector2(-2, -2), 49.0, PI * 1.1, PI * 1.9, 28, Color(1, 0.95, 0.8, 0.25), 2.5)
+	draw_arc(Vector2(-2, -2), 36.0, PI * 1.1, PI * 1.9, 24, Color(1, 0.95, 0.8, 0.25), 2.0)
 	# Tier pips — replay the precomputed cache. Positions + tints are
 	# refreshed in `_rebuild_pip_cache()` on upgrade so _draw never calls
 	# cos()/sin() per frame. ROADMAP PERF #7.
@@ -833,7 +832,7 @@ func _rebuild_pip_cache() -> void:
 	_pip_cache.clear()
 	if not data:
 		return
-	const RING_R: float = 60.0  # bumped from 42 to match the bigger pedestal
+	const RING_R: float = 46.0  # matches the 42-radius pedestal
 	const SPREAD: float = 0.22
 	if data.has_branching_upgrades():
 		_append_pip_arc(path_a_tier, -PI * 0.92, 1.0, data.path_a_tint, RING_R, SPREAD)
