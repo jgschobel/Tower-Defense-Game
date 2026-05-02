@@ -438,7 +438,7 @@ func _hardcoded_placements(level_id: int) -> Array:
 		_: return []
 
 
-func _instantiate_tower(parent: Node, tower_data, pos: Vector2) -> BaseTower:
+func _instantiate_tower(parent: Node, tower_data: Resource, pos: Vector2) -> BaseTower:
 	var tower_scene: PackedScene = load("res://scenes/towers/base_tower.tscn") as PackedScene
 	if tower_scene == null:
 		return null

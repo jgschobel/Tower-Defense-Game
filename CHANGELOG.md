@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-05-02 (self-improve — type/clarity nits in pool + playtest)
+
+- chore: type-tighten `EnemyPool.acquire(data: Resource, path_node: Node)` and the playtest `_instantiate_tower(td: Resource, …)` signatures (previously untyped); collapse `has_meta(k) or get_meta(k)` patterns to `get_meta(k, false)` in both pool files. No behavior change — purely cosmetic safety + one fewer attribute lookup on each release.
+
 ## 2026-05-02 (audit-polish — economy balance pass)
 
 - balance(economy): tighten starting gold L1=120→L10=220 ramp (was up to 600g bloating early game); steepen Lemurius upgrade costs ~25% [210,455,1140]/[245,560,1260]; Amösius tier2+3 +15%; fix early-wave variety L1 wave2 + L2 wave2 (closes ROADMAP #21 #22 #36 #37)

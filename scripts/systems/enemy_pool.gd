@@ -36,7 +36,7 @@ func _prewarm() -> void:
 		_free.append(e)
 
 
-func acquire(data, path_node) -> Node:
+func acquire(data: Resource, path_node: Node) -> Node:
 	var e: Node = null
 	var from_pool := false
 	# Pop first VALID slot — skip any freed refs that leaked in
@@ -72,7 +72,7 @@ func release(e: Node) -> void:
 	if e in _free:
 		return
 	# Non-pooled instances just free themselves
-	if not e.has_meta("pooled") or not e.get_meta("pooled"):
+	if not e.get_meta("pooled", false):
 		e.queue_free()
 		return
 	if _container == null:
