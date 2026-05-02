@@ -10,8 +10,29 @@ func _ready() -> void:
 	# Continuous music — don't stop on menu entry. MusicManager auto-
 	# switches to the "menu" track via GameManager.game_state_changed.
 	GameManager.set_state(GameManager.GameState.MENU)
+	_style_title()
 	_show_run_stats()
 	_style_menu_buttons()
+
+
+func _style_title() -> void:
+	var title: Label = get_node_or_null("HBox/MenuPanel/VBox/Title")
+	if title:
+		title.add_theme_font_size_override("font_size", 44)
+		title.add_theme_color_override("font_color", Color(1, 0.92, 0.25))
+		title.add_theme_color_override("font_outline_color", Color(0.20, 0.08, 0))
+		title.add_theme_constant_override("outline_size", 8)
+		# Subtle scale-pulse so the title feels alive without being noisy
+		title.pivot_offset = title.size * 0.5
+		var pulse := title.create_tween().set_loops()
+		pulse.tween_property(title, "scale", Vector2(1.04, 1.04), 1.6).set_trans(Tween.TRANS_SINE)
+		pulse.tween_property(title, "scale", Vector2.ONE, 1.6).set_trans(Tween.TRANS_SINE)
+	var subtitle: Label = get_node_or_null("HBox/MenuPanel/VBox/Subtitle")
+	if subtitle:
+		subtitle.add_theme_font_size_override("font_size", 18)
+		subtitle.add_theme_color_override("font_color", Color(0.95, 0.85, 0.55))
+		subtitle.add_theme_color_override("font_outline_color", Color(0.15, 0.05, 0))
+		subtitle.add_theme_constant_override("outline_size", 3)
 
 
 func _style_menu_buttons() -> void:
@@ -65,32 +86,60 @@ func _show_run_stats() -> void:
 	# cumulative damage to the M-Tüüfel grow between sessions.
 	if has_node("RunStats"):
 		return
-	var stats := Label.new()
-	stats.name = "RunStats"
-	stats.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	stats.add_theme_font_size_override("font_size", 14)
-	stats.add_theme_color_override("font_color", Color(1, 0.9, 0.6))
-	stats.add_theme_color_override("font_outline_color", Color(0.1, 0.05, 0, 0.9))
-	stats.add_theme_constant_override("outline_size", 3)
+	# Stats badge — wrap in a styled PanelContainer so the persistent
+	# progress reads as a real HUD element instead of floating text in
+	# the corner. Two rows: ★ stars line + ⚔ kills line.
+	var stats_panel := PanelContainer.new()
+	stats_panel.name = "RunStats"
+	stats_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	stats_panel.anchors_preset = Control.PRESET_TOP_LEFT
+	stats_panel.offset_left = 16
+	stats_panel.offset_top = 16
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.10, 0.08, 0.06, 0.85)
+	sb.border_color = Color(0.95, 0.78, 0.18, 0.75)
+	sb.border_width_left = 2
+	sb.border_width_right = 1
+	sb.border_width_top = 1
+	sb.border_width_bottom = 1
+	sb.corner_radius_top_left = 8
+	sb.corner_radius_top_right = 8
+	sb.corner_radius_bottom_left = 8
+	sb.corner_radius_bottom_right = 8
+	sb.content_margin_left = 12
+	sb.content_margin_right = 14
+	sb.content_margin_top = 8
+	sb.content_margin_bottom = 8
+	stats_panel.add_theme_stylebox_override("panel", sb)
+	var stats_v := VBoxContainer.new()
+	stats_v.add_theme_constant_override("separation", 2)
+	stats_panel.add_child(stats_v)
 	var max_stars: int = GameManager.MAX_LEVELS * 3
-	stats.text = "Sterne: %d/%d  Kills: %d" % [GameManager.total_stars, max_stars, GameManager.total_kills]
-	stats.anchors_preset = Control.PRESET_TOP_LEFT
-	stats.offset_left = 20
-	stats.offset_top = 20
-	add_child(stats)
+	var stars_lbl := Label.new()
+	stars_lbl.text = "★ Sterne: %d / %d" % [GameManager.total_stars, max_stars]
+	stars_lbl.add_theme_font_size_override("font_size", 17)
+	stars_lbl.add_theme_color_override("font_color", Color(1, 0.92, 0.45))
+	stats_v.add_child(stars_lbl)
+	var kills_lbl := Label.new()
+	kills_lbl.text = "⚔ Kills: %d" % GameManager.total_kills
+	kills_lbl.add_theme_font_size_override("font_size", 15)
+	kills_lbl.add_theme_color_override("font_color", Color(0.95, 0.75, 0.35))
+	stats_v.add_child(kills_lbl)
+	add_child(stats_panel)
 
-	# Aminos entry button (ROADMAP #48). Lives next to stats so it's
-	# always reachable without a scene edit.
+	# Aminos entry button — bigger and styled to match menu button language
+	# instead of being a small default-grey afterthought.
 	if not has_node("AminosButton"):
 		var aminos_btn := Button.new()
 		aminos_btn.name = "AminosButton"
-		aminos_btn.text = "Aminos-Lade"
+		aminos_btn.text = "✨ Aminos-Lade"
 		aminos_btn.anchors_preset = Control.PRESET_TOP_LEFT
-		aminos_btn.offset_left = 20
-		aminos_btn.offset_top = 48
-		aminos_btn.offset_right = 200
-		aminos_btn.offset_bottom = 96
+		aminos_btn.offset_left = 16
+		aminos_btn.offset_top = 92
+		aminos_btn.offset_right = 220
+		aminos_btn.offset_bottom = 140
 		aminos_btn.pressed.connect(_on_aminos_button_pressed)
+		_style_menu_button(aminos_btn)
 		add_child(aminos_btn)
 
 
