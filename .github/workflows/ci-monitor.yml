@@ -44,18 +44,39 @@ jobs:
         run: |
           set +e
           mkdir -p logs
-          # gh CLI on the runner can download the full logs zip
-          gh api -H "Accept: application/vnd.github+json" \
-            "/repos/${{ github.repository }}/actions/runs/$RUN_ID/logs" \
-            > logs.zip
-          if [ -s logs.zip ]; then
-            unzip -q logs.zip -d logs
+          # workflow_run events can fire before the logs API has the zip
+          # ready — earlier impl had `(no logs available)` for 50+ entries
+          # because the FIRST gh api call always returned an empty zip.
+          # Retry with backoff (5s, 15s, 30s) until we get a non-empty zip
+          # or give up. `gh run view --log` is also worth trying but the
+          # /logs endpoint stays the most reliable for the full zip.
+          for attempt in 1 2 3; do
+            gh api -H "Accept: application/vnd.github+json" \
+              "/repos/${{ github.repository }}/actions/runs/$RUN_ID/logs" \
+              > logs.zip 2>/dev/null
+            if [ -s logs.zip ] && [ "$(stat -c%s logs.zip)" -gt 100 ]; then
+              echo "logs.zip is $(stat -c%s logs.zip) bytes (attempt $attempt)"
+              break
+            fi
+            echo "logs.zip empty/small on attempt $attempt — sleeping"
+            sleep $((attempt * 10 + 5))
+          done
+          if [ -s logs.zip ] && [ "$(stat -c%s logs.zip)" -gt 100 ]; then
+            unzip -q logs.zip -d logs 2>/dev/null || echo "::warning::unzip failed, file may not be zip"
           fi
           # Concatenate all step logs, strip ANSI escapes, tail to last 250 lines
           find logs -type f -name '*.txt' -print0 \
             | xargs -0 cat 2>/dev/null \
             | sed -r 's/\x1B\[[0-9;]*[a-zA-Z]//g' \
             | tail -n 250 > log_tail.txt
+          # Fallback: if nothing in zip, try `gh run view` which streams
+          # the most recent logs via a different API and works post-completion.
+          if [ ! -s log_tail.txt ]; then
+            echo "zip path produced no logs — trying gh run view fallback"
+            gh run view "$RUN_ID" --log 2>/dev/null \
+              | sed -r 's/\x1B\[[0-9;]*[a-zA-Z]//g' \
+              | tail -n 250 > log_tail.txt
+          fi
           wc -l log_tail.txt || true
           head -c 200 log_tail.txt || true
 
