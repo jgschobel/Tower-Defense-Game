@@ -768,12 +768,24 @@ func _ensure_combo_badge() -> Label:
 		return _combo_badge
 	var lbl := Label.new()
 	lbl.name = "ComboBadge"
-	lbl.anchors_preset = Control.PRESET_CENTER_TOP
-	lbl.offset_top = 12
-	lbl.add_theme_font_size_override("font_size", 26)
+	# Anchor center-top with explicit half-widths so the label clips
+	# symmetrically. PRESET_CENTER_TOP without width put the text origin
+	# at center but the text grew rightward only — and since centered
+	# Label aligns its CONTAINER center, the long string at higher combos
+	# overflowed off the left side of the screen.
+	lbl.anchor_left = 0.5
+	lbl.anchor_right = 0.5
+	lbl.anchor_top = 0.0
+	lbl.anchor_bottom = 0.0
+	lbl.offset_left = -180
+	lbl.offset_right = 180
+	lbl.offset_top = 78  # below the wave progress bar at y=46-60
+	lbl.offset_bottom = 110
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.add_theme_font_size_override("font_size", 24)
 	lbl.add_theme_color_override("font_color", Color(1, 0.95, 0.4))
 	lbl.add_theme_color_override("font_outline_color", Color(0.2, 0.1, 0, 1))
-	lbl.add_theme_constant_override("outline_size", 4)
+	lbl.add_theme_constant_override("outline_size", 5)
 	lbl.modulate.a = 0.0
 	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(lbl)
