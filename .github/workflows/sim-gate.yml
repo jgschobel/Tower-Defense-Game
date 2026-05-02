@@ -69,7 +69,7 @@ jobs:
           xvfb-run -a -s "-screen 0 1280x720x24" timeout 240 godot --path . --simulate
           EXIT=$?
           echo "sim_exit=$EXIT" >> "$GITHUB_OUTPUT"
-          Copy CSV out for the summary step
+          # Copy CSV out for the summary step
           mkdir -p sim_output
           cp "$HOME/.local/share/godot/app_userdata/Affoltern Banani Raubzug/simulate/results.csv" sim_output/ 2>/dev/null || true
           if [ -f sim_output/results.csv ]; then
@@ -152,4 +152,4 @@ jobs:
             echo "Simulator detected unwinnable level — failing PR check."
             exit 1
           fi
-          Trivial (exit 2) is a warning, not a hard fail.
+          # Trivial (exit 2) is a warning, not a hard fail.
