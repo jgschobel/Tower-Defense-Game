@@ -19,3 +19,7 @@ Thumbs.db
 # Generated scripts
 art_gen.py
 *.pyc
+
+# Fetched at CI build time — see assets/fonts/README.md
+assets/fonts/NotoEmoji.ttf
+assets/fonts/NotoEmoji.ttf.import

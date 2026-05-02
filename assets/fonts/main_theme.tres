@@ -1,0 +1,19 @@
+[gd_resource type="Theme" load_steps=3 format=3 uid="uid://b6m8n7emoji00"]
+
+; Project default theme. The `default_font` is a FontVariation whose
+; `fallbacks` array contains Noto Emoji — Godot tries the engine's
+; built-in font first, then falls back to Noto Emoji for glyphs the
+; default font doesn't have (emoji, lock 🔒, sparkle ✨, etc).
+;
+; The .ttf is fetched at CI build time — see assets/fonts/README.md.
+; If NotoEmoji.ttf is missing locally, the FontFile resource is null
+; and the fallback chain degrades to default-font-only (same as before
+; this theme) — never crashes the build.
+
+[ext_resource type="FontFile" path="res://assets/fonts/NotoEmoji.ttf" id="1_emoji"]
+
+[sub_resource type="FontVariation" id="FontVariation_default"]
+fallbacks = Array[Font]([ExtResource("1_emoji")])
+
+[resource]
+default_font = SubResource("FontVariation_default")
