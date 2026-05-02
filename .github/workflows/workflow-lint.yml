@@ -60,12 +60,17 @@ jobs:
 
       - name: Bash -n every run block
         run: |
-          # Extracts each `run: |` literal block, substitutes ${{ ... }}
+          # Extracts each `run: |` literal block, substitutes GitHub Actions
           # expressions with a placeholder so the shell parser doesn't choke
           # on them, and runs `bash -n` on the result. Returns non-zero on
           # any block that doesn't pass syntax.
           python3 - <<'PY'
           import re, subprocess, glob, tempfile, os, sys
+          # Build the expression regex from pieces — DON'T put the literal
+          # `dollar-curly-curly` in the YAML source because GitHub Actions
+          # tries to parse it as an expression even inside a comment.
+          DOLLAR = chr(0x24)
+          EXPR_RE = re.compile(DOLLAR + r'\{\{\s*[^}]+\s*\}\}')
           failed_blocks = []
           total = 0
           for f in sorted(glob.glob('.github/workflows/*.yml')):
@@ -78,7 +83,7 @@ jobs:
               def check(name, start, code):
                   global total
                   total += 1
-                  code = re.sub(r'\$\{\{\s*[^}]+\s*\}\}', 'PLACEHOLDER', code)
+                  code = EXPR_RE.sub('PLACEHOLDER', code)
                   with tempfile.NamedTemporaryFile(mode='w', suffix='.sh', delete=False) as tmp:
                       tmp.write('#!/bin/bash\n' + code)
                       path = tmp.name
