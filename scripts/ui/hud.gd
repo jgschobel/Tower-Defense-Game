@@ -603,6 +603,11 @@ func show_enemy_intro(enemy_id: String, enemy_data: Resource) -> void:
 	# name labels float over enemies of this type (handled by
 	# `WaveManager._seen_enemy_ids` emitting `enemy_introduced` only on
 	# the first spawn).
+	# Boss telegraph — a brief red screen flash + heavier shake fires
+	# BEFORE the panel slides in. Tells the player "danger" before they
+	# can read the text.
+	if enemy_id == "boss":
+		_flash_boss_telegraph()
 	var overlay := PanelContainer.new()
 	overlay.modulate = Color(1, 1, 1, 0)
 	overlay.anchors_preset = Control.PRESET_CENTER
@@ -779,6 +784,28 @@ func _clear_combo_screen_tint() -> void:
 	if _combo_tint_rect and is_instance_valid(_combo_tint_rect):
 		var fade := _combo_tint_rect.create_tween()
 		fade.tween_property(_combo_tint_rect, "color:a", 0.0, 0.4)
+
+
+func _flash_boss_telegraph() -> void:
+	# Red full-screen ColorRect that flashes briefly before boss intro.
+	# Layered behind the intro overlay (z_index lower) so the panel still
+	# reads on top. Auto-frees.
+	var flash := ColorRect.new()
+	flash.color = Color(0.85, 0.1, 0.1, 0.0)
+	flash.anchors_preset = Control.PRESET_FULL_RECT
+	flash.anchor_right = 1.0
+	flash.anchor_bottom = 1.0
+	flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	flash.z_index = -1
+	add_child(flash)
+	var tw := flash.create_tween()
+	tw.tween_property(flash, "color:a", 0.42, 0.10)
+	tw.tween_property(flash, "color:a", 0.0, 0.45)
+	tw.tween_callback(flash.queue_free)
+	if SfxManager and SfxManager.has_method("play_boss_roar"):
+		SfxManager.play_boss_roar()
+	if EffectPlayer and EffectPlayer.has_method("screen_shake"):
+		EffectPlayer.screen_shake(7.5, 0.45)
 
 
 func show_wave_clear_celebration() -> void:
@@ -1100,10 +1127,12 @@ func show_tower_info(tower: BaseTower) -> void:
 		_selected_tower.show_range(false)
 	_selected_tower = tower
 	tower.show_range(true)
-	# Glow effect on selected tower — stored on HUD so we can kill it
+	# Gold-warm pulse on selected tower so it's obvious which one is
+	# active — was a faint blue-white that read as "noise" rather than
+	# "this is your selection".
 	_glow_tween = tower.create_tween().set_loops()
-	_glow_tween.tween_property(tower, "modulate", Color(1.2, 1.2, 1.4), 0.5)
-	_glow_tween.tween_property(tower, "modulate", Color.WHITE, 0.5)
+	_glow_tween.tween_property(tower, "modulate", Color(1.35, 1.2, 0.7), 0.45).set_trans(Tween.TRANS_SINE)
+	_glow_tween.tween_property(tower, "modulate", Color.WHITE, 0.55).set_trans(Tween.TRANS_SINE)
 	SfxManager.play_click()
 	if tower_info:
 		tower_info.visible = true

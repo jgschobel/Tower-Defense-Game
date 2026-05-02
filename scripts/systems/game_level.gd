@@ -136,6 +136,13 @@ func _spawn_path_direction_arrows() -> void:
 		poly.color = chevron_color
 		poly.position = Vector2.ZERO
 		arrows_container.add_child(poly)
+		# Subtle pulse — staggered by chevron index so adjacent ones don't
+		# blink in lockstep. Reads as "flow direction" without being noisy.
+		var phase: float = (dist / step) * 0.3
+		var pulse := poly.create_tween().set_loops()
+		pulse.tween_interval(phase)
+		pulse.tween_property(poly, "modulate:a", 0.85, 0.55).set_trans(Tween.TRANS_SINE)
+		pulse.tween_property(poly, "modulate:a", 0.45, 0.85).set_trans(Tween.TRANS_SINE)
 		dist += step
 
 
