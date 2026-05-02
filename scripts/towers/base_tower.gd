@@ -886,15 +886,20 @@ func _on_detection_area_area_exited(area: Area2D) -> void:
 
 
 func _maybe_swap_tier3_sprite(path_letter: String) -> void:
-	# At tier 3 on either path, swap the tower sprite to the dedicated t3
-	# variant (e.g. basic_t3a.png for Lemurius path-A tier 3). Falls back
-	# silently if the asset doesn't exist for this tower.
+	# At tier 1/2/3 on either path, try to swap the tower sprite to the
+	# dedicated tier-specific variant (e.g. basic_t1a.png, basic_t2b.png,
+	# basic_t3a.png). Falls back silently to whatever's currently set if
+	# the asset doesn't exist — the next-lower-tier sprite stays.
+	# Order of preference at any given tier T:
+	#   1. <id>_t<T><path>.png  (tier-specific upgrade art)
+	#   2. existing sprite      (no swap, keep current)
+	# Art-request #263 fills in tier 1/2 variants for the full matrix.
 	if not sprite or not data:
 		return
 	var tier := path_a_tier if path_letter == "a" else path_b_tier
-	if tier < 3:
+	if tier < 1:
 		return
-	var tex_path := "res://assets/textures/towers/%s_t3%s.png" % [data.id, path_letter]
+	var tex_path := "res://assets/textures/towers/%s_t%d%s.png" % [data.id, tier, path_letter]
 	if not ResourceLoader.exists(tex_path):
 		return
 	var new_tex: Texture2D = load(tex_path)
