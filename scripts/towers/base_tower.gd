@@ -775,11 +775,18 @@ func _update_visual() -> void:
 	if tex:
 		sprite.texture = tex
 		var max_dim := maxf(tex.get_width(), tex.get_height())
-		var target_size := 90.0
+		# Bigger tower size — was 90 (read tiny vs ~80px enemies) → 140.
+		# Towers are the player's avatar on the map; they need to read
+		# clearly without zooming.
+		var target_size := 140.0
 		var s := target_size / max_dim
 		_baseline_scale = Vector2(s, s)
 		sprite.scale = _baseline_scale
 		sprite.modulate = Color.WHITE
+		# Texture filtering — LINEAR_WITH_MIPMAPS smooths the edge
+		# artifacts left by background removal (rembg cuts can look
+		# jagged around eyes/hair when scaled down).
+		sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	else:
 		_baseline_scale = Vector2.ONE
 		if data and "sprite_scale" in data and typeof(data.sprite_scale) == TYPE_VECTOR2:

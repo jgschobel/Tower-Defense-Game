@@ -30,9 +30,9 @@ UX / FEEL — independent of the gameplay-mechanic fixes below.
 - [ ] **D5** Per-path particle trail colors — A = warm (orange/red),
   B = cold (blue/violet). Already wired via projectile_color;
   ensure the tint shifts live on upgrade.
-- [ ] **D6** Muzzle-flash shape per projectile_style — banana burst,
+- [x] **D6** Muzzle-flash shape per projectile_style — banana burst,
   pollen puff, flask crack, volleyball star, tongue slurp-ring.
-  Today EffectPlayer.spawn_muzzle_flash is one blob.
+  ✓ Implemented 2026-05-02: EffectPlayer.spawn_muzzle_flash now takes a `projectile_style` and varies particle count/spread/velocity per style. base_tower passes data.projectile_style.
 - [ ] **D7** Tier-3 unique death-cam effect on boss kill by tier-3
   tower — 0.4s freeze + zoom + tower name bubble.
 - [ ] **D8** Crown / hat overlay Sprite2D on tower head at tier ≥ 1,

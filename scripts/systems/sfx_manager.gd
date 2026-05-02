@@ -184,28 +184,33 @@ func play_soft_pluck() -> void:
 
 
 func _play_soft_pluck() -> void:
-	var duration: float = 0.04
+	# 16-bit so quantization noise doesn't dominate at low volumes — the
+	# 8-bit version had only 256 levels which made soft sines sound like
+	# scratchy radio. User report: "click sound horrendous, pains ears".
+	var duration: float = 0.035
 	var samples := int(_sample_rate * duration)
 	var audio := AudioStreamWAV.new()
-	audio.format = AudioStreamWAV.FORMAT_8_BITS
+	audio.format = AudioStreamWAV.FORMAT_16_BITS
 	audio.mix_rate = int(_sample_rate)
 	audio.stereo = false
 	var data := PackedByteArray()
-	var freq: float = 180.0  # warm, sub-voice fundamental
-	var attack_samples: float = float(_sample_rate) * 0.006  # 6ms ramp-in (no click transient)
+	var freq: float = 160.0  # even warmer than before
+	var attack_samples: float = float(_sample_rate) * 0.008  # 8ms ramp-in
 	for i in samples:
 		var t := float(i) / _sample_rate
 		var attack: float = clamp(float(i) / attack_samples, 0.0, 1.0)
-		var tail: float = pow(1.0 - (t / duration), 2.5)
+		var tail: float = pow(1.0 - (t / duration), 2.8)
 		var env: float = attack * tail
-		# Pure sine — no harmonics = no harshness
 		var body: float = sin(t * freq * TAU)
-		var sample: float = body * env * 0.045
-		data.append(int(clamp(sample * 0.5 + 0.5, 0.0, 1.0) * 255))
+		var sample: float = body * env * 0.20  # 16-bit headroom; raw amplitude
+		var s16: int = int(clamp(sample, -1.0, 1.0) * 32767.0)
+		data.append(s16 & 0xFF)
+		data.append((s16 >> 8) & 0xFF)
 	audio.data = data
 	var player := AudioStreamPlayer.new()
 	player.stream = audio
-	player.volume_db = _db_with_user_volume(-12.0)
+	# Lower base from -12 to -18 dB on top of the 16-bit cleanup.
+	player.volume_db = _db_with_user_volume(-18.0)
 	add_child(player)
 	player.play()
 	player.finished.connect(player.queue_free)
@@ -243,18 +248,17 @@ func play_life_lost() -> void:
 
 
 func _play_tone(freq: float, duration: float, volume: float, noise: bool = false) -> void:
-	# Warm tone generator (ROADMAP #25). Replaces the previous square-wave
-	# blip which was thin and piercing. Now: sine fundamental + soft 2nd
-	# harmonic at 1/3 amplitude + 4ms attack ramp + quadratic decay tail.
-	# Noise mode keeps raw noise for crunch SFX but still gets envelope ramp.
+	# Warm tone generator (ROADMAP #25). 16-bit signed to avoid the 8-bit
+	# quantization noise that made soft sines sound scratchy. Sine
+	# fundamental + soft 2nd harmonic + 4ms attack ramp + quadratic decay.
 	var samples := int(_sample_rate * duration)
 	var audio := AudioStreamWAV.new()
-	audio.format = AudioStreamWAV.FORMAT_8_BITS
+	audio.format = AudioStreamWAV.FORMAT_16_BITS
 	audio.mix_rate = int(_sample_rate)
 	audio.stereo = false
 
 	var data := PackedByteArray()
-	var attack_samples: float = float(_sample_rate) * 0.004  # 4ms ramp-in
+	var attack_samples: float = float(_sample_rate) * 0.004
 	var noise_avg: float = 0.0
 	for i in samples:
 		var t := float(i) / _sample_rate
@@ -264,22 +268,22 @@ func _play_tone(freq: float, duration: float, volume: float, noise: bool = false
 		var env: float = attack * tail
 		var sample: float
 		if noise:
-			# Lightly low-passed noise — softer than raw white
 			var raw: float = randf() * 2.0 - 1.0
 			noise_avg = noise_avg * 0.6 + raw * 0.4
 			sample = noise_avg * env * volume
 		else:
-			# Sine fundamental + gentle 2nd harmonic for body
 			var body: float = sin(t * freq * TAU)
 			var harm: float = sin(t * freq * 2.0 * TAU) * 0.33
 			sample = (body + harm) * env * volume * 0.6
-		data.append(int(clamp(sample * 0.5 + 0.5, 0.0, 1.0) * 255))
+		var s16: int = int(clamp(sample, -1.0, 1.0) * 32767.0)
+		data.append(s16 & 0xFF)
+		data.append((s16 >> 8) & 0xFF)
 
 	audio.data = data
 
 	var player := AudioStreamPlayer.new()
 	player.stream = audio
-	player.volume_db = _db_with_user_volume(-8.0)
+	player.volume_db = _db_with_user_volume(-10.0)
 	add_child(player)
 	player.play()
 	player.finished.connect(player.queue_free)
@@ -296,13 +300,11 @@ func _db_with_user_volume(base_db: float) -> float:
 
 
 func _play_sweep(freq_start: float, freq_end: float, duration: float, volume: float) -> void:
-	# Warm sweep generator (ROADMAP #25). Replaces the square-wave sweep
-	# with phase-accumulated sine to avoid audible clicks at the frequency
-	# transition. 4ms attack ramp + quadratic decay; 2nd harmonic adds
-	# body without harshness.
+	# Warm sweep generator (ROADMAP #25). 16-bit for headroom + signed
+	# encoding so soft sounds don't crackle from 8-bit quantization noise.
 	var samples := int(_sample_rate * duration)
 	var audio := AudioStreamWAV.new()
-	audio.format = AudioStreamWAV.FORMAT_8_BITS
+	audio.format = AudioStreamWAV.FORMAT_16_BITS
 	audio.mix_rate = int(_sample_rate)
 	audio.stereo = false
 
@@ -320,13 +322,15 @@ func _play_sweep(freq_start: float, freq_end: float, duration: float, volume: fl
 		var body: float = sin(phase * TAU)
 		var harm: float = sin(phase * 2.0 * TAU) * 0.28
 		var sample: float = (body + harm) * env * volume * 0.6
-		data.append(int(clamp(sample * 0.5 + 0.5, 0.0, 1.0) * 255))
+		var s16: int = int(clamp(sample, -1.0, 1.0) * 32767.0)
+		data.append(s16 & 0xFF)
+		data.append((s16 >> 8) & 0xFF)
 
 	audio.data = data
 
 	var player := AudioStreamPlayer.new()
 	player.stream = audio
-	player.volume_db = _db_with_user_volume(-8.0)
+	player.volume_db = _db_with_user_volume(-10.0)
 	add_child(player)
 	player.play()
 	player.finished.connect(player.queue_free)
