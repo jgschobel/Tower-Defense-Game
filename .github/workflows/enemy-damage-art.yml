@@ -1,0 +1,107 @@
+name: Enemy Damage Art (img2img)
+
+# Generates 3 damage-state variants per enemy (hurt/injured/dying) via
+# Gemini img2img anchored to that enemy's clean base texture. Each
+# state uses a unique thematic injury effect — crumbling bread, burst
+# sausage, shattering bottle, etc. — replacing the current red-tint
+# placeholders in _apply_damage_state_visual().
+#
+# Usage: Actions → "Enemy Damage Art" → Run workflow → pick enemy (or "all").
+# Or open an issue with label `enemy-damage-art` and "all" or enemy id
+# as first word of the title.
+
+on:
+  workflow_dispatch:
+    inputs:
+      enemy:
+        description: 'Enemy id or "all"'
+        required: true
+        type: choice
+        options:
+          - all
+          - basic
+          - fast
+          - tank
+          - healer
+          - flying
+          - boss
+  repository_dispatch:
+    types: [enemy-damage-art]
+  issues:
+    types: [opened, labeled]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: enemy-damage-${{ inputs.enemy || github.event.client_payload.enemy || github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    if: github.event_name != 'issues' || contains(github.event.issue.labels.*.name, 'enemy-damage-art')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Python deps
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install requests
+
+      - name: Resolve enemy id
+        id: vars
+        env:
+          DISPATCH_ENEMY: ${{ github.event.client_payload.enemy }}
+          INPUT_ENEMY: ${{ inputs.enemy }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+        run: |
+          set -e
+          ENEMY="${INPUT_ENEMY:-$DISPATCH_ENEMY}"
+          if [ -z "$ENEMY" ] && [ -n "$ISSUE_TITLE" ]; then
+            ENEMY=$(echo "$ISSUE_TITLE" | tr '[:upper:]' '[:lower:]' \
+              | grep -oE '\b(all|basic|fast|tank|healer|flying|boss)\b' | head -1)
+            [ -z "$ENEMY" ] && ENEMY="all"
+          fi
+          [ -z "$ENEMY" ] && ENEMY="all"
+          echo "enemy=$ENEMY" >> "$GITHUB_OUTPUT"
+          echo "Will generate damage variants for: $ENEMY"
+
+      - name: Generate damage variants
+        id: gen
+        env:
+          ENEMY_ID: ${{ steps.vars.outputs.enemy }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          STABILITY_API_KEY: ${{ secrets.STABILITY_API_KEY }}
+        run: |
+          set -e
+          python3 .github/scripts/generate_enemy_damage_variants.py
+
+      - name: Open PR with damage variants
+        if: steps.gen.outputs.count != '' && steps.gen.outputs.count != '0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ENEMY: ${{ steps.gen.outputs.enemy_ids }}
+          ASSETS: ${{ steps.gen.outputs.asset_paths }}
+          COUNT: ${{ steps.gen.outputs.count }}
+        run: |
+          set -e
+          BRANCH="art-damage/${ENEMY//,/-}-$(date +%s)"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          IFS=',' read -ra PATHS <<< "$ASSETS"
+          for p in "${PATHS[@]}"; do
+            git add "$p"
+          done
+          git commit -m "art(damage): img2img damage-state variants for $ENEMY ($COUNT files)"
+          git push -u origin "$BRANCH"
+          gh pr create \
+            --title "art(damage): enemy damage variants for $ENEMY ($COUNT files)" \
+            --body "Generated via Gemini img2img anchored to each enemy's \`_clean.png\`. Replaces red-tint placeholders in \`_apply_damage_state_visual()\` with thematic per-enemy injury art (crumbling bread, burst sausage, shattering bottle, demonic desperation, etc.)." \
+            --base main \
+            --head "$BRANCH"

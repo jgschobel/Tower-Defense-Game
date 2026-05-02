@@ -17,8 +17,8 @@ extends Control
 const PREFS_PATH := "user://variants.json"
 const TOWER_IDS := ["basic", "sniper", "splash", "cordula", "slow"]
 const TOWER_DISPLAY := {"basic": "Lemurius", "sniper": "Kühne", "splash": "JoJo", "cordula": "Cordula", "slow": "Amösius"}
-const ENEMY_IDS := ["basic", "fast", "tank", "healer", "flying", "swarm", "boss"]
-const ENEMY_DISPLAY := {"basic": "Brötli", "fast": "Toblerone", "tank": "Cervelat", "healer": "Dr. Rivella", "flying": "Fondue", "swarm": "Tofu", "boss": "M-Tüüfel"}
+const ENEMY_IDS := ["basic", "fast", "tank", "healer", "flying", "swarm", "boss", "smoothie_slime", "berserker", "tofu_ninja", "linsen_golem", "cumulus_blob", "camo", "lead", "regrow", "glace_golem"]
+const ENEMY_DISPLAY := {"basic": "Brötli", "fast": "Toblerone", "tank": "Cervelat", "healer": "Dr. Rivella", "flying": "Fondue", "swarm": "Tofu", "boss": "M-Tüüfel", "smoothie_slime": "Smoothie-Schleim", "berserker": "Seitän-Berserker", "tofu_ninja": "Tofu-Ninja", "linsen_golem": "Linsen-Golem", "cumulus_blob": "Cumulus-Blob", "camo": "Schatte-Tofu", "lead": "Blei-Würschtli", "regrow": "Regrow-Geist", "glace_golem": "Glacé-Golem"}
 const DAMAGE_STATES := ["healthy", "hurt", "injured", "dying"]
 const DAMAGE_LABELS := ["100%", "66%", "33%", "10%"]
 const DAMAGE_TINTS := [Color.WHITE, Color(0.95, 0.85, 0.80), Color(0.85, 0.65, 0.55), Color(0.70, 0.40, 0.35)]

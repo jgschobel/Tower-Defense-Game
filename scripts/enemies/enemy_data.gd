@@ -46,3 +46,7 @@ extends Resource
 # health. Feels like the ceramic-bloon annoyance of BTD.
 @export var splash_on_death_radius: float = 0.0
 @export var splash_on_death_heal_pct: float = 0.0
+
+# Berserker: speed ramps up as HP drops. move_speed * lerpf(1, mult, (1-pct)^2).
+@export var berserker_mode: bool = false
+@export var berserker_speed_mult: float = 2.5

@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "cumulus_blob"
+display_name = "Cumulus-Blob"
+friend_character_id = ""
+max_health = 160.0
+move_speed = 88.0
+armor = 0.0
+gold_reward = 28
+base_color = Color(0.95, 0.78, 0.88, 1)
+scale_factor = 1.45
+is_flying = false
+heals_nearby = true
+heal_amount = 10.0
+heal_radius = 85.0
+can_regrow = true
+regrow_hp_pct = 0.4
