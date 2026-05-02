@@ -104,14 +104,13 @@ const PALETTE_CATALOG := [
 var _prefs: Dictionary = {}
 var _content_root: VBoxContainer = null
 var _current_tab: String = "monsters"
+var _tab_buttons: Dictionary = {}  # tab_id → Button (for re-styling on switch)
 
 
 func _ready() -> void:
-	print("[DevMenu] _ready start — vp=", get_viewport().get_visible_rect().size)
 	# Force-fit to viewport — when DevMenu is the current scene, the
 	# root Control should be 1280×720 but anchors-only sizing can
-	# collapse to 0×0 in some Godot versions, which is what the user
-	# saw ("grey screen with nothing"). Explicit size kills the bug.
+	# collapse to 0×0 in some Godot versions. Explicit size kills it.
 	_fit_viewport()
 	get_viewport().size_changed.connect(_fit_viewport)
 	var bg := ColorRect.new()
@@ -119,41 +118,9 @@ func _ready() -> void:
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(bg)
-	# Emergency fallback button — always visible top-left so the user can
-	# escape even if the rest of the build fails to render. Was: grey
-	# screen with no way out. This guarantees AT LEAST a back button.
-	var emergency_back := Button.new()
-	emergency_back.text = "← Zrugg (emergency)"
-	emergency_back.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
-	emergency_back.offset_left = 10
-	emergency_back.offset_top = 10
-	emergency_back.offset_right = 220
-	emergency_back.offset_bottom = 50
-	emergency_back.pressed.connect(func():
-		get_tree().change_scene_to_file("res://scenes/ui/main_menu.tscn"))
-	add_child(emergency_back)
-	# Bright yellow heartbeat — proves the script reached _ready even if
-	# every subsequent UI builder fails. User can trust: if THIS is missing,
-	# the script didn't load (parse error). If THIS is visible, _ready ran.
-	var heartbeat := Label.new()
-	heartbeat.text = "DevMenu OK · " + Time.get_time_string_from_system()
-	heartbeat.add_theme_font_size_override("font_size", 14)
-	heartbeat.add_theme_color_override("font_color", Color(1.0, 0.9, 0.3))
-	heartbeat.add_theme_color_override("font_outline_color", Color.BLACK)
-	heartbeat.add_theme_constant_override("outline_size", 3)
-	heartbeat.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
-	heartbeat.offset_left = -260
-	heartbeat.offset_top = 12
-	heartbeat.offset_right = -16
-	heartbeat.offset_bottom = 36
-	heartbeat.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	add_child(heartbeat)
 	_load_prefs()
 	_build_shell()
-	# Populate the initial tab DIRECTLY — calling _show_tab here would
-	# rebuild the shell we just built and leak the _content_root reference.
 	_populate_active_tab()
-	print("[DevMenu] _ready done — children=", get_child_count(), " size=", size)
 
 
 func _fit_viewport() -> void:
@@ -165,7 +132,11 @@ func _fit_viewport() -> void:
 func _populate_active_tab() -> void:
 	if _content_root == null:
 		return
+	# remove_child runs immediately — was just queue_free which deferred the
+	# free until end of frame, so the new tab's content rendered on TOP of
+	# the previous tab's still-present nodes (the user-visible bleed bug).
 	for c in _content_root.get_children():
+		_content_root.remove_child(c)
 		c.queue_free()
 	match _current_tab:
 		"monsters": _populate_monsters_tab()
@@ -208,7 +179,11 @@ func _build_shell() -> void:
 		get_tree().change_scene_to_file("res://scenes/ui/main_menu.tscn"))
 	header.add_child(back)
 
-	# Tab strip — wraps so all 7 tabs fit on phone
+	# Tab strip — wraps so all 7 tabs fit on phone. Built once; switching
+	# tabs only restyles the buttons + repopulates content_root (was:
+	# rebuild whole shell, which stacked queue_free'd shells on top of
+	# each other and bled previous-tab content through).
+	_tab_buttons.clear()
 	var tabs := HFlowContainer.new()
 	tabs.add_theme_constant_override("h_separation", DesignTokens.SP_S)
 	tabs.add_theme_constant_override("v_separation", DesignTokens.SP_S)
@@ -228,6 +203,7 @@ func _build_shell() -> void:
 		DesignTokens.style_button(tab_btn, cfg.id == _current_tab, DesignTokens.FONT_LABEL_SM)
 		tab_btn.pressed.connect(_show_tab.bind(cfg.id))
 		tabs.add_child(tab_btn)
+		_tab_buttons[cfg.id] = tab_btn
 
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -244,14 +220,10 @@ func _show_tab(tab_id: String) -> void:
 	if tab_id != _current_tab:
 		SfxManager.play_click()
 	_current_tab = tab_id
-	# Rebuild shell to refresh active-tab button styling. queue_free is
-	# deferred — the freshly-built Shell stays valid until end of frame.
-	# We rebuild Shell AND then re-populate via _populate_active_tab so
-	# _content_root always points at the current Shell's content node.
-	for c in get_children():
-		if c.name == "Shell":
-			c.queue_free()
-	_build_shell()
+	for tid in _tab_buttons:
+		var btn: Button = _tab_buttons[tid]
+		if is_instance_valid(btn):
+			DesignTokens.style_button(btn, tid == _current_tab, DesignTokens.FONT_LABEL_SM)
 	_populate_active_tab()
 
 
