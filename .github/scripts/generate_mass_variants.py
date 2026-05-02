@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
+# v2 — push to this file auto-triggers the mass-art workflow on feature branches.
 """
-Mass art variant generator — creates 10 portrait styles per tower and
-5 alt design variants per enemy. All outputs land in:
+Mass art variant generator — creates 12 portrait styles per tower and
+8 alt design variants per enemy. All outputs land in:
     assets/textures/variants/towers/{tower_id}/{style_name}.png
     assets/textures/variants/enemies/{enemy_id}/design_{style_name}.png
 
