@@ -644,21 +644,23 @@ func _show_damage_number(amount: float, damage_type: int = 0) -> void:
 	var label := Label.new()
 	var dmg: int = int(round(amount))
 	label.text = "-%d" % dmg
-	# Damage tier scales font size + color so big hits read big.
-	# 1-9 small white-ish, 10-29 yellow, 30-79 orange, 80+ red+huge.
-	var size: int = 18
+	# Damage tier scales font size + color so big hits read big. Bumped
+	# all tiers +6 vs previous since the user reported "-20" reading
+	# small in screenshots — the relative pop wasn't enough.
+	# 1-9 small white-ish, 10-29 bright yellow, 30-79 orange, 80+ red+huge.
+	var size: int = 24
 	var col: Color
 	if dmg >= 80:
-		size = 36
+		size = 44
 		col = Color(1.0, 0.18, 0.12)
 	elif dmg >= 30:
-		size = 28
+		size = 34
 		col = Color(1.0, 0.55, 0.12)
 	elif dmg >= 10:
-		size = 22
+		size = 28
 		col = Color(1.0, 0.92, 0.25)
 	else:
-		size = 18
+		size = 22
 		col = Color(1.0, 0.95, 0.85)
 	# Damage-type override: magic purple, pure gold (ignore size scaling here
 	# so type still reads first; only physical follows the magnitude scale).
