@@ -780,12 +780,18 @@ func _update_visual() -> void:
 
 	# Priority order:
 	# 1. Dev-picker preferred variant (set via DevMenu)
-	# 2. Friend photo (uploaded by user)
-	# 3. data.custom_texture (default cartoon)
+	# 2. v2 cartoon art if it shipped via art-request (e.g. cordula_v2.png)
+	# 3. Friend photo (uploaded by user)
+	# 4. data.custom_texture (default cartoon)
 	if GameManager and GameManager.has_method("get_preferred_variant"):
 		var pref_path: String = GameManager.get_preferred_variant("towers/%s" % data.id)
 		if pref_path != "" and ResourceLoader.exists(pref_path):
 			tex = load(pref_path)
+	if tex == null and data.friend_character_id != "":
+		var v2_id := data.friend_character_id.replace("friend_", "")
+		var v2_path := "res://assets/textures/towers/%s_v2.png" % v2_id
+		if ResourceLoader.exists(v2_path):
+			tex = load(v2_path)
 	if tex == null and data.friend_character_id != "":
 		var photo := GameManager.get_friend_photo(data.friend_character_id)
 		if photo:
