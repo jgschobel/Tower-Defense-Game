@@ -775,10 +775,10 @@ func _update_visual() -> void:
 	if tex:
 		sprite.texture = tex
 		var max_dim := maxf(tex.get_width(), tex.get_height())
-		# Bigger tower size — was 90 (read tiny vs ~80px enemies) → 140.
-		# Towers are the player's avatar on the map; they need to read
-		# clearly without zooming.
-		var target_size := 140.0
+		# Tower size: 90 → 140 → 185. Even at 140 the towers read tiny
+		# next to the giant fruit crates in maps_v3. 185 fills more of
+		# the path slot so towers register as the player's avatars.
+		var target_size := 185.0
 		var s := target_size / max_dim
 		_baseline_scale = Vector2(s, s)
 		sprite.scale = _baseline_scale
