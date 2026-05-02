@@ -481,10 +481,11 @@ func _populate_tower_shop() -> void:
 			stars_req = GameManager.stars_required_for(tower_id)
 
 		var btn := Button.new()
-		# BTD-style side-shop row: full container width, 76px tall —
-		# big enough for a 60px icon on the left with name/cost/DPS
-		# stacked on the right.
-		btn.custom_minimum_size = Vector2(0, 76)
+		# BTD-style side-shop row: full container width, 84px tall —
+		# bumped from 76 because "Banani-Hof" + "+20 G/Wälle" needed
+		# more vertical room next to the lock capsule (was clipping
+		# the bottom of the cost label per user screenshot).
+		btn.custom_minimum_size = Vector2(0, 84)
 		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		btn.clip_contents = true
 		btn.disabled = is_locked
@@ -553,6 +554,11 @@ func _populate_tower_shop() -> void:
 		name_label.add_theme_color_override("font_outline_color", Color(0.05, 0.02, 0, 0.9))
 		name_label.add_theme_constant_override("outline_size", 3)
 		name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		# Truncate (don't autowrap) — autowrap on a narrow column made
+		# 2-line names overflow the row. Ellipsis keeps the row height
+		# stable while still fitting "Banani-Hof" / "Migros-Villa".
+		name_label.clip_text = true
+		name_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 		text_col.add_child(name_label)
 
 		var cost_label := Label.new()
@@ -1308,6 +1314,12 @@ func hide_tower_info() -> void:
 	if _glow_tween and _glow_tween.is_valid():
 		_glow_tween.kill()
 		_glow_tween = null
+	# Clear any stray "selected for placement" gold-border highlight in
+	# the shop — was lingering on Lemurius after closing the tower-info
+	# panel (visible bug in screenshots — the row stayed gold-bordered
+	# even with no active placement).
+	if _placing_button and is_instance_valid(_placing_button):
+		_highlight_placing_button(null)
 	# Restore all-tower brightness — undo the dim from show_tower_info.
 	for n in get_tree().get_nodes_in_group("towers"):
 		var t := n as Node2D
