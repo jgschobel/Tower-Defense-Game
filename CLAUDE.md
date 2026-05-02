@@ -75,6 +75,18 @@ autonomous or manual. Update only when the user explicitly changes them.
 - **Aesthetic**: friends' faces as towers (Lemurius, Kühne, JoJo,
   Cordula, Amösius), vegan food enemies, De Vegan-Tüüfel as the
   antagonist. Migros Affoltern as world.
+- **Use Claude-native design wherever possible (don't always wait for
+  Gemini).** Default to SVG icons, procedural Godot drawing
+  (`_draw()`, `CanvasItem.draw_*`), `StyleBoxFlat` chrome, custom
+  shaders, and tween/particle choreography written in code. ONLY
+  escalate to Gemini/Imagen art-requests for things that genuinely
+  need raster painting: character portraits, level backgrounds,
+  detailed environmental art. Everything else (UI icons, badges,
+  pedestals, frames, dividers, glyph replacements, animation feel,
+  palette decisions) — Claude ships directly. No "I'll write a prompt
+  and wait for hours" when SVG + GDScript can do it in one commit.
+  See `assets/icons/` for the SVG icon library and
+  `scripts/systems/design_tokens.gd` for the palette source-of-truth.
 
 ## Project Overview
 A **landscape** (1280x720) tower defense game built in **Godot 4.6** using GDScript. Set in Migros Affoltern, Zürich. 5 tower characters (Lemurius, Kühne, JoJo, Cordula, Amösius) fight cursed vegan products controlled by De Vegan-Tüüfel. All text in Swiss German. Procedural chiptune music + SFX, AI-generated art, story cutscenes with multi-character paginated dialogue, **10 levels** with 10 waves each (L1 Migros-Eingang → L5 Kasse 3-boss finale → L6 Parkhuus bonus → L7 Dach → L8 Coop-Einbruch → L9 Cumulus-Punkte-Kern → L10 Finale 5-boss gauntlet). `MAX_LEVELS = 10` in `game_manager.gd`. BTD-style branching upgrades (paths A+B, 3 tiers each) with visible tier pips + drag-and-drop placement from a right-anchored collapsible side-shop. Per-level atmospheric particles + CanvasModulate tints + dust-puff steps + animated dashed range circles.
