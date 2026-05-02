@@ -815,15 +815,25 @@ func _update_visual() -> void:
 func _draw() -> void:
 	if not is_placed:
 		return
-	# Pedestal scaled for 130px sprite — radii ~32/27/23, shadow at +14.
-	# Soft ellipse drop-shadow BELOW the tower for grounding
-	draw_circle(Vector2(0, 14), 30.0, Color(0, 0, 0, 0.28))
-	# Stone pedestal rings — adds weight and separation from the background
-	draw_circle(Vector2.ZERO, 32.0, Color(0.28, 0.22, 0.18, 0.55))
-	draw_circle(Vector2.ZERO, 27.0, Color(0.48, 0.4, 0.32, 0.55))
-	draw_circle(Vector2.ZERO, 23.0, Color(0.62, 0.52, 0.42, 0.35))
-	# Thin highlight along top edge
-	draw_arc(Vector2(-2, -2), 27.0, PI * 1.1, PI * 1.9, 22, Color(1, 0.95, 0.8, 0.25), 1.8)
+	# Procedural pedestal — replaced 3 stacked draw_circle rings with a
+	# layered design: soft drop shadow + ground disc + bevel highlight
+	# arc + thin gold accent ring. Reads as "professional museum
+	# pedestal" rather than "3 brown circles". Sized for 130px sprite.
+	var ground_y: float = 16.0
+	# Layer 1: wide soft drop shadow (elliptical via Y-squashed circle)
+	draw_circle(Vector2(0, ground_y), 36.0, Color(0, 0, 0, 0.18))
+	draw_circle(Vector2(0, ground_y - 1), 28.0, Color(0, 0, 0, 0.32))
+	# Layer 2: stone disc base (radial-feel via 3 concentric rings,
+	# darker at the rim for vignette).
+	draw_circle(Vector2.ZERO, 32.0, Color(0.16, 0.13, 0.10, 0.85))  # rim shadow
+	draw_circle(Vector2.ZERO, 30.0, Color(0.34, 0.27, 0.20, 1.0))   # mid stone
+	draw_circle(Vector2.ZERO, 26.0, Color(0.50, 0.42, 0.32, 1.0))   # inner stone
+	# Layer 3: gold accent ring — thin, reads as polished trim
+	draw_arc(Vector2.ZERO, 30.0, 0, TAU, 48, Color(1.0, 0.78, 0.22, 0.85), 1.5, true)
+	# Layer 4: bevel highlight — top arc only, gives 3D feel
+	draw_arc(Vector2(-1, -2), 28.0, PI * 1.05, PI * 1.95, 28, Color(1, 0.95, 0.78, 0.40), 2.5, true)
+	# Layer 5: tiny inner highlight dot for "glint"
+	draw_circle(Vector2(-8, -10), 2.5, Color(1, 0.98, 0.85, 0.45))
 	# Tier pips — replay the precomputed cache. Positions + tints are
 	# refreshed in `_rebuild_pip_cache()` on upgrade so _draw never calls
 	# cos()/sin() per frame. ROADMAP PERF #7.

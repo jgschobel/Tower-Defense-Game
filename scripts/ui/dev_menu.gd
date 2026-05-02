@@ -528,7 +528,24 @@ func _level_display_name(level_id: int) -> String:
 # ---------- Tab: Icons & Emoji ----------
 
 func _populate_icons_tab() -> void:
-	_add_hint("Jedi Glyph isch zwiimal renderet: gross + chli. Wenn beidi tofu-Boxe sind, fehlt si im NotoEmoji Fallback. Der `name` und `where` zeigt wo sie im UI sin.")
+	# Section 1: SVG icon library (the real shipped assets)
+	_add_hint("SVG Icons us assets/icons/ — keine Font-Fallback nötig, scaled crisp uf jedi DPI. Diese ersetze d'Emoji im UI.")
+	var svg_section := Label.new()
+	svg_section.text = "▸ SVG Icon Library (claude-designed, in assets/icons/)"
+	DesignTokens.style_heading(svg_section, DesignTokens.FONT_LABEL_LG)
+	_content_root.add_child(svg_section)
+	var svg_grid := GridContainer.new()
+	svg_grid.columns = 6
+	svg_grid.add_theme_constant_override("h_separation", DesignTokens.SP_M)
+	svg_grid.add_theme_constant_override("v_separation", DesignTokens.SP_S)
+	_content_root.add_child(svg_grid)
+	for icon_name in IconLibrary.NAMES:
+		svg_grid.add_child(_build_svg_icon_card(icon_name))
+	# Section 2: legacy emoji catalog
+	var emoji_section := Label.new()
+	emoji_section.text = "▸ Emoji & Glyphs verwendet im UI (font-rendered)"
+	DesignTokens.style_heading(emoji_section, DesignTokens.FONT_LABEL_LG)
+	_content_root.add_child(emoji_section)
 	var grid := GridContainer.new()
 	grid.columns = 4
 	grid.add_theme_constant_override("h_separation", DesignTokens.SP_M)
@@ -536,6 +553,23 @@ func _populate_icons_tab() -> void:
 	_content_root.add_child(grid)
 	for entry in EMOJI_CATALOG:
 		grid.add_child(_build_emoji_card(entry))
+
+
+func _build_svg_icon_card(icon_name: String) -> Control:
+	var card := PanelContainer.new()
+	card.custom_minimum_size = Vector2(120, 90)
+	card.add_theme_stylebox_override("panel", DesignTokens.panel_box(DesignTokens.COL_STROKE_FAINT, DesignTokens.RADIUS_S, DesignTokens.SP_S))
+	var col := VBoxContainer.new()
+	col.alignment = BoxContainer.ALIGNMENT_CENTER
+	col.add_theme_constant_override("separation", 4)
+	card.add_child(col)
+	col.add_child(IconLibrary.make_rect(icon_name, 48))
+	var lbl := Label.new()
+	lbl.text = icon_name
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	DesignTokens.style_label(lbl, DesignTokens.FONT_LABEL_XS, true)
+	col.add_child(lbl)
+	return card
 
 
 func _build_emoji_card(entry: Dictionary) -> Control:
