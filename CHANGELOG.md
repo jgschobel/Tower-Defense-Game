@@ -3,6 +3,17 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-05-02 (manual session — design polish batch + dev-menu rescue + repo audit)
+
+- fix(dev-menu): root-cause grey-screen — `DesignTokens.get(name)` and `name in DesignTokens` are invalid on a class_name (Object.get is instance-only, `in` undefined). Replaced palette tab with explicit `_resolve_palette_color() → Color` match. Added print() bracket logs and yellow heartbeat label that proves _ready ran even if downstream UI fails.
+- feat(art-pipeline): v2-art priority chain in `base_tower._update_visual()` — `cordula_v2.png` / `kuhne_v2.png` / `jojo_v2.png` from art-request workflow now apply automatically (between dev-picker variant and friend-photo).
+- polish(ui): replaced font-emoji icons with the existing SVG IconLibrary across HUD sell button (coin/x), main menu run-stats badge (star/sword), Aminos-Lade title + 11 row icons + check/lock/sparkle state badges. No more tofu on phones with stripped Noto Emoji.
+- polish(level-select): Easy / Normal / Hard difficulty picker buttons now show colored diamond shield SVG (E=blue, N=gold, H=red) on the left edge.
+- polish(placement): tower placement ghost overlay uses SVG check + x (was unicode ✓ / ✕).
+- fix(ci-monitor): /actions/runs/<id>/logs API is not always populated when workflow_run fires — added 3× retry with 15-35s backoff plus `gh run view --log` fallback. Captures real log tail instead of `(no logs available)` placeholder.
+- chore(repo): closed 17 stale ci-failure issues (#220-#236, #292-#301) — art-request issues were resolved when the workflow finally fixed itself; recent autonomous-loop failures were on auto-merged branches with no actionable signal.
+- chore(assets): deleted 12 unreferenced enemy textures (~13 MB) — non-clean originals + retired hafer/soja/tofu/vegan/avocado experiments. All live enemies now point at *_clean.png variants.
+
 ## 2026-05-02 (audit-polish — economy balance pass)
 
 - balance(economy): tighten starting gold L1=120→L10=220 ramp (was up to 600g bloating early game); steepen Lemurius upgrade costs ~25% [210,455,1140]/[245,560,1260]; Amösius tier2+3 +15%; fix early-wave variety L1 wave2 + L2 wave2 (closes ROADMAP #21 #22 #36 #37)
