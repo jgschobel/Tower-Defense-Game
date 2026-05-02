@@ -3,8 +3,8 @@ extends Node2D
 ## Draws a semi-transparent range circle with an animated dashed border (D30).
 
 var circle_radius: float = 150.0
-var circle_color: Color = Color(0.3, 0.6, 1.0, 0.12)
-var border_color: Color = Color(0.5, 0.8, 1.0, 0.72)
+var circle_color: Color = Color(0.3, 0.6, 1.0, 0.16)
+var border_color: Color = Color(0.5, 0.8, 1.0, 0.92)
 
 # Dash animation — offset increments each frame to make the dashes march.
 var _dash_offset: float = 0.0
@@ -21,8 +21,8 @@ func set_radius(r: float) -> void:
 func set_tint(c: Color) -> void:
 	# Per-tower tint — keeps range visualizations distinguishable when
 	# multiple towers' ranges overlap.
-	circle_color = Color(c.r, c.g, c.b, 0.14)
-	border_color = Color(c.r, c.g, c.b, 0.78)
+	circle_color = Color(c.r, c.g, c.b, 0.18)
+	border_color = Color(c.r, c.g, c.b, 0.92)
 	queue_redraw()
 
 
@@ -57,5 +57,5 @@ func _draw() -> void:
 				var angle: float = a_start + t * (a_end - a_start)
 				pts.append(Vector2(cos(angle), sin(angle)) * circle_radius)
 			for j in seg_count:
-				draw_line(pts[j], pts[j + 1], border_color, 2.0, true)
+				draw_line(pts[j], pts[j + 1], border_color, 3.0, true)
 		arc_pos += period
