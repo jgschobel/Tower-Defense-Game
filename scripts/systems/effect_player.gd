@@ -50,6 +50,43 @@ func spawn_impact_sparks(pos: Vector2, spark_color: Color) -> void:
 	get_tree().create_timer(0.6).timeout.connect(p.queue_free)
 
 
+## Bursty death effect — replaces the slow on-corpse death tween. 12 particles
+## radial with the enemy's tint, plus a quick white flash ring underneath.
+func spawn_death_poof(pos: Vector2, tint: Color) -> void:
+	var host := _get_host()
+	if not host:
+		return
+	# Colored burst
+	var p := CPUParticles2D.new()
+	p.global_position = pos
+	p.one_shot = true
+	p.explosiveness = 1.0
+	p.lifetime = 0.36
+	p.amount = 14
+	p.direction = Vector2(0.0, -0.4)
+	p.spread = 180.0
+	p.initial_velocity_min = 60.0
+	p.initial_velocity_max = 130.0
+	p.scale_amount_min = 3.0
+	p.scale_amount_max = 6.5
+	p.color = Color(tint.r, tint.g, tint.b, 0.85)
+	p.gravity = Vector2(0.0, 220.0)
+	host.add_child(p)
+	p.emitting = true
+	get_tree().create_timer(0.7).timeout.connect(p.queue_free)
+	# White flash ring — a tiny ColorRect that scales up + fades.
+	var flash := ColorRect.new()
+	flash.color = Color(1, 1, 1, 0.7)
+	flash.size = Vector2(36, 36)
+	flash.position = pos - flash.size * 0.5
+	flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	host.add_child(flash)
+	var tw := flash.create_tween().set_parallel(true)
+	tw.tween_property(flash, "scale", Vector2(1.8, 1.8), 0.2)
+	tw.tween_property(flash, "color:a", 0.0, 0.2)
+	tw.chain().tween_callback(flash.queue_free)
+
+
 ## Tiny dust puff at enemy feet on each step-down (ROADMAP #13).
 func spawn_step_dust(pos: Vector2) -> void:
 	var host := _get_host()

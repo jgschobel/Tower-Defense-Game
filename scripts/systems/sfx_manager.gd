@@ -11,6 +11,29 @@ const AUDIO_CONFIG_PATH := "res://resources/audio_config.tres"
 var _sample_rate: float = 22050.0
 var _config: AudioConfig = null
 var _stream_cache: Dictionary = {}  # path -> AudioStream
+# Per-id cooldown to stop high-frequency SFX from being annoying.
+# At 5 towers × 2 shots/s = 10 hit sounds/s without cooldown — felt
+# "machine-gun" and unpleasant. 60ms gap keeps rhythm without spam.
+var _last_play_ms: Dictionary = {}
+const _COOLDOWNS_MS := {
+	"hit": 55,
+	"enemy_hit": 55,
+	"death": 80,
+	"shoot": 35,
+	"soft_pluck": 40,
+}
+
+
+func _can_play(id: String) -> bool:
+	var cd: int = _COOLDOWNS_MS.get(id, 0)
+	if cd == 0:
+		return true
+	var now: int = Time.get_ticks_msec()
+	var last: int = _last_play_ms.get(id, 0)
+	if now - last < cd:
+		return false
+	_last_play_ms[id] = now
+	return true
 
 
 func _ready() -> void:
@@ -50,6 +73,8 @@ func play_shoot(tower_id: String = "", tier: int = 0) -> void:
 	# Per-tower + per-tier shoot voice (ROADMAP #24). Each friend gets a
 	# distinct timbre; tiers bump pitch + add a bit of bite. Falls back
 	# to a generic warm pluck if tower_id is unknown.
+	if not _can_play("shoot"):
+		return
 	var t: int = clampi(tier, 0, 3)
 	if _try_play_baked("tower.%s.shoot.t%d" % [tower_id, t]):
 		return
@@ -78,14 +103,18 @@ func play_shoot(tower_id: String = "", tier: int = 0) -> void:
 func play_hit() -> void:
 	# Soft body-hit — warm 340Hz damped sine, short. Used as generic
 	# fallback when per-enemy hit SFX is unavailable.
+	if not _can_play("hit"):
+		return
 	if _try_play_baked("hit"):
 		return
-	_play_tone(340.0, 0.05, 0.22)
+	_play_tone(340.0, 0.05, 0.18)
 
 
 func play_enemy_hit(enemy_id: String = "") -> void:
 	# Per-enemy hit/death variation (ROADMAP #27) — short pop tinted by
 	# the enemy's material.
+	if not _can_play("enemy_hit"):
+		return
 	if _try_play_baked("enemy.%s.hit" % enemy_id):
 		return
 	match enemy_id:
@@ -111,6 +140,8 @@ func play_death(enemy_health: float = 100.0) -> void:
 	# Soft downward sweep with pitch modulated by enemy size.
 	# Small enemies (low health) = higher pitch "pop", big enemies =
 	# deep "thump". Adds rhythm as waves progress from tofu to boss.
+	if not _can_play("death"):
+		return
 	if _try_play_baked("death"):
 		return
 	var size_factor: float = clampf(enemy_health / 100.0, 0.4, 3.0)

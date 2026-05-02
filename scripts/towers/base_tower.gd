@@ -35,6 +35,8 @@ var _pip_cache: Array = []
 # Per-instance shuffled taunt sub-pool — exhausted before reshuffling so
 # two towers of the same type never chorus the same line (ROADMAP #11).
 var _taunt_pool: Array = []
+# Guard so rapid-fire attacks don't stack pulse tweens on the sprite scale.
+var _is_attack_pulsing: bool = false
 # Fitted sprite scale from _update_visual — tweens use this as the idle
 # baseline instead of data.sprite_scale. Friend photos are ~1024px so the
 # fit scale is ~0.12, not 1.0; tweens returning to data.sprite_scale made
@@ -339,6 +341,17 @@ func _attack() -> void:
 	# Per-tower + per-tier shoot voice (ROADMAP #24)
 	var shoot_tier: int = max(path_a_tier, path_b_tier) if data.has_branching_upgrades() else upgrade_level
 	SfxManager.play_shoot(data.id, shoot_tier)
+
+	# Quick attack-pulse on the sprite — punches scale 1.0→1.10→1.0 over
+	# 0.12s. Makes the tower feel "alive" when shooting. Cheap, no allocs.
+	# Skipped during a tween chain to avoid stacking with upgrade/place anims.
+	if sprite and not _is_attack_pulsing:
+		_is_attack_pulsing = true
+		var base_scale: Vector2 = _baseline_scale if _baseline_scale != Vector2.ZERO else sprite.scale
+		var pulse := sprite.create_tween()
+		pulse.tween_property(sprite, "scale", base_scale * 1.10, 0.05).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		pulse.tween_property(sprite, "scale", base_scale, 0.07).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+		pulse.tween_callback(func(): _is_attack_pulsing = false)
 
 	# Cordula cone burst (ROADMAP #38). Any enemy within data.cone_half_angle
 	# of the aim direction takes 60% damage instantly, in addition to the
