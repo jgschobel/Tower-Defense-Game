@@ -117,6 +117,14 @@ jobs:
           echo -e "$reasons" >> "$GITHUB_OUTPUT"
           echo "EOF" >> "$GITHUB_OUTPUT"
 
+      - name: Ensure required labels exist
+        if: steps.verdict.outputs.unhealthy == '1'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh label create loop-broken --color D93F0B --description "Autonomous loop is silent — investigation required" --force --repo "${{ github.repository }}" || true
+          gh label create autonomous --color 0E8A16 --description "Filed by the autonomous loop" --force --repo "${{ github.repository }}" || true
+
       - name: File or update health issue
         if: steps.verdict.outputs.unhealthy == '1'
         env:
