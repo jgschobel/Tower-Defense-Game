@@ -58,11 +58,24 @@ func _ready() -> void:
 
 	_load_wave_data()
 	_apply_level_tint()
+	_soften_background()
 	_spawn_atmosphere_particles()
 	wave_manager.setup_waves(wave_definitions)
 	hud.show_next_wave_button(true)
 	hud.update_wave_info(0, wave_manager.total_waves)
 	_spawn_path_direction_arrows()
+
+
+func _soften_background() -> void:
+	# The maps_v3 AI art contains a giant faded "M" / Migros watermark
+	# baked into the texture (visible as a "WW" pattern on the playfield
+	# in screenshots). Dimming the Background sprite's modulate fades
+	# that watermark into the floor while keeping the fruit crates and
+	# path detail readable. Applied uniformly across all levels — the
+	# CanvasModulate tint from _apply_level_tint adds back atmosphere.
+	var bg := get_node_or_null("Background")
+	if bg is Sprite2D:
+		bg.modulate = Color(0.78, 0.78, 0.80, 1.0)
 
 
 func _apply_level_tint() -> void:
