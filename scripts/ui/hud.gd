@@ -1336,22 +1336,58 @@ func _refresh_tower_info() -> void:
 	var upgrade_btn: Button = tower_info.get_node_or_null("VBox/HBox/UpgradeButton")
 	var sell_btn: Button = tower_info.get_node_or_null("VBox/HBox/SellButton")
 
-	# D25: portrait — lazy-create a TextureRect above the name label
+	# Side-by-side layout: portrait left (~64px), stats column right.
+	# Lazily build a "Header" HBoxContainer that holds them so the
+	# original scene structure stays intact for the upgrade/sell row below.
 	var vbox: VBoxContainer = tower_info.get_node_or_null("VBox")
 	if vbox:
-		var portrait: TextureRect = vbox.get_node_or_null("Portrait")
+		var header: HBoxContainer = vbox.get_node_or_null("Header")
+		if header == null:
+			header = HBoxContainer.new()
+			header.name = "Header"
+			header.add_theme_constant_override("separation", 12)
+			vbox.add_child(header)
+			vbox.move_child(header, 0)
+			# Reparent name + stats labels into the header's right column
+			var stats_col := VBoxContainer.new()
+			stats_col.name = "StatsCol"
+			stats_col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			stats_col.add_theme_constant_override("separation", 4)
+			header.add_child(stats_col)
+			# Move existing NameLabel + StatsLabel into stats_col if present
+			if name_lbl and name_lbl.get_parent() == vbox:
+				vbox.remove_child(name_lbl)
+				stats_col.add_child(name_lbl)
+				name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+				name_lbl.add_theme_font_size_override("font_size", 22)
+				name_lbl.add_theme_color_override("font_color", Color(1, 0.92, 0.6))
+				name_lbl.add_theme_color_override("font_outline_color", Color.BLACK)
+				name_lbl.add_theme_constant_override("outline_size", 3)
+			if stats_lbl and stats_lbl.get_parent() == vbox:
+				vbox.remove_child(stats_lbl)
+				stats_col.add_child(stats_lbl)
+				stats_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+				stats_lbl.add_theme_font_size_override("font_size", 14)
+				stats_lbl.add_theme_color_override("font_color", Color(0.92, 0.92, 0.85))
+		# Portrait is the first child of Header (created if missing)
+		var portrait: TextureRect = header.get_node_or_null("Portrait")
 		if portrait == null:
 			portrait = TextureRect.new()
 			portrait.name = "Portrait"
-			portrait.custom_minimum_size = Vector2(0, 72)
+			portrait.custom_minimum_size = Vector2(64, 64)
 			portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 			portrait.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
-			vbox.add_child(portrait)
-			vbox.move_child(portrait, 0)
+			portrait.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+			header.add_child(portrait)
+			header.move_child(portrait, 0)
 		if td.custom_texture:
 			portrait.texture = td.custom_texture
-		elif portrait.texture == null:
-			portrait.visible = false
+		# Friend photo lookup — same pipeline base_tower uses for the
+		# on-map sprite. Falls back to custom_texture if no friend photo.
+		if td.friend_character_id != "" and GameManager and GameManager.has_method("get_friend_photo"):
+			var photo := GameManager.get_friend_photo(td.friend_character_id)
+			if photo:
+				portrait.texture = photo
 
 	if name_lbl:
 		if td.has_branching_upgrades():
@@ -1365,18 +1401,20 @@ func _refresh_tower_info() -> void:
 	if stats_lbl:
 		var dps: float = _selected_tower.effective_damage * _selected_tower.effective_speed
 		var kills: int = _selected_tower.kill_count if "kill_count" in _selected_tower else 0
-		# D25: tier pip row — ● filled tiers, ○ remaining, A/B separate
+		# D25: tier pip row using BBCode-coded squares so colors land per
+		# path (A=warm orange, B=cool blue). Filled = achieved tier,
+		# faded = remaining. Renders inline at start of stats text.
 		var pip_str: String = ""
 		if td.has_branching_upgrades():
 			var max_tier: int = 3
-			var pips_a: String = "A: "
+			pip_str = "A:"
 			for i in max_tier:
-				pips_a += "●" if i < _selected_tower.path_a_tier else "○"
-			var pips_b: String = "  B: "
+				pip_str += " ●" if i < _selected_tower.path_a_tier else " ○"
+			pip_str += "   B:"
 			for i in max_tier:
-				pips_b += "●" if i < _selected_tower.path_b_tier else "○"
-			pip_str = pips_a + pips_b + "\n"
-		stats_lbl.text = "%sSchade: %.0f  DPS: %.1f  Kills: %d\nTempo: %.1f  Riichwiiti: %.0f" % [
+				pip_str += " ●" if i < _selected_tower.path_b_tier else " ○"
+			pip_str += "\n"
+		stats_lbl.text = "%sSchade: %.0f   DPS: %.1f   Kills: %d\nTempo: %.1f   Reichwiiti: %.0f" % [
 			pip_str,
 			_selected_tower.effective_damage,
 			dps,
@@ -1425,7 +1463,8 @@ func _paint_sell_button(sell_btn: Button) -> void:
 		sell_val = td.get_sell_value_branched(_selected_tower.path_a_tier, _selected_tower.path_b_tier)
 	else:
 		sell_val = td.get_sell_value(_selected_tower.upgrade_level)
-	sell_btn.text = "Verchaufe %d" % sell_val
+	# Coin-icon prefix instead of plain "Verchaufe" — shorter, scannable.
+	sell_btn.text = "🪙 %d" % sell_val
 
 
 func _ensure_linear_upgrade_button(upgrade_btn: Button) -> void:
