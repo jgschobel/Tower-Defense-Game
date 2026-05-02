@@ -89,8 +89,8 @@ theme_override_font_sizes/font_size = 14
 layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
-vertical_scroll_mode = 3
-scroll_deadzone = 12
+vertical_scroll_mode = 2
+scroll_deadzone = 6
 follow_focus = true
 
 [node name="TowerShop" type="VBoxContainer" parent="SideShop/SideShopVBox/ShopScroll"]
