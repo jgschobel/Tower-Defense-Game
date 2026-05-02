@@ -48,6 +48,40 @@ func _style_menu_buttons() -> void:
 		var btn = get_node_or_null(path)
 		if btn:
 			_style_menu_button(btn)
+	# Insert a prominent Aminos-Lade button between Raubzug and Gschicht
+	# so it's discoverable from the main menu (was a small corner button
+	# the user kept missing).
+	var vbox: VBoxContainer = get_node_or_null("HBox/MenuPanel/VBox")
+	if vbox and not vbox.has_node("AminosMainButton"):
+		var aminos_main := Button.new()
+		aminos_main.name = "AminosMainButton"
+		aminos_main.text = "✨ AMINOS-LADE"
+		aminos_main.custom_minimum_size = Vector2(0, 56)
+		aminos_main.pressed.connect(_on_aminos_button_pressed)
+		_style_menu_button(aminos_main)
+		# Brighter gold accent so it stands apart from the main flow
+		var sb_a := StyleBoxFlat.new()
+		sb_a.bg_color = Color(0.22, 0.17, 0.06, 0.96)
+		sb_a.border_color = Color(1.0, 0.80, 0.20, 1.0)
+		sb_a.border_width_left = 2
+		sb_a.border_width_right = 2
+		sb_a.border_width_top = 1
+		sb_a.border_width_bottom = 2
+		sb_a.corner_radius_top_left = 10
+		sb_a.corner_radius_top_right = 10
+		sb_a.corner_radius_bottom_left = 10
+		sb_a.corner_radius_bottom_right = 10
+		sb_a.content_margin_left = 14
+		sb_a.content_margin_right = 14
+		sb_a.content_margin_top = 8
+		sb_a.content_margin_bottom = 8
+		aminos_main.add_theme_stylebox_override("normal", sb_a)
+		aminos_main.add_theme_color_override("font_color", Color(1, 0.92, 0.45))
+		vbox.add_child(aminos_main)
+		# Place it second (right after "RAUBZUG STARTE")
+		var play_btn := vbox.get_node_or_null("PlayButton")
+		if play_btn:
+			vbox.move_child(aminos_main, play_btn.get_index() + 1)
 
 
 func _style_menu_button(btn: Button) -> void:
@@ -127,20 +161,8 @@ func _show_run_stats() -> void:
 	stats_v.add_child(kills_lbl)
 	add_child(stats_panel)
 
-	# Aminos entry button — bigger and styled to match menu button language
-	# instead of being a small default-grey afterthought.
-	if not has_node("AminosButton"):
-		var aminos_btn := Button.new()
-		aminos_btn.name = "AminosButton"
-		aminos_btn.text = "✨ Aminos-Lade"
-		aminos_btn.anchors_preset = Control.PRESET_TOP_LEFT
-		aminos_btn.offset_left = 16
-		aminos_btn.offset_top = 92
-		aminos_btn.offset_right = 220
-		aminos_btn.offset_bottom = 140
-		aminos_btn.pressed.connect(_on_aminos_button_pressed)
-		_style_menu_button(aminos_btn)
-		add_child(aminos_btn)
+	# (Aminos-Lade now lives in the main menu button column via
+	# _style_menu_buttons — no longer a small corner button)
 
 
 func _on_play_button_pressed() -> void:
