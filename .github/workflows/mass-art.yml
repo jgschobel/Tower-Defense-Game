@@ -18,6 +18,12 @@ name: Mass Art Variants
 # Existing files are skipped (idempotent) — safe to re-run after failures.
 
 on:
+  # Auto-trigger: fires when the generation script is updated on our branch.
+  # TARGET defaults to "all". This is how the first batch run self-starts
+  # without requiring a manual Actions click.
+  push:
+    branches: ['claude/review-codebase-*', 'claude/*']
+    paths: ['.github/scripts/generate_mass_variants.py']
   workflow_dispatch:
     inputs:
       target:
@@ -74,9 +80,15 @@ jobs:
           DISPATCH_TARGET: ${{ github.event.client_payload.target }}
           INPUT_TARGET: ${{ inputs.target }}
           ISSUE_TITLE: ${{ github.event.issue.title }}
+          EVENT_NAME: ${{ github.event_name }}
         run: |
           set -e
-          TARGET="${INPUT_TARGET:-$DISPATCH_TARGET}"
+          # Push trigger → always run "all"
+          if [ "$EVENT_NAME" = "push" ]; then
+            TARGET="all"
+          else
+            TARGET="${INPUT_TARGET:-$DISPATCH_TARGET}"
+          fi
           if [ -z "$TARGET" ] && [ -n "$ISSUE_TITLE" ]; then
             WORD=$(echo "$ISSUE_TITLE" | tr '[:upper:]' '[:lower:]' | awk '{print $1}')
             case "$WORD" in
