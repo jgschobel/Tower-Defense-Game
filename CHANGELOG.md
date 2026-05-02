@@ -3,6 +3,32 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-05-02 (manual session — autonomous infra rescue + observability tools)
+
+- fix(ci): hash-prefix every prose comment inside `run: |` blocks across 8 workflow files. Root cause of the loop being silent for 9 days (2026-04-21 → 2026-05-02) — bash interpreted unmarked prose lines as commands, exit 127, every cron-triggered run died at preflight. 80/80 run blocks now pass `bash -n`.
+- fix(ci): `ci-monitor.yml` was itself failing with `could not add label: 'ci-failure' not found` — added idempotent `gh label create --force` step plus a fallback that files the issue without labels. Same pattern in `loop-health.yml`.
+- feat(observability): failure log mirror — every failed workflow run now writes `docs/observability/failures/<workflow>__<run_id>.log` + appends to `failures/INDEX.md`. Chat-session Claude can read these via `mcp__github__get_file_contents` directly (no Actions logs API access).
+- feat(observability): live status dashboard — `loop-health.yml` writes `docs/observability/loop-status.md` every 6h with per-workflow last-run + conclusion + last-success, open issue counters, PAUSE state, recent failure index. One file = full health view.
+- feat(ci): `workflow-lint.yml` (NEW) — `actionlint` v1.7.7 + `bash -n` per `run: |` block on every PR touching `.github/workflows/`. Will block the prose-comment bug class from ever recurring.
+- feat(ci): `loop-health.yml` (NEW) — every 6h watchdog. Files `loop-broken` issue if autonomous-dev hasn't run in 8h or deploy-web has no success in 24h.
+- feat(ci): `pause-watchdog.yml` (NEW) — fails CI on PRs that touch `.github/workflows/` if any workflow has been `# PAUSED` for >7 days. Caught the leftover sim-gate pause comment on first run.
+- feat(deploy): `deploy-web.yml` emits `build-info.json` next to `index.html` with commit SHA + timestamp + content counts. Phone-checkable build-freshness URL.
+- feat(validate): `validate.sh` now runs `godot --check-only` per `.gd` file + scene-load smoke test on every level scene + main menu. Catches whole classes of bug the previous "launch and see what crashes" approach missed.
+- chore(ci): cleaned stale `# PAUSED` comment from `sim-gate.yml` (triggers were already live; comment was leftover).
+- chore: actually un-paused all workflows on main — previous "resume" commits had updated commit messages but never edited the trigger lines.
+
+## 2026-04-30 (manual session — content + UX polish batch)
+
+- feat(levels): L8 Coop-Einbruch (rival store, blue 3-aisle grid path), L9 Cumulus-Punkte-Kern (16-point spiral, purple neon), L10 Finale im Tüüfel-Äste (14-point epic finale, dark red). All three with full lore via 6-page multi-character `pages` array. MAX_LEVELS now 10 (was 7). Level select grid colours added.
+- feat(story): D22 — multi-character paginated dialogue for L2-L7 intros (was legacy single-block text). Each level gets 6-7 pages with rotating speakers + guest characters Micheli (L3 security) and Trudi (L5 cashier). story_screen.gd `_LEFT_SPEAKERS` array drives portrait highlighting.
+- feat(atmosphere): D17 — `CPUParticles2D` overlays per level via `game_level._spawn_atmosphere_particles()`. L2 frost / L3 flour / L4 acid bubbles / L5 confetti / L6 rain / L7 wind leaves / L8 blue sparks / L9 purple data-glitch / L10 rising embers.
+- feat(vfx): D13 — dust-puff particles when each grounded enemy completes a step. Detection via zero-crossing on `sin(_walk_phase)` from negative to positive. Skips flying + slow-bobbing tank enemies. New `EffectPlayer.spawn_step_dust()`.
+- fix(ux): #11 — per-tower taunt sub-pool. Each `BaseTower` instance maintains `_taunt_pool` Array, shuffled copy of `TAUNTS[data.id]`. Pop until empty, then reshuffle. Same-type towers no longer chorus the same line.
+- feat(ux): #9 — gold-bordered shop row highlight while placing. `set_placing(false)` clears via `btn.get_meta('shop_base_style')`.
+- feat(ux): #10 — enemy icons in next-wave preview. 22×22 TextureRect from `enemy_data.custom_texture`; colored swatch fallback for camo / lead / regrow / swarm.
+- fix(F18): dynamic `ScrollContainer.scroll_deadzone` — 0 for `InputEventMouse`, 12 for touch. Fixes mouse click-through that the touch-fix accidentally regressed.
+- docs: ROADMAP — D17, D20, D22, D23, F18, #5, #7, #8, #9, #10, #11, #13 ticked. Levels 8/9/10 content items closed.
+
 ## 2026-04-20 (audit-polish — P0 playtest fixes: backgrounds, enemies, main menu)
 
 - fix(backgrounds): all 7 levels now use maps_v3 AI-generated art via Sprite2D at (640,360); L4 CellarTiles + L6 FloorPattern seam nodes removed; closes #147 #140 #149 #142
