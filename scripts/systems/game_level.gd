@@ -237,6 +237,11 @@ func _pay_farm_towers() -> void:
 func _on_wave_completed(_wave_num: int) -> void:
 	if not wave_manager.all_done:
 		hud.show_next_wave_button(true)
+		# Mid-game celebration — visible reward at every wave end (not just
+		# the level-end victory screen). Skip on the final wave since
+		# show_victory() already plays.
+		if hud.has_method("show_wave_clear_celebration"):
+			hud.show_wave_clear_celebration()
 
 
 func _on_all_waves_completed() -> void:

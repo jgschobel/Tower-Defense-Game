@@ -17,6 +17,7 @@ var gold_reward: int = 10
 var slow_factor: float = 1.0
 var _walk_phase: float = 0.0
 var _prev_walk_sin: float = 0.0
+var _is_hit_shaking: bool = false
 var _base_v_offset: float = 0.0
 var slow_timer: float = 0.0
 var is_dead: bool = false
@@ -149,6 +150,10 @@ func take_damage(amount: float, damage_type: int = 0) -> void:
 
 	# Show floating damage number, color-coded by type
 	_show_damage_number(actual_damage, damage_type)
+	# Subtle screen-shake on chunky hits (>=80 damage) — gives weight to
+	# tier-3 hits and crits without spamming on every basic shot.
+	if actual_damage >= 80.0 and EffectPlayer and EffectPlayer.has_method("screen_shake"):
+		EffectPlayer.screen_shake(2.5, 0.10)
 
 	# Per-enemy hit pop (ROADMAP #27). Skipped if this hit kills — the
 	# death sound via SfxManager.play_death takes over on kill.
@@ -246,22 +251,35 @@ func flash_crit() -> void:
 
 
 func show_hit_reaction() -> void:
-	# Show a floating angry/sad label above the enemy
-	var reaction := Label.new()
-	var reactions := [">:(", "AUA!", "HEY!", "STOPP!", "NEI!", "WÄÄH!", "AUTSCH!", "GOPF!"]
-	reaction.text = reactions[randi() % reactions.size()]
-	reaction.add_theme_font_size_override("font_size", 18)
-	reaction.add_theme_color_override("font_color", Color(1, 0.2, 0.2))
-	reaction.position = Vector2(-15, -50)
-	reaction.z_index = 10
-	add_child(reaction)
-
-	# Float up and fade out
-	var tween := create_tween()
-	tween.set_parallel(true)
-	tween.tween_property(reaction, "position:y", -80.0, 0.8)
-	tween.tween_property(reaction, "modulate:a", 0.0, 0.8)
-	tween.chain().tween_callback(reaction.queue_free)
+	# Hit-shake the sprite — gives a tactile "hit registered" feel beyond
+	# just the damage number. ±4px lateral over 0.07s, then settles back.
+	if sprite and not _is_hit_shaking:
+		_is_hit_shaking = true
+		var base_x: float = sprite.position.x
+		var sk := sprite.create_tween()
+		sk.tween_property(sprite, "position:x", base_x + 4.0, 0.025)
+		sk.tween_property(sprite, "position:x", base_x - 3.0, 0.04)
+		sk.tween_property(sprite, "position:x", base_x, 0.035)
+		sk.tween_callback(func(): _is_hit_shaking = false)
+	# Show a floating angry/sad label above the enemy (~30% of the time so
+	# it's punctuation not noise — was every hit, became repetitive in
+	# stress waves)
+	if randf() > 0.7:
+		var reaction := Label.new()
+		var reactions := [">:(", "AUA!", "HEY!", "STOPP!", "NEI!", "WÄÄH!", "AUTSCH!", "GOPF!"]
+		reaction.text = reactions[randi() % reactions.size()]
+		reaction.add_theme_font_size_override("font_size", 18)
+		reaction.add_theme_color_override("font_color", Color(1, 0.2, 0.2))
+		reaction.add_theme_color_override("font_outline_color", Color.BLACK)
+		reaction.add_theme_constant_override("outline_size", 2)
+		reaction.position = Vector2(-15, -50)
+		reaction.z_index = 10
+		add_child(reaction)
+		var tween := create_tween()
+		tween.set_parallel(true)
+		tween.tween_property(reaction, "position:y", -80.0, 0.8)
+		tween.tween_property(reaction, "modulate:a", 0.0, 0.8)
+		tween.chain().tween_callback(reaction.queue_free)
 
 
 func die() -> void:
@@ -731,7 +749,13 @@ func _show_gold_earned() -> void:
 	# D26: styled gold floater — coin prefix, bolder size, arc trajectory.
 	var label := Label.new()
 	label.text = "✦ +%d G" % gold_reward
-	var font_size: int = 18 if gold_reward < 25 else 22  # bigger pop for large rewards
+	# Three tiers: small reward 18px, medium 24px, big 30px. Big rewards
+	# also get a brief sparkle pop scale.
+	var font_size: int = 18
+	if gold_reward >= 50:
+		font_size = 30
+	elif gold_reward >= 25:
+		font_size = 24
 	label.add_theme_font_size_override("font_size", font_size)
 	label.add_theme_color_override("font_color", Color(1.0, 0.88, 0.15))
 	label.add_theme_color_override("font_outline_color", Color(0.25, 0.12, 0.0))

@@ -377,7 +377,8 @@ func _attack() -> void:
 	# Muzzle flash — colored burst in the direction of the target
 	if EffectPlayer and is_instance_valid(current_target):
 		var flash_dir := (current_target.global_position - origin_pos).normalized()
-		EffectPlayer.spawn_muzzle_flash(origin_pos, flash_dir, data.projectile_color)
+		var style: String = data.projectile_style if "projectile_style" in data else ""
+		EffectPlayer.spawn_muzzle_flash(origin_pos, flash_dir, data.projectile_color, style)
 	# Attack animation — squash-and-stretch that returns to the idle
 	# baseline. We can't read sprite.scale live because the idle
 	# breathing loop is tweening it; instead we derive the baseline
