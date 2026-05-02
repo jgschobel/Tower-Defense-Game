@@ -299,13 +299,22 @@ func die() -> void:
 
 	enemy_died.emit(self)
 
-	# Death animation — spin + shrink + fade, then return to pool or free.
+	# Spawn a one-shot poof at the enemy's position so we can immediately
+	# hide the enemy without losing the death feedback. Cleaner than a
+	# 0.35s on-corpse tween that left bodies visible mid-screen.
+	if EffectPlayer and EffectPlayer.has_method("spawn_death_poof"):
+		var poof_color: Color = data.base_color if data else Color(1, 0.5, 0.3)
+		EffectPlayer.spawn_death_poof(global_position, poof_color)
+	# Snappier death — 0.18s instead of 0.35s, parallel scale+fade only,
+	# no rotation (felt floaty). Set visible=false at end so the enemy
+	# actually vanishes even if pool release races on the callback.
 	_death_tween = create_tween()
 	_death_tween.set_parallel(true)
-	_death_tween.tween_property(self, "scale", Vector2.ZERO, 0.35).set_ease(Tween.EASE_IN)
-	_death_tween.tween_property(self, "rotation", randf_range(-1.5, 1.5), 0.35)
-	_death_tween.tween_property(self, "modulate:a", 0.0, 0.35)
-	_death_tween.chain().tween_callback(_return_to_pool_or_free)
+	_death_tween.tween_property(self, "scale", Vector2(0.7, 0.7), 0.18).set_ease(Tween.EASE_IN)
+	_death_tween.tween_property(self, "modulate:a", 0.0, 0.18)
+	_death_tween.chain().tween_callback(func():
+		visible = false
+		_return_to_pool_or_free())
 
 
 func _splash_heal_nearby() -> void:
@@ -610,23 +619,47 @@ func _spawn_children() -> void:
 
 func _show_damage_number(amount: float, damage_type: int = 0) -> void:
 	var label := Label.new()
-	label.text = "-%d" % int(amount)
-	label.add_theme_font_size_override("font_size", 14)
-	# Color-code by damage type for visual feedback
-	var col := Color(1, 0.3, 0.2)  # physical red
+	var dmg: int = int(round(amount))
+	label.text = "-%d" % dmg
+	# Damage tier scales font size + color so big hits read big.
+	# 1-9 small white-ish, 10-29 yellow, 30-79 orange, 80+ red+huge.
+	var size: int = 18
+	var col: Color
+	if dmg >= 80:
+		size = 36
+		col = Color(1.0, 0.18, 0.12)
+	elif dmg >= 30:
+		size = 28
+		col = Color(1.0, 0.55, 0.12)
+	elif dmg >= 10:
+		size = 22
+		col = Color(1.0, 0.92, 0.25)
+	else:
+		size = 18
+		col = Color(1.0, 0.95, 0.85)
+	# Damage-type override: magic purple, pure gold (ignore size scaling here
+	# so type still reads first; only physical follows the magnitude scale).
 	match damage_type:
-		1: col = Color(0.7, 0.3, 1)  # magic purple
-		2: col = Color(1, 0.85, 0.2) # pure gold
+		1: col = Color(0.78, 0.36, 1.0)
+		2: col = Color(1.0, 0.85, 0.2)
+	label.add_theme_font_size_override("font_size", size)
 	label.add_theme_color_override("font_color", col)
 	label.add_theme_color_override("font_outline_color", Color.BLACK)
-	label.add_theme_constant_override("outline_size", 2)
-	label.position = Vector2(randf_range(-15, 15), -40)
+	label.add_theme_constant_override("outline_size", 3)
+	label.position = Vector2(randf_range(-18, 18), -42)
 	label.z_index = 20
 	add_child(label)
+	# Bigger numbers float higher + linger slightly longer
+	var rise: float = -75.0 - float(size - 18) * 1.5
+	var dur: float = 0.55 + float(size - 18) * 0.012
+	# Pop-in scale for big hits — feels weighty
+	var pop_scale: float = 1.0 + minf(float(dmg) / 100.0, 0.6)
+	label.scale = Vector2(0.4, 0.4)
 	var tween := create_tween()
 	tween.set_parallel(true)
-	tween.tween_property(label, "position:y", -75.0, 0.6)
-	tween.tween_property(label, "modulate:a", 0.0, 0.6)
+	tween.tween_property(label, "scale", Vector2(pop_scale, pop_scale), 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(label, "position:y", rise, dur)
+	tween.chain().tween_property(label, "modulate:a", 0.0, 0.18)
 	tween.chain().tween_callback(label.queue_free)
 
 
