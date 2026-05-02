@@ -22,17 +22,24 @@ on:
           - kuhne
   repository_dispatch:
     types: [tier-art]
+  # Issue-driven trigger: file an issue with the `tier-art` label and
+  # the char id as the first word of the title (e.g. "cordula tier
+  # variants regen"). Lets us fire the workflow without gh CLI access.
+  issues:
+    types: [opened, labeled]
 
 permissions:
   contents: write
   pull-requests: write
+  issues: write
 
 concurrency:
-  group: tier-art-${{ inputs.char || github.event.client_payload.char }}
+  group: tier-art-${{ inputs.char || github.event.client_payload.char || github.event.issue.number }}
   cancel-in-progress: false
 
 jobs:
   generate:
+    if: github.event_name != 'issues' || contains(github.event.issue.labels.*.name, 'tier-art')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -49,11 +56,17 @@ jobs:
         env:
           DISPATCH_CHAR: ${{ github.event.client_payload.char }}
           INPUT_CHAR: ${{ inputs.char }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
         run: |
           set -e
           CHAR="${INPUT_CHAR:-$DISPATCH_CHAR}"
+          # Issue path: extract the first lowercase word from the title.
+          if [ -z "$CHAR" ] && [ -n "$ISSUE_TITLE" ]; then
+            CHAR=$(echo "$ISSUE_TITLE" | tr '[:upper:]' '[:lower:]' \
+              | grep -oE '\b(cordula|kuhne)\b' | head -1)
+          fi
           if [ -z "$CHAR" ]; then
-            echo "::error::no char id provided"
+            echo "::error::no char id provided (need 'cordula' or 'kuhne' in title or input)"
             exit 1
           fi
           echo "char=$CHAR" >> "$GITHUB_OUTPUT"
