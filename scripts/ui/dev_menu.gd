@@ -107,6 +107,7 @@ var _current_tab: String = "monsters"
 
 
 func _ready() -> void:
+	print("[DevMenu] _ready start — vp=", get_viewport().get_visible_rect().size)
 	# Force-fit to viewport — when DevMenu is the current scene, the
 	# root Control should be 1280×720 but anchors-only sizing can
 	# collapse to 0×0 in some Godot versions, which is what the user
@@ -131,11 +132,28 @@ func _ready() -> void:
 	emergency_back.pressed.connect(func():
 		get_tree().change_scene_to_file("res://scenes/ui/main_menu.tscn"))
 	add_child(emergency_back)
+	# Bright yellow heartbeat — proves the script reached _ready even if
+	# every subsequent UI builder fails. User can trust: if THIS is missing,
+	# the script didn't load (parse error). If THIS is visible, _ready ran.
+	var heartbeat := Label.new()
+	heartbeat.text = "DevMenu OK · " + Time.get_time_string_from_system()
+	heartbeat.add_theme_font_size_override("font_size", 14)
+	heartbeat.add_theme_color_override("font_color", Color(1.0, 0.9, 0.3))
+	heartbeat.add_theme_color_override("font_outline_color", Color.BLACK)
+	heartbeat.add_theme_constant_override("outline_size", 3)
+	heartbeat.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+	heartbeat.offset_left = -260
+	heartbeat.offset_top = 12
+	heartbeat.offset_right = -16
+	heartbeat.offset_bottom = 36
+	heartbeat.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	add_child(heartbeat)
 	_load_prefs()
 	_build_shell()
 	# Populate the initial tab DIRECTLY — calling _show_tab here would
 	# rebuild the shell we just built and leak the _content_root reference.
 	_populate_active_tab()
+	print("[DevMenu] _ready done — children=", get_child_count(), " size=", size)
 
 
 func _fit_viewport() -> void:
@@ -660,10 +678,12 @@ func _build_palette_card(entry: Dictionary) -> Control:
 	var inner := HBoxContainer.new()
 	inner.add_theme_constant_override("separation", DesignTokens.SP_M)
 	card.add_child(inner)
-	# Color swatch
+	# Color swatch — explicit hardcoded lookup. PREVIOUS BUG: tried
+	# DesignTokens.get(name) and `name in DesignTokens` which doesn't work
+	# on a class_name (only on instances). Caused script to fail/grey out.
 	var swatch := ColorRect.new()
 	swatch.custom_minimum_size = Vector2(64, 64)
-	var col_value: Color = DesignTokens.get(str(entry.name)) if str(entry.name) in DesignTokens else Color.MAGENTA
+	var col_value: Color = _resolve_palette_color(str(entry.name))
 	swatch.color = col_value
 	inner.add_child(swatch)
 	# Info
@@ -758,3 +778,27 @@ func _save_prefs() -> void:
 	if f == null:
 		return
 	f.store_string(JSON.stringify(_prefs))
+
+
+func _resolve_palette_color(name: String) -> Color:
+	# Hardcoded map — class_name consts can't be reflected by .get() so
+	# we list them explicitly. Adding a new color? Add it here too.
+	match name:
+		"COL_BG_DEEPEST":    return DesignTokens.COL_BG_DEEPEST
+		"COL_BG_PANEL":      return DesignTokens.COL_BG_PANEL
+		"COL_BG_RAISED":     return DesignTokens.COL_BG_RAISED
+		"COL_BG_HOVER":      return DesignTokens.COL_BG_HOVER
+		"COL_BG_PRESSED":    return DesignTokens.COL_BG_PRESSED
+		"COL_STROKE_FAINT":  return DesignTokens.COL_STROKE_FAINT
+		"COL_STROKE_NORMAL": return DesignTokens.COL_STROKE_NORMAL
+		"COL_STROKE_STRONG": return DesignTokens.COL_STROKE_STRONG
+		"COL_STROKE_HOVER":  return DesignTokens.COL_STROKE_HOVER
+		"COL_TEXT_PRIMARY":  return DesignTokens.COL_TEXT_PRIMARY
+		"COL_TEXT_HEADING":  return DesignTokens.COL_TEXT_HEADING
+		"COL_TEXT_MUTED":    return DesignTokens.COL_TEXT_MUTED
+		"COL_TEXT_DISABLED": return DesignTokens.COL_TEXT_DISABLED
+		"COL_OK":            return DesignTokens.COL_OK
+		"COL_WARN":          return DesignTokens.COL_WARN
+		"COL_BAD":           return DesignTokens.COL_BAD
+		"COL_GOLD":          return DesignTokens.COL_GOLD
+		_:                   return Color.MAGENTA
