@@ -89,15 +89,25 @@ func _show_run_stats() -> void:
 	stats_v.add_theme_constant_override("separation", DesignTokens.SP_XS)
 	stats_panel.add_child(stats_v)
 	var max_stars: int = GameManager.MAX_LEVELS * 3
+	# Stars row — SVG star icon + count (was font-rendered ★).
+	var stars_row := HBoxContainer.new()
+	stars_row.add_theme_constant_override("separation", DesignTokens.SP_XS)
+	stars_row.add_child(IconLibrary.make_rect("star", 18, DesignTokens.COL_GOLD))
 	var stars_lbl := Label.new()
-	stars_lbl.text = "★ %d / %d" % [GameManager.total_stars, max_stars]
+	stars_lbl.text = "%d / %d" % [GameManager.total_stars, max_stars]
 	DesignTokens.style_label(stars_lbl, DesignTokens.FONT_LABEL_LG)
 	stars_lbl.add_theme_color_override("font_color", DesignTokens.COL_GOLD)
-	stats_v.add_child(stars_lbl)
+	stars_row.add_child(stars_lbl)
+	stats_v.add_child(stars_row)
+	# Kills row — SVG sword icon + count (was font-rendered ⚔).
+	var kills_row := HBoxContainer.new()
+	kills_row.add_theme_constant_override("separation", DesignTokens.SP_XS)
+	kills_row.add_child(IconLibrary.make_rect("sword", 14, DesignTokens.COL_TEXT_MUTED))
 	var kills_lbl := Label.new()
-	kills_lbl.text = "⚔ %d Kills" % GameManager.total_kills
+	kills_lbl.text = "%d Kills" % GameManager.total_kills
 	DesignTokens.style_label(kills_lbl, DesignTokens.FONT_LABEL_SM, true)
-	stats_v.add_child(kills_lbl)
+	kills_row.add_child(kills_lbl)
+	stats_v.add_child(kills_row)
 	add_child(stats_panel)
 
 	# (Aminos-Lade now lives in the main menu button column via

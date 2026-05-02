@@ -1568,12 +1568,16 @@ func _refresh_tower_info() -> void:
 
 func _paint_sell_button(sell_btn: Button) -> void:
 	# Centralized sell-button styling so _refresh_tower_info (fired on
-	# every gold change) doesn't silently overwrite the armed "Sicher? ✖"
-	# state. Audit P0 #1: without this, a kill during the 2s arm window
-	# reverted the label to "Verchaufe X" but left _sell_armed=true, so
-	# the next tap sold with no visible warning.
+	# every gold change) doesn't silently overwrite the armed state.
+	# Audit P0 #1: without this, a kill during the 2s arm window reverted
+	# the label to "Verchaufe X" but left _sell_armed=true, so the next
+	# tap sold with no visible warning.
+	# Uses SVG icons (assets/icons/x.svg, coin.svg) — was emoji which
+	# tofu'd on phones missing the Noto Emoji fallback.
 	if _sell_armed:
-		sell_btn.text = "Sicher? ✖"
+		sell_btn.icon = IconLibrary.get_icon("x")
+		sell_btn.expand_icon = false
+		sell_btn.text = " Sicher?"
 		sell_btn.modulate = Color(1.0, 0.5, 0.3)
 		return
 	sell_btn.modulate = Color.WHITE
@@ -1585,8 +1589,9 @@ func _paint_sell_button(sell_btn: Button) -> void:
 		sell_val = td.get_sell_value_branched(_selected_tower.path_a_tier, _selected_tower.path_b_tier)
 	else:
 		sell_val = td.get_sell_value(_selected_tower.upgrade_level)
-	# Coin-icon prefix instead of plain "Verchaufe" — shorter, scannable.
-	sell_btn.text = "🪙 %d" % sell_val
+	sell_btn.icon = IconLibrary.get_icon("coin")
+	sell_btn.expand_icon = false
+	sell_btn.text = " %d" % sell_val
 
 
 func _ensure_linear_upgrade_button(upgrade_btn: Button) -> void:

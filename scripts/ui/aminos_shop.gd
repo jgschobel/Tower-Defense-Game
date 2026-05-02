@@ -7,21 +7,21 @@ extends Control
 ## on permanent unlocks that apply at start_level() via
 ## GameManager.apply_aminos_modifiers().
 
-# Each entry: id, cost, icon (emoji), title, desc, prereq (optional id)
-# Emoji render via the Noto Emoji fallback chain in
-# assets/fonts/main_theme.tres — see assets/fonts/README.md.
+# Each entry: id, cost, svg (IconLibrary name), title, desc, prereq.
+# SVG icons in assets/icons/ — replaces emoji-as-text which depended on the
+# Noto Emoji fallback chain and tofu'd on phones with stripped fonts.
 const NODES: Array = [
-	{"id": "gold_plus_25",    "cost": 20,  "icon": "💰", "title": "Mini Start-Bonus",   "desc": "+25 Start-Gold jedes Level"},
-	{"id": "gold_plus_50",    "cost": 45,  "icon": "💰", "title": "Grosse Start-Bonus", "desc": "+50 Start-Gold jedes Level"},
-	{"id": "life_plus_1",     "cost": 35,  "icon": "❤", "title": "Zusätzlichs Läbe",  "desc": "+1 Start-Läbe in jedem Level"},
-	{"id": "life_plus_2",     "cost": 80,  "icon": "❤", "title": "Härtere Hand",      "desc": "+2 Start-Läbe in jedem Level", "prereq": "life_plus_1"},
-	{"id": "tower_disc_5",    "cost": 40,  "icon": "🛒", "title": "Mini Rabatt",        "desc": "Türm sind 5% billiger"},
-	{"id": "tower_disc_10",   "cost": 90,  "icon": "🛒", "title": "Grosse Rabatt",      "desc": "Türm sind 10% billiger", "prereq": "tower_disc_5"},
-	{"id": "upgrade_disc_10", "cost": 60,  "icon": "⚡", "title": "Upgrade-Rabatt",     "desc": "Upgrades sind 10% billiger"},
-	{"id": "farm_plus_10",    "cost": 55,  "icon": "🌾", "title": "Farm-Boost",         "desc": "+10 Gold/Welle für Banani-Hof"},
-	{"id": "crit_plus_5",     "cost": 70,  "icon": "🎯", "title": "Glücks-Hand",        "desc": "+5% Krit-Chance für alli Türm"},
-	{"id": "pierce_plus_1",   "cost": 75,  "icon": "🍌", "title": "Banane-Pierce",      "desc": "Lemurius Bananen durchstäche 1 Feind meh"},
-	{"id": "aminos_x1_5",     "cost": 150, "icon": "✨", "title": "Aminos-Multiplikator", "desc": "1.5× Aminos-Bonus (Endgame-Node)"},
+	{"id": "gold_plus_25",    "cost": 20,  "svg": "coin",      "title": "Mini Start-Bonus",   "desc": "+25 Start-Gold jedes Level"},
+	{"id": "gold_plus_50",    "cost": 45,  "svg": "coin",      "title": "Grosse Start-Bonus", "desc": "+50 Start-Gold jedes Level"},
+	{"id": "life_plus_1",     "cost": 35,  "svg": "heart",     "title": "Zusätzlichs Läbe",  "desc": "+1 Start-Läbe in jedem Level"},
+	{"id": "life_plus_2",     "cost": 80,  "svg": "heart",     "title": "Härtere Hand",      "desc": "+2 Start-Läbe in jedem Level", "prereq": "life_plus_1"},
+	{"id": "tower_disc_5",    "cost": 40,  "svg": "cart",      "title": "Mini Rabatt",        "desc": "Türm sind 5% billiger"},
+	{"id": "tower_disc_10",   "cost": 90,  "svg": "cart",      "title": "Grosse Rabatt",      "desc": "Türm sind 10% billiger", "prereq": "tower_disc_5"},
+	{"id": "upgrade_disc_10", "cost": 60,  "svg": "lightning", "title": "Upgrade-Rabatt",     "desc": "Upgrades sind 10% billiger"},
+	{"id": "farm_plus_10",    "cost": 55,  "svg": "wheat",     "title": "Farm-Boost",         "desc": "+10 Gold/Welle für Banani-Hof"},
+	{"id": "crit_plus_5",     "cost": 70,  "svg": "target",    "title": "Glücks-Hand",        "desc": "+5% Krit-Chance für alli Türm"},
+	{"id": "pierce_plus_1",   "cost": 75,  "svg": "banana",    "title": "Banane-Pierce",      "desc": "Lemurius Bananen durchstäche 1 Feind meh"},
+	{"id": "aminos_x1_5",     "cost": 150, "svg": "sparkle",   "title": "Aminos-Multiplikator", "desc": "1.5× Aminos-Bonus (Endgame-Node)"},
 ]
 
 
@@ -45,14 +45,18 @@ func _build() -> void:
 	root.add_theme_constant_override("separation", 14)
 	add_child(root)
 
-	# Title
+	# Title row — SVG sparkle icon + label (was unicode ✨).
+	var title_row := HBoxContainer.new()
+	title_row.add_theme_constant_override("separation", 12)
+	title_row.add_child(IconLibrary.make_rect("sparkle", 36, Color(1, 0.88, 0.25)))
 	var title := Label.new()
-	title.text = "✨ Aminos-Lade"
+	title.text = "Aminos-Lade"
 	title.add_theme_font_size_override("font_size", 38)
 	title.add_theme_color_override("font_color", Color(1, 0.88, 0.25))
 	title.add_theme_color_override("font_outline_color", Color(0.25, 0.12, 0))
 	title.add_theme_constant_override("outline_size", 5)
-	root.add_child(title)
+	title_row.add_child(title)
+	root.add_child(title_row)
 
 	# Balance row — coin icon + count + total
 	var balance_label := Label.new()
@@ -93,7 +97,9 @@ func _build() -> void:
 func _refresh_balance(lbl: Label) -> void:
 	var bal: int = AminosManager.balance if AminosManager else 0
 	var tot: int = AminosManager.total_earned if AminosManager else 0
-	lbl.text = "✨ Du hesch  %d  Aminos    (total verdient: %d)" % [bal, tot]
+	# Plain text — emoji prefix dropped in favor of the SVG sparkle in the
+	# title row above. Keeps balance readable on phones with stripped fonts.
+	lbl.text = "Du hesch  %d  Aminos    (total verdient: %d)" % [bal, tot]
 
 
 func _row(spec: Dictionary) -> Control:
@@ -138,15 +144,24 @@ func _row(spec: Dictionary) -> Control:
 	row.add_theme_constant_override("separation", 14)
 	panel.add_child(row)
 
-	# Icon column
-	var icon_lbl := Label.new()
-	icon_lbl.text = spec.get("icon", "•")
-	icon_lbl.add_theme_font_size_override("font_size", 32)
-	icon_lbl.custom_minimum_size = Vector2(48, 0)
-	icon_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	if not prereq_met and not owned:
-		icon_lbl.modulate = Color(0.5, 0.5, 0.5, 0.7)
-	row.add_child(icon_lbl)
+	# Icon column — SVG from IconLibrary (was emoji label).
+	var icon_box := PanelContainer.new()
+	icon_box.custom_minimum_size = Vector2(56, 56)
+	icon_box.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	var icon_bg := StyleBoxFlat.new()
+	icon_bg.bg_color = Color(0.08, 0.06, 0.04, 0.55)
+	icon_bg.corner_radius_top_left = 8
+	icon_bg.corner_radius_top_right = 8
+	icon_bg.corner_radius_bottom_left = 8
+	icon_bg.corner_radius_bottom_right = 8
+	icon_bg.content_margin_left = 6
+	icon_bg.content_margin_right = 6
+	icon_bg.content_margin_top = 6
+	icon_bg.content_margin_bottom = 6
+	icon_box.add_theme_stylebox_override("panel", icon_bg)
+	var icon_tint: Color = Color(1.0, 0.9, 0.4) if (owned or prereq_met) else Color(0.5, 0.5, 0.5, 0.7)
+	icon_box.add_child(IconLibrary.make_rect(spec.get("svg", "sparkle"), 32, icon_tint))
+	row.add_child(icon_box)
 
 	# Text column (title + desc)
 	var text_col := VBoxContainer.new()
@@ -179,36 +194,48 @@ func _row(spec: Dictionary) -> Control:
 
 func _state_widget(spec: Dictionary, owned: bool, prereq_met: bool, affordable: bool) -> Control:
 	if owned:
+		# Owned badge: SVG check icon + "Gchauft" label, centered.
+		var owned_row := HBoxContainer.new()
+		owned_row.alignment = BoxContainer.ALIGNMENT_CENTER
+		owned_row.add_theme_constant_override("separation", 6)
+		owned_row.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+		owned_row.offset_left = -60
+		owned_row.offset_right = 60
+		owned_row.add_child(IconLibrary.make_rect("check", 18, Color(0.5, 1.0, 0.4)))
 		var lbl := Label.new()
-		lbl.text = "✅ Gchauft"
+		lbl.text = "Gchauft"
 		lbl.add_theme_font_size_override("font_size", 17)
 		lbl.add_theme_color_override("font_color", Color(0.5, 1.0, 0.4))
 		lbl.add_theme_color_override("font_outline_color", Color.BLACK)
 		lbl.add_theme_constant_override("outline_size", 2)
-		lbl.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-		lbl.offset_left = -60
-		lbl.offset_right = 60
-		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		return lbl
+		owned_row.add_child(lbl)
+		return owned_row
 	if not prereq_met:
-		# Prereq locked — show what's needed in human-readable form
+		# Prereq locked — SVG lock + human-readable prereq title.
 		var prereq_id: String = spec.get("prereq", "")
 		var prereq_title: String = _label_for_id(prereq_id)
+		var locked_row := HBoxContainer.new()
+		locked_row.alignment = BoxContainer.ALIGNMENT_CENTER
+		locked_row.add_theme_constant_override("separation", 6)
+		locked_row.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+		locked_row.offset_left = -75
+		locked_row.offset_right = 75
+		locked_row.add_child(IconLibrary.make_rect("lock", 16, Color(0.85, 0.7, 0.4)))
 		var lbl := Label.new()
-		lbl.text = "🔒 zerscht\n%s" % prereq_title
+		lbl.text = "zerscht %s" % prereq_title
 		lbl.add_theme_font_size_override("font_size", 12)
 		lbl.add_theme_color_override("font_color", Color(0.85, 0.7, 0.4))
 		lbl.add_theme_color_override("font_outline_color", Color.BLACK)
 		lbl.add_theme_constant_override("outline_size", 2)
-		lbl.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-		lbl.offset_left = -70
-		lbl.offset_right = 70
-		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		return lbl
-	# Affordable or too-expensive: a buy button
+		lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
+		locked_row.add_child(lbl)
+		return locked_row
+	# Affordable or too-expensive: a buy button with sparkle icon for cost.
 	var btn := Button.new()
 	btn.custom_minimum_size = Vector2(140, 44)
-	btn.text = "%d" % int(spec.cost)
+	btn.icon = IconLibrary.get_icon("sparkle")
+	btn.expand_icon = false
+	btn.text = " %d" % int(spec.cost)
 	btn.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	btn.offset_left = -70
 	btn.offset_right = 70
