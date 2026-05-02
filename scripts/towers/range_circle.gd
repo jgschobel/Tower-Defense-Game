@@ -18,6 +18,14 @@ func set_radius(r: float) -> void:
 	queue_redraw()
 
 
+func set_tint(c: Color) -> void:
+	# Per-tower tint — keeps range visualizations distinguishable when
+	# multiple towers' ranges overlap.
+	circle_color = Color(c.r, c.g, c.b, 0.14)
+	border_color = Color(c.r, c.g, c.b, 0.78)
+	queue_redraw()
+
+
 func _process(delta: float) -> void:
 	if not visible:
 		return

@@ -849,6 +849,8 @@ func _update_range_collider() -> void:
 
 	if range_indicator and range_indicator.has_method("set_radius"):
 		range_indicator.set_radius(effective_range)
+	if range_indicator and range_indicator.has_method("set_tint") and data and data.projectile_color.a > 0.01:
+		range_indicator.set_tint(data.projectile_color)
 
 
 func _on_detection_area_area_entered(area: Area2D) -> void:
