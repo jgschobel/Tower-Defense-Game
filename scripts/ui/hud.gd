@@ -46,6 +46,15 @@ func _ready() -> void:
 
 	_on_gold_changed(CurrencyManager.gold)
 	_on_lives_changed(GameManager.lives)
+	# Bump top-bar text size for mobile readability — defaults were ~14px
+	# on a 1280×720 phone screen, hard to read at arm's length.
+	for lbl in [gold_label, lives_label, wave_label, enemy_count_label]:
+		if lbl:
+			lbl.add_theme_font_size_override("font_size", 22)
+			lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.85))
+			lbl.add_theme_constant_override("outline_size", 3)
+	if gold_label:
+		gold_label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.25))
 	_populate_tower_shop()
 	_apply_safe_area()
 	_build_shop_collapse_handle()
@@ -1665,7 +1674,7 @@ func _on_speed_button_pressed() -> void:
 		_game_speed = 1.0
 	Engine.time_scale = _game_speed
 	if speed_button:
-		speed_button.text = "%dx" % int(_game_speed)
+		speed_button.text = "%d×" % int(_game_speed)  # proper × character, not lowercase x
 		# Tint by speed so the current mode is visible at a glance:
 		# 1x = white, 2x = warm yellow, 3x = red-hot fast-forward.
 		match int(_game_speed):
@@ -1745,17 +1754,17 @@ func show_toast(message: String) -> void:
 	var toast := Label.new()
 	toast.add_to_group("hud_toast")
 	toast.text = message
-	toast.add_theme_font_size_override("font_size", 24)
+	toast.add_theme_font_size_override("font_size", 30)
 	toast.add_theme_color_override("font_color", Color(1, 0.35, 0.2))
 	toast.add_theme_color_override("font_outline_color", Color(0.1, 0.05, 0))
-	toast.add_theme_constant_override("outline_size", 5)
+	toast.add_theme_constant_override("outline_size", 6)
 	toast.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	toast.anchor_left = 0.5
-	toast.anchor_top = 0.62
+	toast.anchor_top = 0.55
 	toast.anchor_right = 0.5
-	toast.anchor_bottom = 0.62
-	toast.offset_left = -160
-	toast.offset_right = 160
+	toast.anchor_bottom = 0.55
+	toast.offset_left = -220
+	toast.offset_right = 220
 	toast.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	add_child(toast)
 	var tween := toast.create_tween()
