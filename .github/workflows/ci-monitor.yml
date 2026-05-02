@@ -25,7 +25,7 @@ on:
 
 permissions:
   actions: read
-  contents: read
+  contents: write
   issues: write
 
 concurrency:
@@ -110,3 +110,83 @@ jobs:
                  --repo "${{ github.repository }}" \
                  --title "[ci-failure] ${WF_NAME} run #${RUN_NUM}" \
                  --body-file issue_body.md
+
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Mirror failure log into the repo
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WF_NAME: ${{ github.event.workflow_run.name }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+          RUN_NUM: ${{ github.event.workflow_run.run_number }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+        run: |
+          # Write the log tail as a file in the repo so future Claude
+          # sessions can read it via the GitHub MCP get_file_contents tool
+          # (which can read files but cannot reach Actions logs API).
+          set +e
+          mkdir -p docs/observability/failures
+          # Sanitize workflow name for the filename
+          slug=$(echo "$WF_NAME" | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | tr -cd 'a-z0-9-')
+          fname="docs/observability/failures/${slug}__${RUN_ID}.log"
+          TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          {
+            echo "# Workflow failure: ${WF_NAME}"
+            echo "Run #${RUN_NUM} · run_id=${RUN_ID}"
+            echo "URL: ${RUN_URL}"
+            echo "Branch: ${HEAD_BRANCH} · Commit: ${HEAD_SHA:0:7}"
+            echo "Captured: ${TS}"
+            echo ""
+            echo "===== last 250 lines of step logs ====="
+            if [ -s ../log_tail.txt ]; then
+              cat ../log_tail.txt
+            elif [ -s log_tail.txt ]; then
+              cat log_tail.txt
+            else
+              echo "(no logs available — check $RUN_URL)"
+            fi
+          } > "$fname"
+
+          # Update the INDEX so a single read gives recent failures
+          idx="docs/observability/failures/INDEX.md"
+          if [ ! -f "$idx" ]; then
+            {
+              echo "# Workflow Failure Log Index"
+              echo ""
+              echo "Most recent failures captured by ci-monitor.yml. Each row"
+              echo "links to a log file in this directory. Useful when chat-"
+              echo "session Claude needs to debug \"why is X broken?\" — read"
+              echo "the bottom of the log file directly via get_file_contents."
+              echo ""
+              echo "| When (UTC) | Workflow | Run | Branch | Commit | Log |"
+              echo "|---|---|---|---|---|---|"
+            } > "$idx"
+          fi
+          echo "| $TS | $WF_NAME | [#$RUN_NUM]($RUN_URL) | $HEAD_BRANCH | \`${HEAD_SHA:0:7}\` | [\`${slug}__${RUN_ID}.log\`](./${slug}__${RUN_ID}.log) |" >> "$idx"
+
+          # Keep the last 50 entries (header + 50 rows + spacing)
+          head -10 "$idx" > /tmp/idx.head
+          tail -n +11 "$idx" | tail -50 > /tmp/idx.body
+          cat /tmp/idx.head /tmp/idx.body > "$idx"
+
+          # Trim oldest log files so the directory doesn't grow forever
+          ls -1t docs/observability/failures/*.log 2>/dev/null | tail -n +51 | xargs -r rm -f
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/observability/failures/
+          git diff --cached --quiet && { echo "no log changes"; exit 0; }
+          git commit -m "chore(observability): log ${WF_NAME} run ${RUN_ID} (failure)"
+          # Push with retry — concurrent pushes from other workflows can race
+          for attempt in 1 2 3 4 5; do
+            git pull --rebase origin main 2>&1 | tail -3
+            if git push origin main; then
+              echo "pushed on attempt $attempt"; exit 0
+            fi
+            sleep $((attempt * 2))
+          done
+          echo "::warning::failure log push failed after 5 retries"

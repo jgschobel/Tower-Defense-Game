@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   issues: write
   actions: read
 
@@ -180,13 +180,111 @@ jobs:
           fi
           echo "Loop is healthy — autonomous-dev: ${{ steps.activity.outputs.loop_runs_8h }} run(s)/8h, deploy-web: ${{ steps.activity.outputs.deploy_success_24h }} success/24h"
 
-      - name: Append to ledger
+      - name: Build live status dashboard
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set +e
+          set -e
           mkdir -p docs/observability
-          status="ok"
-          if [ "${{ steps.verdict.outputs.unhealthy }}" = "1" ]; then status="UNHEALTHY"; fi
-          # No-op locally — the ledger commit happens via deploy-web's normal push,
-          # this just emits to logs for now. We avoid pushing from this workflow
-          # to keep its blast radius narrow.
-          echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) · loop-health · $status · runs8h=${{ steps.activity.outputs.loop_runs_8h }} · deploys24h=${{ steps.activity.outputs.deploy_success_24h }}"
+          TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          status_emoji="🟢 healthy"
+          if [ "${{ steps.verdict.outputs.unhealthy }}" = "1" ]; then status_emoji="🔴 unhealthy"; fi
+
+          # Per-workflow last-run summary. One API call, parsed inline.
+          render_workflow() {
+            local wf="$1"
+            local label="$2"
+            local data
+            data=$(gh api -H "Accept: application/vnd.github+json" \
+              "/repos/${{ github.repository }}/actions/workflows/${wf}/runs?per_page=10" \
+              --jq '.workflow_runs[] | select(.event != "workflow_dispatch" or .status == "completed") | {created_at, conclusion, status, run_number, html_url}' 2>/dev/null \
+              | head -200)
+            local last_run last_concl last_url last_num last_success
+            last_run=$(echo "$data" | jq -r 'select(. != null) | .created_at' | head -1)
+            last_concl=$(echo "$data" | jq -r 'select(. != null) | .conclusion' | head -1)
+            last_url=$(echo "$data" | jq -r 'select(. != null) | .html_url' | head -1)
+            last_num=$(echo "$data" | jq -r 'select(. != null) | .run_number' | head -1)
+            last_success=$(echo "$data" | jq -r 'select(. != null and .conclusion == "success") | .created_at' | head -1)
+            [ -z "$last_run" ] && last_run="(never)"
+            [ -z "$last_concl" ] && last_concl="-"
+            [ -z "$last_success" ] && last_success="(never)"
+            local concl_emoji="❓"
+            case "$last_concl" in
+              success) concl_emoji="✅" ;;
+              failure) concl_emoji="❌" ;;
+              cancelled) concl_emoji="⚪" ;;
+              skipped) concl_emoji="⏭️" ;;
+              *) concl_emoji="❓" ;;
+            esac
+            if [ -n "$last_url" ] && [ "$last_url" != "(never)" ]; then
+              echo "| $label | $last_run | $concl_emoji $last_concl ([#$last_num]($last_url)) | $last_success |"
+            else
+              echo "| $label | (never) | (never) | (never) |"
+            fi
+          }
+
+          open_failures=$(gh issue list --label ci-failure --state open --json number --jq 'length' 2>/dev/null || echo 0)
+          open_loop_broken=$(gh issue list --label loop-broken --state open --json number --jq 'length' 2>/dev/null || echo 0)
+          pause_file="false"
+          [ -f .github/autonomous/PAUSE ] && pause_file="true"
+
+          {
+            echo "# Autonomous Loop Status"
+            echo ""
+            echo "**Updated:** $TS"
+            echo "**Overall:** $status_emoji"
+            echo ""
+            echo "## Workflow last-run health"
+            echo ""
+            echo "| Workflow | Last run (UTC) | Last status | Last success |"
+            echo "|---|---|---|---|"
+            render_workflow autonomous-dev.yml "autonomous-dev"
+            render_workflow deploy-web.yml "deploy-web"
+            render_workflow playtest.yml "playtest"
+            render_workflow audit-grid.yml "audit-grid"
+            render_workflow sim-gate.yml "sim-gate"
+            render_workflow gitleaks.yml "gitleaks"
+            render_workflow cleanup.yml "cleanup"
+            render_workflow drift-scan.yml "drift-scan"
+            render_workflow weekly-digest.yml "weekly-digest"
+            render_workflow loop-health.yml "loop-health"
+            render_workflow workflow-lint.yml "workflow-lint"
+            echo ""
+            echo "## Issue counters"
+            echo ""
+            echo "- Open \`ci-failure\` issues: **$open_failures**"
+            echo "- Open \`loop-broken\` issues: **$open_loop_broken**"
+            echo "- PAUSE kill-switch present: \`$pause_file\`"
+            echo ""
+            echo "## Recent failure logs"
+            echo ""
+            if [ -f docs/observability/failures/INDEX.md ]; then
+              tail -10 docs/observability/failures/INDEX.md
+            else
+              echo "(no failure log index yet — created on first ci-monitor capture)"
+            fi
+            echo ""
+            echo "---"
+            echo "_Auto-generated by \`.github/workflows/loop-health.yml\` every 6h. Read this file for a one-shot health view._"
+          } > docs/observability/loop-status.md
+
+          # Append a one-line ledger entry
+          mkdir -p docs/observability
+          [ -f docs/observability/ledger.md ] || touch docs/observability/ledger.md
+          echo "- $TS · loop-health · ${{ steps.verdict.outputs.unhealthy == '1' && 'UNHEALTHY' || 'ok' }} · runs8h=${{ steps.activity.outputs.loop_runs_8h }} · deploys24h=${{ steps.activity.outputs.deploy_success_24h }}" >> docs/observability/ledger.md
+          tail -n 150 docs/observability/ledger.md > /tmp/ledger.trim
+          mv /tmp/ledger.trim docs/observability/ledger.md
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/observability/loop-status.md docs/observability/ledger.md
+          git diff --cached --quiet && { echo "no status changes"; exit 0; }
+          git commit -m "chore(observability): loop-status update ($TS)"
+          for attempt in 1 2 3 4 5; do
+            git pull --rebase origin main 2>&1 | tail -3
+            if git push origin main; then
+              echo "pushed on attempt $attempt"; exit 0
+            fi
+            sleep $((attempt * 2))
+          done
+          echo "::warning::loop-status push failed after 5 retries"

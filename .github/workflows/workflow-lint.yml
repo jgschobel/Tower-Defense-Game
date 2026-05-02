@@ -1,0 +1,120 @@
+name: Workflow Lint
+
+# Catches the bug class that broke deploy-web + autonomous-dev for 9 days
+# (2026-04-21 → 2026-05-02): unmarked prose comments inside `run: |` blocks
+# that bash interpreted as commands, exit 127, silent CI death.
+#
+# Two independent passes:
+#   1. actionlint — industry-standard GitHub Actions linter; catches expression
+#      typos, action-version issues, and many shell pitfalls
+#   2. bash -n on every `run: |` block — catches the prose-comment bug class
+#      directly, with no false positives
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/**'
+      - '.github/actionlint.yml'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: workflow-lint-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  actionlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run actionlint
+        run: |
+          # Pinned download — pin a known-good actionlint release.
+          # If you need a newer version bump the tag here.
+          set -e
+          curl -fsSL -o actionlint.tar.gz \
+            https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_linux_amd64.tar.gz
+          tar -xzf actionlint.tar.gz actionlint
+          ./actionlint -color
+
+  bash-syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install pyyaml
+        run: pip install --quiet pyyaml
+
+      - name: Bash -n every run block
+        run: |
+          # Extracts each `run: |` literal block, substitutes ${{ ... }}
+          # expressions with a placeholder so the shell parser doesn't choke
+          # on them, and runs `bash -n` on the result. Returns non-zero on
+          # any block that doesn't pass syntax.
+          python3 - <<'PY'
+          import re, subprocess, glob, tempfile, os, sys
+          failed_blocks = []
+          total = 0
+          for f in sorted(glob.glob('.github/workflows/*.yml')):
+              with open(f) as fp:
+                  lines = fp.readlines()
+              in_run = False
+              run_indent = 0
+              block = []
+              block_start = 0
+              def check(name, start, code):
+                  global total
+                  total += 1
+                  code = re.sub(r'\$\{\{\s*[^}]+\s*\}\}', 'PLACEHOLDER', code)
+                  with tempfile.NamedTemporaryFile(mode='w', suffix='.sh', delete=False) as tmp:
+                      tmp.write('#!/bin/bash\n' + code)
+                      path = tmp.name
+                  try:
+                      r = subprocess.run(['bash', '-n', path], capture_output=True, text=True, timeout=15)
+                      if r.returncode != 0:
+                          failed_blocks.append((name, start, r.stderr.strip()))
+                  finally:
+                      os.unlink(path)
+              for i, line in enumerate(lines, 1):
+                  stripped = line.rstrip('\n')
+                  if re.match(r'^\s*run:\s*\|', stripped):
+                      in_run = True
+                      run_indent = len(stripped) - len(stripped.lstrip())
+                      block = []
+                      block_start = i + 1
+                      continue
+                  if in_run:
+                      cur_indent = (len(stripped) - len(stripped.lstrip())) if stripped.strip() else run_indent + 999
+                      if stripped.strip() and cur_indent <= run_indent:
+                          common = min((len(l) - len(l.lstrip()) for l in block if l.strip()), default=0)
+                          code = '\n'.join(l[common:] if len(l) >= common else l for l in block)
+                          check(f, block_start, code)
+                          in_run = False
+                          block = []
+                          continue
+                      block.append(stripped)
+              if in_run and block:
+                  common = min((len(l) - len(l.lstrip()) for l in block if l.strip()), default=0)
+                  code = '\n'.join(l[common:] if len(l) >= common else l for l in block)
+                  check(f, block_start, code)
+          print(f'{total - len(failed_blocks)}/{total} run: blocks pass bash -n')
+          if failed_blocks:
+              print('\n=== FAILURES ===')
+              for name, start, err in failed_blocks:
+                  print(f'\n{name}:{start}')
+                  print('  ' + err.replace('\n', '\n  '))
+              sys.exit(1)
+          PY

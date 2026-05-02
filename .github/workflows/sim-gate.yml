@@ -6,8 +6,6 @@ name: Wave-Balance Simulator Gate
 # the workflow if a level is unwinnable OR trivially clearable.
 
 on:
-  # PAUSED until 2026-04-23 23:00 UTC — user quota conservation (PR #196).
-  # Uncomment the blocks below to resume automatic runs.
   pull_request:
     branches: [main]
     paths:
