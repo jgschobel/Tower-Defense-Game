@@ -24,9 +24,12 @@ var is_dead: bool = false
 var _has_regrown: bool = false  # Regrow mechanic allows only one resurrect
 var _health_bar_tween: Tween = null
 var _death_tween: Tween = null
+# 0=healthy, 1=hurt, 2=injured, 3=dying. Drives sprite tint (and
+# eventually texture swap to data.damage_variants[i] once AI art lands).
+var _damage_state: int = 0
 
 @onready var sprite: Sprite2D = $Sprite2D
-@onready var health_bar: ProgressBar = $HealthBar
+@onready var health_bar: ProgressBar = $HealthBar  # hidden permanently — see _ready
 
 var heal_timer_node: Timer = null
 
@@ -37,6 +40,11 @@ func _ready() -> void:
 	if data:
 		_apply_data()
 	_update_visual()
+	# User directive: no HP bars at all — appearance changes communicate
+	# health instead (BTD MOAB-style). Hide permanently.
+	if health_bar:
+		health_bar.visible = false
+		health_bar.queue_free()
 	# Visual-only offset so enemies that visually catch up at path bends
 	# don't collapse into an indistinguishable blob (issue #48). Applied
 	# to PathFollow2D's v_offset so each enemy is drawn ~±8px
@@ -48,11 +56,16 @@ func _ready() -> void:
 
 
 func _apply_data() -> void:
-	max_health = data.max_health
+	# Difficulty scalars from GameManager — single multiplication point
+	# so Easy/Normal/Hard feel meaningfully different.
+	var hp_mult: float = GameManager.difficulty_hp_mult() if GameManager else 1.0
+	var spd_mult: float = GameManager.difficulty_speed_mult() if GameManager else 1.0
+	var gold_mult: float = GameManager.difficulty_gold_mult() if GameManager else 1.0
+	max_health = data.max_health * hp_mult
 	health = max_health
-	move_speed = data.move_speed
+	move_speed = data.move_speed * spd_mult
 	armor = data.armor
-	gold_reward = data.gold_reward
+	gold_reward = int(round(data.gold_reward * gold_mult))
 
 	# Camo visual (ROADMAP #50) — ghostly, lower opacity so the player
 	# sees something but towers without can_detect_camo won't target.
@@ -146,25 +159,17 @@ func take_damage(amount: float, damage_type: int = 0) -> void:
 
 	var actual_damage := maxf(1.0, pre_armor - effective_armor)
 	health -= actual_damage
-	_update_health_bar()
-
-	# Show floating damage number, color-coded by type
-	_show_damage_number(actual_damage, damage_type)
-	# Subtle screen-shake on chunky hits (>=80 damage) — gives weight to
-	# tier-3 hits and crits without spamming on every basic shot.
+	# User directive: no HP bars + no damage numbers — replaced by
+	# enemy appearance changing as health drops (BTD MOAB-style).
+	_apply_damage_state_visual()
+	# Subtle screen-shake on chunky hits — gives weight to tier-3 hits
+	# without spamming on every basic shot.
 	if actual_damage >= 80.0 and EffectPlayer and EffectPlayer.has_method("screen_shake"):
 		EffectPlayer.screen_shake(2.5, 0.10)
-
 	# Per-enemy hit pop (ROADMAP #27). Skipped if this hit kills — the
 	# death sound via SfxManager.play_death takes over on kill.
 	if health > 0 and data and SfxManager.has_method("play_enemy_hit"):
 		SfxManager.play_enemy_hit(data.id)
-
-	# Juice: tiny +1 gold floater on every non-killing hit. Adds dopamine
-	# drip between kills. Actual gold is only awarded on kill (_on_killed)
-	# — this is purely visual/audio feedback, no economy change.
-	if health > 0 and amount > 0:
-		_show_mini_pop()
 
 	# Flash white on hit, then restore
 	modulate = Color(2.0, 2.0, 2.0)
@@ -388,6 +393,9 @@ func reset_for_pool() -> void:
 		_update_visual()
 	is_dead = false
 	_has_regrown = false
+	_damage_state = 0
+	if sprite:
+		sprite.modulate = Color.WHITE
 	progress = 0.0
 	progress_ratio = 0.0
 	slow_factor = 1.0
@@ -578,6 +586,31 @@ func _get_base_color() -> Color:
 	if data:
 		return data.base_color
 	return Color.RED
+
+
+func _apply_damage_state_visual() -> void:
+	# BTD MOAB-style: enemy appearance shifts as HP drops, NO health bar.
+	# 4 states: 0=healthy (>66%), 1=hurt (33-66%), 2=injured (10-33%),
+	# 3=dying (<10%). Currently uses tint+desaturation as placeholders;
+	# once AI-generated damage-state variants land they'll swap textures
+	# at the same boundaries via data.damage_variants[i].
+	if sprite == null or max_health <= 0:
+		return
+	var pct: float = clampf(health / max_health, 0.0, 1.0)
+	var state: int = 0
+	if pct < 0.10: state = 3
+	elif pct < 0.33: state = 2
+	elif pct < 0.66: state = 1
+	if state == _damage_state:
+		return
+	_damage_state = state
+	# Future: data.damage_variants[state] swaps the texture
+	# For now: progressive desaturation + warm-blood tint
+	match state:
+		0: sprite.modulate = Color(1.0, 1.0, 1.0, 1.0)
+		1: sprite.modulate = Color(0.95, 0.85, 0.80, 1.0)  # slight bruise
+		2: sprite.modulate = Color(0.85, 0.65, 0.55, 1.0)  # visibly hurt
+		3: sprite.modulate = Color(0.70, 0.40, 0.35, 1.0)  # critical
 
 
 func _update_health_bar() -> void:

@@ -15,6 +15,71 @@ const MAX_LEVELS := 10
 
 var current_state: int = GameState.MENU
 var current_level: int = 1
+# Difficulty mode for the current level. 0=Easy, 1=Normal, 2=Hard.
+# Affects enemy hp/speed/count + reward multipliers (gold, aminos,
+# stars). Set by level select before start_level().
+enum Difficulty { EASY, NORMAL, HARD }
+var current_difficulty: int = Difficulty.NORMAL
+
+
+# Gameplay scalars per difficulty — public so wave_manager + base_enemy
+# can read them. Single source of truth.
+const DIFFICULTY_HP_MULT      := [0.75, 1.00, 1.40]
+const DIFFICULTY_SPEED_MULT   := [0.95, 1.00, 1.10]
+const DIFFICULTY_COUNT_MULT   := [0.90, 1.00, 1.20]
+const DIFFICULTY_GOLD_MULT    := [0.80, 1.00, 1.35]
+const DIFFICULTY_AMINOS_MULT  := [0.50, 1.00, 1.75]
+const DIFFICULTY_STAR_BONUS   := [-1, 0, 1]    # Easy max 2 stars, Hard min 1 free star
+const DIFFICULTY_NAMES        := ["Easy", "Normal", "Hard"]
+
+
+func difficulty_hp_mult() -> float:
+	return DIFFICULTY_HP_MULT[clampi(current_difficulty, 0, 2)]
+
+
+func difficulty_speed_mult() -> float:
+	return DIFFICULTY_SPEED_MULT[clampi(current_difficulty, 0, 2)]
+
+
+func difficulty_count_mult() -> float:
+	return DIFFICULTY_COUNT_MULT[clampi(current_difficulty, 0, 2)]
+
+
+func difficulty_gold_mult() -> float:
+	return DIFFICULTY_GOLD_MULT[clampi(current_difficulty, 0, 2)]
+
+
+func difficulty_aminos_mult() -> float:
+	return DIFFICULTY_AMINOS_MULT[clampi(current_difficulty, 0, 2)]
+
+
+# Variant preferences set via the dev menu. Keys are category/asset_id
+# (e.g. "towers/lemurius"), values are full res:// paths to the chosen
+# PNG. Lazy-loaded once on first lookup; cached in memory.
+const _VARIANT_PREFS_PATH := "user://variants.json"
+var _variant_prefs_cache: Dictionary = {}
+var _variant_prefs_loaded: bool = false
+
+
+func _ensure_variant_prefs() -> void:
+	if _variant_prefs_loaded:
+		return
+	_variant_prefs_loaded = true
+	if not FileAccess.file_exists(_VARIANT_PREFS_PATH):
+		return
+	var f := FileAccess.open(_VARIANT_PREFS_PATH, FileAccess.READ)
+	if f == null:
+		return
+	var parsed = JSON.parse_string(f.get_as_text())
+	if parsed is Dictionary:
+		_variant_prefs_cache = parsed
+
+
+## Returns the dev-selected variant path for a given asset, or "" if
+## none chosen. Keys are "<category>/<asset_id>" (e.g. "towers/lemurius").
+func get_preferred_variant(key: String) -> String:
+	_ensure_variant_prefs()
+	return _variant_prefs_cache.get(key, "")
 var max_lives: int = 20
 var lives: int = 20
 var levels_unlocked: int = 1
@@ -106,8 +171,10 @@ func set_sfx_volume(v: float) -> void:
 	save_game()
 
 
-func start_level(level_id: int) -> void:
+func start_level(level_id: int, difficulty: int = -1) -> void:
 	current_level = level_id
+	if difficulty >= 0:
+		current_difficulty = clampi(difficulty, 0, 2)
 	# Load level data for starting gold/lives
 	var data_path := "res://resources/level_data/level_%d.tres" % level_id
 	if ResourceLoader.exists(data_path):
@@ -118,6 +185,12 @@ func start_level(level_id: int) -> void:
 	else:
 		max_lives = 20
 		CurrencyManager.reset_for_level(level_id)
+	# Apply difficulty: Hard gives +2 lives buffer (you'll lose them)
+	# Easy gives +5. Adjust starting lives by difficulty.
+	match current_difficulty:
+		Difficulty.EASY:   max_lives += 5
+		Difficulty.HARD:   max_lives = maxi(10, max_lives - 3)
+		_:                 pass
 	lives = max_lives
 	level_kills = 0
 	set_state(GameState.PLAYING)

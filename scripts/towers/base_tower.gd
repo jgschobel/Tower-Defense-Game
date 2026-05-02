@@ -771,11 +771,18 @@ func _update_visual() -> void:
 
 	var tex: Texture2D = null
 
-	if data.friend_character_id != "":
+	# Priority order:
+	# 1. Dev-picker preferred variant (set via DevMenu)
+	# 2. Friend photo (uploaded by user)
+	# 3. data.custom_texture (default cartoon)
+	if GameManager and GameManager.has_method("get_preferred_variant"):
+		var pref_path: String = GameManager.get_preferred_variant("towers/%s" % data.id)
+		if pref_path != "" and ResourceLoader.exists(pref_path):
+			tex = load(pref_path)
+	if tex == null and data.friend_character_id != "":
 		var photo := GameManager.get_friend_photo(data.friend_character_id)
 		if photo:
 			tex = photo
-
 	if tex == null and data.custom_texture:
 		tex = data.custom_texture
 

@@ -63,8 +63,11 @@ func award_for_level_clear(level_id: int, stars: int) -> int:
 	if level_id in cleared_levels:
 		return 0
 	cleared_levels.append(level_id)
-	var yield_amount: int = 5 + level_id + (stars * 3)
-	add(yield_amount, "level_%d_clear" % level_id)
+	var base_yield: int = 5 + level_id + (stars * 3)
+	# Apply difficulty multiplier — Hard pays 1.75×, Easy 0.5×.
+	var mult: float = GameManager.difficulty_aminos_mult() if GameManager else 1.0
+	var yield_amount: int = int(round(base_yield * mult))
+	add(yield_amount, "level_%d_clear_diff_%d" % [level_id, GameManager.current_difficulty])
 	return yield_amount
 
 
