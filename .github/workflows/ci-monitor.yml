@@ -59,6 +59,17 @@ jobs:
           wc -l log_tail.txt || true
           head -c 200 log_tail.txt || true
 
+      - name: Ensure required labels exist
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Idempotent — `gh label create --force` updates existing, no error.
+          # Required because gh issue create --label fails hard if any label
+          # is missing, which silently broke ci-monitor for 9+ days.
+          gh label create ci-failure --color B60205 --description "Workflow run failed (filed by ci-monitor)" --force --repo "${{ github.repository }}" || true
+          gh label create autonomous --color 0E8A16 --description "Files touched / created by the autonomous loop" --force --repo "${{ github.repository }}" || true
+          gh label create loop-broken --color D93F0B --description "Autonomous loop or deploy is silent — needs investigation" --force --repo "${{ github.repository }}" || true
+
       - name: Create failure issue
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -88,8 +99,14 @@ jobs:
             echo "_Filed automatically by \`.github/workflows/ci-monitor.yml\`. Close this issue once fixed._"
           } > issue_body.md
 
+          # Try with labels first; if that fails for any reason, fall back to
+          # filing the issue WITHOUT labels so we at least surface the failure.
           gh issue create \
             --repo "${{ github.repository }}" \
             --title "[ci-failure] ${WF_NAME} run #${RUN_NUM}" \
             --body-file issue_body.md \
-            --label "ci-failure,autonomous"
+            --label "ci-failure,autonomous" \
+            || gh issue create \
+                 --repo "${{ github.repository }}" \
+                 --title "[ci-failure] ${WF_NAME} run #${RUN_NUM}" \
+                 --body-file issue_body.md
