@@ -118,6 +118,19 @@ func _ready() -> void:
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(bg)
+	# Emergency fallback button — always visible top-left so the user can
+	# escape even if the rest of the build fails to render. Was: grey
+	# screen with no way out. This guarantees AT LEAST a back button.
+	var emergency_back := Button.new()
+	emergency_back.text = "← Zrugg (emergency)"
+	emergency_back.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
+	emergency_back.offset_left = 10
+	emergency_back.offset_top = 10
+	emergency_back.offset_right = 220
+	emergency_back.offset_bottom = 50
+	emergency_back.pressed.connect(func():
+		get_tree().change_scene_to_file("res://scenes/ui/main_menu.tscn"))
+	add_child(emergency_back)
 	_load_prefs()
 	_build_shell()
 	# Populate the initial tab DIRECTLY — calling _show_tab here would
