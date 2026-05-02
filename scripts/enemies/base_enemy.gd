@@ -425,6 +425,19 @@ func _update_visual() -> void:
 	if not sprite:
 		return
 
+	# Dev-picker preferred design variant (selected via DevMenu → Variante tab)
+	if data and GameManager and GameManager.has_method("get_preferred_variant"):
+		var pref: String = GameManager.get_preferred_variant("enemies/%s" % data.id)
+		if pref != "" and ResourceLoader.exists(pref):
+			var tex := load(pref) as Texture2D
+			if tex:
+				sprite.texture = tex
+				sprite.visible = true
+				var max_dim := maxf(tex.get_width(), tex.get_height())
+				var target_size := 50.0 * data.scale_factor
+				sprite.scale = Vector2.ONE * (target_size / max_dim)
+				return
+
 	# Try to load friend photo
 	if data and data.friend_character_id != "":
 		var photo := GameManager.get_friend_photo(data.friend_character_id)

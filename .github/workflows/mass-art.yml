@@ -1,0 +1,134 @@
+name: Mass Art Variants
+
+# Generates up to 12 portrait-style variants per tower (img2img from photo,
+# face likeness preserved) and up to 8 alt-design variants per enemy
+# (img2img from clean base sprite). All outputs land in:
+#   assets/textures/variants/towers/{id}/{style}.png
+#   assets/textures/variants/enemies/{id}/design_{style}.png
+#
+# The DevMenu → Variante tab discovers them automatically — click any
+# thumbnail to select it as the in-game appearance.
+#
+# Trigger options:
+#   - workflow_dispatch: manual run, pick a target
+#   - repository_dispatch with event_type=mass-art and target=<value>
+#   - Issue with label "mass-art" — first word of title is the target
+#     (e.g. "all tower variants please" → target=all)
+#
+# Existing files are skipped (idempotent) — safe to re-run after failures.
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'What to generate: "all", "towers", "enemies", "cordula", "sniper", etc.'
+        required: true
+        type: choice
+        options:
+          - all
+          - towers
+          - enemies
+          - tower_basic
+          - tower_sniper
+          - tower_splash
+          - tower_cordula
+          - tower_slow
+          - enemy_basic
+          - enemy_fast
+          - enemy_tank
+          - enemy_healer
+          - enemy_flying
+          - enemy_boss
+  repository_dispatch:
+    types: [mass-art]
+  issues:
+    types: [opened, labeled]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: mass-art-${{ inputs.target || github.event.client_payload.target || github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    if: github.event_name != 'issues' || contains(github.event.issue.labels.*.name, 'mass-art')
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Python deps
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install requests
+
+      - name: Resolve target
+        id: vars
+        env:
+          DISPATCH_TARGET: ${{ github.event.client_payload.target }}
+          INPUT_TARGET: ${{ inputs.target }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+        run: |
+          set -e
+          TARGET="${INPUT_TARGET:-$DISPATCH_TARGET}"
+          if [ -z "$TARGET" ] && [ -n "$ISSUE_TITLE" ]; then
+            WORD=$(echo "$ISSUE_TITLE" | tr '[:upper:]' '[:lower:]' | awk '{print $1}')
+            case "$WORD" in
+              all|towers|enemies|tower_basic|tower_sniper|tower_splash|tower_cordula|tower_slow|enemy_basic|enemy_fast|enemy_tank|enemy_healer|enemy_flying|enemy_boss)
+                TARGET="$WORD" ;;
+              cordula) TARGET="tower_cordula" ;;
+              sniper|kuhne|kühne) TARGET="tower_sniper" ;;
+              jojo) TARGET="tower_splash" ;;
+              lemurius) TARGET="tower_basic" ;;
+              amosius|amösius) TARGET="tower_slow" ;;
+              *) TARGET="all" ;;
+            esac
+          fi
+          [ -z "$TARGET" ] && TARGET="all"
+          echo "target=$TARGET" >> "$GITHUB_OUTPUT"
+          echo "Generating variants for: $TARGET"
+
+      - name: Generate variants
+        id: gen
+        env:
+          TARGET: ${{ steps.vars.outputs.target }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          STABILITY_API_KEY: ${{ secrets.STABILITY_API_KEY }}
+        run: |
+          set -e
+          python3 .github/scripts/generate_mass_variants.py
+
+      - name: Commit and open PR
+        if: steps.gen.outputs.count != '' && steps.gen.outputs.count != '0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TARGET: ${{ steps.gen.outputs.target }}
+          COUNT: ${{ steps.gen.outputs.count }}
+          ASSETS: ${{ steps.gen.outputs.asset_paths }}
+        run: |
+          set -e
+          BRANCH="art-variants/${TARGET//\//-}-$(date +%s)"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          # Stage all new PNGs (only newly-created, not .import — those
+          # generate at runtime in Godot editor on first open)
+          git add assets/textures/variants/
+          STAGED=$(git diff --cached --name-only | wc -l)
+          if [ "$STAGED" -eq 0 ]; then
+            echo "Nothing new to commit (all files already existed)"
+            exit 0
+          fi
+          git commit -m "art(variants): mass art variants for ${TARGET} (${COUNT} files)"
+          git push -u origin "$BRANCH"
+          gh pr create \
+            --title "art(variants): ${COUNT} new variants for ${TARGET}" \
+            --body "Generated via Gemini img2img. Selectable from DevMenu → Variante tab. Towers: 12 style variants (chibi classic, anime heroine, dark hero, pastel kawaii, comic pop, watercolor, neon cyber, fantasy hero, summer/winter chibi, retro RPG, bold sticker). Enemies: 8 alt designs (enraged, elite gold, shadow, corrupted, cute, chrome robot, fire, ice)." \
+            --base main \
+            --head "$BRANCH"
