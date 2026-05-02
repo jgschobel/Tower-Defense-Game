@@ -17,6 +17,13 @@ Each run appends one line.
 - chore(ci): cleaned stale `# PAUSED` comment from `sim-gate.yml` (triggers were already live; comment was leftover).
 - chore: actually un-paused all workflows on main — previous "resume" commits had updated commit messages but never edited the trigger lines.
 
+## 2026-05-02 (auto: audit-polish — portrait frames + L3 path + Swiss German)
+
+- polish(towers): circle-clip shader on tower Sprite2D — all towers now render as circular portraits regardless of source texture background; fixes Joe/Justus/Seve showing as rectangular card sprites (closes playtest #148)
+- polish(tower-info): circle-clip shader applied to tower info panel portrait + shop row icon TextureRect for consistent circular portrait look across all UI surfaces
+- fix(L3): PathBorder/PathDraw width 50/40 → 26/18 px, alpha reduced — path overlay less intrusive on the tight W-zigzag, opening up the playfield (closes playtest #152)
+- fix(i18n): tower stats panel "Kills" → "K.O." for Swiss German consistency
+
 ## 2026-04-30 (manual session — content + UX polish batch)
 
 - feat(levels): L8 Coop-Einbruch (rival store, blue 3-aisle grid path), L9 Cumulus-Punkte-Kern (16-point spiral, purple neon), L10 Finale im Tüüfel-Äste (14-point epic finale, dark red). All three with full lore via 6-page multi-character `pages` array. MAX_LEVELS now 10 (was 7). Level select grid colours added.

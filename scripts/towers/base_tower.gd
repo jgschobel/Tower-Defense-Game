@@ -66,6 +66,13 @@ func _ready() -> void:
 	# Gentle idle life — breathing scale + slight bob. Staggered per
 	# tower (random offset) so 5 placed towers don't pulse in lockstep.
 	_start_idle_animation()
+	# Circle clip shader: all tower sprites appear as circular portraits.
+	# Fixes inconsistency where newer towers (Joe/Justus/Seve) rendered as
+	# opaque rectangular cards while original towers used transparent-BG PNGs.
+	if sprite and sprite.material == null:
+		var mat := ShaderMaterial.new()
+		mat.shader = preload("res://assets/shaders/circle_clip.gdshader")
+		sprite.material = mat
 
 
 func _start_idle_animation() -> void:
