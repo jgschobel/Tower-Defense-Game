@@ -75,6 +75,35 @@ jobs:
           echo "Export templates installed:"
           ls "$HOME/.local/share/godot/export_templates/${VER_DIR}/" | head -10
 
+      - name: Fetch Noto Emoji font (for emoji glyph fallback)
+        run: |
+          # The default Godot font doesn't include emoji — bundling Noto
+          # Emoji as a fallback lets characters like 🔒 ✨ ⚠ render in
+          # the web build. ~600KB, fetched fresh on every build so we
+          # don't have to commit a binary asset that updates upstream.
+          # Skipped silently if the file already exists (some workflows
+          # re-checkout).
+          set +e
+          mkdir -p assets/fonts
+          if [ ! -f assets/fonts/NotoEmoji.ttf ]; then
+            curl -fsSL --max-time 30 \
+              -o assets/fonts/NotoEmoji.ttf \
+              "https://github.com/googlefonts/noto-emoji/raw/main/fonts/NotoEmoji-Regular.ttf" \
+              || curl -fsSL --max-time 30 \
+              -o assets/fonts/NotoEmoji.ttf \
+              "https://raw.githubusercontent.com/googlefonts/noto-emoji/main/fonts/NotoEmoji-Regular.ttf"
+          fi
+          ls -la assets/fonts/ || true
+          # Validate it's actually a TTF (curl might fail silently and write HTML)
+          if [ -f assets/fonts/NotoEmoji.ttf ]; then
+            head -c 4 assets/fonts/NotoEmoji.ttf | xxd | head -1
+            if ! file assets/fonts/NotoEmoji.ttf | grep -qi "TrueType\|OpenType"; then
+              echo "::warning::NotoEmoji.ttf download is not a valid font — removing"
+              rm -f assets/fonts/NotoEmoji.ttf
+            fi
+          fi
+          exit 0
+
       - name: Import project resources (two passes)
         run: |
           set +e

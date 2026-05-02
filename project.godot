@@ -42,6 +42,10 @@ window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 window/handheld/orientation=0
 
+[gui]
+
+theme/custom="res://assets/fonts/main_theme.tres"
+
 [input_devices]
 
 pointing/emulate_touch_from_mouse=true

@@ -157,7 +157,7 @@ func _update_ghost_position(screen_pos: Vector2) -> void:
 			ghost_tower.modulate = Color(1.0, 0.3, 0.3, 0.6)
 			if _ghost_x_label == null or not is_instance_valid(_ghost_x_label):
 				_ghost_x_label = Label.new()
-				_ghost_x_label.text = "X"
+				_ghost_x_label.text = "✕"
 				_ghost_x_label.add_theme_font_size_override("font_size", 48)
 				_ghost_x_label.add_theme_color_override("font_color", Color(1, 0.15, 0.15))
 				_ghost_x_label.add_theme_color_override("font_outline_color", Color(0.4, 0, 0))
@@ -214,7 +214,7 @@ func _spawn_place_ring(pos: Vector2) -> void:
 	# scripts can't easily be tweened. The tower node is freshly placed so
 	# we animate it directly once we find it at pos.
 	var flash := Label.new()
-	flash.text = "OK"
+	flash.text = "✓"
 	flash.add_theme_font_size_override("font_size", 36)
 	flash.add_theme_color_override("font_color", Color(0.4, 1.0, 0.5, 1.0))
 	flash.add_theme_color_override("font_outline_color", Color(0.0, 0.3, 0.1))

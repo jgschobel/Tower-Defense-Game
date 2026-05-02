@@ -62,7 +62,7 @@ func _ready() -> void:
 		shop_header.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
 		shop_header.add_theme_color_override("font_outline_color", Color(0.15, 0.05, 0))
 		shop_header.add_theme_constant_override("outline_size", 3)
-		shop_header.text = "TÜRM"
+		shop_header.text = "🏰 TÜRM"
 	_populate_tower_shop()
 	_apply_safe_area()
 	_build_shop_collapse_handle()
@@ -167,7 +167,7 @@ func _refresh_threat_badges() -> void:
 			"boss":
 				boss_refs.append(e)
 	_set_threat_badge("HealerBadge", has_healer, "+ HEAL", Color(0.4, 1.0, 0.5))
-	_set_threat_badge("BossBadge", not boss_refs.is_empty(), "! BOSS", Color(1.0, 0.35, 0.25))
+	_set_threat_badge("BossBadge", not boss_refs.is_empty(), "⚠ BOSS", Color(1.0, 0.35, 0.25))
 	_refresh_boss_hpbar(boss_refs)
 
 
@@ -526,7 +526,7 @@ func _populate_tower_shop() -> void:
 		btn.clip_contents = true
 		btn.disabled = is_locked
 		if is_locked:
-			btn.tooltip_text = "[L] Brich %d Stärn zum z'freischalte" % stars_req
+			btn.tooltip_text = "🔒 Brich %d Stärn zum z'freischalte" % stars_req
 		else:
 			# D24: hover preview showing key stats at a glance
 			var tip_lines: Array = [
@@ -649,7 +649,7 @@ func _populate_tower_shop() -> void:
 			lock_bg.content_margin_bottom = 1
 			lock_box.add_theme_stylebox_override("panel", lock_bg)
 			var lock_label := Label.new()
-			lock_label.text = "[L] %d*" % stars_req
+			lock_label.text = "🔒 %d*" % stars_req
 			lock_label.add_theme_font_size_override("font_size", 13)
 			lock_label.add_theme_color_override("font_color", Color(1, 0.95, 0.4))
 			lock_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -730,7 +730,7 @@ func show_enemy_intro(enemy_id: String, enemy_data: Resource) -> void:
 	vbox.add_theme_constant_override("separation", 8)
 
 	var warning := Label.new()
-	warning.text = "! NÖÖI BEDROHIG"
+	warning.text = "⚠ NÖÖI BEDROHIG"
 	warning.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	warning.add_theme_font_size_override("font_size", 22)
 	warning.add_theme_color_override("font_color", Color(1, 0.6, 0.2))
@@ -1022,7 +1022,7 @@ func update_wave_info(current: int, total: int) -> void:
 		if current == 0:
 			# Bereit state — gold so it visually belongs to the wave
 			# progress bar below it. Was default theme color (white-ish).
-			wave_label.text = "* Bereit"
+			wave_label.text = "✦ Bereit"
 			wave_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.30))
 		else:
 			wave_label.text = "Welle %d/%d" % [current, total]
@@ -1169,14 +1169,14 @@ func _refresh_next_wave_preview(visible_flag: bool) -> void:
 	prefix.add_theme_color_override("font_color", Color(1, 0.85, 0.3))
 	hbox.add_child(prefix)
 	# Boss warning — if any group in this wave is a boss, prepend a red
-	# "! BOSS" tag so the player is forewarned. Pulses to draw attention.
+	# "⚠ BOSS" tag so the player is forewarned. Pulses to draw attention.
 	var has_boss: bool = false
 	for g in preview:
 		if g.get("enemy_id", "") == "boss":
 			has_boss = true; break
 	if has_boss:
 		var warn := Label.new()
-		warn.text = "! BOSS"
+		warn.text = "⚠ BOSS"
 		warn.add_theme_font_size_override("font_size", 17)
 		warn.add_theme_color_override("font_color", Color(1.0, 0.3, 0.2))
 		warn.add_theme_color_override("font_outline_color", Color(0.25, 0.05, 0))
@@ -1557,12 +1557,12 @@ func _refresh_tower_info() -> void:
 
 func _paint_sell_button(sell_btn: Button) -> void:
 	# Centralized sell-button styling so _refresh_tower_info (fired on
-	# every gold change) doesn't silently overwrite the armed "Sicher? X"
+	# every gold change) doesn't silently overwrite the armed "Sicher? ✖"
 	# state. Audit P0 #1: without this, a kill during the 2s arm window
 	# reverted the label to "Verchaufe X" but left _sell_armed=true, so
 	# the next tap sold with no visible warning.
 	if _sell_armed:
-		sell_btn.text = "Sicher? X"
+		sell_btn.text = "Sicher? ✖"
 		sell_btn.modulate = Color(1.0, 0.5, 0.3)
 		return
 	sell_btn.modulate = Color.WHITE
@@ -1575,7 +1575,7 @@ func _paint_sell_button(sell_btn: Button) -> void:
 	else:
 		sell_val = td.get_sell_value(_selected_tower.upgrade_level)
 	# Coin-icon prefix instead of plain "Verchaufe" — shorter, scannable.
-	sell_btn.text = "G %d" % sell_val
+	sell_btn.text = "🪙 %d" % sell_val
 
 
 func _ensure_linear_upgrade_button(upgrade_btn: Button) -> void:
@@ -1876,7 +1876,7 @@ func _on_sell_button_pressed() -> void:
 	if not _selected_tower:
 		return
 	# Two-tap sell to prevent accidental taps from nuking an expensive
-	# tower. First tap arms the button + changes text to "Sicher? X",
+	# tower. First tap arms the button + changes text to "Sicher? ✖",
 	# the arm expires after 2s. Second tap within the window sells.
 	var sell_btn: Button = tower_info.get_node_or_null("VBox/HBox/SellButton") if tower_info else null
 	if _sell_armed:
