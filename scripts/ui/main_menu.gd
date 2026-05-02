@@ -56,6 +56,19 @@ func _style_menu_buttons() -> void:
 		var play_idx := vbox.get_node_or_null("PlayButton")
 		if play_idx:
 			vbox.move_child(aminos_main, play_idx.get_index() + 1)
+	# Developer variant picker — small button at the bottom of the menu
+	# stack. User explicitly requested a way to compare 30+ AI design
+	# variants in-game and mark preferred ones.
+	if vbox and not vbox.has_node("DevButton"):
+		var dev_btn := Button.new()
+		dev_btn.name = "DevButton"
+		dev_btn.text = "DEV — Design Variante"
+		dev_btn.custom_minimum_size = Vector2(0, 44)
+		dev_btn.pressed.connect(func():
+			SfxManager.play_click()
+			get_tree().change_scene_to_file("res://scenes/ui/dev_menu.tscn"))
+		DesignTokens.style_button(dev_btn, false, DesignTokens.FONT_LABEL_SM)
+		vbox.add_child(dev_btn)
 
 
 func _show_run_stats() -> void:
