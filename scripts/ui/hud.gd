@@ -55,6 +55,14 @@ func _ready() -> void:
 			lbl.add_theme_constant_override("outline_size", 3)
 	if gold_label:
 		gold_label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.25))
+	# Shop section header — match the gold language used across the HUD
+	var shop_header: Label = get_node_or_null("SideShop/SideShopVBox/ShopHeader")
+	if shop_header:
+		shop_header.add_theme_font_size_override("font_size", 18)
+		shop_header.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+		shop_header.add_theme_color_override("font_outline_color", Color(0.15, 0.05, 0))
+		shop_header.add_theme_constant_override("outline_size", 3)
+		shop_header.text = "🏰 TÜRM"
 	_populate_tower_shop()
 	_apply_safe_area()
 	_build_shop_collapse_handle()
@@ -934,9 +942,13 @@ func update_wave_progress(pct: float) -> void:
 func update_wave_info(current: int, total: int) -> void:
 	if wave_label:
 		if current == 0:
-			wave_label.text = "Bereit"
+			# Bereit state — gold so it visually belongs to the wave
+			# progress bar below it. Was default theme color (white-ish).
+			wave_label.text = "✦ Bereit"
+			wave_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.30))
 		else:
 			wave_label.text = "Welle %d/%d" % [current, total]
+			wave_label.add_theme_color_override("font_color", Color(1.0, 0.95, 0.78))
 			# Wave announcement — big text that fades
 			_show_wave_announcement(current, total)
 			# Reset sub-wave bar to 0 for the new wave
