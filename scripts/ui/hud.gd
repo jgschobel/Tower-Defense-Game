@@ -91,7 +91,43 @@ func _ready() -> void:
 		ti_sb.content_margin_top = 12
 		ti_sb.content_margin_bottom = 12
 		tower_info.add_theme_stylebox_override("panel", ti_sb)
+		# Style the sell + close buttons consistently with the rest of
+		# the gold-warm UI language. Sell: warm orange-red. Close: neutral.
+		var sell_btn: Button = tower_info.get_node_or_null("VBox/HBox/SellButton")
+		if sell_btn:
+			_apply_tower_info_button_style(sell_btn, Color(0.85, 0.45, 0.20))
+		var close_btn: Button = tower_info.get_node_or_null("VBox/CloseButton")
+		if close_btn:
+			_apply_tower_info_button_style(close_btn, Color(0.55, 0.50, 0.45))
 	cancel_button.visible = false
+
+
+func _apply_tower_info_button_style(btn: Button, accent: Color) -> void:
+	var base := StyleBoxFlat.new()
+	base.bg_color = Color(0.16, 0.13, 0.10, 1.0)
+	base.border_color = accent
+	base.border_width_left = 2
+	base.border_width_right = 1
+	base.border_width_top = 1
+	base.border_width_bottom = 1
+	base.corner_radius_top_left = 6
+	base.corner_radius_top_right = 6
+	base.corner_radius_bottom_left = 6
+	base.corner_radius_bottom_right = 6
+	base.content_margin_left = 10
+	base.content_margin_right = 10
+	base.content_margin_top = 4
+	base.content_margin_bottom = 4
+	var hover := base.duplicate() as StyleBoxFlat
+	hover.bg_color = Color(0.28, 0.22, 0.14, 1.0)
+	hover.border_color = Color(accent.r * 1.2, accent.g * 1.2, accent.b * 1.2, 1.0)
+	var pressed := base.duplicate() as StyleBoxFlat
+	pressed.bg_color = Color(0.40, 0.30, 0.16, 1.0)
+	btn.add_theme_stylebox_override("normal", base)
+	btn.add_theme_stylebox_override("hover", hover)
+	btn.add_theme_stylebox_override("pressed", pressed)
+	btn.add_theme_color_override("font_color", Color(1, 0.95, 0.85))
+	btn.add_theme_font_size_override("font_size", 16)
 
 
 func _start_threat_watcher() -> void:
