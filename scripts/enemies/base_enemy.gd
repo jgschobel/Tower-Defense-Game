@@ -42,7 +42,7 @@ func _ready() -> void:
 	# to PathFollow2D's v_offset so each enemy is drawn ~±8px
 	# perpendicular to the path without affecting gameplay progress.
 	v_offset = randf_range(-10.0, 10.0)
-	h_offset = randf_range(-6.0, 6.0)
+	h_offset = randf_range(-14.0, 14.0)
 	_base_v_offset = v_offset
 	_walk_phase = randf() * TAU  # desync bobs across enemies
 
@@ -397,7 +397,7 @@ func reset_for_pool() -> void:
 	rotation = 0.0
 	# Reapply visual offset for path-bend separation (#48)
 	v_offset = randf_range(-10.0, 10.0)
-	h_offset = randf_range(-6.0, 6.0)
+	h_offset = randf_range(-14.0, 14.0)
 	_base_v_offset = v_offset
 	_walk_phase = randf() * TAU  # desync bobs across enemies
 	# Kill any in-flight float labels from the previous life — their

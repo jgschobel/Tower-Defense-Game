@@ -38,6 +38,43 @@ func _ready() -> void:
 		title.add_theme_color_override("font_color", Color(1.0, 0.88, 0.25))
 		title.add_theme_color_override("font_outline_color", Color(0.2, 0.1, 0))
 		title.add_theme_constant_override("outline_size", 4)
+	# Style each button — was default Godot grey. Now warm dark with
+	# gold-tinted hover so they read as "real menu items".
+	var vbox: VBoxContainer = get_node_or_null("Panel/VBox")
+	if vbox:
+		for child in vbox.get_children():
+			if child is Button:
+				_style_pause_button(child)
+
+
+func _style_pause_button(btn: Button) -> void:
+	var base := StyleBoxFlat.new()
+	base.bg_color = Color(0.18, 0.16, 0.14, 1.0)
+	base.border_color = Color(0.55, 0.45, 0.20, 0.85)
+	base.border_width_left = 1
+	base.border_width_right = 1
+	base.border_width_top = 1
+	base.border_width_bottom = 1
+	base.corner_radius_top_left = 8
+	base.corner_radius_top_right = 8
+	base.corner_radius_bottom_left = 8
+	base.corner_radius_bottom_right = 8
+	base.content_margin_left = 12
+	base.content_margin_right = 12
+	base.content_margin_top = 6
+	base.content_margin_bottom = 6
+	var hover := base.duplicate() as StyleBoxFlat
+	hover.bg_color = Color(0.30, 0.24, 0.10, 1.0)
+	hover.border_color = Color(1.0, 0.82, 0.20, 1.0)
+	var pressed := base.duplicate() as StyleBoxFlat
+	pressed.bg_color = Color(0.42, 0.32, 0.12, 1.0)
+	pressed.border_color = Color.WHITE
+	btn.add_theme_stylebox_override("normal", base)
+	btn.add_theme_stylebox_override("hover", hover)
+	btn.add_theme_stylebox_override("pressed", pressed)
+	btn.add_theme_color_override("font_color", Color(1.0, 0.92, 0.78))
+	btn.add_theme_color_override("font_hover_color", Color(1.0, 0.95, 0.55))
+	btn.add_theme_font_size_override("font_size", 18)
 
 
 func _fit_viewport() -> void:
