@@ -905,12 +905,18 @@ func _ensure_wave_progress_bar() -> ProgressBar:
 	bar.min_value = 0.0
 	bar.max_value = 1.0
 	bar.value = 0.0
-	bar.custom_minimum_size = Vector2(280, 14)
-	bar.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
+	bar.custom_minimum_size = Vector2(320, 14)
+	# Anchor center-top so the bar stays 320px wide regardless of viewport
+	# width. PRESET_TOP_WIDE with offset_right=510 was interpreted as
+	# 510px from the right edge, making the bar span 1410px on a 1920p
+	# desktop / 1830px on the user's phone (full-width-blob bug).
+	bar.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
+	bar.anchor_left = 0.5
+	bar.anchor_right = 0.5
+	bar.offset_left = -160
+	bar.offset_right = 160
 	bar.offset_top = 46
 	bar.offset_bottom = 60
-	bar.offset_left = 230
-	bar.offset_right = 510
 	bar.show_percentage = false
 	# Custom styled fill — was the default light grey blob, barely
 	# readable. Now warm gold gradient with dark backing.
@@ -1217,6 +1223,16 @@ func show_tower_info(tower: BaseTower) -> void:
 		_selected_tower.show_range(false)
 	_selected_tower = tower
 	tower.show_range(true)
+	# Wipe stale upgrade buttons from a prior selection — they'd otherwise
+	# linger with cached text from a different tower's data ("Lemurius"
+	# header + "Volleyball-Hagel" button bug from screenshots). They get
+	# rebuilt fresh by _refresh_branching_buttons / _ensure_linear_upgrade_button.
+	if tower_info:
+		var hbox := tower_info.get_node_or_null("VBox/HBox")
+		if hbox:
+			for child in hbox.get_children():
+				if child is Button and (child.name == "PathAButton" or child.name == "PathBButton"):
+					child.queue_free()
 	# Dim every OTHER tower so the eye lands on the active one. Restored
 	# in hide_tower_info via the same group iteration.
 	for n in get_tree().get_nodes_in_group("towers"):
@@ -1392,14 +1408,19 @@ func _refresh_tower_info() -> void:
 			portrait.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 			header.add_child(portrait)
 			header.move_child(portrait, 0)
-		if td.custom_texture:
-			portrait.texture = td.custom_texture
-		# Friend photo lookup — same pipeline base_tower uses for the
-		# on-map sprite. Falls back to custom_texture if no friend photo.
+		# Clear stale texture FIRST — was reusing the previous selection's
+		# portrait when the new tower's custom_texture was null + the
+		# friend_photo lookup returned null. Visible bug: switching from
+		# Cordula → Lemurius left Cordula's photo in the panel.
+		portrait.texture = null
+		# Resolution order matches base_tower._update_visual exactly so
+		# the panel and the on-map sprite always show the same character.
 		if td.friend_character_id != "" and GameManager and GameManager.has_method("get_friend_photo"):
 			var photo := GameManager.get_friend_photo(td.friend_character_id)
 			if photo:
 				portrait.texture = photo
+		if portrait.texture == null and td.custom_texture:
+			portrait.texture = td.custom_texture
 
 	if name_lbl:
 		if td.has_branching_upgrades():
@@ -1413,18 +1434,18 @@ func _refresh_tower_info() -> void:
 	if stats_lbl:
 		var dps: float = _selected_tower.effective_damage * _selected_tower.effective_speed
 		var kills: int = _selected_tower.kill_count if "kill_count" in _selected_tower else 0
-		# D25: tier pip row using BBCode-coded squares so colors land per
-		# path (A=warm orange, B=cool blue). Filled = achieved tier,
-		# faded = remaining. Renders inline at start of stats text.
+		# D25: tier pip row using ASCII-safe glyphs. Was ●○ — those render
+		# as tofu boxes in the bundled web font. [#] for filled, [-] for
+		# remaining keep alignment + read clearly.
 		var pip_str: String = ""
 		if td.has_branching_upgrades():
 			var max_tier: int = 3
 			pip_str = "A:"
 			for i in max_tier:
-				pip_str += " ●" if i < _selected_tower.path_a_tier else " ○"
+				pip_str += " [#]" if i < _selected_tower.path_a_tier else " [ ]"
 			pip_str += "   B:"
 			for i in max_tier:
-				pip_str += " ●" if i < _selected_tower.path_b_tier else " ○"
+				pip_str += " [#]" if i < _selected_tower.path_b_tier else " [ ]"
 			pip_str += "\n"
 		stats_lbl.text = "%sSchade: %.0f   DPS: %.1f   Kills: %d\nTempo: %.1f   Reichwiiti: %.0f" % [
 			pip_str,
@@ -1706,13 +1727,13 @@ func _on_pause_button_pressed() -> void:
 
 func _on_auto_button_toggled(toggled_on: bool) -> void:
 	auto_wave_toggled.emit(toggled_on)
-	# Visual feedback for auto-wave mode. When toggled on, add a small
-	# pulsing "●" suffix to the button text + green tint so it's obvious
-	# auto-mode is active even on quick glances.
+	# ASCII-only suffix — the bundled web font renders many unicode bullets
+	# as tofu boxes (user reported "AUTO 💵" — that's actually U+25CF tofu).
+	# Brackets + plain text are universally rendered.
 	var btn: Button = $TopBar/HBox/AutoButton if has_node("TopBar/HBox/AutoButton") else null
 	if btn:
 		btn.modulate = Color(0.4, 1.0, 0.5) if toggled_on else Color.WHITE
-		btn.text = "AUTO ●" if toggled_on else "AUTO"
+		btn.text = "[AUTO]" if toggled_on else "AUTO"
 	SfxManager.play_click()
 
 
