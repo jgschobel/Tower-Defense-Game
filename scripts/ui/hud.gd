@@ -1017,6 +1017,23 @@ func _refresh_next_wave_preview(visible_flag: bool) -> void:
 	prefix.add_theme_font_size_override("font_size", 16)
 	prefix.add_theme_color_override("font_color", Color(1, 0.85, 0.3))
 	hbox.add_child(prefix)
+	# Boss warning — if any group in this wave is a boss, prepend a red
+	# "⚠ BOSS" tag so the player is forewarned. Pulses to draw attention.
+	var has_boss: bool = false
+	for g in preview:
+		if g.get("enemy_id", "") == "boss":
+			has_boss = true; break
+	if has_boss:
+		var warn := Label.new()
+		warn.text = "⚠ BOSS"
+		warn.add_theme_font_size_override("font_size", 17)
+		warn.add_theme_color_override("font_color", Color(1.0, 0.3, 0.2))
+		warn.add_theme_color_override("font_outline_color", Color(0.25, 0.05, 0))
+		warn.add_theme_constant_override("outline_size", 3)
+		hbox.add_child(warn)
+		var warn_pulse := warn.create_tween().set_loops()
+		warn_pulse.tween_property(warn, "modulate:a", 0.5, 0.5)
+		warn_pulse.tween_property(warn, "modulate:a", 1.0, 0.5)
 	for group in preview:
 		var enemy_id: String = group.get("enemy_id", "")
 		var icon_tex: Texture2D = _enemy_icon_texture(enemy_id)
@@ -1127,6 +1144,12 @@ func show_tower_info(tower: BaseTower) -> void:
 		_selected_tower.show_range(false)
 	_selected_tower = tower
 	tower.show_range(true)
+	# Dim every OTHER tower so the eye lands on the active one. Restored
+	# in hide_tower_info via the same group iteration.
+	for n in get_tree().get_nodes_in_group("towers"):
+		var t := n as Node2D
+		if t and t != tower:
+			t.modulate = Color(0.6, 0.6, 0.65, 1.0)
 	# Gold-warm pulse on selected tower so it's obvious which one is
 	# active — was a faint blue-white that read as "noise" rather than
 	# "this is your selection".
@@ -1166,6 +1189,11 @@ func hide_tower_info() -> void:
 	if _glow_tween and _glow_tween.is_valid():
 		_glow_tween.kill()
 		_glow_tween = null
+	# Restore all-tower brightness — undo the dim from show_tower_info.
+	for n in get_tree().get_nodes_in_group("towers"):
+		var t := n as Node2D
+		if t:
+			t.modulate = Color.WHITE
 	# Disarm the sell button if it was armed — otherwise next reopen
 	# would be hair-trigger.
 	_sell_armed = false
@@ -1447,6 +1475,16 @@ func _on_gold_changed(amount: int) -> void:
 		var btn: Button = tower_shop.get_child(i)
 		var cost: int = tower_data_list[i].buy_cost
 		var affordable: bool = CurrencyManager.can_afford(cost)
+		# Threshold-crossing pulse: previously unaffordable, now affordable
+		# → brief gold pulse on the cost label so the player notices the
+		# new option opening up. Stored in metadata to avoid an extra dict.
+		var was_affordable: bool = btn.get_meta("was_affordable", true)
+		if affordable and not was_affordable and i < _cost_labels.size():
+			var lbl: Label = _cost_labels[i]
+			var pulse := lbl.create_tween()
+			pulse.tween_property(lbl, "scale", Vector2(1.25, 1.25), 0.10).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+			pulse.tween_property(lbl, "scale", Vector2.ONE, 0.14)
+		btn.set_meta("was_affordable", affordable)
 		btn.disabled = not affordable
 		btn.modulate = Color.WHITE if affordable else Color(0.7, 0.7, 0.75, 1.0)
 		if i < _cost_labels.size():
@@ -1487,8 +1525,24 @@ func _flash_life_lost() -> void:
 
 
 func _on_shop_tower_selected(td: TowerData, btn: Button) -> void:
+	# Block + flash red if player can't afford this tower instead of
+	# entering placement mode silently and frustrating them when they
+	# tap to confirm.
+	if td and CurrencyManager.gold < td.buy_cost:
+		_flash_button_red(btn)
+		show_toast("Z'wenig Gäld!")
+		return
 	_highlight_placing_button(btn)
 	_on_tower_button_pressed(td)
+
+
+func _flash_button_red(btn: Button) -> void:
+	if btn == null or not is_instance_valid(btn):
+		return
+	var orig: Color = btn.modulate
+	var tw := btn.create_tween()
+	tw.tween_property(btn, "modulate", Color(1.5, 0.4, 0.4), 0.08)
+	tw.tween_property(btn, "modulate", orig, 0.18)
 
 
 func _highlight_placing_button(btn: Button) -> void:

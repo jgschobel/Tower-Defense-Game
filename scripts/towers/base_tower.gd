@@ -473,6 +473,8 @@ func upgrade() -> bool:
 		upg_tween.tween_property(sprite, "scale", base_sc, 0.2)
 		upg_tween.parallel().tween_property(sprite, "modulate", Color(1.5, 1.3, 0.5), 0.15)
 		upg_tween.tween_property(sprite, "modulate", Color.WHITE, 0.2)
+	if EffectPlayer and EffectPlayer.has_method("spawn_place_sparkles"):
+		EffectPlayer.spawn_place_sparkles(global_position)
 
 	# Floating upgrade text
 	var upg_label := Label.new()
@@ -612,6 +614,10 @@ func upgrade_path(path_letter: String) -> bool:
 		var upg_tween := create_tween()
 		upg_tween.tween_property(sprite, "scale", base_sc2 * 1.2, 0.15)
 		upg_tween.tween_property(sprite, "scale", base_sc2, 0.2)
+		upg_tween.parallel().tween_property(sprite, "modulate", Color(1.45, 1.3, 0.6), 0.15)
+		upg_tween.tween_property(sprite, "modulate", Color.WHITE, 0.2)
+	if EffectPlayer and EffectPlayer.has_method("spawn_place_sparkles"):
+		EffectPlayer.spawn_place_sparkles(global_position)
 
 	var upg_label := Label.new()
 	var tier_name := ""
