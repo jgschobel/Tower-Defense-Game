@@ -50,7 +50,7 @@ jobs:
         id: godot
         if: steps.check.outputs.skip == 'false'
         run: |
-          PINNED=$(cat .github/godot-version.txt | tr -d '[:space:]')
+          PINNED=$(tr -d '[:space:]' < .github/godot-version.txt)
           echo "tag=$PINNED" >> "$GITHUB_OUTPUT"
 
       - name: Install Godot + templates
@@ -65,7 +65,7 @@ jobs:
           mv "Godot_v${GODOT_TAG}_linux.x86_64" /usr/local/bin/godot
           chmod +x /usr/local/bin/godot
           curl -fsSL -o templates.tpz "${BASE}/Godot_v${GODOT_TAG}_export_templates.tpz"
-          VER_DIR="$(echo "${GODOT_TAG}" | sed 's/-/./g')"
+          VER_DIR="${GODOT_TAG//-/.}"
           mkdir -p "$HOME/.local/share/godot/export_templates/${VER_DIR}"
           unzip -q templates.tpz -d /tmp/templates
           mv /tmp/templates/templates/* "$HOME/.local/share/godot/export_templates/${VER_DIR}/"

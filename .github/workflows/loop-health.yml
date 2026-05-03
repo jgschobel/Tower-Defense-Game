@@ -47,10 +47,12 @@ jobs:
               fi
             fi
           done
-          echo "stale_paused=$stale_paused" >> "$GITHUB_OUTPUT"
-          echo "stale_files<<EOF" >> "$GITHUB_OUTPUT"
-          echo -e "$stale_files" >> "$GITHUB_OUTPUT"
-          echo "EOF" >> "$GITHUB_OUTPUT"
+          {
+            echo "stale_paused=$stale_paused"
+            echo "stale_files<<EOF"
+            echo -e "$stale_files"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
           # 2) Is .github/autonomous/PAUSE present?
           pause_file="false"
           if [ -f .github/autonomous/PAUSE ]; then
@@ -68,18 +70,17 @@ jobs:
           loop_runs=$(gh api -H "Accept: application/vnd.github+json" \
             "/repos/${{ github.repository }}/actions/workflows/autonomous-dev.yml/runs?per_page=20" \
             --jq '[.workflow_runs[] | select(.created_at > (now - 28800 | strftime("%Y-%m-%dT%H:%M:%SZ")))] | length' 2>/dev/null || echo 0)
-          echo "loop_runs_8h=$loop_runs" >> "$GITHUB_OUTPUT"
-          # Did deploy-web succeed in the last 24 hours?
           deploy_success=$(gh api -H "Accept: application/vnd.github+json" \
             "/repos/${{ github.repository }}/actions/workflows/deploy-web.yml/runs?per_page=20&status=success" \
             --jq '[.workflow_runs[] | select(.created_at > (now - 86400 | strftime("%Y-%m-%dT%H:%M:%SZ")))] | length' 2>/dev/null || echo 0)
-          echo "deploy_success_24h=$deploy_success" >> "$GITHUB_OUTPUT"
-          # Open ci-failure issues
           open_failures=$(gh issue list --label ci-failure --state open --json number --jq 'length' 2>/dev/null || echo 0)
-          echo "open_ci_failures=$open_failures" >> "$GITHUB_OUTPUT"
-          # Last successful deploy commit on main
           last_deploy_sha=$(grep -oE "Commit: [a-f0-9]+" docs/observability/deploy_latest.md 2>/dev/null | head -1 | awk '{print $2}' || echo "unknown")
-          echo "last_deploy_sha=$last_deploy_sha" >> "$GITHUB_OUTPUT"
+          {
+            echo "loop_runs_8h=$loop_runs"
+            echo "deploy_success_24h=$deploy_success"
+            echo "open_ci_failures=$open_failures"
+            echo "last_deploy_sha=$last_deploy_sha"
+          } >> "$GITHUB_OUTPUT"
           # Hours since last deploy (from observability file mtime)
           if [ -f docs/observability/deploy_latest.md ]; then
             mtime=$(date -u -d "$(grep -oE '@ [0-9T:Z-]+' docs/observability/deploy_latest.md | head -1 | sed 's/@ //')" +%s 2>/dev/null || echo 0)
