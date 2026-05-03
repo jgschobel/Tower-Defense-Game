@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/enemy_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/textures/enemies/mteufel_clean.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "moab_migros"
+display_name = "Migros-Tank"
+friend_character_id = "enemy_boss"
+max_health = 800.0
+move_speed = 50.0
+armor = 6.0
+gold_reward = 80
+base_color = Color(0.95, 0.55, 0.10, 1)
+scale_factor = 1.85
+custom_texture = ExtResource("2")
+is_flying = false
+heals_nearby = false
+spawns_on_death = "tank"
+spawn_count = 4
