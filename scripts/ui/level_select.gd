@@ -106,9 +106,13 @@ func _populate_levels() -> void:
 		sb_disabled.set_corner_radius_all(45)
 		btn.add_theme_stylebox_override("disabled", sb_disabled)
 
-		# Level number — large, centred inside the circle
+		# Level number — large, centred inside the circle. Locked levels
+		# show "—" (em-dash, universally renderable) instead of the 🔒
+		# emoji which tofus on Android phones with stripped Noto Emoji.
+		# The disabled stylebox already greys the button so the lock state
+		# is unambiguous.
 		var num_lbl := Label.new()
-		num_lbl.text = str(i) if unlocked else "🔒"
+		num_lbl.text = str(i) if unlocked else "—"
 		num_lbl.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		num_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		num_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER

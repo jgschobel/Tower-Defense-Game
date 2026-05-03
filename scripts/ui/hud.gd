@@ -164,7 +164,7 @@ func _refresh_threat_badges() -> void:
 			"boss":
 				boss_refs.append(e)
 	_set_threat_badge("HealerBadge", has_healer, "+ HEAL", Color(0.4, 1.0, 0.5))
-	_set_threat_badge("BossBadge", not boss_refs.is_empty(), "⚠ BOSS", Color(1.0, 0.35, 0.25))
+	_set_threat_badge("BossBadge", not boss_refs.is_empty(), "BOSS", Color(1.0, 0.35, 0.25))  # was "⚠ BOSS"
 	_refresh_boss_hpbar(boss_refs)
 
 
@@ -523,7 +523,7 @@ func _populate_tower_shop() -> void:
 		btn.clip_contents = true
 		btn.disabled = is_locked
 		if is_locked:
-			btn.tooltip_text = "🔒 Brich %d Stärn zum z'freischalte" % stars_req
+			btn.tooltip_text = "Brich %d Stärn zum z'freischalte" % stars_req  # was "🔒 ..."
 		else:
 			# D24: hover preview showing key stats at a glance
 			var tip_lines: Array = [
@@ -779,7 +779,7 @@ func show_enemy_intro(enemy_id: String, enemy_data: Resource) -> void:
 	vbox.add_theme_constant_override("separation", 8)
 
 	var warning := Label.new()
-	warning.text = "☠ ENDGEGNER!!" if enemy_id == "boss" else "⚠ NÖÖI BEDROHIG"
+	warning.text = "ENDGEGNER!!" if enemy_id == "boss" else "NÖÖI BEDROHIG"  # was "☠ ..." / "⚠ ..."
 	warning.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	warning.add_theme_font_size_override("font_size", 22)
 	var header_color := Color(1.0, 0.25, 0.2) if enemy_id == "boss" else Color(1, 0.6, 0.2)
@@ -1088,7 +1088,7 @@ func update_wave_info(current: int, total: int) -> void:
 		if current == 0:
 			# Bereit state — gold so it visually belongs to the wave
 			# progress bar below it. Was default theme color (white-ish).
-			wave_label.text = "✦ Bereit"
+			wave_label.text = "Bereit"  # was "✦ Bereit" — sparkle dropped
 			wave_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.30))
 		else:
 			wave_label.text = "Welle %d/%d" % [current, total]
@@ -1263,7 +1263,7 @@ func _refresh_next_wave_preview(visible_flag: bool) -> void:
 			has_boss = true; break
 	if has_boss:
 		var warn := Label.new()
-		warn.text = "⚠ BOSS"
+		warn.text = "BOSS"  # was "⚠ BOSS"
 		warn.add_theme_font_size_override("font_size", 17)
 		warn.add_theme_color_override("font_color", Color(1.0, 0.3, 0.2))
 		warn.add_theme_color_override("font_outline_color", Color(0.25, 0.05, 0))

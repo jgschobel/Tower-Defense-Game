@@ -8,7 +8,9 @@ extends Node
 
 const AUDIO_CONFIG_PATH := "res://resources/audio_config.tres"
 
-var _sample_rate: float = 22050.0
+var _sample_rate: float = 44100.0  # bumped from 22050 — eliminates resample artifacts
+                                    # ("rips") on 44.1k/48k device output. Doubles WAV
+                                    # buffer size but at <0.1s per SFX it's negligible.
 var _config: AudioConfig = null
 var _stream_cache: Dictionary = {}  # path -> AudioStream
 # Per-id cooldown to stop high-frequency SFX from being annoying.
@@ -248,9 +250,11 @@ func play_life_lost() -> void:
 
 
 func _play_tone(freq: float, duration: float, volume: float, noise: bool = false) -> void:
-	# Warm tone generator (ROADMAP #25). 16-bit signed to avoid the 8-bit
-	# quantization noise that made soft sines sound scratchy. Sine
-	# fundamental + soft 2nd harmonic + 4ms attack ramp + quadratic decay.
+	# Warm tone generator (ROADMAP #25). 16-bit signed @ 44.1kHz.
+	# Smooth cosine attack (10ms) + cosine release (15ms) + quadratic
+	# decay body. Eliminates the start/end clicks that caused "rips".
+	# Per-sound volume × 0.5 (was × 0.6) so polyphonic stacks (e.g. 4
+	# towers shooting + 1 enemy dying simultaneously) don't sum to clip.
 	var samples := int(_sample_rate * duration)
 	var audio := AudioStreamWAV.new()
 	audio.format = AudioStreamWAV.FORMAT_16_BITS
@@ -258,14 +262,27 @@ func _play_tone(freq: float, duration: float, volume: float, noise: bool = false
 	audio.stereo = false
 
 	var data := PackedByteArray()
-	var attack_samples: float = float(_sample_rate) * 0.004
+	var attack_samples: float = float(_sample_rate) * 0.010   # 10ms attack
+	var release_samples: float = float(_sample_rate) * 0.015  # 15ms release
+	var release_start: float = float(samples) - release_samples
 	var noise_avg: float = 0.0
 	for i in samples:
 		var t := float(i) / _sample_rate
 		var progress: float = t / duration
-		var attack: float = clamp(float(i) / attack_samples, 0.0, 1.0)
+		# Cosine-shaped attack: smoother than linear, no pop on start.
+		var attack: float
+		if i < attack_samples:
+			attack = 0.5 - 0.5 * cos(PI * float(i) / attack_samples)
+		else:
+			attack = 1.0
+		# Cosine-shaped release: smoother than linear cutoff, no pop on stop.
+		var release: float
+		if float(i) > release_start:
+			release = 0.5 + 0.5 * cos(PI * (float(i) - release_start) / release_samples)
+		else:
+			release = 1.0
 		var tail: float = pow(1.0 - progress, 2.0)
-		var env: float = attack * tail
+		var env: float = attack * release * tail
 		var sample: float
 		if noise:
 			var raw: float = randf() * 2.0 - 1.0
@@ -274,7 +291,7 @@ func _play_tone(freq: float, duration: float, volume: float, noise: bool = false
 		else:
 			var body: float = sin(t * freq * TAU)
 			var harm: float = sin(t * freq * 2.0 * TAU) * 0.33
-			sample = (body + harm) * env * volume * 0.6
+			sample = (body + harm) * env * volume * 0.5
 		var s16: int = int(clamp(sample, -1.0, 1.0) * 32767.0)
 		data.append(s16 & 0xFF)
 		data.append((s16 >> 8) & 0xFF)
@@ -283,6 +300,7 @@ func _play_tone(freq: float, duration: float, volume: float, noise: bool = false
 
 	var player := AudioStreamPlayer.new()
 	player.stream = audio
+	player.bus = "SFX" if AudioServer.get_bus_index("SFX") >= 0 else "Master"
 	player.volume_db = _db_with_user_volume(-10.0)
 	add_child(player)
 	player.play()
@@ -300,8 +318,9 @@ func _db_with_user_volume(base_db: float) -> float:
 
 
 func _play_sweep(freq_start: float, freq_end: float, duration: float, volume: float) -> void:
-	# Warm sweep generator (ROADMAP #25). 16-bit for headroom + signed
-	# encoding so soft sounds don't crackle from 8-bit quantization noise.
+	# Warm sweep generator. 16-bit @ 44.1kHz with cosine attack+release
+	# envelopes (no clicks). Per-sound volume × 0.5 so polyphonic stacks
+	# don't clip the master bus.
 	var samples := int(_sample_rate * duration)
 	var audio := AudioStreamWAV.new()
 	audio.format = AudioStreamWAV.FORMAT_16_BITS
@@ -309,19 +328,30 @@ func _play_sweep(freq_start: float, freq_end: float, duration: float, volume: fl
 	audio.stereo = false
 
 	var data := PackedByteArray()
-	var attack_samples: float = float(_sample_rate) * 0.004
+	var attack_samples: float = float(_sample_rate) * 0.010
+	var release_samples: float = float(_sample_rate) * 0.015
+	var release_start: float = float(samples) - release_samples
 	var phase: float = 0.0
 	var dt: float = 1.0 / _sample_rate
 	for i in samples:
 		var progress_pct: float = float(i) / float(samples)
 		var freq: float = freq_start + (freq_end - freq_start) * progress_pct
 		phase += freq * dt
-		var attack: float = clamp(float(i) / attack_samples, 0.0, 1.0)
+		var attack: float
+		if i < attack_samples:
+			attack = 0.5 - 0.5 * cos(PI * float(i) / attack_samples)
+		else:
+			attack = 1.0
+		var release: float
+		if float(i) > release_start:
+			release = 0.5 + 0.5 * cos(PI * (float(i) - release_start) / release_samples)
+		else:
+			release = 1.0
 		var tail: float = pow(1.0 - progress_pct, 2.0)
-		var env: float = attack * tail
+		var env: float = attack * release * tail
 		var body: float = sin(phase * TAU)
 		var harm: float = sin(phase * 2.0 * TAU) * 0.28
-		var sample: float = (body + harm) * env * volume * 0.6
+		var sample: float = (body + harm) * env * volume * 0.5
 		var s16: int = int(clamp(sample, -1.0, 1.0) * 32767.0)
 		data.append(s16 & 0xFF)
 		data.append((s16 >> 8) & 0xFF)
@@ -330,6 +360,7 @@ func _play_sweep(freq_start: float, freq_end: float, duration: float, volume: fl
 
 	var player := AudioStreamPlayer.new()
 	player.stream = audio
+	player.bus = "SFX" if AudioServer.get_bus_index("SFX") >= 0 else "Master"
 	player.volume_db = _db_with_user_volume(-10.0)
 	add_child(player)
 	player.play()
