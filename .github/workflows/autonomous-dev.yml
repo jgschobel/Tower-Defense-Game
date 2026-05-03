@@ -202,9 +202,9 @@ jobs:
             exit 0
           fi
           echo "Validating PR #$PR_NUM"
-          # Use gh pr checkout — it uses GH_TOKEN directly and avoids the
-          # stale git-credential issue that breaks `git fetch origin` after
-          # the Claude action runs.
+          # Configure git to use GH_TOKEN for HTTPS — the Claude action
+          # step may clear the runner's default credential helper.
+          git config --global url."https://x-access-token:${GH_TOKEN}@github.com/".insteadOf "https://github.com/"
           gh pr checkout "$PR_NUM"
           chmod +x .github/autonomous/validate.sh
           if .github/autonomous/validate.sh; then

@@ -63,7 +63,7 @@ jobs:
           ORPHANS=""
           # For each .tscn or .tres outside scenes/ui/main_menu (the entry
           # point) check if it's referenced anywhere
-          for f in $(find scenes resources -name '*.tscn' -o -name '*.tres' 2>/dev/null); do
+          while IFS= read -r f; do
             base="res://$f"
             REFS=$(grep -rl --include='*.tscn' --include='*.tres' --include='*.gd' --include='*.godot' "$base" . 2>/dev/null | wc -l | tr -d ' ')
             # Account for self-reference (the file's own header)
@@ -71,7 +71,7 @@ jobs:
             if [ "$EFFECTIVE" -le 0 ]; then
               ORPHANS="${ORPHANS}- ${f}"$'\n'
             fi
-          done
+          done < <(find scenes resources \( -name '*.tscn' -o -name '*.tres' \) 2>/dev/null)
           # Filter out main_menu (entry point) and base_*.tscn (instantiated dynamically)
           ORPHANS_FILTERED=$(echo "$ORPHANS" | grep -vE 'main_menu|base_enemy|base_tower|base_projectile' || true)
           echo "$ORPHANS_FILTERED" > /tmp/orphans.txt
