@@ -82,7 +82,7 @@ jobs:
           KEPT=0
 
           for BRANCH in $(git branch -r | sed 's|origin/||' | tr -d ' ' \
-            | grep -E '^(art-request|art-tiers|art-variants|art-damage|friend-photo|claude/auto)/'); do
+            | grep -E '^(art-request|art-tiers|art-variants|art-damage|friend-photo|audit-grid|claude/auto)/'); do
 
             # Skip protected refs
             if [ "$BRANCH" = "main" ] || [ "$BRANCH" = "gh-pages" ]; then
@@ -120,7 +120,7 @@ jobs:
               SHOULD_DELETE=true
               REASON="closed-pr"
             elif [ "$HAS_OPEN_PR" = "0" ] && [ "$BRANCH_AGE_DAYS" -gt 1 ] && \
-                 [[ "$BRANCH" =~ ^(art-request|art-tiers|art-variants|art-damage|friend-photo/inbox)/ ]]; then
+                 [[ "$BRANCH" =~ ^(art-request|art-tiers|art-variants|art-damage|audit-grid|friend-photo/inbox)/ ]]; then
               # Bot branches with NO open PR after 24h are abandoned — content shipped via squash
               SHOULD_DELETE=true
               REASON="abandoned-bot-branch-${BRANCH_AGE_DAYS}d"
