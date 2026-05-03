@@ -1,0 +1,36 @@
+name: Validate
+
+# Required check for branch protection on main. Runs the standard
+# .github/autonomous/validate.sh on every push + PR. The job is named
+# `validate` to match the branch-protection rule.
+#
+# Replaces the implicit "validation runs only inside autonomous-dev.yml"
+# pattern which couldn't be used as a required check (jobs run nested
+# inside steps don't show up as PR checks).
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run validate.sh
+        run: |
+          chmod +x .github/autonomous/validate.sh
+          .github/autonomous/validate.sh
