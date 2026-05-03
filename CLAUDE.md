@@ -46,10 +46,41 @@ autonomous or manual. Update only when the user explicitly changes them.
   thing from ROADMAP or CI-failure issues and keep going. Write code,
   don't ask permission. The user prefers too much progress over too
   little ceremony.
+- **Push ≠ done. Verify before claim. NON-NEGOTIABLE.** Pushing a
+  commit, opening a PR, or creating an issue is NOT shipping. Before
+  saying "X is fixed/done/working", you MUST confirm the change is
+  in `main` and observable to the user. Use `mcp__github__list_pull_requests`
+  to confirm your PR is merged, NOT just open. The user only sees
+  what's in main and deployed. Open PRs are invisible work.
+- **First MCP call every session: list_pull_requests --state=open.**
+  Before reading failure logs, before reading the manifest, before
+  ANY other GitHub call, list open PRs. Open PRs are 10× more
+  important than failure logs because they represent successful work
+  that's invisible to the user. If >5 PRs are >48h old, switch
+  to merge-backlog mode immediately — DO NOT add more work to the queue.
+- **Read `docs/observability/asset_status.md` before claiming any
+  asset is missing.** The `asset-manifest.yml` workflow updates this
+  daily with the exact gap between expected and actual art. It's
+  generated from .tres files (source of truth) cross-referenced with
+  the filesystem. Reading directory listings or "trying to figure it
+  out" is wasted compute when the manifest already has the answer.
+- **Workflow trigger hygiene. NEVER use `issues: [opened]`.** The
+  `opened` event fires for every issue in the repo (ci-failure,
+  playtest-feedback, art-request, etc.) and creates dozens of
+  "skipped" workflow runs that hide real failures. Always use
+  `issues: [labeled]` only — when an issue is created with a label
+  pre-applied via API, GitHub fires the `labeled` event separately.
+- **End-of-session ritual.** Before ending any session: (a) list
+  PRs you created in this session via `list_pull_requests`, (b)
+  confirm each is merged or closed, (c) read the latest
+  `asset_status.md` to confirm any art you triggered actually landed.
+  Without this, every session leaks work into the open-PR void.
 - **Read your own CI failures.** The `ci-monitor.yml` workflow files
   a GitHub Issue with log tails whenever any workflow fails. Before
   starting new work, check `mcp__github__list_issues` with label
   `ci-failure` and fix those first. Close the issue when fixed.
+  Also check the `stale-pr-tracker` issue (auto-filed by
+  `pr-staleness-watchdog.yml` every 12h) for unmerged work.
 - **Check CI health on EVERY user message — non-negotiable.**
   Before responding to a new prompt, FIRST read these files via
   `mcp__github__get_file_contents` (cheap, one tool call each):
@@ -133,7 +164,7 @@ assets/
 ```
 
 ## Architecture
-- **Autoloads** (9, see `project.godot`): `GameManager` (state/save), `CurrencyManager` (gold), `MusicManager`, `SfxManager`, `AutoPlaytest`, `WaveSimulator`, `ProjectilePool`, `EnemyPool`, `EffectPlayer` (combat vfx)
+- **Autoloads** (11, see `project.godot`): `GameManager` (state/save), `CurrencyManager` (gold), `AminosManager` (meta-currency), `ComboTracker`, `MusicManager`, `SfxManager`, `AutoPlaytest`, `WaveSimulator`, `ProjectilePool`, `EnemyPool`, `EffectPlayer` (combat vfx)
 - **Data-driven design**: Tower types, enemy types, and levels are defined as Godot `Resource` (.tres) files — add new content by creating new .tres files, no code changes needed
 - **Scene composition**: Base scenes (base_tower.tscn, base_enemy.tscn) are reused with different data resources attached
 - **Signal-based communication**: Systems communicate via signals, not direct references
