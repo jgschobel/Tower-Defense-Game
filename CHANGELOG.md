@@ -3,6 +3,11 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-05-03
+
+- polish(hud): wave announcement "WELLE X" moved from center-screen 700×80 banner to a small pill-shaped top-edge toast (y=68, 26pt font) — no longer occludes the battlefield during active waves (fixes playtest-feedback #289)
+- polish(level-select): level nodes redesigned as BTD-style 90×90 circular buttons with per-level accent colours, level number + stars inside, name label below; 5-column grid so all 10 levels show 2 rows; unlocked nodes pulse gently (fixes playtest-feedback #297)
+
 ## 2026-05-02 (manual session — design polish batch + dev-menu rescue + repo audit)
 
 - fix(dev-menu): root-cause grey-screen — `DesignTokens.get(name)` and `name in DesignTokens` are invalid on a class_name (Object.get is instance-only, `in` undefined). Replaced palette tab with explicit `_resolve_palette_color() → Color` match. Added print() bracket logs and yellow heartbeat label that proves _ready ran even if downstream UI fails.
