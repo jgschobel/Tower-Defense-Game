@@ -150,7 +150,6 @@ def call_stability_img2img(photo: pathlib.Path, prompt: str, out: pathlib.Path) 
             "mode": "image-to-image",
             "strength": "0.75",
             "output_format": "png",
-            "aspect_ratio": "1:1",
             "model": "sd3.5-large",
         }
         r = requests.post(

@@ -57,8 +57,9 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
 
 ### Tier-art completion
 - [ ] **D1/D2 portraits for remaining 3 towers** — Cordula and Kühne
-  done (#310, #311). Need `basic` (Lemurius), `splash` (JoJo), `slow`
-  (Amösius). Output: `assets/textures/towers/{tower_id}_t{1,2}{a,b}.png`.
+  done (#310, #311). `basic` t1a+t2a shipped (this PR). Still need: t1b,
+  t2b for `basic`; all t1/t2 for `splash` (JoJo) and `slow` (Amösius).
+  Output: `assets/textures/towers/{tower_id}_t{1,2}{a,b}.png`.
 
 ### Asset hygiene (from audit 2026-05-03)
 - [ ] **Delete supersedered art** — 12+ files with version suffixes
