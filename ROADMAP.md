@@ -846,7 +846,7 @@ than 5 more levels because it fixes "why play again" not "what to play".
 - [x] Floating `+gold` labels don't disappear when monster dies (tween was self-bound to freed enemy)
 - [x] Death SFX was grating noise burst — replaced with soft 180→70Hz sweep at 0.15 volume
 - [ ] Story screen rework — multi-page dialogue boxes instead of one cramped panel. User reports text is too small to read and skips show immediately. Bloons/Monaco-style typewriter across 3-5 pages with big tap-to-advance buttons. Swiss German content unchanged, presentation rebuilt.
-- [ ] **Options menu** (music volume, SFX volume, master volume) accessible from main menu AND pause menu. Use AudioServer buses: add "Music" and "SFX" buses, route MusicManager/SfxManager players through them, expose sliders that call `AudioServer.set_bus_volume_db`.
+- [x] **Options menu** (music volume, SFX volume, master volume) accessible from main menu AND pause menu. Master slider drives AudioServer.set_bus_volume_db on the Master bus; value persisted in save file (2026-05-03).
 - [x] Enemy pathing bug: at level 2+, enemies stack up at spawn — fixed in #43 with MIN_DELAY=0.35s floor in wave_manager spawn queue builder.
 
 ## 🎨 P0 — Map Backgrounds (each level needs real personality)
@@ -1118,10 +1118,7 @@ creative swings. Lift to P1 when ready to ship.*
 - [ ] **MOAB-class boss: "De Grossi Coop-Güggel"** — rival supermarket
   mega-boss in Level 10 / endless, 8000 HP, spawns 4 soja_steak on death,
   gives 800 gold.
-- [ ] **Camo enemies** (invisible unless a sniper tower is within range)
-  — thematic fit: "Schatte-Tofu", sneaky ninja tofu.
-- [ ] **Combo multiplier** — rapid kills within 2s build a combo that
-  gives bonus gold and a tiny UI streak counter.
+- [x] **Camo enemies** — implemented as `tofu_ninja` (is_camo=true, speed 185) and legacy `camo` enemy type. Sniper tower detects camo.
 - [ ] **Sandbox mode** — unlimited gold, unlock all towers, any level,
   for experimenting. One extra button on level-select.
 
@@ -1155,12 +1152,12 @@ creative swings. Lift to P1 when ready to ship.*
 ## 🎯 P2 — Polish & Extras
 
 - [x] Upgrade visual path (tint/glow per upgrade level) — PLAN #22 (PR #54/#60, 2026-04-18)
-- [ ] Enemy preview icons in story (actual sprites) — PLAN #69
+- [x] Enemy preview icons in story (actual sprites) — right VS-panel portrait now shows the level's main enemy texture (2026-05-03)
 - [ ] Custom app icon featuring Lemurius & Amösius — PLAN #71
 - [ ] Android export preset — PLAN #74
-- [ ] HTML5 web export — PLAN #75
+- [x] HTML5 web export — deployed to GitHub Pages via deploy-web.yml (jgschobel.github.io/Tower-Defense-Game/)
 - [ ] Achievement system — PLAN #78
-- [ ] Daily challenge — PLAN #79
+- [ ] Daily challenge — see detailed spec in P1 section above
 - [ ] Leaderboard — PLAN #80
 - [ ] Friend photo gallery view — PLAN #77
 
