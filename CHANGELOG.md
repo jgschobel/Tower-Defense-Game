@@ -3,6 +3,11 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-05-03 (generate-art — Lemurius tier art + generators.py fix)
+
+- art(tower): generate basic_t1a.png (Schnelli Banane I) + basic_t2a.png (Schnelli Banane II) for Lemurius via Stability SD3.5 img2img from lemurius_photo.jpg; loaded automatically by _maybe_swap_tier3_sprite on first/second upgrade (partial progress on tier-art P1 item)
+- fix(scripts): remove invalid aspect_ratio param from call_stability_img2img — Stability API rejects aspect_ratio in image-to-image mode; fixes Stability img2img fallback in generate_tier_variants.py
+
 ## 2026-05-03 (audit-polish — shop badge + options theme + L4 path + enemy intro taunts + wave toast + level select)
 
 - polish(hud): shop tower cost display upgraded to a coin-icon badge (dark pill + SVG coin + 13px gold label) — fixes #319
