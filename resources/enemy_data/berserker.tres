@@ -17,3 +17,5 @@ scale_factor = 1.45
 custom_texture = ExtResource("2")
 is_flying = false
 heals_nearby = false
+spawns_on_death = "fast"
+spawn_count = 2
