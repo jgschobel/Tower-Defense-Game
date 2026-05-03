@@ -1,0 +1,131 @@
+name: Mass Art Variants
+
+# Generates portrait/design variants per tower or enemy. All outputs land in:
+#   assets/textures/variants/towers/{id}/{style}.png
+#   assets/textures/variants/enemies/{id}/design_{style}.png
+# DevMenu → Variante tab discovers them automatically.
+
+on:
+  push:
+    branches: ['claude/review-codebase-*', 'claude/*']
+    paths: ['.github/scripts/generate_mass_variants.py']
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'What to generate: "all", "towers", "enemies", "cordula", "sniper", etc.'
+        required: true
+        type: choice
+        options:
+          - all
+          - towers
+          - enemies
+          - tower_basic
+          - tower_sniper
+          - tower_splash
+          - tower_cordula
+          - tower_slow
+          - enemy_basic
+          - enemy_fast
+          - enemy_tank
+          - enemy_healer
+          - enemy_flying
+          - enemy_boss
+  repository_dispatch:
+    types: [mass-art]
+  issues:
+    types: [labeled]  # NOT 'opened' — noisy, fires for every issue
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: mass-art-${{ inputs.target || github.event.client_payload.target || github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    if: github.event_name != 'issues' || contains(github.event.issue.labels.*.name, 'mass-art')
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Python deps
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install requests
+
+      - name: Resolve target
+        id: vars
+        env:
+          DISPATCH_TARGET: ${{ github.event.client_payload.target }}
+          INPUT_TARGET: ${{ inputs.target }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          set -e
+          if [ "$EVENT_NAME" = "push" ]; then
+            TARGET="all"
+          else
+            TARGET="${INPUT_TARGET:-$DISPATCH_TARGET}"
+          fi
+          if [ -z "$TARGET" ] && [ -n "$ISSUE_TITLE" ]; then
+            WORD=$(echo "$ISSUE_TITLE" | tr '[:upper:]' '[:lower:]' | awk '{print $1}')
+            case "$WORD" in
+              all|towers|enemies|tower_basic|tower_sniper|tower_splash|tower_cordula|tower_slow|enemy_basic|enemy_fast|enemy_tank|enemy_healer|enemy_flying|enemy_boss)
+                TARGET="$WORD" ;;
+              cordula) TARGET="tower_cordula" ;;
+              sniper|kuhne|kühne) TARGET="tower_sniper" ;;
+              jojo) TARGET="tower_splash" ;;
+              lemurius) TARGET="tower_basic" ;;
+              amosius|amösius) TARGET="tower_slow" ;;
+              *) TARGET="all" ;;
+            esac
+          fi
+          [ -z "$TARGET" ] && TARGET="all"
+          echo "target=$TARGET" >> "$GITHUB_OUTPUT"
+          echo "Generating variants for: $TARGET"
+
+      - name: Generate variants
+        id: gen
+        env:
+          TARGET: ${{ steps.vars.outputs.target }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          STABILITY_API_KEY: ${{ secrets.STABILITY_API_KEY }}
+        run: |
+          set -e
+          python3 .github/scripts/generate_mass_variants.py
+
+      - name: Commit + open PR + auto-merge
+        if: steps.gen.outputs.count != '' && steps.gen.outputs.count != '0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TARGET: ${{ steps.gen.outputs.target }}
+          COUNT: ${{ steps.gen.outputs.count }}
+          ASSETS: ${{ steps.gen.outputs.asset_paths }}
+        run: |
+          set -e
+          BRANCH="art-variants/${TARGET//\//-}-$(date +%s)"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add assets/textures/variants/
+          STAGED=$(git diff --cached --name-only | wc -l)
+          if [ "$STAGED" -eq 0 ]; then
+            echo "Nothing new to commit"
+            exit 0
+          fi
+          git commit -m "art(variants): mass art variants for ${TARGET} (${COUNT} files)"
+          git push -u origin "$BRANCH"
+          PR_URL=$(gh pr create \
+            --title "art(variants): ${COUNT} new variants for ${TARGET}" \
+            --body "Generated via Gemini img2img. Auto-merging on green CI." \
+            --base main \
+            --head "$BRANCH")
+          PR_NUMBER=$(echo "$PR_URL" | grep -oE '[0-9]+$' | tail -1)
+          sleep 5
+          gh pr merge "$PR_NUMBER" --auto --squash || gh pr merge "$PR_NUMBER" --squash

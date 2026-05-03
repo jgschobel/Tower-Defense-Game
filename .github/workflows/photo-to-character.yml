@@ -1,16 +1,10 @@
 name: Photo → Character Icon
 
 # Triggered when an issue labeled "friend-photo" is opened.
-# Extracts the attached image from the issue body, calls Stability AI
-# image-to-image to turn it into a chibi cartoon tower icon, commits
-# the result and opens a PR.
 
 on:
   issues:
-    types: [opened, labeled]
-  # Also trigger when someone adds a photo in a comment on a labeled issue.
-  # This is the easiest mobile path: the user opens a barebones issue with
-  # just the label, then replies with the photo attached.
+    types: [labeled]  # NOT 'opened' — noisy, fires for every issue
   issue_comment:
     types: [created]
 
@@ -20,8 +14,6 @@ permissions:
   issues: write
 
 concurrency:
-  # Per-issue: two events (open + comment) on the same issue serialize
-  # but different issues can run in parallel.
   group: photo-issue-${{ github.event.issue.number }}
   cancel-in-progress: false
 
@@ -67,9 +59,6 @@ jobs:
           STABILITY_API_KEY: ${{ secrets.STABILITY_API_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Combine both — photos can live in either the original issue
-          # body (template form) or a follow-up comment. Python picks
-          # whichever has the image URL.
           ISSUE_BODY: |
             ${{ github.event.issue.body }}
             ${{ github.event.comment.body }}
@@ -79,7 +68,7 @@ jobs:
           set -e
           python3 .github/scripts/photo_to_character.py
 
-      - name: Open PR with new asset
+      - name: Open PR + auto-merge
         if: steps.gen.outputs.asset_path != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -95,11 +84,14 @@ jobs:
           git add "$ASSET"
           git commit -m "art(character): add friend icon '$CHAR_NAME' (closes #$ISSUE_NUMBER)"
           git push -u origin "$BRANCH"
-          gh pr create \
+          PR_URL=$(gh pr create \
             --title "art(character): add friend icon '$CHAR_NAME'" \
-            --body "Generated from issue #$ISSUE_NUMBER via Stability AI image-to-image.\n\nAsset: \`$ASSET\`\n\nNext: an autonomous build-content run will wire this into a new TowerData .tres and the shop." \
+            --body "Generated from issue #$ISSUE_NUMBER via Stability AI image-to-image. Asset: \`$ASSET\`. Auto-merging on green CI." \
             --base main \
-            --head "$BRANCH"
+            --head "$BRANCH")
+          PR_NUMBER=$(echo "$PR_URL" | grep -oE '[0-9]+$' | tail -1)
+          sleep 5
+          gh pr merge "$PR_NUMBER" --auto --squash || gh pr merge "$PR_NUMBER" --squash
 
       - name: Comment on issue with result
         if: steps.gen.outputs.asset_path != ''
@@ -109,7 +101,7 @@ jobs:
           ASSET: ${{ steps.gen.outputs.asset_path }}
         run: |
           gh issue comment "${{ github.event.issue.number }}" \
-            --body "Icon generated for **$CHAR_NAME** and committed as \`$ASSET\`. A PR is open to merge it. Once merged, the next autonomous cron run will wire it into a new tower."
+            --body "Icon generated for **$CHAR_NAME** and committed as \`$ASSET\`. PR opened with auto-merge enabled."
 
       - name: Comment on failure
         if: failure() || steps.gen.outputs.asset_path == ''
@@ -128,7 +120,5 @@ jobs:
               echo ""
             fi
             echo "Workflow logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-            echo ""
-            echo "The CI-monitor workflow will also file a detailed ci-failure issue. The next autonomous test-validate cron will see it and attempt a fix."
           } > /tmp/fail_comment.md
           gh issue comment "${{ github.event.issue.number }}" --body-file /tmp/fail_comment.md

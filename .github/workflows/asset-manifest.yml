@@ -1,0 +1,51 @@
+name: Asset Manifest
+
+# Daily reconciliation: scans expected vs actual art and writes
+# docs/observability/asset_status.md — single source of truth for
+# chat-session Claude on what art exists vs what's missing.
+
+on:
+  schedule:
+    - cron: '0 4 * * *'  # Daily at 04:00 UTC
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'resources/**/*.tres'
+      - 'assets/textures/**/*.png'
+      - '.github/scripts/asset_manifest.py'
+      - '.github/workflows/asset-manifest.yml'
+
+permissions:
+  contents: write
+  pull-requests: read
+
+concurrency:
+  group: asset-manifest
+  cancel-in-progress: true
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate asset status manifest
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 .github/scripts/asset_manifest.py
+
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet docs/observability/asset_status.md 2>/dev/null; then
+            echo "No changes to asset_status.md"
+            exit 0
+          fi
+          git add docs/observability/asset_status.md
+          git commit -m "chore(observability): update asset_status.md"
+          git push
