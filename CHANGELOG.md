@@ -3,6 +3,12 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-05-03 (audit-polish — shop badge + options theme + L4 path)
+
+- polish(hud): shop tower cost display upgraded to a coin-icon badge (dark pill + SVG coin + 13px gold label) — fixes #319 where the 12px plain label was invisible; _on_gold_changed red/amber/gold coloring still works via the Label ref in _cost_labels
+- polish(ui): options menu (Iistellige) now has a proper DesignTokens panel background + golden border + styled heading + button; no longer renders as plain black slab with floating sliders (fixes #153)
+- fix(level): L4 Bäckerei PathBorder changed to near-white cream (0.95,0.92,0.82), PathDraw changed to medium tan (0.72,0.62,0.48) — both were dark brown and invisible against the warm-brown bakery floor (fixes #320)
+
 ## 2026-05-03 (audit-polish — tier hat overlay)
 
 - polish(tower): procedural crown/hat overlay at tier ≥ 1 (ROADMAP D8) — path A gets a spiky crown (3/4/5 points per tier, red gem at tier≥2), path B gets a sash/badge with 1/2/3 gold stars; pop-in bounce animation on upgrade; hat_y tracks sprite top via tier scale factor; drawn via inline GDScript in _hat_script()
