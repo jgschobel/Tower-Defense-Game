@@ -54,7 +54,7 @@ jobs:
           git add docs/observability/session_brief.md
           git commit -m "chore(observability): refresh session_brief.md"
           # Best-effort push (may race with other workflows on main)
-          for i in 1 2 3; do
+          for _ in 1 2 3; do
             if git push origin main; then exit 0; fi
             sleep 5
             git pull --rebase origin main || true
