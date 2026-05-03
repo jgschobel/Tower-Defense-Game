@@ -140,7 +140,7 @@ func _placements(game_root: Node, loadout: String) -> Array:
 	return placements
 
 
-func _instantiate_tower(parent: Node, td, pos: Vector2) -> void:
+func _instantiate_tower(parent: Node, td: Resource, pos: Vector2) -> void:
 	var scn: PackedScene = load("res://scenes/towers/base_tower.tscn") as PackedScene
 	var tower = scn.instantiate()
 	tower.data = td
