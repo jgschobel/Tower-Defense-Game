@@ -1,42 +1,42 @@
 # Autonomous Loop Status
 
-**Updated:** 2026-05-02T08:01:09Z
-**Overall:** 🔴 unhealthy
+**Updated:** 2026-05-03T13:50:35Z
+**Overall:** 🟢 healthy
 
 ## Workflow last-run health
 
 | Workflow | Last run (UTC) | Last status | Last success |
 |---|---|---|---|
-| autonomous-dev | 2026-05-02T06:06:13Z | ❌ failure ([#24](https://github.com/jgschobel/Tower-Defense-Game/actions/runs/25245434067)) | (never) |
-| deploy-web | 2026-05-02T07:50:47Z | ✅ success ([#169](https://github.com/jgschobel/Tower-Defense-Game/actions/runs/25247257224)) | 2026-05-02T07:50:47Z |
-| playtest | 2026-05-02T07:50:47Z | ❌ failure ([#151](https://github.com/jgschobel/Tower-Defense-Game/actions/runs/25247257222)) | (never) |
-| audit-grid | 2026-05-02T07:58:21Z | ⏭️ skipped ([#15](https://github.com/jgschobel/Tower-Defense-Game/actions/runs/25247386183)) | (never) |
-| sim-gate | 2026-04-21T06:34:58Z | ❌ failure ([#64](https://github.com/jgschobel/Tower-Defense-Game/actions/runs/24707833397)) | (never) |
-| gitleaks | 2026-05-02T07:50:47Z | ✅ success ([#264](https://github.com/jgschobel/Tower-Defense-Game/actions/runs/25247257220)) | 2026-05-02T07:50:47Z |
-| cleanup | 2026-05-02T07:02:03Z | ✅ success ([#4](https://github.com/jgschobel/Tower-Defense-Game/actions/runs/25246401084)) | 2026-05-02T07:02:03Z |
+| autonomous-dev | 2026-05-03T13:09:45Z | ❌ failure ([#32](https://github.com/jgschobel/Tower-Defense-Game/actions/runs/25280065936)) | (never) |
+| deploy-web | 2026-05-03T08:41:37Z | ✅ success ([#215](https://github.com/jgschobel/Tower-Defense-Game/actions/runs/25274541863)) | 2026-05-03T08:41:37Z |
+| playtest | 2026-05-03T08:19:32Z | ✅ success ([#195](https://github.com/jgschobel/Tower-Defense-Game/actions/runs/25274110346)) | 2026-05-03T08:19:32Z |
+| audit-grid | 2026-05-03T08:30:27Z | ✅ success ([#59](https://github.com/jgschobel/Tower-Defense-Game/actions/runs/25274319239)) | 2026-05-03T08:30:27Z |
+| sim-gate | 2026-05-03T09:32:49Z | ✅ success ([#69](https://github.com/jgschobel/Tower-Defense-Game/actions/runs/25275546362)) | 2026-05-03T09:32:49Z |
+| gitleaks | 2026-05-03T13:22:44Z | ✅ success ([#320](https://github.com/jgschobel/Tower-Defense-Game/actions/runs/25280340210)) | 2026-05-03T13:22:44Z |
+| cleanup | 2026-05-03T07:20:18Z | ✅ success ([#5](https://github.com/jgschobel/Tower-Defense-Game/actions/runs/25272952555)) | 2026-05-03T07:20:18Z |
 | drift-scan | 2026-04-20T09:12:48Z | ❌ failure ([#1](https://github.com/jgschobel/Tower-Defense-Game/actions/runs/24658311670)) | (never) |
 | weekly-digest | 2026-04-20T08:06:39Z | ❌ failure ([#1](https://github.com/jgschobel/Tower-Defense-Game/actions/runs/24655509247)) | (never) |
-| loop-health | 2026-05-02T08:00:56Z | ❓ null ([#2](https://github.com/jgschobel/Tower-Defense-Game/actions/runs/25247431815)) | (never) |
-| workflow-lint | 2026-05-02T07:50:46Z | ❌ failure ([#9](https://github.com/jgschobel/Tower-Defense-Game/actions/runs/25247256984)) | (never) |
+| loop-health | 2026-05-03T13:50:24Z | ❓ null ([#42](https://github.com/jgschobel/Tower-Defense-Game/actions/runs/25280935199)) | (never) |
+| workflow-lint | 2026-05-03T08:41:38Z | ❌ failure ([#40](https://github.com/jgschobel/Tower-Defense-Game/actions/runs/25274541866)) | (never) |
 
 ## Issue counters
 
-- Open `ci-failure` issues: **5**
+- Open `ci-failure` issues: **2**
 - Open `loop-broken` issues: **0**
 - PAUSE kill-switch present: `false`
 
 ## Recent failure logs
 
-session Claude needs to debug "why is X broken?" — read
-the bottom of the log file directly via get_file_contents.
-
-| When (UTC) | Workflow | Run | Branch | Commit | Log |
-|---|---|---|---|---|---|
-| 2026-05-02T07:33:42Z | Autonomous Playtester | [#145](https://github.com/jgschobel/Tower-Defense-Game/actions/runs/25246862696) | main | `6742ebf` | [`autonomous-playtester__25246862696.log`](./autonomous-playtester__25246862696.log) |
-| 2026-05-02T07:43:14Z | Autonomous Playtester | [#146](https://github.com/jgschobel/Tower-Defense-Game/actions/runs/25246918089) | main | `7e6026b` | [`autonomous-playtester__25246918089.log`](./autonomous-playtester__25246918089.log) |
-| 2026-05-02T07:48:19Z | Autonomous Playtester | [#148](https://github.com/jgschobel/Tower-Defense-Game/actions/runs/25247016722) | main | `fc1e46e` | [`autonomous-playtester__25247016722.log`](./autonomous-playtester__25247016722.log) |
-| 2026-05-02T07:53:33Z | Autonomous Playtester | [#150](https://github.com/jgschobel/Tower-Defense-Game/actions/runs/25247203931) | main | `2363d82` | [`autonomous-playtester__25247203931.log`](./autonomous-playtester__25247203931.log) |
-| 2026-05-02T07:58:34Z | Autonomous Playtester | [#151](https://github.com/jgschobel/Tower-Defense-Game/actions/runs/25247257222) | main | `438a9e4` | [`autonomous-playtester__25247257222.log`](./autonomous-playtester__25247257222.log) |
+| 2026-05-02T22:38:59Z | Autonomous Playtester | [#187](https://github.com/jgschobel/Tower-Defense-Game/actions/runs/25263548158) | main | `970b83b` | [`autonomous-playtester__25263548158.log`](./autonomous-playtester__25263548158.log) |
+| 2026-05-02T22:44:42Z | Autonomous Playtester | [#188](https://github.com/jgschobel/Tower-Defense-Game/actions/runs/25263654835) | main | `1f6943b` | [`autonomous-playtester__25263654835.log`](./autonomous-playtester__25263654835.log) |
+| 2026-05-02T22:49:41Z | Autonomous Playtester | [#191](https://github.com/jgschobel/Tower-Defense-Game/actions/runs/25263747289) | main | `c363f1d` | [`autonomous-playtester__25263747289.log`](./autonomous-playtester__25263747289.log) |
+| 2026-05-02T22:55:01Z | Autonomous Playtester | [#192](https://github.com/jgschobel/Tower-Defense-Game/actions/runs/25263819026) | main | `0500b15` | [`autonomous-playtester__25263819026.log`](./autonomous-playtester__25263819026.log) |
+| 2026-05-03T03:01:09Z | Autonomous Development Loop | [#29](https://github.com/jgschobel/Tower-Defense-Game/actions/runs/25268174951) | main | `f3e675c` | [`autonomous-development-loop__25268174951.log`](./autonomous-development-loop__25268174951.log) |
+| 2026-05-03T06:34:21Z | Autonomous Development Loop | [#30](https://github.com/jgschobel/Tower-Defense-Game/actions/runs/25271928764) | main | `87eec2d` | [`autonomous-development-loop__25271928764.log`](./autonomous-development-loop__25271928764.log) |
+| 2026-05-03T06:39:22Z | Autonomous Playtester | [#194](https://github.com/jgschobel/Tower-Defense-Game/actions/runs/25272065710) | main | `72028e8` | [`autonomous-playtester__25272065710.log`](./autonomous-playtester__25272065710.log) |
+| 2026-05-03T06:39:29Z | Wave-Balance Simulator Gate | [#68](https://github.com/jgschobel/Tower-Defense-Game/actions/runs/25272064081) | claude/auto/audit-polish-tier-hat | `9ddc1c6` | [`wave-balance-simulator-gate__25272064081.log`](./wave-balance-simulator-gate__25272064081.log) |
+| 2026-05-03T09:33:10Z | Autonomous Development Loop | [#31](https://github.com/jgschobel/Tower-Defense-Game/actions/runs/25275338860) | main | `5e94f30` | [`autonomous-development-loop__25275338860.log`](./autonomous-development-loop__25275338860.log) |
+| 2026-05-03T13:23:19Z | Autonomous Development Loop | [#32](https://github.com/jgschobel/Tower-Defense-Game/actions/runs/25280065936) | main | `43d6e66` | [`autonomous-development-loop__25280065936.log`](./autonomous-development-loop__25280065936.log) |
 
 ---
 _Auto-generated by `.github/workflows/loop-health.yml` every 6h. Read this file for a one-shot health view._
