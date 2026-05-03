@@ -466,10 +466,10 @@ func _build_tower_tier_thumb(tower_id: String, path: String, tier: int, base_tex
 # ---------- Tab: Variants picker ----------
 
 func _populate_variants_tab() -> void:
-	_add_hint("Klick uf en Variante zum si als Standard merka. Variante chömed vom Gemini Art-Request #258. Selektion persistiert i user://variants.json.")
+	_add_hint("Klick uf en Variante zum si als Standard merka. Turm-Tier-Variante chömed us assets/textures/towers/, Monster-Variante us assets/textures/variants/enemies/. Selektion persistiert i user://variants.json.")
 	var categories := _discover_variant_categories()
 	if categories.is_empty():
-		_add_hint("(Kei Variante im Repo. Wart bis art-request workflow d'Bilder gschickt het.)")
+		_add_hint("(Kei Variante gfunde. Turm-Tier-Bilder müend generiert werde — lauf generate_tier_variants.py. Monster-Damage-States bruuched generate_enemy_damage_variants.py.)")
 		return
 	for category in categories:
 		_content_root.add_child(_build_variant_section(category))
@@ -477,8 +477,12 @@ func _populate_variants_tab() -> void:
 
 func _discover_variant_categories() -> Array:
 	var out: Array = []
-	var roots := ["res://assets/textures/variants", "res://assets/variants"]
-	for r in roots:
+	# Tower tier variants (*_t1a, *_t2b, *_t3a etc.) live flat in assets/textures/towers/
+	var tower_assets := _discover_tower_tier_variants()
+	if not tower_assets.is_empty():
+		out.append({"name": "towers", "assets": tower_assets})
+	# Directory-based scan for API-generated enemy/bg variants
+	for r in ["res://assets/textures/variants", "res://assets/variants"]:
 		var dir := DirAccess.open(r)
 		if dir == null:
 			continue
@@ -488,6 +492,40 @@ func _discover_variant_categories() -> Array:
 			if dir.current_is_dir() and not entry.begins_with("."):
 				out.append({"name": entry, "assets": _discover_variant_assets(r + "/" + entry)})
 			entry = dir.get_next()
+	return out
+
+
+func _discover_tower_tier_variants() -> Array:
+	var dir := DirAccess.open("res://assets/textures/towers")
+	if dir == null:
+		return []
+	var tier_suffixes := ["_t1a", "_t1b", "_t2a", "_t2b", "_t3a", "_t3b"]
+	var by_id: Dictionary = {}
+	dir.list_dir_begin()
+	var fname := dir.get_next()
+	while fname != "":
+		if fname.ends_with(".png"):
+			var base := fname.get_basename()
+			for suffix in tier_suffixes:
+				if base.ends_with(suffix):
+					var tower_id := base.left(base.length() - suffix.length())
+					if tower_id not in by_id:
+						by_id[tower_id] = []
+					by_id[tower_id].append("res://assets/textures/towers/" + fname)
+					break
+		fname = dir.get_next()
+	var ordered: Array = []
+	for id in TOWER_IDS:
+		if id in by_id:
+			ordered.append(id)
+	for id in by_id:
+		if id not in ordered:
+			ordered.append(id)
+	var out: Array = []
+	for id in ordered:
+		var variants: Array = by_id[id]
+		variants.sort()
+		out.append({"id": id, "variants": variants})
 	return out
 
 
