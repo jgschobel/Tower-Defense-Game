@@ -6,7 +6,7 @@ name: Art Request Generator
 
 on:
   issues:
-    types: [labeled]  # NOT 'opened' — that fires for every issue and creates noise
+    types: [labeled]  # NOT 'opened' — that fires for every issue, creates noise
   issue_comment:
     types: [created]
 
@@ -46,7 +46,7 @@ jobs:
           set -e
           python3 .github/scripts/process_art_request.py
 
-      - name: Open PR
+      - name: Open PR + auto-merge
         if: steps.gen.outputs.asset_path != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -62,11 +62,14 @@ jobs:
           git add "$ASSET"
           git commit -m "art: add ${SLUG} (closes #$ISSUE_NUMBER)"
           git push -u origin "$BRANCH"
-          gh pr create \
+          PR_URL=$(gh pr create \
             --title "art: ${SLUG}" \
-            --body "Generated via Gemini from issue #$ISSUE_NUMBER.\n\nAsset: \`$ASSET\`" \
+            --body "Generated via Gemini from issue #$ISSUE_NUMBER. Asset: \`$ASSET\`. Auto-merging on green CI." \
             --base main \
-            --head "$BRANCH"
+            --head "$BRANCH")
+          PR_NUMBER=$(echo "$PR_URL" | grep -oE '[0-9]+$' | tail -1)
+          sleep 5
+          gh pr merge "$PR_NUMBER" --auto --squash || gh pr merge "$PR_NUMBER" --squash
 
       - name: Comment on issue
         if: steps.gen.outputs.asset_path != ''
@@ -75,4 +78,4 @@ jobs:
           ASSET: ${{ steps.gen.outputs.asset_path }}
         run: |
           gh issue comment "${{ github.event.issue.number }}" \
-            --body "Art generated: \`$ASSET\`. PR opened to merge it."
+            --body "Art generated: \`$ASSET\`. PR opened with auto-merge enabled."
