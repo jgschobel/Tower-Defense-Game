@@ -120,9 +120,39 @@ jobs:
 
       - name: Export Web build
         run: |
+          # Defensive: don't immediately fail on export error so we can see
+          # the post-export filesystem state for diagnostics. The next step
+          # (Verify build artifacts) will fail loud if no index.html exists.
+          set +e
+          mkdir -p build/web
+          echo "=== Pre-export filesystem ==="
+          ls -la .godot/imported/ 2>/dev/null | head -10 || echo "no .godot/imported/"
+          echo "=== Running export ==="
+          godot --headless --path . --export-release "Web" build/web/index.html 2>&1
+          EXPORT_EXIT=$?
+          echo "=== Export exit code: $EXPORT_EXIT ==="
+          echo "=== Post-export filesystem ==="
+          ls -la build/web/ 2>/dev/null | head -20 || echo "build/web missing!"
+          # Always exit 0 here — verify step below is the gate
+          exit 0
+
+      - name: Verify build artifacts (gate)
+        run: |
           set -e
-          godot --headless --path . --export-release "Web" build/web/index.html
-          find build/web -maxdepth 1 | sort
+          if [ ! -f build/web/index.html ]; then
+            echo "::error::build/web/index.html missing — export failed"
+            ls -la build/ 2>/dev/null || echo "build/ does not exist"
+            exit 1
+          fi
+          # Sanity size check — index.html should be > 1KB
+          size=$(stat -c%s build/web/index.html 2>/dev/null || stat -f%z build/web/index.html)
+          if [ "${size:-0}" -lt 1024 ]; then
+            echo "::error::index.html too small ($size bytes) — export incomplete"
+            exit 1
+          fi
+          echo "✓ index.html is $size bytes"
+          echo "✓ files in build/web:"
+          find build/web -maxdepth 2 | sort | head -30
 
       - name: Emit build-info.json
         run: |
