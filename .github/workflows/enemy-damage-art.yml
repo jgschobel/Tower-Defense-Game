@@ -100,8 +100,9 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -b "$BRANCH"
           IFS=',' read -ra PATHS <<< "$ASSETS"
+          python3 .github/scripts/make_import_files.py "assets/textures/variants/enemies" || true
           for p in "${PATHS[@]}"; do
-            git add "$p"
+            git add "$p" "${p}.import" 2>/dev/null || git add "$p"
           done
           git commit -m "art(damage): img2img damage-state variants for $ENEMY ($COUNT files)"
           git push -u origin "$BRANCH"
