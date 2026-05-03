@@ -1638,11 +1638,43 @@ func _refresh_tower_info() -> void:
 
 	if sell_btn:
 		_paint_sell_button(sell_btn)
+	# Targeting-mode cycler (BTD5-style per-tower First/Last/Strong/Close).
+	# Lazily attached to a row above the upgrade/sell HBox.
+	_ensure_targeting_button()
 	# Re-clamp after refresh — post-upgrade the branching path buttons
 	# appear and grow the panel height, which can push it off-screen on
 	# narrow viewports. Agent-audit BUG #8.
 	if tower_info and tower_info.visible:
 		_clamp_tower_info_to_viewport()
+
+
+func _ensure_targeting_button() -> void:
+	if not _selected_tower or not tower_info:
+		return
+	var vbox: VBoxContainer = tower_info.get_node_or_null("VBox")
+	if vbox == null:
+		return
+	var btn: Button = vbox.get_node_or_null("TargetingButton")
+	if btn == null:
+		btn = Button.new()
+		btn.name = "TargetingButton"
+		btn.custom_minimum_size = Vector2(0, 32)
+		btn.tooltip_text = "Zieliere: cycle First / Last / Strong / Close"
+		_apply_tower_info_button_style(btn, Color(0.45, 0.65, 0.85))
+		# Insert just above the HBox (before upgrade/sell row)
+		var hbox: HBoxContainer = vbox.get_node_or_null("HBox") as HBoxContainer
+		vbox.add_child(btn)
+		if hbox:
+			vbox.move_child(btn, hbox.get_index())
+		btn.pressed.connect(_on_targeting_pressed)
+	# Refresh label every redraw so cycling updates immediately
+	btn.text = "Zieliere: %s" % _selected_tower.get_target_mode_label()
+
+
+func _on_targeting_pressed() -> void:
+	if _selected_tower and is_instance_valid(_selected_tower):
+		_selected_tower.cycle_target_mode()
+		_refresh_tower_info()
 
 
 func _paint_sell_button(sell_btn: Button) -> void:
