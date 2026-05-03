@@ -108,8 +108,14 @@ jobs:
         run: |
           set +e
           mkdir -p build/web
-          timeout 180 godot --headless --path . --import
-          timeout 60  godot --headless --path . --import
+          # First pass: 360s budget for cold .ctex generation. Was 180s
+          # but with 206+ new .import files (mass variants + tier portraits +
+          # damage states), Godot's compression step exceeds 3 min on the
+          # ubuntu-latest runner. 6 min covers worst case.
+          timeout 360 godot --headless --path . --import
+          # Second pass: stabilizes any straggler dependencies (lore/scenes
+          # that needed first-pass UIDs). Bumped 60→120s for the same reason.
+          timeout 120 godot --headless --path . --import
           exit 0
 
       - name: Export Web build
