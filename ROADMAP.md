@@ -1014,7 +1014,7 @@ bumps. Each tier must look different; projectiles must evolve.
 
 ## 🔥 P0 — Live Gameplay Feedback (earlier)
 
-- [ ] **First-appearance monster intro animation** — when a new enemy type
+- [x] **First-appearance monster intro animation** — when a new enemy type
   spawns for the first time in a level (not every wave), trigger a
   brief animated reveal: enemy zooms in at 2× scale from bottom
   center, portrait slides in with name label and short Swiss German
@@ -1022,6 +1022,8 @@ bumps. Each tier must look different; projectiles must evolve.
   path start. 2s total. Track `seen_enemies: Array[String]` in
   `wave_manager.gd`; fire `enemy_introduced(enemy_id, data)` signal
   first time each id appears. HUD listens and plays animation.
+  ✓ Implemented: wave_manager._seen_enemy_ids + enemy_introduced signal (PR #67);
+  per-enemy Swiss German taunts added 2026-05-03 (see hud.show_enemy_intro).
 - [x] **Better music** (PR #66) — triangle wave + kick/snare/hi-hat
   drums on the game track + menu/game track bank switch. Original
   spec retained for reference:

@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-05-03 (audit-polish — enemy intro taunts)
+
+- polish(hud): per-enemy Swiss German taunts in first-appearance intro banner — each of 12 enemy types shows a Züridütsch taunt line; boss header changes to "☠ ENDGEGNER!!" in red; panel height ±90→±115 to fit taunt; ticked P0 ROADMAP item (monster intro fully complete); closed stale L6-scale issues #136/#143
+
 ## 2026-05-03 (audit-polish — tier hat overlay)
 
 - polish(tower): procedural crown/hat overlay at tier ≥ 1 (ROADMAP D8) — path A gets a spiky crown (3/4/5 points per tier, red gem at tier≥2), path B gets a sash/badge with 1/2/3 gold stars; pop-in bounce animation on upgrade; hat_y tracks sprite top via tier scale factor; drawn via inline GDScript in _hat_script()

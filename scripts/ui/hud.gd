@@ -712,6 +712,23 @@ func show_enemy_intro(enemy_id: String, enemy_data: Resource) -> void:
 	# can read the text.
 	if enemy_id == "boss":
 		_flash_boss_telegraph()
+
+	# Per-enemy Swiss German taunts — one line per enemy type.
+	var _taunts: Dictionary = {
+		"basic":      "Wir sii meh als ir dänkt...",
+		"fast":       "Z'schnäll für euch — ciao!",
+		"tank":       "Soja-Stahl — probier mal!",
+		"camo":       "Du gsehsch mi nöd... oder?",
+		"flying":     "Türm sii nöd für mich!",
+		"healer":     "Mii Kollege bruchä mi!",
+		"swarm":      "Mir sii überall — wehr di!",
+		"lead":       "Euri Sprüch chöme nöd dur!",
+		"regrow":     "Frisch us em Ofe — immer widr!",
+		"fondue_bomb":"Käse-Chaos... KABUMM!",
+		"glace_golem":"Kalt wie d'Tiefchüelabteilig!",
+		"boss":       "Jetzt isch alles vegan — für immer!!",
+	}
+
 	var overlay := PanelContainer.new()
 	overlay.modulate = Color(1, 1, 1, 0)
 	overlay.anchors_preset = Control.PRESET_CENTER
@@ -726,8 +743,9 @@ func show_enemy_intro(enemy_id: String, enemy_data: Resource) -> void:
 	var half_w: float = clampf(vp_w * 0.45 * 0.5, 180.0, 300.0)
 	overlay.offset_left = -half_w
 	overlay.offset_right = half_w
-	overlay.offset_top = -90
-	overlay.offset_bottom = 90
+	# Extra height for taunt line (was ±90 = 180 px; ±115 = 230 px)
+	overlay.offset_top = -115
+	overlay.offset_bottom = 115
 	overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	var vbox := VBoxContainer.new()
@@ -735,10 +753,11 @@ func show_enemy_intro(enemy_id: String, enemy_data: Resource) -> void:
 	vbox.add_theme_constant_override("separation", 8)
 
 	var warning := Label.new()
-	warning.text = "⚠ NÖÖI BEDROHIG"
+	warning.text = "☠ ENDGEGNER!!" if enemy_id == "boss" else "⚠ NÖÖI BEDROHIG"
 	warning.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	warning.add_theme_font_size_override("font_size", 22)
-	warning.add_theme_color_override("font_color", Color(1, 0.6, 0.2))
+	var header_color := Color(1.0, 0.25, 0.2) if enemy_id == "boss" else Color(1, 0.6, 0.2)
+	warning.add_theme_color_override("font_color", header_color)
 	vbox.add_child(warning)
 
 	# Enemy sprite preview — shows either the custom_texture (if set) or
@@ -756,6 +775,19 @@ func show_enemy_intro(enemy_id: String, enemy_data: Resource) -> void:
 	name_lbl.add_theme_color_override("font_outline_color", Color.BLACK)
 	name_lbl.add_theme_constant_override("outline_size", 5)
 	vbox.add_child(name_lbl)
+
+	# Swiss German taunt line — enemy-specific flavour text.
+	var taunt_text: String = _taunts.get(enemy_id, "")
+	if taunt_text:
+		var taunt_lbl := Label.new()
+		taunt_lbl.text = "\"" + taunt_text + "\""
+		taunt_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		taunt_lbl.add_theme_font_size_override("font_size", 17)
+		taunt_lbl.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 0.88))
+		taunt_lbl.add_theme_color_override("font_outline_color", Color.BLACK)
+		taunt_lbl.add_theme_constant_override("outline_size", 3)
+		taunt_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		vbox.add_child(taunt_lbl)
 
 	overlay.add_child(vbox)
 	add_child(overlay)
