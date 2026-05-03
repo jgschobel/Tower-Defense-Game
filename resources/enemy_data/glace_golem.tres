@@ -18,3 +18,5 @@ custom_texture = ExtResource("2")
 is_flying = true
 heals_nearby = false
 is_lead = true
+spawns_on_death = "cumulus_blob"
+spawn_count = 1

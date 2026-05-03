@@ -19,3 +19,5 @@ is_flying = false
 heals_nearby = false
 splash_on_death_radius = 120.0
 splash_on_death_heal_pct = 0.25
+spawns_on_death = "swarm"
+spawn_count = 4

@@ -15,6 +15,10 @@ var current_target: BaseEnemy = null
 var attack_timer: float = 0.0
 var is_placed: bool = false
 var kill_count: int = 0             # enemies killed by this tower
+# Per-tower targeting mode override (BTD5-style). -1 = use data.target_mode
+# default; 0-3 = override with FIRST/LAST/CLOSEST/STRONGEST. Player cycles
+# this via the tower-info panel; persists with the tower instance.
+var target_mode_override: int = -1
 
 # Computed stats (base + upgrades)
 var effective_damage: float = 0.0
@@ -294,7 +298,10 @@ func _find_target() -> BaseEnemy:
 	if valid.is_empty():
 		return null
 
-	match data.target_mode:
+	# Use per-tower override if set, else fall back to data default.
+	# BTD5-style: each placed tower remembers its own targeting choice.
+	var mode: int = target_mode_override if target_mode_override >= 0 else int(data.target_mode)
+	match mode:
 		TowerData.TargetMode.FIRST:
 			var best: BaseEnemy = valid[0]
 			for e in valid:
@@ -1028,3 +1035,27 @@ func _maybe_swap_tier3_sprite(path_letter: String) -> void:
 	var s := 90.0 / max_dim
 	_baseline_scale = Vector2(s, s)
 	sprite.scale = _baseline_scale
+
+
+# --- Targeting mode helpers (per-tower BTD5-style) ---
+
+func cycle_target_mode() -> void:
+	# Cycle through FIRST → LAST → CLOSEST → STRONGEST → back to FIRST.
+	# Called from the tower-info panel's targeting button.
+	var current: int = target_mode_override if target_mode_override >= 0 else int(data.target_mode)
+	target_mode_override = (current + 1) % 4
+	# Force immediate retarget so the new mode applies on next tick
+	current_target = null
+	if SfxManager:
+		SfxManager.play_click()
+
+
+func get_target_mode_label() -> String:
+	# Swiss German labels matching BTD5's First/Last/Strong/Close.
+	var mode: int = target_mode_override if target_mode_override >= 0 else int(data.target_mode)
+	match mode:
+		TowerData.TargetMode.FIRST:     return "Erschti"   # First (farthest along path)
+		TowerData.TargetMode.LAST:      return "Letschti"  # Last (closest to spawn)
+		TowerData.TargetMode.CLOSEST:   return "Nöchschti" # Closest to tower
+		TowerData.TargetMode.STRONGEST: return "Stärchsti" # Strongest (most HP)
+		_: return "Erschti"
