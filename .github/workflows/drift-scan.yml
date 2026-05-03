@@ -91,6 +91,13 @@ jobs:
             echo "pct=$PCT"
           } >> "$GITHUB_OUTPUT"
 
+      - name: Ensure required labels exist
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh label create "drift-scan" --color "e4e669" --description "Filed by drift-scan workflow" --force || true
+          gh label create "autonomous" --color "0E8A16" --description "Filed by the autonomous loop" --force || true
+
       - name: File drift report issue
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
