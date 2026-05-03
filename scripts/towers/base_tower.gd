@@ -278,8 +278,10 @@ func _find_target() -> BaseEnemy:
 
 	# Filter flying + camo (ROADMAP #50). Camo enemies are invisible
 	# unless this tower has detection or a nearby tower with detection
-	# + buff_range that reaches us shares it.
-	var detects_camo: bool = has_camo_detection()
+	# + buff_range that reaches us shares it. has_camo_detection() walks
+	# every tower in the scene, so defer it until we actually meet a
+	# camo enemy — most levels have none, and this runs every frame.
+	var detects_camo  # null = not yet computed
 	var valid: Array = []
 	for e in _enemies_in_range:
 		var enemy := e as BaseEnemy
@@ -287,8 +289,11 @@ func _find_target() -> BaseEnemy:
 			continue
 		if not data.can_target_flying and enemy.data and enemy.data.is_flying:
 			continue
-		if enemy.data and enemy.data.is_camo and not detects_camo:
-			continue
+		if enemy.data and enemy.data.is_camo:
+			if detects_camo == null:
+				detects_camo = has_camo_detection()
+			if not detects_camo:
+				continue
 		valid.append(enemy)
 
 	if valid.is_empty():

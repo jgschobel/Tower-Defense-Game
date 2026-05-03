@@ -3,6 +3,11 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-05-03 (self-improve — lazy camo-detection scan in `_find_target`)
+
+- perf(tower): defer `has_camo_detection()` (which walks every tower in the scene) until `_find_target` actually encounters a camo enemy in `_enemies_in_range`. Only `camo.tres` sets `is_camo = true`, so on every camo-free level the per-frame O(towers²) scan now never runs. Mirrors the lazy pattern already used in `base_projectile` splash.
+- chore(ci): posted the `gh pr list --json merged` fix diff onto ci-failure issues #371 and #373 (workflow scope unavailable from this session — next autonomous-dev run picks it up).
+
 ## 2026-05-03 (audit-polish — shop badge + options theme + L4 path + enemy intro taunts + wave toast + level select)
 
 - polish(hud): shop tower cost display upgraded to a coin-icon badge (dark pill + SVG coin + 13px gold label) — fixes #319
