@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://fhk56xpya4vmp"
-path="res://.godot/imported/projectile_dumbbell.png-f65780c3efeea8e53e0cfbb0013b7cac.ctex"
+uid="uid://bl6blvsppw0ux"
+path="res://.godot/imported/projectile_dumbbell.png-45085954d40a539232039c644738af9a.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/vfx_new/projectile_dumbbell.png"
-dest_files=["res://.godot/imported/projectile_dumbbell.png-f65780c3efeea8e53e0cfbb0013b7cac.ctex"]
+dest_files=["res://.godot/imported/projectile_dumbbell.png-45085954d40a539232039c644738af9a.ctex"]
 
 [params]
 

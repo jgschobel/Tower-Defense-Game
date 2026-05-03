@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://4fos2op2rjnhi"
-path="res://.godot/imported/cumulus_blob_clean.png-83b531d3dda938bc1b8543dbf92773b2.ctex"
+uid="uid://cdtpxbbbs4i55"
+path="res://.godot/imported/cumulus_blob_clean.png-8e4654179e81cd34411ca862fe3c3fdc.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/enemies/cumulus_blob_clean.png"
-dest_files=["res://.godot/imported/cumulus_blob_clean.png-83b531d3dda938bc1b8543dbf92773b2.ctex"]
+dest_files=["res://.godot/imported/cumulus_blob_clean.png-8e4654179e81cd34411ca862fe3c3fdc.ctex"]
 
 [params]
 

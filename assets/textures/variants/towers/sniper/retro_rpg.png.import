@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://sls3kb6kjouij"
-path="res://.godot/imported/retro_rpg.png-9451c95782adc9723e6433d16e728f79.ctex"
+uid="uid://c46l63ikavdhh"
+path="res://.godot/imported/retro_rpg.png-c3702e1e8dbb00e4befd29eeb2b4b67d.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/variants/towers/sniper/retro_rpg.png"
-dest_files=["res://.godot/imported/retro_rpg.png-9451c95782adc9723e6433d16e728f79.ctex"]
+dest_files=["res://.godot/imported/retro_rpg.png-c3702e1e8dbb00e4befd29eeb2b4b67d.ctex"]
 
 [params]
 

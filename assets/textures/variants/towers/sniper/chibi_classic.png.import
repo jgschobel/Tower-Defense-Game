@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bmrvff5jw77uh"
-path="res://.godot/imported/chibi_classic.png-7a7ff64f4a5ac581d2f0a44b033ef114.ctex"
+path="res://.godot/imported/chibi_classic.png-dc7409fc2e4d1e231329d9f10c598549.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/variants/towers/sniper/chibi_classic.png"
-dest_files=["res://.godot/imported/chibi_classic.png-7a7ff64f4a5ac581d2f0a44b033ef114.ctex"]
+dest_files=["res://.godot/imported/chibi_classic.png-dc7409fc2e4d1e231329d9f10c598549.ctex"]
 
 [params]
 

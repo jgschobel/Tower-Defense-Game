@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ghyqbr6i7ozcm"
-path="res://.godot/imported/tofu_ninja_clean.png-c165df47a21860e63f4de27d7158052c.ctex"
+uid="uid://cmkupqaanh4ku"
+path="res://.godot/imported/tofu_ninja_clean.png-efc71415c6c008384a6097784b8fd65e.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/enemies/tofu_ninja_clean.png"
-dest_files=["res://.godot/imported/tofu_ninja_clean.png-c165df47a21860e63f4de27d7158052c.ctex"]
+dest_files=["res://.godot/imported/tofu_ninja_clean.png-efc71415c6c008384a6097784b8fd65e.ctex"]
 
 [params]
 

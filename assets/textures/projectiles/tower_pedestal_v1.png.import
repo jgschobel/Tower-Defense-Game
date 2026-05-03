@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://5bctbnxb7mlzn"
-path="res://.godot/imported/tower_pedestal_v1.png-dcad9f0dda19883d57befbaae9c7e6ae.ctex"
+uid="uid://c8hp6aij87hpb"
+path="res://.godot/imported/tower_pedestal_v1.png-c7d81ec681e8c424c964db13c9e23b23.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/projectiles/tower_pedestal_v1.png"
-dest_files=["res://.godot/imported/tower_pedestal_v1.png-dcad9f0dda19883d57befbaae9c7e6ae.ctex"]
+dest_files=["res://.godot/imported/tower_pedestal_v1.png-c7d81ec681e8c424c964db13c9e23b23.ctex"]
 
 [params]
 

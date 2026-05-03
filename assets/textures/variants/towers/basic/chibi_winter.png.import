@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://23yv6xzdijlvg"
-path="res://.godot/imported/chibi_winter.png-6aad281e6feae37a9602c2c8d1cf7b25.ctex"
+uid="uid://14s2kklj4hk3"
+path="res://.godot/imported/chibi_winter.png-ed5d8c6c23a4eb4d756bb944ed1fde42.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/variants/towers/basic/chibi_winter.png"
-dest_files=["res://.godot/imported/chibi_winter.png-6aad281e6feae37a9602c2c8d1cf7b25.ctex"]
+dest_files=["res://.godot/imported/chibi_winter.png-ed5d8c6c23a4eb4d756bb944ed1fde42.ctex"]
 
 [params]
 

@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://abt4jlcs3spfn"
-path="res://.godot/imported/projectile_khaki.png-d2be5b90969e4c20b0d6cfcc54d36988.ctex"
+uid="uid://bt4jlcs3spfn"
+path="res://.godot/imported/projectile_khaki.png-73466c176bfac720fc5ed178bbe7756e.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/vfx_new/projectile_khaki.png"
-dest_files=["res://.godot/imported/projectile_khaki.png-d2be5b90969e4c20b0d6cfcc54d36988.ctex"]
+dest_files=["res://.godot/imported/projectile_khaki.png-73466c176bfac720fc5ed178bbe7756e.ctex"]
 
 [params]
 

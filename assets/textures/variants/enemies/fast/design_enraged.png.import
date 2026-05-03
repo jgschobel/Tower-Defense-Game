@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://43nuj3bs7455b"
-path="res://.godot/imported/design_enraged.png-1ef79f90769a377c9bf1676d2210a831.ctex"
+uid="uid://c1srfou2ap1tx"
+path="res://.godot/imported/design_enraged.png-84cbadf8b5aaa50ffdf00ab0d0478e0c.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/variants/enemies/fast/design_enraged.png"
-dest_files=["res://.godot/imported/design_enraged.png-1ef79f90769a377c9bf1676d2210a831.ctex"]
+dest_files=["res://.godot/imported/design_enraged.png-84cbadf8b5aaa50ffdf00ab0d0478e0c.ctex"]
 
 [params]
 

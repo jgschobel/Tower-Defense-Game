@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://euhs7fjek7oml"
-path="res://.godot/imported/friend_jojo.png-b63bea224bf91e843e07adba8e45a4c2.ctex"
+uid="uid://y2xmdl400sut"
+path="res://.godot/imported/friend_jojo.png-2d2efc1e8f943bcfb195fbb313801a45.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/towers/friend_jojo.png"
-dest_files=["res://.godot/imported/friend_jojo.png-b63bea224bf91e843e07adba8e45a4c2.ctex"]
+dest_files=["res://.godot/imported/friend_jojo.png-2d2efc1e8f943bcfb195fbb313801a45.ctex"]
 
 [params]
 

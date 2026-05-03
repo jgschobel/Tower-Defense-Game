@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://i77yn7kjvygjn"
-path="res://.godot/imported/watercolor.png-d49b154abedc7fe8c52457b8a209cdaf.ctex"
+uid="uid://bie8h3p1rko04"
+path="res://.godot/imported/watercolor.png-6c8fdabc10ba064501da2dae3b987fb5.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/variants/towers/sniper/watercolor.png"
-dest_files=["res://.godot/imported/watercolor.png-d49b154abedc7fe8c52457b8a209cdaf.ctex"]
+dest_files=["res://.godot/imported/watercolor.png-6c8fdabc10ba064501da2dae3b987fb5.ctex"]
 
 [params]
 

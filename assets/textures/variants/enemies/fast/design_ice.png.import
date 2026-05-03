@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ftlgikmnbullg"
-path="res://.godot/imported/design_ice.png-65ae816b14832e65e6b4cc08a5aca693.ctex"
+uid="uid://bx6kwipeqnpto"
+path="res://.godot/imported/design_ice.png-a370434b3be27c2e5c17f77e108b8125.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/variants/enemies/fast/design_ice.png"
-dest_files=["res://.godot/imported/design_ice.png-65ae816b14832e65e6b4cc08a5aca693.ctex"]
+dest_files=["res://.godot/imported/design_ice.png-a370434b3be27c2e5c17f77e108b8125.ctex"]
 
 [params]
 

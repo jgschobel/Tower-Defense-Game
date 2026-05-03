@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://43yzd7xkmliyh"
-path="res://.godot/imported/cordula_t2b.png-7c216c55fe3ce37c10096e6f1d57a5ee.ctex"
+uid="uid://c14v8tisn6en4"
+path="res://.godot/imported/cordula_t2b.png-df905fe652f1e54b0d5c0a214c4f73b5.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/towers/cordula_t2b.png"
-dest_files=["res://.godot/imported/cordula_t2b.png-7c216c55fe3ce37c10096e6f1d57a5ee.ctex"]
+dest_files=["res://.godot/imported/cordula_t2b.png-df905fe652f1e54b0d5c0a214c4f73b5.ctex"]
 
 [params]
 

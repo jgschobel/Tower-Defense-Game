@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ue3xdhs2qh7hl"
-path="res://.godot/imported/impact_confetti_burst.png-b3fcf0d48e3bec94ccb6cb9e35f81217.ctex"
+uid="uid://22le67swhtor"
+path="res://.godot/imported/impact_confetti_burst.png-4a5b52489a7ac57be9f7fb760505130f.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/vfx_new/impact_confetti_burst.png"
-dest_files=["res://.godot/imported/impact_confetti_burst.png-b3fcf0d48e3bec94ccb6cb9e35f81217.ctex"]
+dest_files=["res://.godot/imported/impact_confetti_burst.png-4a5b52489a7ac57be9f7fb760505130f.ctex"]
 
 [params]
 

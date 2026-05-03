@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://xy3d6llh2uzwd"
-path="res://.godot/imported/enemy_damage_variants_v1.png-3b669a3ad7e1ef17415966584eddfa41.ctex"
+uid="uid://sm5m82yonrdr"
+path="res://.godot/imported/enemy_damage_variants_v1.png-720e8087400b7bc99309ac32808756a0.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/enemies/enemy_damage_variants_v1.png"
-dest_files=["res://.godot/imported/enemy_damage_variants_v1.png-3b669a3ad7e1ef17415966584eddfa41.ctex"]
+dest_files=["res://.godot/imported/enemy_damage_variants_v1.png-720e8087400b7bc99309ac32808756a0.ctex"]
 
 [params]
 

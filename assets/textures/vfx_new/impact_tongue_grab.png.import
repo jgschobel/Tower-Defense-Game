@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ehdixkhbvrvlp"
-path="res://.godot/imported/impact_tongue_grab.png-f5d63509d5740ce4763a1d4f6031868d.ctex"
+uid="uid://lxndij2ck0tx"
+path="res://.godot/imported/impact_tongue_grab.png-b181260a92d1c8f0cc5019634dfcb4cc.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/vfx_new/impact_tongue_grab.png"
-dest_files=["res://.godot/imported/impact_tongue_grab.png-f5d63509d5740ce4763a1d4f6031868d.ctex"]
+dest_files=["res://.godot/imported/impact_tongue_grab.png-b181260a92d1c8f0cc5019634dfcb4cc.ctex"]
 
 [params]
 

@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://m5iqul77bjxxm"
-path="res://.godot/imported/berserker_clean.png-cbdd21ffd74823ac761095e7ae036110.ctex"
+uid="uid://bka43ghglxcoc"
+path="res://.godot/imported/berserker_clean.png-9641c5bfafede3635a7bde0506dd67fd.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/enemies/berserker_clean.png"
-dest_files=["res://.godot/imported/berserker_clean.png-cbdd21ffd74823ac761095e7ae036110.ctex"]
+dest_files=["res://.godot/imported/berserker_clean.png-9641c5bfafede3635a7bde0506dd67fd.ctex"]
 
 [params]
 

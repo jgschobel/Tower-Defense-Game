@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://axegc4bwjrxjc"
-path="res://.godot/imported/neon_cyber.png-24de29b0782312e0174ec74880fdf81b.ctex"
+uid="uid://xegc4bwjrxjc"
+path="res://.godot/imported/neon_cyber.png-f19b232a69c5b15cd8e7d9803c5fc1f9.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/variants/towers/basic/neon_cyber.png"
-dest_files=["res://.godot/imported/neon_cyber.png-24de29b0782312e0174ec74880fdf81b.ctex"]
+dest_files=["res://.godot/imported/neon_cyber.png-f19b232a69c5b15cd8e7d9803c5fc1f9.ctex"]
 
 [params]
 

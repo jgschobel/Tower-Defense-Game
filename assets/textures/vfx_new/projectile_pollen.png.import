@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ehjjbrnc5kt7b"
-path="res://.godot/imported/projectile_pollen.png-1fcd5d136214a4e45f79293e801222fe.ctex"
+uid="uid://l4nppp3ldygj"
+path="res://.godot/imported/projectile_pollen.png-8e3ea0eb40cc5a7347340678b609e53d.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/vfx_new/projectile_pollen.png"
-dest_files=["res://.godot/imported/projectile_pollen.png-1fcd5d136214a4e45f79293e801222fe.ctex"]
+dest_files=["res://.godot/imported/projectile_pollen.png-8e3ea0eb40cc5a7347340678b609e53d.ctex"]
 
 [params]
 

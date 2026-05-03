@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://i7oqjf4eg4xpd"
-path="res://.godot/imported/retro_rpg.png-37df86270a983be8d2eea6c1add4daaa.ctex"
+uid="uid://bhu0dcavcp66t"
+path="res://.godot/imported/retro_rpg.png-3d542fbca0c23d416fb60829239bffc9.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/variants/towers/splash/retro_rpg.png"
-dest_files=["res://.godot/imported/retro_rpg.png-37df86270a983be8d2eea6c1add4daaa.ctex"]
+dest_files=["res://.godot/imported/retro_rpg.png-3d542fbca0c23d416fb60829239bffc9.ctex"]
 
 [params]
 

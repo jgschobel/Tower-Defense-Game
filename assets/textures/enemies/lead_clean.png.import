@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://svwmkuxmyn37k"
-path="res://.godot/imported/lead_clean.png-afedb865e8a65ab2f0db2c45bad8e289.ctex"
+uid="uid://dga47nampul6i"
+path="res://.godot/imported/lead_clean.png-3d1073f6cca63e6666f8308f907c46b1.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/enemies/lead_clean.png"
-dest_files=["res://.godot/imported/lead_clean.png-afedb865e8a65ab2f0db2c45bad8e289.ctex"]
+dest_files=["res://.godot/imported/lead_clean.png-3d1073f6cca63e6666f8308f907c46b1.ctex"]
 
 [params]
 

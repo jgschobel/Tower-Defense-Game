@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ar55mq3stbkql"
-path="res://.godot/imported/kichererbse_runner.png-b8283396e0cef62078bca0184715a556.ctex"
+uid="uid://r55mq3stbkql"
+path="res://.godot/imported/kichererbse_runner.png-2821cf3b56f553a4a9e2c3a9a0059adf.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/monsters_new/kichererbse_runner.png"
-dest_files=["res://.godot/imported/kichererbse_runner.png-b8283396e0cef62078bca0184715a556.ctex"]
+dest_files=["res://.godot/imported/kichererbse_runner.png-2821cf3b56f553a4a9e2c3a9a0059adf.ctex"]
 
 [params]
 

@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://soeerlnqgctwa"
-path="res://.godot/imported/impact_khaki_explosion.png-0b4c4683571211d2ea5073369b32f8f8.ctex"
+uid="uid://c7qwfdyp6jcu7"
+path="res://.godot/imported/impact_khaki_explosion.png-6d2e0c86b8843348ef698e972aeec9be.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/vfx_new/impact_khaki_explosion.png"
-dest_files=["res://.godot/imported/impact_khaki_explosion.png-0b4c4683571211d2ea5073369b32f8f8.ctex"]
+dest_files=["res://.godot/imported/impact_khaki_explosion.png-6d2e0c86b8843348ef698e972aeec9be.ctex"]
 
 [params]
 

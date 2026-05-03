@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://xqhgltstndnil"
-path="res://.godot/imported/tofurky_boss.png-b4346d9ca6b31e176adae6422ca045e5.ctex"
+uid="uid://j072ibb85ex0"
+path="res://.godot/imported/tofurky_boss.png-80730bae673edf8cae1bfcc010502e3d.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/monsters_new/tofurky_boss.png"
-dest_files=["res://.godot/imported/tofurky_boss.png-b4346d9ca6b31e176adae6422ca045e5.ctex"]
+dest_files=["res://.godot/imported/tofurky_boss.png-80730bae673edf8cae1bfcc010502e3d.ctex"]
 
 [params]
 

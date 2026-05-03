@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://h72av7zdni56j"
-path="res://.godot/imported/tower_tier_matrix_v1.png-9f750d1e7f506be7f08bc4efa049e465.ctex"
+uid="uid://h8jp35ui4fn0"
+path="res://.godot/imported/tower_tier_matrix_v1.png-6588eeb05dc33fad467b162286c71dd3.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/ui/tower_tier_matrix_v1.png"
-dest_files=["res://.godot/imported/tower_tier_matrix_v1.png-9f750d1e7f506be7f08bc4efa049e465.ctex"]
+dest_files=["res://.godot/imported/tower_tier_matrix_v1.png-6588eeb05dc33fad467b162286c71dd3.ctex"]
 
 [params]
 

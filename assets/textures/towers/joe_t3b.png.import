@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://fgbil47bctica"
-path="res://.godot/imported/joe_t3b.png-0122620ff8b404c53435781daacd8fe9.ctex"
+uid="uid://bkvm03a1rmmki"
+path="res://.godot/imported/joe_t3b.png-609e342380beea398d8cb7da54e8281b.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/towers/joe_t3b.png"
-dest_files=["res://.godot/imported/joe_t3b.png-0122620ff8b404c53435781daacd8fe9.ctex"]
+dest_files=["res://.godot/imported/joe_t3b.png-609e342380beea398d8cb7da54e8281b.ctex"]
 
 [params]
 

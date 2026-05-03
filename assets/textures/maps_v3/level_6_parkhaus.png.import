@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://gtyvqml7jexop"
-path="res://.godot/imported/level_6_parkhaus.png-gtyvqml7jexop.ctex"
+uid="uid://cyk05koxx62wx"
+path="res://.godot/imported/level_6_parkhaus.png-4cc70634249a25f447355a98934bb697.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/maps_v3/level_6_parkhaus.png"
-dest_files=["res://.godot/imported/level_6_parkhaus.png-gtyvqml7jexop.ctex"]
+dest_files=["res://.godot/imported/level_6_parkhaus.png-4cc70634249a25f447355a98934bb697.ctex"]
 
 [params]
 

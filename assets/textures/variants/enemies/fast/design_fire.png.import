@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://je7x4iaprgfto"
-path="res://.godot/imported/design_fire.png-e994d17811cbfc896dbd530b8eb6d2be.ctex"
+uid="uid://boe7xef7m1ob5"
+path="res://.godot/imported/design_fire.png-e10aba7aeb4f74eeba9b9b0b1f0cf6ee.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/variants/enemies/fast/design_fire.png"
-dest_files=["res://.godot/imported/design_fire.png-e994d17811cbfc896dbd530b8eb6d2be.ctex"]
+dest_files=["res://.godot/imported/design_fire.png-e10aba7aeb4f74eeba9b9b0b1f0cf6ee.ctex"]
 
 [params]
 

@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://f6jl4urkcs5fg"
-path="res://.godot/imported/kidneybean_swarmling.png-62f6425469c5a7c5d5f197975bcb2418.ctex"
+uid="uid://cb4qjsubrmano"
+path="res://.godot/imported/kidneybean_swarmling.png-2f3264ee8157c05cfc92d3bf736ad443.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/monsters_new/kidneybean_swarmling.png"
-dest_files=["res://.godot/imported/kidneybean_swarmling.png-62f6425469c5a7c5d5f197975bcb2418.ctex"]
+dest_files=["res://.godot/imported/kidneybean_swarmling.png-2f3264ee8157c05cfc92d3bf736ad443.ctex"]
 
 [params]
 

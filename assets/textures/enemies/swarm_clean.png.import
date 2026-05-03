@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://3yq7irwumwppc"
-path="res://.godot/imported/swarm_clean.png-27becca5a28fc31b30c169fb039be447.ctex"
+uid="uid://bwv4eeh3oiley"
+path="res://.godot/imported/swarm_clean.png-ec71641526a8dda19cd5bcec2d8534bf.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/enemies/swarm_clean.png"
-dest_files=["res://.godot/imported/swarm_clean.png-27becca5a28fc31b30c169fb039be447.ctex"]
+dest_files=["res://.godot/imported/swarm_clean.png-ec71641526a8dda19cd5bcec2d8534bf.ctex"]
 
 [params]
 

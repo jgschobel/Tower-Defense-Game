@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://sjgouuohdbimi"
-path="res://.godot/imported/edamame_squad.png-8620233ba9471932834a9b647e084067.ctex"
+uid="uid://c2s7im0g3h0lg"
+path="res://.godot/imported/edamame_squad.png-57c3bf6600e4745ba5b14a20b720896f.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/monsters_new/edamame_squad.png"
-dest_files=["res://.godot/imported/edamame_squad.png-8620233ba9471932834a9b647e084067.ctex"]
+dest_files=["res://.godot/imported/edamame_squad.png-57c3bf6600e4745ba5b14a20b720896f.ctex"]
 
 [params]
 

@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://f9sxopk5hdcwn"
-path="res://.godot/imported/level_5_metzgerei.png-f9sxopk5hdcwn.ctex"
+uid="uid://cfe23nnvv5g5v"
+path="res://.godot/imported/level_5_metzgerei.png-18c88b9376399f9c64466f3bbc473449.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/maps_v3/level_5_metzgerei.png"
-dest_files=["res://.godot/imported/level_5_metzgerei.png-f9sxopk5hdcwn.ctex"]
+dest_files=["res://.godot/imported/level_5_metzgerei.png-18c88b9376399f9c64466f3bbc473449.ctex"]
 
 [params]
 

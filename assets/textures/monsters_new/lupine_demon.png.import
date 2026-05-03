@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://6j422hgavbpfg"
-path="res://.godot/imported/lupine_demon.png-62bc35018fad713e21d35755987d5ba6.ctex"
+uid="uid://mu4c03adopdc"
+path="res://.godot/imported/lupine_demon.png-9f6120e662ed7e8dac638d208deeb102.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/monsters_new/lupine_demon.png"
-dest_files=["res://.godot/imported/lupine_demon.png-62bc35018fad713e21d35755987d5ba6.ctex"]
+dest_files=["res://.godot/imported/lupine_demon.png-9f6120e662ed7e8dac638d208deeb102.ctex"]
 
 [params]
 

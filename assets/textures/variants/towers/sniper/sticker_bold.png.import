@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://est734i52jyuc"
-path="res://.godot/imported/sticker_bold.png-2a613aea39bfce444cf522466480b17d.ctex"
+uid="uid://xgdi2lwic33k"
+path="res://.godot/imported/sticker_bold.png-394f52f6a27bcabdefd87c65be1025b1.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/variants/towers/sniper/sticker_bold.png"
-dest_files=["res://.godot/imported/sticker_bold.png-2a613aea39bfce444cf522466480b17d.ctex"]
+dest_files=["res://.godot/imported/sticker_bold.png-394f52f6a27bcabdefd87c65be1025b1.ctex"]
 
 [params]
 

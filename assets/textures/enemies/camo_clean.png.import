@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://gnk73tk2fnbza"
-path="res://.godot/imported/camo_clean.png-0c85a5d2a7bfa9a658c4271426bbacd9.ctex"
+uid="uid://cr6dirnsugf8i"
+path="res://.godot/imported/camo_clean.png-90f05e6ede2f8699dbbdd5dfa949bffe.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/enemies/camo_clean.png"
-dest_files=["res://.godot/imported/camo_clean.png-0c85a5d2a7bfa9a658c4271426bbacd9.ctex"]
+dest_files=["res://.godot/imported/camo_clean.png-90f05e6ede2f8699dbbdd5dfa949bffe.ctex"]
 
 [params]
 

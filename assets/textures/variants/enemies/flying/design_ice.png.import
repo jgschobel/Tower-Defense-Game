@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://3bgoce55rf6rl"
-path="res://.godot/imported/design_ice.png-b8f8b1ef4827183b23c2209a175f2d78.ctex"
+uid="uid://8lk60qes02g8"
+path="res://.godot/imported/design_ice.png-8e5015aa39022f9da13b943be46ae5a5.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/variants/enemies/flying/design_ice.png"
-dest_files=["res://.godot/imported/design_ice.png-b8f8b1ef4827183b23c2209a175f2d78.ctex"]
+dest_files=["res://.godot/imported/design_ice.png-8e5015aa39022f9da13b943be46ae5a5.ctex"]
 
 [params]
 

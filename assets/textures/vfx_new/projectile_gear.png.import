@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://nffx3ibsqxnnm"
-path="res://.godot/imported/projectile_gear.png-c6b6f09051bb94adf4adf45c932c9226.ctex"
+uid="uid://bs7dccj12c1ec"
+path="res://.godot/imported/projectile_gear.png-5ccf9d24cd46299af94d599b05200723.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/vfx_new/projectile_gear.png"
-dest_files=["res://.godot/imported/projectile_gear.png-c6b6f09051bb94adf4adf45c932c9226.ctex"]
+dest_files=["res://.godot/imported/projectile_gear.png-5ccf9d24cd46299af94d599b05200723.ctex"]
 
 [params]
 

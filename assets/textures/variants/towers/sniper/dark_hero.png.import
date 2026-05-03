@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dbakv2234zrff"
-path="res://.godot/imported/dark_hero.png-52c73cdeb555002306804af698107bb2.ctex"
+uid="uid://dbakv22340rff"
+path="res://.godot/imported/dark_hero.png-cc71ec0cf17f380ba6dfd9a02cc4f67a.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/variants/towers/sniper/dark_hero.png"
-dest_files=["res://.godot/imported/dark_hero.png-52c73cdeb555002306804af698107bb2.ctex"]
+dest_files=["res://.godot/imported/dark_hero.png-cc71ec0cf17f380ba6dfd9a02cc4f67a.ctex"]
 
 [params]
 

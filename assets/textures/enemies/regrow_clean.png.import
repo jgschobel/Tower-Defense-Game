@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://yjybclam32kid"
-path="res://.godot/imported/regrow_clean.png-342b5b601620e1383d65acfe303e8ad3.ctex"
+uid="uid://bdi2r8q4pubxr"
+path="res://.godot/imported/regrow_clean.png-24cf3541a60e43dd10f38aa713ae89f2.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/enemies/regrow_clean.png"
-dest_files=["res://.godot/imported/regrow_clean.png-342b5b601620e1383d65acfe303e8ad3.ctex"]
+dest_files=["res://.godot/imported/regrow_clean.png-24cf3541a60e43dd10f38aa713ae89f2.ctex"]
 
 [params]
 

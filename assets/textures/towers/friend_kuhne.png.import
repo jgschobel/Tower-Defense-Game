@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://4vyickeas3uoo"
-path="res://.godot/imported/friend_kuhne.png-e7537201142462bc2960daf4b045209a.ctex"
+uid="uid://ct4e65xiuoqec"
+path="res://.godot/imported/friend_kuhne.png-c0cbc1a9e48294030af03db8fab6bc43.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/towers/friend_kuhne.png"
-dest_files=["res://.godot/imported/friend_kuhne.png-e7537201142462bc2960daf4b045209a.ctex"]
+dest_files=["res://.godot/imported/friend_kuhne.png-c0cbc1a9e48294030af03db8fab6bc43.ctex"]
 
 [params]
 

@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://frnjszkmpanqj"
-path="res://.godot/imported/design_cute.png-98340f62b324b62500816875815898d3.ctex"
+uid="uid://bv8n7xnd42ryr"
+path="res://.godot/imported/design_cute.png-4956c3b56e8242faff63628682834cea.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/variants/enemies/boss/design_cute.png"
-dest_files=["res://.godot/imported/design_cute.png-98340f62b324b62500816875815898d3.ctex"]
+dest_files=["res://.godot/imported/design_cute.png-4956c3b56e8242faff63628682834cea.ctex"]
 
 [params]
 

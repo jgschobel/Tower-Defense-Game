@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://huzwrna9kfypq"
-path="res://.godot/imported/level_7_dach.png-huzwrna9kfypq.ctex"
+uid="uid://d0l16ld0y73xy"
+path="res://.godot/imported/level_7_dach.png-8664718302c628a9d777a3c68e468991.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/maps_v3/level_7_dach.png"
-dest_files=["res://.godot/imported/level_7_dach.png-huzwrna9kfypq.ctex"]
+dest_files=["res://.godot/imported/level_7_dach.png-8664718302c628a9d777a3c68e468991.ctex"]
 
 [params]
 

@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://3zukzsxjxqmde"
-path="res://.godot/imported/chibi_classic.png-41b2174de595533b7c85f2f613793d6d.ctex"
+uid="uid://bx0hvfir0ch11"
+path="res://.godot/imported/chibi_classic.png-7e272f41cf21d483809b0b898debb1e5.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/variants/towers/cordula/chibi_classic.png"
-dest_files=["res://.godot/imported/chibi_classic.png-41b2174de595533b7c85f2f613793d6d.ctex"]
+dest_files=["res://.godot/imported/chibi_classic.png-7e272f41cf21d483809b0b898debb1e5.ctex"]
 
 [params]
 

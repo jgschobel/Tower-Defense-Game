@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://e8qwnr3gtvbak"
-path="res://.godot/imported/level_4_baeckerei.png-e8qwnr3gtvbak.ctex"
+uid="uid://bec12p57aofis"
+path="res://.godot/imported/level_4_baeckerei.png-11856cfccef27b231133bb620cedf871.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/maps_v3/level_4_baeckerei.png"
-dest_files=["res://.godot/imported/level_4_baeckerei.png-e8qwnr3gtvbak.ctex"]
+dest_files=["res://.godot/imported/level_4_baeckerei.png-11856cfccef27b231133bb620cedf871.ctex"]
 
 [params]
 

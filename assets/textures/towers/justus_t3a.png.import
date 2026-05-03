@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://s4prmzkfhmuag"
-path="res://.godot/imported/justus_t3a.png-6051872ab2c8bf92b29cdde05d499742.ctex"
+uid="uid://dn3barve7tc8e"
+path="res://.godot/imported/justus_t3a.png-d466bb2a9e1ef6738c31b62054661402.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/towers/justus_t3a.png"
-dest_files=["res://.godot/imported/justus_t3a.png-6051872ab2c8bf92b29cdde05d499742.ctex"]
+dest_files=["res://.godot/imported/justus_t3a.png-d466bb2a9e1ef6738c31b62054661402.ctex"]
 
 [params]
 

@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://4snrcaqepwc4c"
-path="res://.godot/imported/comic_pop.png-2e0acf240028b65cfeda0e380dfaae44.ctex"
+uid="uid://cqsn6vbmrh7sy"
+path="res://.godot/imported/comic_pop.png-aaea7afc4521f7de1314645473c7ef42.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/variants/towers/splash/comic_pop.png"
-dest_files=["res://.godot/imported/comic_pop.png-2e0acf240028b65cfeda0e380dfaae44.ctex"]
+dest_files=["res://.godot/imported/comic_pop.png-aaea7afc4521f7de1314645473c7ef42.ctex"]
 
 [params]
 

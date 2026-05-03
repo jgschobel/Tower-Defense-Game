@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://23z7grwd5563a"
-path="res://.godot/imported/projectile_laser_beam.png-0dfbbd1da26fe77a7ee8ab70bca55573.ctex"
+uid="uid://154cehl7q2rw"
+path="res://.godot/imported/projectile_laser_beam.png-b80ae5c0563f4b4f29970dc9e78fc6b3.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/vfx_new/projectile_laser_beam.png"
-dest_files=["res://.godot/imported/projectile_laser_beam.png-0dfbbd1da26fe77a7ee8ab70bca55573.ctex"]
+dest_files=["res://.godot/imported/projectile_laser_beam.png-b80ae5c0563f4b4f29970dc9e78fc6b3.ctex"]
 
 [params]
 

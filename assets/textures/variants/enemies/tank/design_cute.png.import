@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://tmi2s2mmnigxm"
-path="res://.godot/imported/design_cute.png-cb990d63352d219362a8f339db4c8cf7.ctex"
+uid="uid://bhpur1dth25s"
+path="res://.godot/imported/design_cute.png-a8deece28bca3ed4a72729e6410a329a.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/variants/enemies/tank/design_cute.png"
-dest_files=["res://.godot/imported/design_cute.png-cb990d63352d219362a8f339db4c8cf7.ctex"]
+dest_files=["res://.godot/imported/design_cute.png-a8deece28bca3ed4a72729e6410a329a.ctex"]
 
 [params]
 

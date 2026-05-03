@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c7w2agoaffbqo"
-path="res://.godot/imported/projectile_tongue_whip.png-e804a5038c0d5be269a9082f1dbcc0e6.ctex"
+path="res://.godot/imported/projectile_tongue_whip.png-58c3ae5a19ef54060553b57f914c349d.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/vfx_new/projectile_tongue_whip.png"
-dest_files=["res://.godot/imported/projectile_tongue_whip.png-e804a5038c0d5be269a9082f1dbcc0e6.ctex"]
+dest_files=["res://.godot/imported/projectile_tongue_whip.png-58c3ae5a19ef54060553b57f914c349d.ctex"]
 
 [params]
 

@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://43lagmqcluzjk"
-path="res://.godot/imported/dark_hero.png-a4e68b1418602f7c3a822fabfde8cf7a.ctex"
+uid="uid://c1p6b8bkngu77"
+path="res://.godot/imported/dark_hero.png-caaed909981b2e5ec2b45dced48020b0.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/variants/towers/splash/dark_hero.png"
-dest_files=["res://.godot/imported/dark_hero.png-a4e68b1418602f7c3a822fabfde8cf7a.ctex"]
+dest_files=["res://.godot/imported/dark_hero.png-caaed909981b2e5ec2b45dced48020b0.ctex"]
 
 [params]
 

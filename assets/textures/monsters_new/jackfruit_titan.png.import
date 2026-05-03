@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://rx35p53v7hwhd"
-path="res://.godot/imported/jackfruit_titan.png-33d8ffaefafeeef198e6059c1a2516b6.ctex"
+uid="uid://cihodxfvxofgb"
+path="res://.godot/imported/jackfruit_titan.png-c6a7290298ca8d89a0d7ba4905d86412.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/monsters_new/jackfruit_titan.png"
-dest_files=["res://.godot/imported/jackfruit_titan.png-33d8ffaefafeeef198e6059c1a2516b6.ctex"]
+dest_files=["res://.godot/imported/jackfruit_titan.png-c6a7290298ca8d89a0d7ba4905d86412.ctex"]
 
 [params]
 

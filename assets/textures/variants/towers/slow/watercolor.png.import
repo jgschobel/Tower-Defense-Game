@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://7j4kiuqpemuqa"
-path="res://.godot/imported/watercolor.png-0851847c2885713f3cbe7f0a6801c59e.ctex"
+uid="uid://bmulsfeou0un5"
+path="res://.godot/imported/watercolor.png-624749f5dcc7bfa6a1618357e381cdcd.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/variants/towers/slow/watercolor.png"
-dest_files=["res://.godot/imported/watercolor.png-0851847c2885713f3cbe7f0a6801c59e.ctex"]
+dest_files=["res://.godot/imported/watercolor.png-624749f5dcc7bfa6a1618357e381cdcd.ctex"]
 
 [params]
 

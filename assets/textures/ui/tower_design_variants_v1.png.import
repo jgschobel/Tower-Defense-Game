@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dzfb64nrfy7ap"
-path="res://.godot/imported/tower_design_variants_v1.png-f07f058b79e09723462b0c957b995ebd.ctex"
+uid="uid://d0fb64nrfy7ap"
+path="res://.godot/imported/tower_design_variants_v1.png-326cd7bc5a43231b26c6e4ece1019ee2.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/ui/tower_design_variants_v1.png"
-dest_files=["res://.godot/imported/tower_design_variants_v1.png-f07f058b79e09723462b0c957b995ebd.ctex"]
+dest_files=["res://.godot/imported/tower_design_variants_v1.png-326cd7bc5a43231b26c6e4ece1019ee2.ctex"]
 
 [params]
 

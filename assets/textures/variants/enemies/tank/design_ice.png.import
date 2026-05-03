@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://45ny3f55xm7bm"
-path="res://.godot/imported/design_ice.png-c0fd97ef4bbc37bc3d562857a2ea7a3d.ctex"
+uid="uid://c3svx1qey720a"
+path="res://.godot/imported/design_ice.png-4f047614013c773d05237ec075af64f0.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/variants/enemies/tank/design_ice.png"
-dest_files=["res://.godot/imported/design_ice.png-c0fd97ef4bbc37bc3d562857a2ea7a3d.ctex"]
+dest_files=["res://.godot/imported/design_ice.png-4f047614013c773d05237ec075af64f0.ctex"]
 
 [params]
 

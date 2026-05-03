@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://364cbr3vwm6rc"
-path="res://.godot/imported/projectile_formula.png-28f996aee21173db3ea0a609d1815d18.ctex"
+uid="uid://b4876en4x72gy"
+path="res://.godot/imported/projectile_formula.png-10884c11308a463d5ff599a9a139f715.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/vfx_new/projectile_formula.png"
-dest_files=["res://.godot/imported/projectile_formula.png-28f996aee21173db3ea0a609d1815d18.ctex"]
+dest_files=["res://.godot/imported/projectile_formula.png-10884c11308a463d5ff599a9a139f715.ctex"]
 
 [params]
 

@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://mifrm4namn5gb"
-path="res://.godot/imported/impact_gear_spark.png-1375ac0378c8950cdb2f6692ea8212cc.ctex"
+uid="uid://v65uxviw2i50"
+path="res://.godot/imported/impact_gear_spark.png-4d0e6e3c69066b5f32c95dcf012ac49a.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/vfx_new/impact_gear_spark.png"
-dest_files=["res://.godot/imported/impact_gear_spark.png-1375ac0378c8950cdb2f6692ea8212cc.ctex"]
+dest_files=["res://.godot/imported/impact_gear_spark.png-4d0e6e3c69066b5f32c95dcf012ac49a.ctex"]
 
 [params]
 

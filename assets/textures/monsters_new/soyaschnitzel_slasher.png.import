@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://lf6i4x4j5fnsl"
-path="res://.godot/imported/soyaschnitzel_slasher.png-b934bd4f2fc478ab09412da174af1d3c.ctex"
+uid="uid://dpdrxua100wa2"
+path="res://.godot/imported/soyaschnitzel_slasher.png-ef9fc8e03f76733611078e90c40b7fa2.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/monsters_new/soyaschnitzel_slasher.png"
-dest_files=["res://.godot/imported/soyaschnitzel_slasher.png-b934bd4f2fc478ab09412da174af1d3c.ctex"]
+dest_files=["res://.godot/imported/soyaschnitzel_slasher.png-ef9fc8e03f76733611078e90c40b7fa2.ctex"]
 
 [params]
 

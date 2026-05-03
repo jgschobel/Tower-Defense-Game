@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://amd5zixatwowb"
-path="res://.godot/imported/fondue_bomb_clean.png-1b3ad305d19e8d80d463a107b7407b33.ctex"
+uid="uid://md50ixatwowb"
+path="res://.godot/imported/fondue_bomb_clean.png-84799735b503b50534800cda58494094.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/enemies/fondue_bomb_clean.png"
-dest_files=["res://.godot/imported/fondue_bomb_clean.png-1b3ad305d19e8d80d463a107b7407b33.ctex"]
+dest_files=["res://.godot/imported/fondue_bomb_clean.png-84799735b503b50534800cda58494094.ctex"]
 
 [params]
 

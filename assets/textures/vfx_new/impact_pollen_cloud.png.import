@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://tyqccv3syjbve"
-path="res://.godot/imported/impact_pollen_cloud.png-4a853896ea214313e3e161fb9ea2e67d.ctex"
+uid="uid://noyemij5iw3k"
+path="res://.godot/imported/impact_pollen_cloud.png-359713dbcd77d9979cf6c01308a35be5.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/vfx_new/impact_pollen_cloud.png"
-dest_files=["res://.godot/imported/impact_pollen_cloud.png-4a853896ea214313e3e161fb9ea2e67d.ctex"]
+dest_files=["res://.godot/imported/impact_pollen_cloud.png-359713dbcd77d9979cf6c01308a35be5.ctex"]
 
 [params]
 

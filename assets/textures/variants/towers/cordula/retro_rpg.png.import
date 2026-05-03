@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://glxndi75izigp"
-path="res://.godot/imported/retro_rpg.png-f32328efd036dd663ee2ad1bc5a9b0f4.ctex"
+uid="uid://cqjrrhbvxsmox"
+path="res://.godot/imported/retro_rpg.png-c72a712b28e4e5ff84d2c54610025677.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/variants/towers/cordula/retro_rpg.png"
-dest_files=["res://.godot/imported/retro_rpg.png-f32328efd036dd663ee2ad1bc5a9b0f4.ctex"]
+dest_files=["res://.godot/imported/retro_rpg.png-c72a712b28e4e5ff84d2c54610025677.ctex"]
 
 [params]
 

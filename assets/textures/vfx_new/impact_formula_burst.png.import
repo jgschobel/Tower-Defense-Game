@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://5r6v7mbcmymgk"
-path="res://.godot/imported/impact_formula_burst.png-a3330c1059fafa3de9fbd525e8c8aff7.ctex"
+uid="uid://dqcs27ukokh47"
+path="res://.godot/imported/impact_formula_burst.png-5edf15a4b51eae0a141af6890f9ba6ff.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/vfx_new/impact_formula_burst.png"
-dest_files=["res://.godot/imported/impact_formula_burst.png-a3330c1059fafa3de9fbd525e8c8aff7.ctex"]
+dest_files=["res://.godot/imported/impact_formula_burst.png-5edf15a4b51eae0a141af6890f9ba6ff.ctex"]
 
 [params]
 

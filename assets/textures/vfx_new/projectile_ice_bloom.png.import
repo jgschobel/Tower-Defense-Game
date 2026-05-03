@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://3katfrod4vlio"
-path="res://.godot/imported/projectile_ice_bloom.png-e42ebc1ba259815b8675a9073213d8f9.ctex"
+uid="uid://bifqbd8l6hg7c"
+path="res://.godot/imported/projectile_ice_bloom.png-a18106b05bb7551f4af8efdf5d0a9cdf.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/vfx_new/projectile_ice_bloom.png"
-dest_files=["res://.godot/imported/projectile_ice_bloom.png-e42ebc1ba259815b8675a9073213d8f9.ctex"]
+dest_files=["res://.godot/imported/projectile_ice_bloom.png-a18106b05bb7551f4af8efdf5d0a9cdf.ctex"]
 
 [params]
 

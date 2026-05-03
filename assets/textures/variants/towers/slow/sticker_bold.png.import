@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://zxglkqfpwpwto"
-path="res://.godot/imported/sticker_bold.png-e9d9f67960a59af9e19922a107fb600d.ctex"
+uid="uid://cq0d1ev7jioa3"
+path="res://.godot/imported/sticker_bold.png-3417c8c0b80077ee0def69b0af20c755.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/variants/towers/slow/sticker_bold.png"
-dest_files=["res://.godot/imported/sticker_bold.png-e9d9f67960a59af9e19922a107fb600d.ctex"]
+dest_files=["res://.godot/imported/sticker_bold.png-3417c8c0b80077ee0def69b0af20c755.ctex"]
 
 [params]
 

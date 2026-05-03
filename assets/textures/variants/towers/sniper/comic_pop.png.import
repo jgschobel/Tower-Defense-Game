@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://nn4le2yo4dxhm"
-path="res://.godot/imported/comic_pop.png-c3dc7c763445f1add1267b24b2ef4906.ctex"
+uid="uid://b2vymv7xfrb7c"
+path="res://.godot/imported/comic_pop.png-caf726b7c505205505d3c0d230726724.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/variants/towers/sniper/comic_pop.png"
-dest_files=["res://.godot/imported/comic_pop.png-c3dc7c763445f1add1267b24b2ef4906.ctex"]
+dest_files=["res://.godot/imported/comic_pop.png-caf726b7c505205505d3c0d230726724.ctex"]
 
 [params]
 

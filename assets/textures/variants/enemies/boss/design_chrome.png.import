@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://7g3rbpbt4lhje"
-path="res://.godot/imported/design_chrome.png-449d7c985e18ecdfb0e1756347d3dddc.ctex"
+uid="uid://bjtsk8xtlyhha"
+path="res://.godot/imported/design_chrome.png-735c9d7bc617f530b124edb5ba9868ff.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/variants/enemies/boss/design_chrome.png"
-dest_files=["res://.godot/imported/design_chrome.png-449d7c985e18ecdfb0e1756347d3dddc.ctex"]
+dest_files=["res://.godot/imported/design_chrome.png-735c9d7bc617f530b124edb5ba9868ff.ctex"]
 
 [params]
 

@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ofpaa6zlath2d"
-path="res://.godot/imported/avocado_zombie.png-3d1e605e7c003caece281c4280925b39.ctex"
+uid="uid://cthni08tk7ur2"
+path="res://.godot/imported/avocado_zombie.png-524ed88a2e8450d9da6f15caf6a1a970.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/monsters_new/avocado_zombie.png"
-dest_files=["res://.godot/imported/avocado_zombie.png-3d1e605e7c003caece281c4280925b39.ctex"]
+dest_files=["res://.godot/imported/avocado_zombie.png-524ed88a2e8450d9da6f15caf6a1a970.ctex"]
 
 [params]
 

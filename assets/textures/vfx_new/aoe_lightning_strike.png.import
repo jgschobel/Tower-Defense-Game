@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://fcalkoqj3d2ca"
-path="res://.godot/imported/aoe_lightning_strike.png-01687b4c1ca580459f09df7edaaf1a93.ctex"
+uid="uid://bgupymtbi56ki"
+path="res://.godot/imported/aoe_lightning_strike.png-15bda2685433ee542e90be3d93a6a823.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/vfx_new/aoe_lightning_strike.png"
-dest_files=["res://.godot/imported/aoe_lightning_strike.png-01687b4c1ca580459f09df7edaaf1a93.ctex"]
+dest_files=["res://.godot/imported/aoe_lightning_strike.png-15bda2685433ee542e90be3d93a6a823.ctex"]
 
 [params]
 

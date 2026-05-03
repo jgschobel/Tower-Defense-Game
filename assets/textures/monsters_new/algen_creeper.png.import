@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://2lnwg2fmef4sa"
-path="res://.godot/imported/algen_creeper.png-0970a461746b357acf93f54781a61d11.ctex"
+uid="uid://jstcnyuf00hw"
+path="res://.godot/imported/algen_creeper.png-cee8819fb9aa24147022b9c95b80096a.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/monsters_new/algen_creeper.png"
-dest_files=["res://.godot/imported/algen_creeper.png-0970a461746b357acf93f54781a61d11.ctex"]
+dest_files=["res://.godot/imported/algen_creeper.png-cee8819fb9aa24147022b9c95b80096a.ctex"]
 
 [params]
 

@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://qv3w4vnfxs34a"
-path="res://.godot/imported/fantasy_hero.png-0e6e572b6bcb6eb010a5f30ad7d42b7f.ctex"
+uid="uid://bghgrnyfo0l27"
+path="res://.godot/imported/fantasy_hero.png-7591e1dbd55ff1df8eefe804454afa0f.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/variants/towers/splash/fantasy_hero.png"
-dest_files=["res://.godot/imported/fantasy_hero.png-0e6e572b6bcb6eb010a5f30ad7d42b7f.ctex"]
+dest_files=["res://.godot/imported/fantasy_hero.png-7591e1dbd55ff1df8eefe804454afa0f.ctex"]
 
 [params]
 

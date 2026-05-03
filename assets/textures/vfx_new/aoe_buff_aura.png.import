@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://tqhee2tmaefxg"
-path="res://.godot/imported/aoe_buff_aura.png-6b948064f4421e13d5f3609e3d184b6d.ctex"
+uid="uid://ff1gr8dgd15m"
+path="res://.godot/imported/aoe_buff_aura.png-9ddee3eeda4308904a0010287f25c06c.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/vfx_new/aoe_buff_aura.png"
-dest_files=["res://.godot/imported/aoe_buff_aura.png-6b948064f4421e13d5f3609e3d184b6d.ctex"]
+dest_files=["res://.godot/imported/aoe_buff_aura.png-9ddee3eeda4308904a0010287f25c06c.ctex"]
 
 [params]
 

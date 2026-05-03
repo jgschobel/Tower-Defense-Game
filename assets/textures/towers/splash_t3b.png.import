@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://eyqt4ttrmlofe"
-path="res://.godot/imported/splash_t3b.png-42b96c8ce7c9c3048d180ad24b606123.ctex"
+uid="uid://4cyjrwi2esnm"
+path="res://.godot/imported/splash_t3b.png-2093507b391515ea4cba6f594c220b04.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/towers/splash_t3b.png"
-dest_files=["res://.godot/imported/splash_t3b.png-42b96c8ce7c9c3048d180ad24b606123.ctex"]
+dest_files=["res://.godot/imported/splash_t3b.png-2093507b391515ea4cba6f594c220b04.ctex"]
 
 [params]
 

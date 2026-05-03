@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://fmyl54xecncxo"
-path="res://.godot/imported/spirulina_spirit.png-eb89a225f9d5e185fceda6d744ecb4a1.ctex"
+uid="uid://brkqk204rgg6w"
+path="res://.godot/imported/spirulina_spirit.png-2ac340dcbb4dc1404af32c102a4900dd.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/monsters_new/spirulina_spirit.png"
-dest_files=["res://.godot/imported/spirulina_spirit.png-eb89a225f9d5e185fceda6d744ecb4a1.ctex"]
+dest_files=["res://.godot/imported/spirulina_spirit.png-2ac340dcbb4dc1404af32c102a4900dd.ctex"]
 
 [params]
 

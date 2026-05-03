@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://i5puakzziei2b"
-path="res://.godot/imported/sojamilch_slime.png-1d2088ce540a3fa87d935a88032ec071.ctex"
+uid="uid://bfv33g6idyrjr"
+path="res://.godot/imported/sojamilch_slime.png-54cf238b58c4fcf145142ddc4f8eb4c6.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/monsters_new/sojamilch_slime.png"
-dest_files=["res://.godot/imported/sojamilch_slime.png-1d2088ce540a3fa87d935a88032ec071.ctex"]
+dest_files=["res://.godot/imported/sojamilch_slime.png-54cf238b58c4fcf145142ddc4f8eb4c6.ctex"]
 
 [params]
 

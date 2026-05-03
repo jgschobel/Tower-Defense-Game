@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://4j2jcbo3ejwnd"
-path="res://.godot/imported/kombucha_witch.png-36d924db8224e93c8c2c1cac60c5b702.ctex"
+uid="uid://ch7f6wacf4sc0"
+path="res://.godot/imported/kombucha_witch.png-d4148303d7dd5bebbe191123ca09d8e4.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/monsters_new/kombucha_witch.png"
-dest_files=["res://.godot/imported/kombucha_witch.png-36d924db8224e93c8c2c1cac60c5b702.ctex"]
+dest_files=["res://.godot/imported/kombucha_witch.png-d4148303d7dd5bebbe191123ca09d8e4.ctex"]
 
 [params]
 

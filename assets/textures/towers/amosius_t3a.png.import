@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://xgwc4d22kuw3g"
-path="res://.godot/imported/amosius_t3a.png-6dda8ad687c158d7164e23c9bc994d54.ctex"
+uid="uid://g4k1kj6noju"
+path="res://.godot/imported/amosius_t3a.png-0245cf8f879a18c85379b79c9858cca9.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/towers/amosius_t3a.png"
-dest_files=["res://.godot/imported/amosius_t3a.png-6dda8ad687c158d7164e23c9bc994d54.ctex"]
+dest_files=["res://.godot/imported/amosius_t3a.png-0245cf8f879a18c85379b79c9858cca9.ctex"]
 
 [params]
 

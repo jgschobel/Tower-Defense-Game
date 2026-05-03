@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://x5yzqvep4axqk"
-path="res://.godot/imported/anime_heroine.png-a85c1c792b0ce3b7eb2dd03922969d54.ctex"
+uid="uid://yjr7ju7p2o6y"
+path="res://.godot/imported/anime_heroine.png-3807f6f2988e5a51f507658b675456eb.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/variants/towers/cordula/anime_heroine.png"
-dest_files=["res://.godot/imported/anime_heroine.png-a85c1c792b0ce3b7eb2dd03922969d54.ctex"]
+dest_files=["res://.godot/imported/anime_heroine.png-3807f6f2988e5a51f507658b675456eb.ctex"]
 
 [params]
 

@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://gtmyw5opi27ph"
-path="res://.godot/imported/aoe_ice_circle.png-77ff487bbb6c3266a30da567e01e88ce.ctex"
+uid="uid://cx74c3rgxvcxp"
+path="res://.godot/imported/aoe_ice_circle.png-98e31889935ddf59682f5fabc8195253.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/vfx_new/aoe_ice_circle.png"
-dest_files=["res://.godot/imported/aoe_ice_circle.png-77ff487bbb6c3266a30da567e01e88ce.ctex"]
+dest_files=["res://.godot/imported/aoe_ice_circle.png-98e31889935ddf59682f5fabc8195253.ctex"]
 
 [params]
 

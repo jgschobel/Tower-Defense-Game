@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://zy2qhgu2zl23j"
-path="res://.godot/imported/projectile_flask.png-9de979d50c786b196d56b1eeb412ac86.ctex"
+uid="uid://csmiw4dkmetjx"
+path="res://.godot/imported/projectile_flask.png-af57565543ffa471c9d6b2a15366e03f.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/vfx_new/projectile_flask.png"
-dest_files=["res://.godot/imported/projectile_flask.png-9de979d50c786b196d56b1eeb412ac86.ctex"]
+dest_files=["res://.godot/imported/projectile_flask.png-af57565543ffa471c9d6b2a15366e03f.ctex"]
 
 [params]
 

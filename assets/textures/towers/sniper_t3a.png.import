@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://p45sljniimpsh"
-path="res://.godot/imported/sniper_t3a.png-793d884352b9778fdffd780f4c0b0eda.ctex"
+uid="uid://ojb8byh8s7rf"
+path="res://.godot/imported/sniper_t3a.png-0b97d1879739a2cef4b6c3c6f83206c7.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/towers/sniper_t3a.png"
-dest_files=["res://.godot/imported/sniper_t3a.png-793d884352b9778fdffd780f4c0b0eda.ctex"]
+dest_files=["res://.godot/imported/sniper_t3a.png-0b97d1879739a2cef4b6c3c6f83206c7.ctex"]
 
 [params]
 

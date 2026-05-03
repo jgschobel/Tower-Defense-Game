@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://kvhltmsyphq7h"
-path="res://.godot/imported/basic_t3a.png-7fc0efc499359eaa5c33de8139799d2a.ctex"
+uid="uid://c5nuniyhk20ox"
+path="res://.godot/imported/basic_t3a.png-8548f71f499372d3dbaeadbb946215e6.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/towers/basic_t3a.png"
-dest_files=["res://.godot/imported/basic_t3a.png-7fc0efc499359eaa5c33de8139799d2a.ctex"]
+dest_files=["res://.godot/imported/basic_t3a.png-8548f71f499372d3dbaeadbb946215e6.ctex"]
 
 [params]
 

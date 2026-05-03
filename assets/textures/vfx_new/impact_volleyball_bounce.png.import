@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://th6h6u3dux27n"
-path="res://.godot/imported/impact_volleyball_bounce.png-dfeaf41ee9e3f8f3c9fd49b3ddc016ca.ctex"
+uid="uid://d1j0tnfdl5k6l"
+path="res://.godot/imported/impact_volleyball_bounce.png-a1578cc64a7a2d92eb7be56ec54cb24c.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/vfx_new/impact_volleyball_bounce.png"
-dest_files=["res://.godot/imported/impact_volleyball_bounce.png-dfeaf41ee9e3f8f3c9fd49b3ddc016ca.ctex"]
+dest_files=["res://.godot/imported/impact_volleyball_bounce.png-a1578cc64a7a2d92eb7be56ec54cb24c.ctex"]
 
 [params]
 

@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://5o7wrflg6vakm"
-path="res://.godot/imported/design_fire.png-c502be32cb1b7ddd0c04e2fb9cef9812.ctex"
+uid="uid://dndtm05o8g5aa"
+path="res://.godot/imported/design_fire.png-145c4eaa6ed10d4ecf058d764b6f9b18.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/variants/enemies/healer/design_fire.png"
-dest_files=["res://.godot/imported/design_fire.png-c502be32cb1b7ddd0c04e2fb9cef9812.ctex"]
+dest_files=["res://.godot/imported/design_fire.png-145c4eaa6ed10d4ecf058d764b6f9b18.ctex"]
 
 [params]
 

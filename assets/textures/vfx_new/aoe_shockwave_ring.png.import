@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://3emq4ardoh7un"
-path="res://.godot/imported/aoe_shockwave_ring.png-da7cee1c41c8309bdfa4e1c8ae532b6a.ctex"
+uid="uid://bcrnyvclp23kb"
+path="res://.godot/imported/aoe_shockwave_ring.png-425da0bed601dacca4f768dcb731d124.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/vfx_new/aoe_shockwave_ring.png"
-dest_files=["res://.godot/imported/aoe_shockwave_ring.png-da7cee1c41c8309bdfa4e1c8ae532b6a.ctex"]
+dest_files=["res://.godot/imported/aoe_shockwave_ring.png-425da0bed601dacca4f768dcb731d124.ctex"]
 
 [params]
 

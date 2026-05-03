@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://nqk4nlfismzgn"
-path="res://.godot/imported/haferriegel_golem.png-d365924156de2a0dca757528d87d269d.ctex"
+uid="uid://b5divfnq31d6d"
+path="res://.godot/imported/haferriegel_golem.png-dc0299d80190ab53f5f70b500dced1b9.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/monsters_new/haferriegel_golem.png"
-dest_files=["res://.godot/imported/haferriegel_golem.png-d365924156de2a0dca757528d87d269d.ctex"]
+dest_files=["res://.godot/imported/haferriegel_golem.png-dc0299d80190ab53f5f70b500dced1b9.ctex"]
 
 [params]
 

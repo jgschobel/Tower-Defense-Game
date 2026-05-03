@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://d6ptxjmfnbtaw"
-path="res://.godot/imported/level_3_chemikalien.png-d6ptxjmfnbtaw.ctex"
+uid="uid://cbydho523xi5"
+path="res://.godot/imported/level_3_chemikalien.png-cc4abf9ffa56ad0b9a4b8b65a39ba11c.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/maps_v3/level_3_chemikalien.png"
-dest_files=["res://.godot/imported/level_3_chemikalien.png-d6ptxjmfnbtaw.ctex"]
+dest_files=["res://.godot/imported/level_3_chemikalien.png-cc4abf9ffa56ad0b9a4b8b65a39ba11c.ctex"]
 
 [params]
 

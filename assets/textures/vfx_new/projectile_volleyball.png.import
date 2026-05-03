@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://2oanj3z33lynp"
-path="res://.godot/imported/projectile_volleyball.png-f6e17bde769681da30981f59d88be1ac.ctex"
+uid="uid://mfkfplc46udd"
+path="res://.godot/imported/projectile_volleyball.png-951eea5ab96b9656d221bc811dd5148f.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/vfx_new/projectile_volleyball.png"
-dest_files=["res://.godot/imported/projectile_volleyball.png-f6e17bde769681da30981f59d88be1ac.ctex"]
+dest_files=["res://.godot/imported/projectile_volleyball.png-951eea5ab96b9656d221bc811dd5148f.ctex"]
 
 [params]
 

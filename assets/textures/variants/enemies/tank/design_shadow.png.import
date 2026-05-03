@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://kcgw63dvb2kbl"
-path="res://.godot/imported/design_shadow.png-b0ab41a8f7eb184a43ddbdfad1ff89bf.ctex"
+uid="uid://clm60yjd6nsr2"
+path="res://.godot/imported/design_shadow.png-35bc2b77ec20523b451fe05dd5f82ee5.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/variants/enemies/tank/design_shadow.png"
-dest_files=["res://.godot/imported/design_shadow.png-b0ab41a8f7eb184a43ddbdfad1ff89bf.ctex"]
+dest_files=["res://.godot/imported/design_shadow.png-35bc2b77ec20523b451fe05dd5f82ee5.ctex"]
 
 [params]
 

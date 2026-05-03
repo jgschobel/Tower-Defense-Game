@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://q63gc6zmzve4k"
-path="res://.godot/imported/comic_pop.png-ae12b9667c236fd057d793d8c63cc2d8.ctex"
+uid="uid://bqgxyycmq2v3i"
+path="res://.godot/imported/comic_pop.png-b587a4c7742d40f2936d60c2d7eb1adf.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/variants/towers/cordula/comic_pop.png"
-dest_files=["res://.godot/imported/comic_pop.png-ae12b9667c236fd057d793d8c63cc2d8.ctex"]
+dest_files=["res://.godot/imported/comic_pop.png-b587a4c7742d40f2936d60c2d7eb1adf.ctex"]
 
 [params]
 

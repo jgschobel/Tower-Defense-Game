@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://leovui26mkcnp"
-path="res://.godot/imported/joe.png-f6894cf6914ab88b57c5bb70b1542bcd.ctex"
+uid="uid://dnu5oe8oh5k46"
+path="res://.godot/imported/joe.png-6ea91b1d6871f1a1a28ebc655139f315.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/towers/joe.png"
-dest_files=["res://.godot/imported/joe.png-f6894cf6914ab88b57c5bb70b1542bcd.ctex"]
+dest_files=["res://.godot/imported/joe.png-6ea91b1d6871f1a1a28ebc655139f315.ctex"]
 
 [params]
 

@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://3anprcnw2xwfa"
-path="res://.godot/imported/watercolor.png-02dafab34517b41b79e32bdc78927084.ctex"
+uid="uid://7smmw754jr3w"
+path="res://.godot/imported/watercolor.png-45812f1fee0ea1038ca23eec09911eaa.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/variants/towers/cordula/watercolor.png"
-dest_files=["res://.godot/imported/watercolor.png-02dafab34517b41b79e32bdc78927084.ctex"]
+dest_files=["res://.godot/imported/watercolor.png-45812f1fee0ea1038ca23eec09911eaa.ctex"]
 
 [params]
 

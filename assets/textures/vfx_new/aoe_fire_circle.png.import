@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ucrbbgk2hvrgb"
-path="res://.godot/imported/aoe_fire_circle.png-1346a7d28c10c4541431883f9100bc1b.ctex"
+uid="uid://0pxc5ysnvenh"
+path="res://.godot/imported/aoe_fire_circle.png-42441bc272cebe19bf9a594088706322.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/vfx_new/aoe_fire_circle.png"
-dest_files=["res://.godot/imported/aoe_fire_circle.png-1346a7d28c10c4541431883f9100bc1b.ctex"]
+dest_files=["res://.godot/imported/aoe_fire_circle.png-42441bc272cebe19bf9a594088706322.ctex"]
 
 [params]
 

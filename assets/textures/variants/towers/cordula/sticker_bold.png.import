@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://s37ialhrqznyd"
-path="res://.godot/imported/sticker_bold.png-3c373089d6047f729bafb90aad978f98.ctex"
+uid="uid://dnk0wdsrh65xb"
+path="res://.godot/imported/sticker_bold.png-b068ce4387ea71dcd6123a0c501b023a.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/variants/towers/cordula/sticker_bold.png"
-dest_files=["res://.godot/imported/sticker_bold.png-3c373089d6047f729bafb90aad978f98.ctex"]
+dest_files=["res://.godot/imported/sticker_bold.png-b068ce4387ea71dcd6123a0c501b023a.ctex"]
 
 [params]
 

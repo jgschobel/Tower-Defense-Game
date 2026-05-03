@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bk2nrp7qxdm4c"
-path="res://.godot/imported/level_8_coop.png-bk2nrp7qxdm4c.ctex"
+path="res://.godot/imported/level_8_coop.png-ea7240a5764db9cf27777b343fad3d42.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/maps_v3/level_8_coop.png"
-dest_files=["res://.godot/imported/level_8_coop.png-bk2nrp7qxdm4c.ctex"]
+dest_files=["res://.godot/imported/level_8_coop.png-ea7240a5764db9cf27777b343fad3d42.ctex"]
 
 [params]
 

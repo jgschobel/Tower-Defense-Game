@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://xdugecqizncbj"
-path="res://.godot/imported/impact_laser_sizzle.png-9089b944044350775fae32eeb61ef8b2.ctex"
+uid="uid://d1s3f1486mxip"
+path="res://.godot/imported/impact_laser_sizzle.png-e9d10becbd876afe4d4d6357bdc64d1d.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/vfx_new/impact_laser_sizzle.png"
-dest_files=["res://.godot/imported/impact_laser_sizzle.png-9089b944044350775fae32eeb61ef8b2.ctex"]
+dest_files=["res://.godot/imported/impact_laser_sizzle.png-e9d10becbd876afe4d4d6357bdc64d1d.ctex"]
 
 [params]
 

@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://2y5d4hdyau7xk"
-path="res://.godot/imported/projectile_confetti_ball.png-abfe80c0cfc1f71a3a5d22692c475c40.ctex"
+uid="uid://xbay2w7cg3m7"
+path="res://.godot/imported/projectile_confetti_ball.png-ec11163dcfa547caac1e51ca6f6f2888.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/vfx_new/projectile_confetti_ball.png"
-dest_files=["res://.godot/imported/projectile_confetti_ball.png-abfe80c0cfc1f71a3a5d22692c475c40.ctex"]
+dest_files=["res://.godot/imported/projectile_confetti_ball.png-ec11163dcfa547caac1e51ca6f6f2888.ctex"]
 
 [params]
 

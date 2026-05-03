@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ohvgtmtfm3yrp"
-path="res://.godot/imported/chibi_summer.png-f8e36c2cd93354ee98c05a90374cc51b.ctex"
+uid="uid://cvnt2g2nxidif"
+path="res://.godot/imported/chibi_summer.png-a61b447c86d220f8694cd41aaf2bd324.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/variants/towers/sniper/chibi_summer.png"
-dest_files=["res://.godot/imported/chibi_summer.png-f8e36c2cd93354ee98c05a90374cc51b.ctex"]
+dest_files=["res://.godot/imported/chibi_summer.png-a61b447c86d220f8694cd41aaf2bd324.ctex"]
 
 [params]
 

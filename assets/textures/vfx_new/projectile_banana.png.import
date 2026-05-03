@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://imvxajzmc5nnj"
-path="res://.godot/imported/projectile_banana.png-96b7a266520bd5880495ceb18b7f066b.ctex"
+uid="uid://v263f537qv40"
+path="res://.godot/imported/projectile_banana.png-860f9a802e2da2837786745e525bbeb2.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/vfx_new/projectile_banana.png"
-dest_files=["res://.godot/imported/projectile_banana.png-96b7a266520bd5880495ceb18b7f066b.ctex"]
+dest_files=["res://.godot/imported/projectile_banana.png-860f9a802e2da2837786745e525bbeb2.ctex"]
 
 [params]
 

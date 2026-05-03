@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ejnbqhomoerik"
-path="res://.godot/imported/glace_golem_clean.png-a4448e638f00b524d33c149012c1ca7d.ctex"
+uid="uid://n8f5frd36vqs"
+path="res://.godot/imported/glace_golem_clean.png-6f63b5c71ae92ee23896351005fda1a1.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/enemies/glace_golem_clean.png"
-dest_files=["res://.godot/imported/glace_golem_clean.png-a4448e638f00b524d33c149012c1ca7d.ctex"]
+dest_files=["res://.godot/imported/glace_golem_clean.png-6f63b5c71ae92ee23896351005fda1a1.ctex"]
 
 [params]
 

@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://l5hktuvyj5zia"
-path="res://.godot/imported/design_shadow.png-0467a9c569351fab746dc5538947c6a5.ctex"
+uid="uid://j8x2o47ukd7y"
+path="res://.godot/imported/design_shadow.png-6c24f18c2df91f5bde64e0a66417c1e9.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/variants/enemies/fast/design_shadow.png"
-dest_files=["res://.godot/imported/design_shadow.png-0467a9c569351fab746dc5538947c6a5.ctex"]
+dest_files=["res://.godot/imported/design_shadow.png-6c24f18c2df91f5bde64e0a66417c1e9.ctex"]
 
 [params]
 

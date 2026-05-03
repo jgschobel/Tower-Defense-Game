@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://egr4uwhioecbl"
-path="res://.godot/imported/design_shadow.png-b0888e41ed4e44c43c2cd3f6faca47f2.ctex"
+uid="uid://leaauj836gjt"
+path="res://.godot/imported/design_shadow.png-cc1b0ed046e9aba1695587a5ac491ed5.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/variants/enemies/flying/design_shadow.png"
-dest_files=["res://.godot/imported/design_shadow.png-b0888e41ed4e44c43c2cd3f6faca47f2.ctex"]
+dest_files=["res://.godot/imported/design_shadow.png-cc1b0ed046e9aba1695587a5ac491ed5.ctex"]
 
 [params]
 

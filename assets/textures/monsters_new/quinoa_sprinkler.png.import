@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ltv6cr72u3djd"
-path="res://.godot/imported/quinoa_sprinkler.png-348f74d7e22f566bb9f5b47def0aebe2.ctex"
+uid="uid://d33f5oekqol0t"
+path="res://.godot/imported/quinoa_sprinkler.png-964e57cebccb3b24a3ffd45df8ea31ea.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/monsters_new/quinoa_sprinkler.png"
-dest_files=["res://.godot/imported/quinoa_sprinkler.png-348f74d7e22f566bb9f5b47def0aebe2.ctex"]
+dest_files=["res://.godot/imported/quinoa_sprinkler.png-964e57cebccb3b24a3ffd45df8ea31ea.ctex"]
 
 [params]
 

@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://akhqyggoplhnp"
-path="res://.godot/imported/dark_hero.png-f69d6f718d881d40133167e31546f471.ctex"
+uid="uid://khqyggoplhnp"
+path="res://.godot/imported/dark_hero.png-92a3c9c464bb6dcfa03b9d8efb62c0f0.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/variants/towers/cordula/dark_hero.png"
-dest_files=["res://.godot/imported/dark_hero.png-f69d6f718d881d40133167e31546f471.ctex"]
+dest_files=["res://.godot/imported/dark_hero.png-92a3c9c464bb6dcfa03b9d8efb62c0f0.ctex"]
 
 [params]
 

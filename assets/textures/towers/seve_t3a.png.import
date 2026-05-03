@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://nmwdmmw6fnghe"
-path="res://.godot/imported/seve_t3a.png-4399a5f598c1d98de4d6048484978535.ctex"
+uid="uid://b1oqug6fp1s63"
+path="res://.godot/imported/seve_t3a.png-9431c3895a5bbc6a633914c9aeb548ef.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/towers/seve_t3a.png"
-dest_files=["res://.godot/imported/seve_t3a.png-4399a5f598c1d98de4d6048484978535.ctex"]
+dest_files=["res://.godot/imported/seve_t3a.png-9431c3895a5bbc6a633914c9aeb548ef.ctex"]
 
 [params]
 

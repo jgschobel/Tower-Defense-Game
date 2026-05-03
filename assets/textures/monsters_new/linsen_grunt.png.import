@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://hrka2skrgcbkf"
-path="res://.godot/imported/linsen_grunt.png-5504468aa5a02a2775aa789edcbf6420.ctex"
+uid="uid://dv5fhqniu4fsn"
+path="res://.godot/imported/linsen_grunt.png-bffd066812a771d678bcc3fee333270a.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/monsters_new/linsen_grunt.png"
-dest_files=["res://.godot/imported/linsen_grunt.png-5504468aa5a02a2775aa789edcbf6420.ctex"]
+dest_files=["res://.godot/imported/linsen_grunt.png-bffd066812a771d678bcc3fee333270a.ctex"]
 
 [params]
 

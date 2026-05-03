@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://f5vlaswt6mloa"
-path="res://.godot/imported/anime_heroine.png-072d9e9da405d7a5506327b2286a703b.ctex"
+uid="uid://cbhpoq0lmfpwi"
+path="res://.godot/imported/anime_heroine.png-2d827c5b38f317770c138e538a54d410.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/variants/towers/sniper/anime_heroine.png"
-dest_files=["res://.godot/imported/anime_heroine.png-072d9e9da405d7a5506327b2286a703b.ctex"]
+dest_files=["res://.godot/imported/anime_heroine.png-2d827c5b38f317770c138e538a54d410.ctex"]
 
 [params]
 

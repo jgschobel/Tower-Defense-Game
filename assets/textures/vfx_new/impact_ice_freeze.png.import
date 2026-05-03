@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://yibi3ukfj4b6e"
-path="res://.godot/imported/impact_ice_freeze.png-4f07892aa9b40518ce83fbc440a9df2d.ctex"
+uid="uid://bbubki1v5v2ms"
+path="res://.godot/imported/impact_ice_freeze.png-b3482f25593ac487593dea009031a76a.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/vfx_new/impact_ice_freeze.png"
-dest_files=["res://.godot/imported/impact_ice_freeze.png-4f07892aa9b40518ce83fbc440a9df2d.ctex"]
+dest_files=["res://.godot/imported/impact_ice_freeze.png-b3482f25593ac487593dea009031a76a.ctex"]
 
 [params]
 

@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://3m3mawlxl53eo"
-path="res://.godot/imported/pastel_kawaii.png-e26fabbaec066d9b1b49dd1490d7cb91.ctex"
+uid="uid://bk8i5i56nqx3c"
+path="res://.godot/imported/pastel_kawaii.png-2cdd49be5654880fae5cc8d9d3534bbf.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/variants/towers/basic/pastel_kawaii.png"
-dest_files=["res://.godot/imported/pastel_kawaii.png-e26fabbaec066d9b1b49dd1490d7cb91.ctex"]
+dest_files=["res://.godot/imported/pastel_kawaii.png-2cdd49be5654880fae5cc8d9d3534bbf.ctex"]
 
 [params]
 

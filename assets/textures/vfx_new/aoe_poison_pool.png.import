@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://6liqu7gndvukd"
-path="res://.godot/imported/aoe_poison_pool.png-3552a369bf48217ec9e8a1204e1cff11.ctex"
+uid="uid://n8r5q3muauh8"
+path="res://.godot/imported/aoe_poison_pool.png-c8fbf52f46a1e05e16788098ebdc63b0.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/vfx_new/aoe_poison_pool.png"
-dest_files=["res://.godot/imported/aoe_poison_pool.png-3552a369bf48217ec9e8a1204e1cff11.ctex"]
+dest_files=["res://.godot/imported/aoe_poison_pool.png-c8fbf52f46a1e05e16788098ebdc63b0.ctex"]
 
 [params]
 

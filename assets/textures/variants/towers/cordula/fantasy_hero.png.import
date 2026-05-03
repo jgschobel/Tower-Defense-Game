@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://vnxwfjywaiwtd"
-path="res://.godot/imported/fantasy_hero.png-39d900b6125b5db557f4f8f9a505c425.ctex"
+uid="uid://ccwkhaengij1j"
+path="res://.godot/imported/fantasy_hero.png-f5979f75f373a7cf2103f72027bedd8c.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/textures/variants/towers/cordula/fantasy_hero.png"
-dest_files=["res://.godot/imported/fantasy_hero.png-39d900b6125b5db557f4f8f9a505c425.ctex"]
+dest_files=["res://.godot/imported/fantasy_hero.png-f5979f75f373a7cf2103f72027bedd8c.ctex"]
 
 [params]
 
