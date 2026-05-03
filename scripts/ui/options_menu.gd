@@ -15,10 +15,32 @@ signal closed
 
 
 func _ready() -> void:
+	_apply_theme()
 	master_slider.value = GameManager.master_volume
 	music_slider.value = GameManager.music_volume
 	sfx_slider.value = GameManager.sfx_volume
 	_refresh_labels()
+
+
+func _apply_theme() -> void:
+	# Give the panel a proper game-style background so it doesn't vanish
+	# against the full-screen dimmer (fixes playtest issue #153).
+	var panel := $Panel as PanelContainer
+	if panel:
+		panel.add_theme_stylebox_override("panel",
+				DesignTokens.panel_box(DesignTokens.COL_STROKE_STRONG, 14, 28))
+	# Title in gold heading style
+	var title := get_node_or_null("Panel/VBox/TitleLabel") as Label
+	if title:
+		DesignTokens.style_heading(title, DesignTokens.FONT_HEADING)
+	# Row label colours
+	for row_lbl_path: String in ["Panel/VBox/MusicRow/MusicLabel", "Panel/VBox/SfxRow/SfxLabel"]:
+		var lbl := get_node_or_null(row_lbl_path) as Label
+		if lbl:
+			DesignTokens.style_label(lbl, DesignTokens.FONT_LABEL_LG)
+	# Close button styled as a primary action
+	if close_button:
+		DesignTokens.style_button(close_button, true)
 
 
 func _refresh_labels() -> void:

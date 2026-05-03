@@ -3,8 +3,11 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
-## 2026-05-03 (audit-polish — enemy intro taunts)
+## 2026-05-03 (audit-polish — shop badge + options theme + L4 path + enemy intro taunts)
 
+- polish(hud): shop tower cost display upgraded to a coin-icon badge (dark pill + SVG coin + 13px gold label) — fixes #319 where the 12px plain label was invisible; _on_gold_changed red/amber/gold coloring still works via the Label ref in _cost_labels
+- polish(ui): options menu (Iistellige) now has a proper DesignTokens panel background + golden border + styled heading + button; no longer renders as plain black slab with floating sliders (fixes #153)
+- fix(level): L4 Bäckerei PathBorder changed to near-white cream (0.95,0.92,0.82), PathDraw changed to medium tan (0.72,0.62,0.48) — both were dark brown and invisible against the warm-brown bakery floor (fixes #320)
 - polish(hud): per-enemy Swiss German taunts in first-appearance intro banner — each of 12 enemy types shows a Züridütsch taunt line; boss header changes to "☠ ENDGEGNER!!" in red; panel height ±90→±115 to fit taunt; ticked P0 ROADMAP item (monster intro fully complete); closed stale L6-scale issues #136/#143
 
 ## 2026-05-03 (audit-polish — tier hat overlay)

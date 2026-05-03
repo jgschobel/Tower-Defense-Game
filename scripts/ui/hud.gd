@@ -598,15 +598,41 @@ func _populate_tower_shop() -> void:
 		# slightly but that's better than user seeing "Lem"/"Küh"/etc.
 		text_col.add_child(name_label)
 
+		# Gold-badge: dark pill with coin icon + cost number so it's
+		# unmissable even at small shop widths (fixes playtester issue #319).
+		var cost_badge := PanelContainer.new()
+		cost_badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var badge_bg := StyleBoxFlat.new()
+		badge_bg.bg_color = Color(0.05, 0.04, 0.02, 0.88)
+		badge_bg.corner_radius_top_left = 7
+		badge_bg.corner_radius_top_right = 7
+		badge_bg.corner_radius_bottom_left = 7
+		badge_bg.corner_radius_bottom_right = 7
+		badge_bg.border_color = Color(0.7, 0.55, 0.1, 0.75)
+		badge_bg.border_width_bottom = 1
+		badge_bg.border_width_top = 1
+		badge_bg.border_width_left = 1
+		badge_bg.border_width_right = 1
+		badge_bg.content_margin_left = 5
+		badge_bg.content_margin_right = 5
+		badge_bg.content_margin_top = 1
+		badge_bg.content_margin_bottom = 1
+		cost_badge.add_theme_stylebox_override("panel", badge_bg)
+		var badge_row := HBoxContainer.new()
+		badge_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		badge_row.add_theme_constant_override("separation", 3)
+		badge_row.add_child(IconLibrary.make_rect("coin", 13))
 		var cost_label := Label.new()
-		cost_label.text = "%d g" % td.buy_cost
+		cost_label.text = "%d" % td.buy_cost
 		cost_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-		cost_label.add_theme_font_size_override("font_size", 12)
+		cost_label.add_theme_font_size_override("font_size", 13)
 		cost_label.add_theme_color_override("font_color", Color(1, 0.9, 0.3))
 		cost_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.75))
 		cost_label.add_theme_constant_override("outline_size", 2)
 		cost_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		text_col.add_child(cost_label)
+		badge_row.add_child(cost_label)
+		cost_badge.add_child(badge_row)
+		text_col.add_child(cost_badge)
 		_cost_labels.append(cost_label)
 
 		var dps_label := Label.new()
