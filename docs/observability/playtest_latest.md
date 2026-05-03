@@ -1,6 +1,6 @@
 # Playtest Latest
 
-Run: 25282979665 @ 2026-05-03T15:27:39Z · Status: **ok** · Screenshots: 102 total, 7 key shots committed below
+Run: 25283165072 @ 2026-05-03T15:32:15Z · Status: **ok** · Screenshots: 111 total, 7 key shots committed below
 
 ## Key screenshots (Read these for visual audit)
 
@@ -14,4 +14,4 @@ Run: 25282979665 @ 2026-05-03T15:27:39Z · Status: **ok** · Screenshots: 102 to
 (no summary.md — bot did not reach write-summary)
 
 ## Full artifact
-https://github.com/jgschobel/Tower-Defense-Game/actions/runs/25282979665
+https://github.com/jgschobel/Tower-Defense-Game/actions/runs/25283165072
