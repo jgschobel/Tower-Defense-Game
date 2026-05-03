@@ -12,8 +12,9 @@ name: Weekly Digest
 # Without those secrets the issue is still filed; email step skips.
 
 on:
-  schedule:
-    - cron: '0 6 * * 1'
+  # DISABLED 2026-05-03: never succeeded. Was supposed to email weekly
+  # progress via Resend; never got past first failure. Re-enable only
+  # after debugging the actual error (look at most recent failure log).
   workflow_dispatch:
 
 permissions:

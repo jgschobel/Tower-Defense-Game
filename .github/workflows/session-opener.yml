@@ -1,0 +1,61 @@
+name: Session Opener
+
+# Generates docs/observability/session_brief.md every morning + on
+# pushes that change ROADMAP/workflows. Chat-session Claude reads
+# this file FIRST every session — single source of truth replacing
+# 5 separate file reads.
+#
+# Driven by .github/scripts/session_brief.py.
+
+on:
+  schedule:
+    - cron: '0 3 * * *'  # 03:00 UTC daily — well before any morning session
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'ROADMAP.md'
+      - 'docs/observability/asset_status.md'
+      - 'docs/observability/loop-status.md'
+      - '.github/scripts/session_brief.py'
+      - '.github/workflows/session-opener.yml'
+
+permissions:
+  contents: write
+  pull-requests: read
+  issues: read
+
+concurrency:
+  group: session-opener
+  cancel-in-progress: true
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate session brief
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 .github/scripts/session_brief.py
+
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet docs/observability/session_brief.md 2>/dev/null; then
+            echo "No changes — session_brief.md already current"
+            exit 0
+          fi
+          git add docs/observability/session_brief.md
+          git commit -m "chore(observability): refresh session_brief.md"
+          # Best-effort push (may race with other workflows on main)
+          for i in 1 2 3; do
+            if git push origin main; then exit 0; fi
+            sleep 5
+            git pull --rebase origin main || true
+          done

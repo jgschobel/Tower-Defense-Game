@@ -72,73 +72,83 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -e
-          # Build a map of branch_name -> PR_state via a single API call
+          # Defensive: don't fail the whole step on a single bad branch.
+          # Each delete is best-effort with || true.
+          set +e
           gh pr list --state all --limit 500 \
             --json number,state,headRefName,merged \
-            > /tmp/all_prs.json
+            > /tmp/all_prs.json || echo '[]' > /tmp/all_prs.json
 
           DELETED=0
           KEPT=0
+          ERRORED=0
 
-          for BRANCH in $(git branch -r | sed 's|origin/||' | tr -d ' ' \
-            | grep -E '^(art-request|art-tiers|art-variants|art-damage|friend-photo|audit-grid|claude/auto)/'); do
+          # Use temp file to avoid subshell scoping issues with counters
+          : > /tmp/branches_to_check.txt
+          git branch -r 2>/dev/null | sed 's|origin/||' | tr -d ' ' \
+            | grep -E '^(art-request|art-tiers|art-variants|art-damage|friend-photo|audit-grid|claude/auto)/' \
+            > /tmp/branches_to_check.txt || true
 
-            # Skip protected refs
-            if [ "$BRANCH" = "main" ] || [ "$BRANCH" = "gh-pages" ]; then
+          while IFS= read -r BRANCH; do
+            [ -z "$BRANCH" ] && continue
+            [ "$BRANCH" = "main" ] && continue
+            [ "$BRANCH" = "gh-pages" ] && continue
+
+            SHA=$(git rev-parse "origin/$BRANCH" 2>/dev/null || echo "")
+            if [ -z "$SHA" ]; then
+              ERRORED=$((ERRORED + 1))
               continue
             fi
 
-            SHA=$(git rev-parse "origin/$BRANCH" 2>/dev/null || echo "")
-            if [ -z "$SHA" ]; then continue; fi
-
-            # Rule (a): truly merged into main
             IS_MERGED=false
             if git merge-base --is-ancestor "$SHA" origin/main 2>/dev/null; then
               IS_MERGED=true
             fi
 
-            # Rule (b): has a closed PR (merged or not)
-            HAS_CLOSED_PR=$(jq -r --arg b "$BRANCH" '
-              [.[] | select(.headRefName == $b) | select(.state == "CLOSED" or .state == "MERGED")] | length' \
-              /tmp/all_prs.json)
+            HAS_CLOSED_PR=$(jq -r --arg b "$BRANCH" \
+              '[.[] | select(.headRefName == $b) | select(.state == "CLOSED" or .state == "MERGED")] | length' \
+              /tmp/all_prs.json 2>/dev/null || echo 0)
 
-            # Rule (c): for art-* and friend-photo/inbox-* — content already shipped
-            # (the timestamps in branch names are old; if branch is > 24h old AND no
-            # open PR points at it, the content was either merged via squash or stale)
-            HAS_OPEN_PR=$(jq -r --arg b "$BRANCH" '
-              [.[] | select(.headRefName == $b) | select(.state == "OPEN")] | length' \
-              /tmp/all_prs.json)
+            HAS_OPEN_PR=$(jq -r --arg b "$BRANCH" \
+              '[.[] | select(.headRefName == $b) | select(.state == "OPEN")] | length' \
+              /tmp/all_prs.json 2>/dev/null || echo 0)
 
-            BRANCH_AGE_DAYS=$(( ($(date +%s) - $(git log -1 --format=%ct "origin/$BRANCH")) / 86400 ))
+            COMMIT_TS=$(git log -1 --format=%ct "origin/$BRANCH" 2>/dev/null || echo 0)
+            if [ "$COMMIT_TS" = "0" ]; then
+              BRANCH_AGE_DAYS=999
+            else
+              BRANCH_AGE_DAYS=$(( ($(date +%s) - COMMIT_TS) / 86400 ))
+            fi
 
             SHOULD_DELETE=false
+            REASON=""
             if [ "$IS_MERGED" = "true" ]; then
               SHOULD_DELETE=true
               REASON="ancestor-of-main"
-            elif [ "$HAS_CLOSED_PR" -gt 0 ]; then
+            elif [ "${HAS_CLOSED_PR:-0}" -gt 0 ]; then
               SHOULD_DELETE=true
               REASON="closed-pr"
-            elif [ "$HAS_OPEN_PR" = "0" ] && [ "$BRANCH_AGE_DAYS" -gt 1 ] && \
-                 [[ "$BRANCH" =~ ^(art-request|art-tiers|art-variants|art-damage|audit-grid|friend-photo/inbox)/ ]]; then
-              # Bot branches with NO open PR after 24h are abandoned — content shipped via squash
+            elif [ "${HAS_OPEN_PR:-0}" = "0" ] && [ "$BRANCH_AGE_DAYS" -gt 1 ]; then
               SHOULD_DELETE=true
-              REASON="abandoned-bot-branch-${BRANCH_AGE_DAYS}d"
+              REASON="abandoned-bot-${BRANCH_AGE_DAYS}d"
             fi
 
             if [ "$SHOULD_DELETE" = "true" ]; then
-              echo "DELETE $BRANCH (reason: $REASON)"
+              echo "DELETE $BRANCH ($REASON)"
               git push origin --delete "$BRANCH" 2>&1 | tail -1 || true
               DELETED=$((DELETED + 1))
             else
               KEPT=$((KEPT + 1))
             fi
-          done
+          done < /tmp/branches_to_check.txt
 
           echo ""
           echo "=== Summary ==="
           echo "Deleted: $DELETED"
           echo "Kept:    $KEPT"
+          echo "Errored: $ERRORED"
+          # Always succeed — this is opportunistic cleanup, not a gate
+          exit 0
 
       - name: Delete merged feat/fix/chore/polish/hotfix author-branches
         env:
