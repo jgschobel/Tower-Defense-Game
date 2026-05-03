@@ -291,7 +291,7 @@ User review after playing on laptop. Massive rebalance + audio overhaul
 requested. Loop picks these up one-by-one; each is a PR-sized slice.
 
 ### Pacing + economy (P0)
-20. **30 waves per level** (currently 10). Extend every `resources/level_data/level_N.tres` wave array from 10 → 30. Gradient of difficulty: waves 1-10 tutorial/early, 11-20 mid-game, 21-30 escalation → boss(es) in 30. Keep existing 10 as a skeleton and interpolate. Player should feel progression arc, not 10-wave sprint.
+20. ✅ **30 waves per level** — all 10 level_N.tres files extended from 10 → 30 waves. W1-10 original, W11-20 introduce new enemy types per level, W21-29 escalating combos, W30 boss finale (L1=boss×1, L2=boss×1, L3=boss×2, L4=boss×3, L5=boss×4, L6=boss×4, L7=boss×5, L8=boss×4, L9=boss×5, L10=boss×6). ✓ 2026-05-03.
 21. ✅ **Starting gold: tighter early budget** — L1=120, L2=130, L3=140, L4=150, L5=160, L6=170, L7=180, L8=200, L9=200, L10=220. ✓ 2026-05-02.
 22. ✅ **Upgrade cost curve steeper** — Lemurius path_a [210,455,1140] path_b [245,560,1260]; Amösius tier2+3 bumped ~15%. Other towers already in target ranges. ✓ 2026-05-02.
 23. **Upgrade visual delta — MUCH bigger** — user says "man sieht Unterschiede der Upgrades kaum". Today tier pips are small dots + subtle tint. Need: per-tier sprite scale change (tier 1 = +8%, tier 2 = +16%, tier 3 = +25%), per-tier glow ring (pulse, brighter per tier), per-tier projectile size + trail length, path-specific crown/hat badge (one of 3 hats per path when tier≥1). Tier should READ from across the map, not require squinting.

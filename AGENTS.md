@@ -37,7 +37,7 @@ Conductor delegates to specialized sub-agents only when tasks can genuinely run 
 - NOT wiring art into game code (Conductor does that)
 
 **Example prompt:**
-> "Generate 3 enemy sprites using Stability AI. API key at C:/Users/josef/.api_keys/keys.json. Save to assets/textures/enemies/. Prompts: [list]. Then remove backgrounds with rembg isnet-general-use model."
+> "Generate 3 enemy sprites using Stability AI (key in STABILITY_API_KEY env var). Save to assets/textures/enemies/. Prompts: [list]. Then remove backgrounds with rembg isnet-general-use model."
 
 **Why this works as agent:** Image generation takes 10-30 seconds per image. While Art Factory waits for API responses, Conductor can write code.
 
