@@ -44,11 +44,16 @@ func _populate_levels() -> void:
 	for child in level_grid.get_children():
 		child.queue_free()
 
-	for i in range(1, GameManager.MAX_LEVELS + 1):
-		var btn := Button.new()
-		btn.custom_minimum_size = Vector2(0, 90)
-		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	# Per-level accent colours (match campaign theming)
+	var level_colors := {
+		1: Color(0.95, 0.80, 0.30), 2: Color(0.45, 0.75, 1.00),
+		3: Color(1.00, 0.65, 0.25), 4: Color(0.75, 0.50, 1.00),
+		5: Color(1.00, 0.30, 0.25), 6: Color(0.40, 0.65, 0.55),
+		7: Color(0.40, 0.85, 1.00), 8: Color(0.35, 0.60, 1.00),
+		9: Color(0.65, 0.40, 1.00), 10: Color(1.00, 0.40, 0.35),
+	}
 
+	for i in range(1, GameManager.MAX_LEVELS + 1):
 		var unlocked := i <= GameManager.levels_unlocked
 		var stars: int = 0
 		if GameManager.level_stars.has(i):
@@ -56,20 +61,99 @@ func _populate_levels() -> void:
 		elif GameManager.level_stars.has(str(i)):
 			stars = GameManager.level_stars.get(str(i), 0)
 
-		var level_name := _get_level_name(i)
-		btn.text = "%d. %s\n%s" % [i, level_name, _stars_text(stars)]
+		var accent: Color = level_colors.get(i, Color.WHITE)
+		if not unlocked:
+			accent = Color(0.45, 0.45, 0.50)
+
+		# VBoxContainer wrapper: circle button on top, name label below
+		var vbox := VBoxContainer.new()
+		vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+		vbox.add_theme_constant_override("separation", 4)
+		vbox.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+
+		# Circular button — uses StyleBoxFlat for all visual states
+		var btn := Button.new()
+		btn.custom_minimum_size = Vector2(90, 90)
+		btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 		btn.disabled = not unlocked
-		btn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		btn.flat = true
+
+		var sb_normal := StyleBoxFlat.new()
+		sb_normal.bg_color = accent.darkened(0.55)
+		sb_normal.border_color = accent
+		sb_normal.set_border_width_all(3)
+		sb_normal.set_corner_radius_all(45)
+		btn.add_theme_stylebox_override("normal", sb_normal)
+
+		var sb_hover := StyleBoxFlat.new()
+		sb_hover.bg_color = accent.darkened(0.30)
+		sb_hover.border_color = accent.lightened(0.25)
+		sb_hover.set_border_width_all(4)
+		sb_hover.set_corner_radius_all(45)
+		btn.add_theme_stylebox_override("hover", sb_hover)
+
+		var sb_pressed := StyleBoxFlat.new()
+		sb_pressed.bg_color = accent.darkened(0.15)
+		sb_pressed.border_color = accent.lightened(0.4)
+		sb_pressed.set_border_width_all(5)
+		sb_pressed.set_corner_radius_all(45)
+		btn.add_theme_stylebox_override("pressed", sb_pressed)
+
+		var sb_disabled := StyleBoxFlat.new()
+		sb_disabled.bg_color = Color(0.12, 0.12, 0.15, 0.85)
+		sb_disabled.border_color = Color(0.38, 0.38, 0.42)
+		sb_disabled.set_border_width_all(2)
+		sb_disabled.set_corner_radius_all(45)
+		btn.add_theme_stylebox_override("disabled", sb_disabled)
+
+		# Level number — large, centred inside the circle
+		var num_lbl := Label.new()
+		num_lbl.text = str(i) if unlocked else "🔒"
+		num_lbl.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		num_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		num_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		num_lbl.add_theme_font_size_override("font_size", 32)
+		num_lbl.add_theme_color_override("font_color", accent.lightened(0.55) if unlocked else Color(0.45, 0.45, 0.50))
+		num_lbl.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.9))
+		num_lbl.add_theme_constant_override("outline_size", 4)
+		num_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		btn.add_child(num_lbl)
+
+		# Stars — smaller text in the lower third of the circle
+		var star_lbl := Label.new()
+		star_lbl.text = _stars_text(stars) if unlocked else ""
+		star_lbl.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
+		star_lbl.offset_top = -20
+		star_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		star_lbl.add_theme_font_size_override("font_size", 12)
+		star_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2))
+		star_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		btn.add_child(star_lbl)
 
 		if unlocked:
 			btn.pressed.connect(_on_level_pressed.bind(i))
-			# Color hint per level theme
-			var level_colors := {1: Color(0.9, 0.85, 0.7), 2: Color(0.7, 0.85, 1.0), 3: Color(0.95, 0.8, 0.6), 4: Color(0.8, 0.65, 0.85), 5: Color(1.0, 0.5, 0.4), 6: Color(0.5, 0.5, 0.6), 7: Color(0.55, 0.8, 0.95), 8: Color(0.6, 0.75, 1.0), 9: Color(0.75, 0.55, 1.0), 10: Color(1.0, 0.45, 0.4)}
-			btn.modulate = level_colors.get(i, Color.WHITE)
-		else:
-			btn.modulate = Color(0.4, 0.4, 0.4, 0.6)
+			# Gentle idle brightness pulse so nodes look "alive" on the map
+			var glow_tw := btn.create_tween().set_loops()
+			glow_tw.tween_property(btn, "modulate", Color(1.15, 1.10, 1.05), 1.3).set_trans(Tween.TRANS_SINE)
+			glow_tw.tween_property(btn, "modulate", Color.WHITE, 1.3).set_trans(Tween.TRANS_SINE)
 
-		level_grid.add_child(btn)
+		vbox.add_child(btn)
+
+		# Level name label beneath the circle
+		var name_lbl := Label.new()
+		name_lbl.text = _get_level_name(i) if unlocked else "???"
+		name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		name_lbl.add_theme_font_size_override("font_size", 11)
+		name_lbl.add_theme_color_override("font_color", accent.lightened(0.3) if unlocked else Color(0.40, 0.40, 0.45))
+		name_lbl.add_theme_color_override("font_outline_color", Color.BLACK)
+		name_lbl.add_theme_constant_override("outline_size", 2)
+		name_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		name_lbl.custom_minimum_size = Vector2(100, 0)
+		name_lbl.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		name_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		vbox.add_child(name_lbl)
+
+		level_grid.add_child(vbox)
 
 
 func _get_level_name(level_id: int) -> String:

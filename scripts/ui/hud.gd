@@ -1130,30 +1130,49 @@ func _update_wave_progress_bar(current: int, total: int) -> void:
 
 
 func _show_wave_announcement(current: int, _total: int) -> void:
-	var announce := Label.new()
-	announce.text = "— WELLE %d —" % current
+	# Anchored to top-center so it never covers the battlefield (fixes #289).
+	# A small pill-shaped toast instead of the previous 700×80 center banner.
 	var is_danger: bool = current >= 7
-	announce.add_theme_font_size_override("font_size", 54 if not is_danger else 62)
 	var txt_color := Color(1, 0.3, 0.2) if is_danger else Color(1, 0.92, 0.2)
-	announce.add_theme_color_override("font_color", txt_color)
-	announce.add_theme_color_override("font_outline_color", Color(0.15, 0.05, 0))
-	announce.add_theme_constant_override("outline_size", 6)
-	announce.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	announce.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	announce.custom_minimum_size = Vector2(700, 80)
-	# Anchor top-center so the banner slides across near the HUD bar,
-	# not across the battlefield center (issue #289).
-	announce.set_anchors_preset(Control.PRESET_CENTER_TOP)
-	announce.pivot_offset = Vector2(350, 40)
-	add_child(announce)
-	# Slide in from the right, hold, then fade out — D27
-	announce.position.x = 1400.0
-	announce.position.y = 68.0
-	var tw := announce.create_tween()
-	tw.tween_property(announce, "position:x", -350.0, 0.22).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	tw.tween_property(announce, "position:x", -350.0, 0.55)  # hold
-	tw.tween_property(announce, "modulate:a", 0.0, 0.35)
-	tw.tween_callback(announce.queue_free)
+	var container := PanelContainer.new()
+	container.name = "WaveAnnounce"
+	container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.05, 0.03, 0.0, 0.78)
+	sb.border_color = txt_color
+	sb.set_border_width_all(2)
+	sb.set_corner_radius_all(20)
+	container.add_theme_stylebox_override("panel", sb)
+
+	var lbl := Label.new()
+	lbl.text = "WELLE %d" % current
+	lbl.add_theme_font_size_override("font_size", 26 if not is_danger else 30)
+	lbl.add_theme_color_override("font_color", txt_color)
+	lbl.add_theme_color_override("font_outline_color", Color(0.1, 0.04, 0))
+	lbl.add_theme_constant_override("outline_size", 4)
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	container.add_child(lbl)
+
+	# Pin to top-center, just below the wave progress bar (~y=65)
+	container.anchor_left = 0.5
+	container.anchor_right = 0.5
+	container.anchor_top = 0.0
+	container.anchor_bottom = 0.0
+	container.offset_left = -80
+	container.offset_right = 80
+	container.offset_top = 68
+	container.offset_bottom = 100
+	container.modulate.a = 0.0
+	add_child(container)
+
+	# Fade in, hold, fade out — stays at top, never crosses the play field
+	var tw := container.create_tween()
+	tw.tween_property(container, "modulate:a", 1.0, 0.15)
+	tw.tween_interval(0.9)
+	tw.tween_property(container, "modulate:a", 0.0, 0.35)
+	tw.tween_callback(container.queue_free)
 
 
 func show_next_wave_button(visible_flag: bool) -> void:
