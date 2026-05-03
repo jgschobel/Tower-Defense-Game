@@ -35,8 +35,9 @@ UX / FEEL — independent of the gameplay-mechanic fixes below.
   ✓ Implemented 2026-05-02: EffectPlayer.spawn_muzzle_flash now takes a `projectile_style` and varies particle count/spread/velocity per style. base_tower passes data.projectile_style.
 - [ ] **D7** Tier-3 unique death-cam effect on boss kill by tier-3
   tower — 0.4s freeze + zoom + tower name bubble.
-- [ ] **D8** Crown / hat overlay Sprite2D on tower head at tier ≥ 1,
+- [x] **D8** Crown / hat overlay Sprite2D on tower head at tier ≥ 1,
   synced with _apply_tier_scale. 8 hats total (2 per path per tower).
+  ✓ Implemented 2026-05-03: procedural crown (path A, 3/4/5 spikes + gem at tier≥2) and badge/sash (path B, 1/2/3 stars) drawn via inline GDScript in _hat_script(); pop-in bounce animation on upgrade; auto-cleans on tower reset.
 
 ### Backgrounds + environment (D9-D15)
 - [ ] **D9** Replace L1 background with a bespoke Imagen 4 paint:
