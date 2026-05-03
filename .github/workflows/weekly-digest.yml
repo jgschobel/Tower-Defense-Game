@@ -148,6 +148,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          gh label create "digest" --color "0075ca" --description "Weekly digest issue" --force || true
           TITLE="[digest] Week ending $(date -u +%Y-%m-%d)"
           gh issue create \
             --title "$TITLE" \
@@ -216,7 +217,7 @@ jobs:
             -d @email_body.json \
             -o resend_response.json
           echo "Resend response:"; cat resend_response.json
-          Resend returns { "id": "..." } on success
+          # Resend returns {"id":"..."} on success
           if grep -q '"id"' resend_response.json; then
             echo "✓ Weekly digest email sent to $USER_EMAIL"
           else

@@ -102,10 +102,9 @@ jobs:
           HOURS_SINCE: ${{ steps.activity.outputs.hours_since_deploy }}
           OPEN_FAILS: ${{ steps.activity.outputs.open_ci_failures }}
         run: |
-          # Use env vars + arithmetic compound `(( ))` so shellcheck SC2170
-          # is happy — direct ${{ }} interpolation in [ -gt ] confused
-          # shellcheck because the substituted value is a string at lint
-          # time even though it's numeric at runtime.
+          # Use env vars + arithmetic compound (( )) so SC2170 is happy.
+          # Direct GitHub-expression interpolation in [ -gt ] confuses linters
+          # because the substituted value is a string at lint time.
           set -e
           unhealthy=0
           reasons=""
