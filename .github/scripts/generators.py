@@ -24,12 +24,18 @@ import requests
 
 
 STABILITY_URL = "https://api.stability.ai/v2beta/stable-image/generate/sd3"
-# Try multiple Gemini image model names — the API has renamed this several
-# times between preview and GA. First one that responds 200 wins.
+# Gemini img2img model candidates (tried in order for img2img transforms).
 GEMINI_MODELS = [
     "gemini-2.5-flash-image",          # production GA (expected post-2025)
     "gemini-2.5-flash-image-preview",  # preview name used earlier
     "gemini-2.0-flash-exp-image-generation",  # older fallback
+]
+# Gemini text2img via generateContent (different endpoint from Imagen 4 predict).
+# These work with a standard GEMINI_API_KEY and are tried before Imagen 4.
+GEMINI_TEXT2IMG_MODELS = [
+    "gemini-2.0-flash-exp-image-generation",
+    "gemini-2.5-flash-image-preview",
+    "gemini-2.5-flash-image",
 ]
 IMAGEN_MODEL = "imagen-4.0-generate-001"
 IMAGEN_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{IMAGEN_MODEL}:predict"
@@ -52,8 +58,6 @@ def _load_style_sheet() -> str:
     if not path.exists():
         return ""
     text = path.read_text()
-    # Extract just the "Universal Style Tokens" section (under that header
-    # until the next ## header)
     in_section = False
     out_lines: list[str] = []
     for line in text.splitlines():
@@ -91,7 +95,6 @@ def call_gemini_img2img(photo: pathlib.Path, prompt: str, out: pathlib.Path) -> 
         }],
         "generationConfig": {"responseModalities": ["IMAGE", "TEXT"]},
     }
-    # Try each candidate model name until one returns a usable response
     last_error = ""
     for model in GEMINI_MODELS:
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
@@ -213,13 +216,65 @@ def call_imagen4_text2img(prompt: str, out: pathlib.Path, aspect_ratio: str = "1
     return False
 
 
+def call_gemini_text2img(prompt: str, out: pathlib.Path, aspect_ratio: str = "1:1") -> bool:
+    """Text-to-image via Gemini generateContent endpoint (works with standard
+    GEMINI_API_KEY, unlike Imagen 4 which may require billing/special access).
+    Tries GEMINI_TEXT2IMG_MODELS in order."""
+    api_key = os.environ.get("GEMINI_API_KEY")
+    if not api_key:
+        return False
+    style_sheet = _load_style_sheet()
+    body = {
+        "contents": [{"parts": [{"text": prompt + style_sheet}]}],
+        "generationConfig": {"responseModalities": ["IMAGE", "TEXT"]},
+    }
+    last_error = ""
+    for model in GEMINI_TEXT2IMG_MODELS:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+        _log(f"gemini text2img {out.name} via {model}: {prompt[:80]}...")
+        try:
+            r = requests.post(url, json=body, headers={"Content-Type": "application/json"}, timeout=180)
+        except requests.RequestException as e:
+            last_error = f"network: {e}"
+            _log(f"gemini {model} network error: {e}")
+            continue
+        if r.status_code in (400, 404):
+            last_error = f"{r.status_code}: {r.text[:200]}"
+            _log(f"gemini {model} returned {r.status_code} — trying next model")
+            continue
+        if r.status_code != 200:
+            last_error = f"{r.status_code}: {r.text[:300]}"
+            _log(f"gemini {model} unexpected {r.status_code}: {r.text[:200]}")
+            continue
+        try:
+            data = r.json()
+            for part in data["candidates"][0]["content"]["parts"]:
+                inline = part.get("inlineData") or part.get("inline_data")
+                if inline:
+                    png_bytes = base64.b64decode(inline["data"])
+                    out.write_bytes(png_bytes)
+                    _log(f"gemini text2img {model} wrote {out} ({len(png_bytes)} bytes)")
+                    return True
+            last_error = "no inlineData in 200 response"
+            _log(f"gemini {model} 200 but no image: {json.dumps(data)[:300]}")
+        except Exception as e:
+            last_error = f"parse: {e}"
+            _log(f"gemini {model} parse error: {e}")
+    _log(f"all gemini text2img models failed — last: {last_error}")
+    return False
+
+
 def generate_background(prompt: str, out: pathlib.Path, aspect_ratio: str = "16:9") -> bool:
-    """Text-to-image for non-friend art. Prefers Imagen 4, falls back to
-    Stability (text-to-image mode)."""
+    """Text-to-image for non-friend art. Tries Gemini Flash, then Imagen 4,
+    then Stability SD3."""
     if os.environ.get("GEMINI_API_KEY"):
+        # Gemini Flash generateContent endpoint (standard API key, more accessible)
+        if call_gemini_text2img(prompt, out, aspect_ratio):
+            return True
+        _log("gemini text2img failed — trying imagen4")
         if call_imagen4_text2img(prompt, out, aspect_ratio):
             return True
-        _log("imagen4 failed — trying stability text2img")
+        _log("imagen4 also failed — trying stability text2img")
     # Stability SD3 text-to-image fallback
     if os.environ.get("STABILITY_API_KEY"):
         api_key = os.environ["STABILITY_API_KEY"]
