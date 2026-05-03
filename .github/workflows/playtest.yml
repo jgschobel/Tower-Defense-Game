@@ -78,8 +78,10 @@ jobs:
       - name: Import project resources
         run: |
           set +e
+          # 360s/120s for first/second import pass — cold .ctex generation
+          # for 206+ assets exceeds the previous 120/60 budget.
+          xvfb-run -a -s "-screen 0 1280x720x24" timeout 360 godot --headless --path . --import
           xvfb-run -a -s "-screen 0 1280x720x24" timeout 120 godot --headless --path . --import
-          xvfb-run -a -s "-screen 0 1280x720x24" timeout 60  godot --headless --path . --import
           exit 0
 
       - name: Run playtest bot (renders to Xvfb)
