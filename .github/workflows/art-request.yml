@@ -1,12 +1,12 @@
 name: Art Request Generator
 
 # Handles "art-request" labeled issues for NON-FRIEND art: backgrounds,
-# enemies, UI frames, props. Uses Imagen 4 text-to-image (Stability
-# fallback).
+# enemies, UI frames, props. Uses Gemini Flash text-to-image (Imagen 4
+# and Stability as fallbacks).
 
 on:
   issues:
-    types: [opened, labeled]
+    types: [labeled]  # NOT 'opened' — that fires for every issue and creates noise
   issue_comment:
     types: [created]
 
@@ -64,7 +64,7 @@ jobs:
           git push -u origin "$BRANCH"
           gh pr create \
             --title "art: ${SLUG}" \
-            --body "Generated via Imagen 4 from issue #$ISSUE_NUMBER.\n\nAsset: \`$ASSET\`" \
+            --body "Generated via Gemini from issue #$ISSUE_NUMBER.\n\nAsset: \`$ASSET\`" \
             --base main \
             --head "$BRANCH"
 
