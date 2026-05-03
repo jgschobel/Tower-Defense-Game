@@ -133,7 +133,7 @@ assets/
 ```
 
 ## Architecture
-- **Autoloads** (9, see `project.godot`): `GameManager` (state/save), `CurrencyManager` (gold), `MusicManager`, `SfxManager`, `AutoPlaytest`, `WaveSimulator`, `ProjectilePool`, `EnemyPool`, `EffectPlayer` (combat vfx)
+- **Autoloads** (11, see `project.godot`): `GameManager` (state/save), `CurrencyManager` (gold), `AminosManager` (meta-currency), `ComboTracker`, `MusicManager`, `SfxManager`, `AutoPlaytest`, `WaveSimulator`, `ProjectilePool`, `EnemyPool`, `EffectPlayer` (combat vfx)
 - **Data-driven design**: Tower types, enemy types, and levels are defined as Godot `Resource` (.tres) files — add new content by creating new .tres files, no code changes needed
 - **Scene composition**: Base scenes (base_tower.tscn, base_enemy.tscn) are reused with different data resources attached
 - **Signal-based communication**: Systems communicate via signals, not direct references
