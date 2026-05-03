@@ -72,11 +72,28 @@ func _ready() -> void:
 		bg.texture = load(bg_path)
 
 	var lemurius_path := "res://assets/textures/towers/lemurius.png"
-	var amosius_path := "res://assets/textures/towers/amosius.png"
 	if left_portrait and ResourceLoader.exists(lemurius_path):
 		left_portrait.texture = load(lemurius_path)
-	if right_portrait and ResourceLoader.exists(amosius_path):
-		right_portrait.texture = load(amosius_path)
+	# Right portrait: show the level's main enemy (VS-style matchup)
+	var enemy_textures: Dictionary = {
+		1: "res://assets/textures/enemies/brotli_clean.png",
+		2: "res://assets/textures/enemies/toblerone_clean.png",
+		3: "res://assets/textures/enemies/cervelat_clean.png",
+		4: "res://assets/textures/enemies/rivella_clean.png",
+		5: "res://assets/textures/enemies/mteufel_clean.png",
+		6: "res://assets/textures/enemies/fondue_clean.png",
+		7: "res://assets/textures/enemies/mteufel_clean.png",
+		8: "res://assets/textures/enemies/cervelat_clean.png",
+		9: "res://assets/textures/enemies/rivella_clean.png",
+		10: "res://assets/textures/enemies/mteufel_clean.png",
+	}
+	var enemy_path: String = enemy_textures.get(_level_id, "res://assets/textures/enemies/brotli_clean.png")
+	if right_portrait and ResourceLoader.exists(enemy_path):
+		right_portrait.texture = load(enemy_path)
+	elif right_portrait:
+		var fallback := "res://assets/textures/enemies/brotli_clean.png"
+		if ResourceLoader.exists(fallback):
+			right_portrait.texture = load(fallback)
 
 	if title_label:
 		title_label.text = intro.title

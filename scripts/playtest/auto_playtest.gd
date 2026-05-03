@@ -83,6 +83,10 @@ func _run_healthy_level(level_id: int) -> void:
 
 	var game_root := get_tree().current_scene
 	var placements := _placements_for_level(level_id)
+	# Give the bot enough gold to place the full comp — the scenario tests
+	# gameplay with a sensible layout, not budget management.
+	var saved_gold: int = CurrencyManager.gold
+	CurrencyManager.gold = 2000
 	for entry in placements:
 		var data_path := "res://resources/tower_data/%s.tres" % entry.id
 		if ResourceLoader.exists(data_path):
@@ -90,6 +94,7 @@ func _run_healthy_level(level_id: int) -> void:
 			if CurrencyManager.can_afford(td.buy_cost):
 				_instantiate_tower(game_root, td, entry.pos)
 				await get_tree().create_timer(0.15).timeout
+	CurrencyManager.gold = saved_gold
 
 	await get_tree().create_timer(0.4).timeout
 	_snapshot("%s_placed" % _scenario_name)
