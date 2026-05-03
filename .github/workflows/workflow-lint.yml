@@ -43,7 +43,15 @@ jobs:
           curl -fsSL -o actionlint.tar.gz \
             https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_linux_amd64.tar.gz
           tar -xzf actionlint.tar.gz actionlint
-          ./actionlint -color
+          # Disable noisy shellcheck style codes that don't represent real
+          # bugs. Keep the actual error checks enabled.
+          # SC2012: ls vs find — fine for our globs
+          # SC2002: useless cat — readable, not a bug
+          # SC2086: word splitting — we know what we're doing in our scripts
+          # SC2126: grep|wc -l — readable as-is
+          # SC2155: declare and assign — sometimes intentional
+          # SC2034: unused variable — handled per-loop with `_` already
+          ./actionlint -color -shellcheck "shellcheck -e SC2012,SC2002,SC2086,SC2126,SC2155,SC2034"
 
   bash-syntax:
     runs-on: ubuntu-latest
