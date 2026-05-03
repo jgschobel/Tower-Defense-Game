@@ -102,4 +102,4 @@ by a daily cron pruner.
 - 2026-05-03T13:50:35Z · loop-health · ok · runs8h=3 · deploys24h=9
 - 2026-05-03T15:09:12Z · deploy-web · ok · run=25282664960 · sha=16f9eda
 - 2026-05-03T15:11:33Z · deploy-web · ok · run=25282718703 · sha=dea55e1
-- 2026-05-03T15:22:37Z · deploy-web · ok · run=25282979667 · sha=807c8bd
+- 2026-05-03T15:23:29Z · playtest · ok · run=25282959995 · shots=111 · key=7
