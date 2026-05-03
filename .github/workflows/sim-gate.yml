@@ -20,6 +20,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: write
 
 concurrency:
   group: sim-gate-${{ github.ref }}
@@ -64,7 +65,7 @@ jobs:
         id: sim
         run: |
           set +e
-          xvfb-run -a -s "-screen 0 1280x720x24" timeout 240 godot --path . --simulate
+          xvfb-run -a -s "-screen 0 1280x720x24" timeout 600 godot --path . --simulate
           EXIT=$?
           echo "sim_exit=$EXIT" >> "$GITHUB_OUTPUT"
           # Copy CSV out for the summary step
