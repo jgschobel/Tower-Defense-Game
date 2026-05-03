@@ -59,7 +59,8 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           BRANCH="art-request/${SLUG}-$(date +%s)"
           git checkout -b "$BRANCH"
-          git add "$ASSET"
+          python3 .github/scripts/make_import_files.py "$(dirname "$ASSET")" || true
+          git add "$ASSET" "${ASSET}.import" 2>/dev/null || git add "$ASSET"
           git commit -m "art: add ${SLUG} (closes #$ISSUE_NUMBER)"
           git push -u origin "$BRANCH"
           PR_URL=$(gh pr create \

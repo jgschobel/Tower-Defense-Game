@@ -113,6 +113,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -b "$BRANCH"
+          python3 .github/scripts/make_import_files.py "assets/textures/variants" || true
           git add assets/textures/variants/
           STAGED=$(git diff --cached --name-only | wc -l)
           if [ "$STAGED" -eq 0 ]; then
