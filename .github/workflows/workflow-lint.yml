@@ -70,7 +70,7 @@ jobs:
           # `dollar-curly-curly` in the YAML source because GitHub Actions
           # tries to parse it as an expression even inside a comment.
           DOLLAR = chr(0x24)
-          EXPR_RE = re.compile(DOLLAR + r'\{\{\s*[^}]+\s*\}\}')
+          EXPR_RE = re.compile(re.escape(DOLLAR) + r'\{\{\s*[^}]+\s*\}\}')
           failed_blocks = []
           total = 0
           for f in sorted(glob.glob('.github/workflows/*.yml')):

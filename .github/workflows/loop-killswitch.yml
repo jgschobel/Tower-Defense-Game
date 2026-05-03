@@ -1,0 +1,129 @@
+name: Loop Killswitch
+
+# Smart watchdog for the autonomous-dev loop. Monitors actual outcomes
+# (merged PRs by claude[bot]) instead of workflow exit codes — because
+# the post-step `tsconfig.json directory mismatch` bug in
+# claude-code-action@v1 produces false-positive failures even when work
+# is shipping.
+#
+# Rules:
+# - If claude[bot] hasn't merged any PR in 24h AND has stuck open PRs > 5
+#   → loop is genuinely broken → create .github/autonomous/PAUSE +
+#     file a `loop-broken` issue
+# - If a PAUSE file exists AND claude[bot] merged a PR in the last 6h
+#   → recovery confirmed → remove PAUSE
+# - Otherwise → no-op
+#
+# Runs every 2h, slightly offset from autonomous-dev's 4h cadence.
+
+on:
+  schedule:
+    - cron: '15 */2 * * *'  # Every 2h at :15
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/loop-killswitch.yml'
+
+permissions:
+  contents: write
+  pull-requests: read
+  issues: write
+
+concurrency:
+  group: loop-killswitch
+  cancel-in-progress: true
+
+jobs:
+  watchdog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check loop health by actual merges
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set +e
+          # Recent merges by claude[bot] (last 24h)
+          RECENT_MERGES=$(gh pr list --state merged --limit 50 \
+            --json number,mergedAt,author --jq \
+            '[.[] | select(.author.login // "" | contains("claude")) |
+                  select(.mergedAt | fromdateiso8601 > (now - 86400))] | length' \
+            2>/dev/null || echo 0)
+          # Recovery check (last 6h)
+          RECOVERY_MERGES=$(gh pr list --state merged --limit 50 \
+            --json number,mergedAt,author --jq \
+            '[.[] | select(.author.login // "" | contains("claude")) |
+                  select(.mergedAt | fromdateiso8601 > (now - 21600))] | length' \
+            2>/dev/null || echo 0)
+          # Stuck open PRs by claude[bot] (created > 3 days ago)
+          STUCK=$(gh pr list --state open --limit 50 \
+            --json number,createdAt,author --jq \
+            '[.[] | select(.author.login // "" | contains("claude")) |
+                  select(.createdAt | fromdateiso8601 < (now - 86400 * 3))] | length' \
+            2>/dev/null || echo 0)
+
+          PAUSE_EXISTS=false
+          if [ -f ".github/autonomous/PAUSE" ]; then
+            PAUSE_EXISTS=true
+          fi
+
+          {
+            echo "recent_merges=$RECENT_MERGES"
+            echo "recovery_merges=$RECOVERY_MERGES"
+            echo "stuck=$STUCK"
+            echo "pause_exists=$PAUSE_EXISTS"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "Recent merges (24h): $RECENT_MERGES"
+          echo "Recovery merges (6h): $RECOVERY_MERGES"
+          echo "Stuck PRs (>3d): $STUCK"
+          echo "PAUSE exists: $PAUSE_EXISTS"
+
+      - name: Pause if loop is broken
+        if: steps.check.outputs.recent_merges == '0' && steps.check.outputs.stuck > '5' && steps.check.outputs.pause_exists != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          mkdir -p .github/autonomous
+          touch .github/autonomous/PAUSE
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/autonomous/PAUSE
+          git commit -m "chore(loop): PAUSE — killswitch fired (no merges in 24h, ${{ steps.check.outputs.stuck }} stuck PRs)"
+          for i in 1 2 3; do
+            git push origin main && break
+            sleep 5
+            git pull --rebase origin main || true
+          done
+          gh issue create \
+            --title "[loop-broken] Killswitch fired — autonomous loop paused" \
+            --body "The autonomous-dev loop has not merged any PR in 24h while ${{ steps.check.outputs.stuck }} PRs sit stuck (>3 days old). \`.github/autonomous/PAUSE\` has been created — autonomous-dev will skip its next cron run.\n\nTo recover:\n1. Investigate why PRs aren't merging (CI failures? Conflicts?)\n2. Either merge/close the stuck PRs or fix the underlying issue\n3. Delete \`.github/autonomous/PAUSE\` (or wait for the next claude[bot] merge — this watchdog auto-recovers)" \
+            --label "loop-broken,autonomous"
+
+      - name: Auto-recover if PAUSE exists but recent merges happened
+        if: steps.check.outputs.pause_exists == 'true' && steps.check.outputs.recovery_merges > '0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          rm -f .github/autonomous/PAUSE
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -u .github/autonomous/PAUSE
+          git commit -m "chore(loop): RESUME — recovery confirmed (${{ steps.check.outputs.recovery_merges }} merges in 6h)"
+          for i in 1 2 3; do
+            git push origin main && break
+            sleep 5
+            git pull --rebase origin main || true
+          done
+          # Close any open loop-broken issue
+          gh issue list --state open --label loop-broken --limit 10 \
+            --json number --jq '.[].number' | while read -r N; do
+            gh issue close "$N" --comment "Auto-recovered: ${{ steps.check.outputs.recovery_merges }} merges in last 6h." || true
+          done
