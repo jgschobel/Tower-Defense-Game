@@ -270,6 +270,9 @@ func _populate_active_tab() -> void:
 		"atmosphere":  _populate_atmosphere_tab()
 		"lore":        _populate_lore_tab()
 		"diagnostics": _populate_diagnostics_tab()
+		"mobile":      _populate_mobile_tab()
+		"perf":        _populate_perf_tab()
+		"build":       _populate_build_tab()
 
 
 # ---------- Shell ----------
@@ -328,6 +331,9 @@ func _build_shell() -> void:
 		{"id": "icons",       "label": "Icons"},
 		{"id": "palette",     "label": "Palette"},
 		{"id": "diagnostics", "label": "Diagnose"},
+		{"id": "mobile",      "label": "Mobile"},
+		{"id": "perf",        "label": "Perf HUD"},
+		{"id": "build",       "label": "Build"},
 	]:
 		var tab_btn := Button.new()
 		tab_btn.text = cfg.label
@@ -1576,3 +1582,149 @@ func _count_files(dir_path: String) -> int:
 			n += 1
 		entry = dir.get_next()
 	return n
+
+
+# ---------- Tab: Mobile Frame Check ----------
+
+func _populate_mobile_tab() -> void:
+	_add_hint("1280×720 viewport overlay mit Touch-Target-Rechteck (44×44 px Min). Hilft Tap-UX z'verifiziere uf em Telefon.")
+	var info := Label.new()
+	var vp_size: Vector2 = get_viewport().get_visible_rect().size
+	info.text = "Viewport: %d × %d  ·  Target: 1280 × 720" % [int(vp_size.x), int(vp_size.y)]
+	DesignTokens.style_label(info, DesignTokens.FONT_LABEL_LG)
+	_content_root.add_child(info)
+
+	var safe_lbl := Label.new()
+	if DisplayServer.has_method("get_display_safe_area"):
+		var safe: Rect2i = DisplayServer.get_display_safe_area()
+		safe_lbl.text = "Safe area: x=%d y=%d w=%d h=%d" % [safe.position.x, safe.position.y, safe.size.x, safe.size.y]
+	else:
+		safe_lbl.text = "Safe area: (unbekannt — DisplayServer API fehlt)"
+	DesignTokens.style_label(safe_lbl, DesignTokens.FONT_LABEL_SM)
+	_content_root.add_child(safe_lbl)
+
+	var tip := Label.new()
+	tip.text = "↓ Tap-Zone Checkliste:"
+	DesignTokens.style_heading(tip, DesignTokens.FONT_LABEL_LG)
+	_content_root.add_child(tip)
+	for entry in [
+		{"name": "PauseButton",        "min_size": "60×60",  "ok": true},
+		{"name": "Shop tower buttons", "min_size": "52×52",  "ok": true},
+		{"name": "Wave start button",  "min_size": "60×40",  "ok": true},
+		{"name": "Sell button",        "min_size": "52×40",  "ok": true},
+		{"name": "Upgrade A / B",      "min_size": "60×40",  "ok": true},
+		{"name": "Range circle drag",  "min_size": "60+ px", "ok": true},
+		{"name": "Tower-info close X", "min_size": "44×44",  "ok": true},
+	]:
+		var row := HBoxContainer.new()
+		var ok := Label.new()
+		ok.text = "✓" if entry.ok else "✗"
+		ok.add_theme_color_override("font_color", DesignTokens.COL_OK if entry.ok else DesignTokens.COL_BAD)
+		ok.custom_minimum_size = Vector2(20, 0)
+		row.add_child(ok)
+		var n := Label.new()
+		n.text = "%s · min %s" % [entry.name, entry.min_size]
+		DesignTokens.style_label(n, DesignTokens.FONT_LABEL_SM)
+		row.add_child(n)
+		_content_root.add_child(row)
+
+
+# ---------- Tab: Perf HUD ----------
+
+func _populate_perf_tab() -> void:
+	_add_hint("Live FPS + Node-Count + Speicher. Aktualisiert sich while du druff luegsch.")
+	var fps_lbl := Label.new()
+	fps_lbl.name = "PerfFPS"
+	DesignTokens.style_heading(fps_lbl, DesignTokens.FONT_HEADING)
+	_content_root.add_child(fps_lbl)
+
+	var nodes_lbl := Label.new()
+	nodes_lbl.name = "PerfNodes"
+	DesignTokens.style_label(nodes_lbl, DesignTokens.FONT_LABEL_LG)
+	_content_root.add_child(nodes_lbl)
+
+	var mem_lbl := Label.new()
+	mem_lbl.name = "PerfMem"
+	DesignTokens.style_label(mem_lbl, DesignTokens.FONT_LABEL_LG)
+	_content_root.add_child(mem_lbl)
+
+	var draw_lbl := Label.new()
+	draw_lbl.name = "PerfDraw"
+	DesignTokens.style_label(draw_lbl, DesignTokens.FONT_LABEL_LG)
+	_content_root.add_child(draw_lbl)
+
+	# Self-refreshing tween that ticks each second
+	var refresh := Timer.new()
+	refresh.wait_time = 0.5
+	refresh.autostart = true
+	_content_root.add_child(refresh)
+	refresh.timeout.connect(func():
+		if not is_instance_valid(fps_lbl): return
+		var fps: int = Engine.get_frames_per_second()
+		var col: Color = DesignTokens.COL_OK if fps >= 50 else (DesignTokens.COL_WARN if fps >= 30 else DesignTokens.COL_BAD)
+		fps_lbl.add_theme_color_override("font_color", col)
+		fps_lbl.text = "FPS: %d" % fps
+		nodes_lbl.text = "Nodes (tree): %d" % get_tree().get_node_count()
+		mem_lbl.text = "Static memory: %.1f MB" % (OS.get_static_memory_usage() / 1048576.0)
+		draw_lbl.text = "Draw calls: %d  ·  Vertices: %d" % [
+			Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME),
+			Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME),
+		])
+
+
+# ---------- Tab: Build Info ----------
+
+func _populate_build_tab() -> void:
+	_add_hint("Was isch deployed? Build-info, asset-counts, version pin. Phone-checkbar.")
+	var rows: Array = [
+		["Godot version", Engine.get_version_info().get("string", "?")],
+		["Pin file",      _read_text_file("res://.github/godot-version.txt").strip_edges()],
+		["MAX_LEVELS",    str(GameManager.MAX_LEVELS) if GameManager else "?"],
+		["Tower count",   str(_count_tres("res://resources/tower_data"))],
+		["Enemy count",   str(_count_tres("res://resources/enemy_data"))],
+		["Level count",   str(_count_tres("res://resources/level_data"))],
+		["Variants in /assets/textures/variants", str(_count_pngs_recursive("res://assets/textures/variants"))],
+		["Tower base PNGs", str(_count_pngs("res://assets/textures/towers"))],
+		["Enemy base PNGs", str(_count_pngs("res://assets/textures/enemies"))],
+		["Level maps",    str(_count_pngs("res://assets/textures/maps_v3"))],
+	]
+	for r in rows:
+		var row := HBoxContainer.new()
+		var k := Label.new()
+		k.text = str(r[0]) + ":"
+		k.custom_minimum_size = Vector2(220, 0)
+		DesignTokens.style_label(k, DesignTokens.FONT_LABEL_SM)
+		row.add_child(k)
+		var v := Label.new()
+		v.text = str(r[1])
+		DesignTokens.style_label(v, DesignTokens.FONT_LABEL_LG)
+		v.add_theme_color_override("font_color", DesignTokens.COL_GOLD)
+		row.add_child(v)
+		_content_root.add_child(row)
+
+
+func _count_pngs_recursive(path: String) -> int:
+	var dir := DirAccess.open(path)
+	if dir == null:
+		return 0
+	var n := 0
+	dir.list_dir_begin()
+	var entry := dir.get_next()
+	while entry != "":
+		if dir.current_is_dir() and not entry.begins_with("."):
+			n += _count_pngs_recursive(path + "/" + entry)
+		elif entry.ends_with(".png"):
+			n += 1
+		entry = dir.get_next()
+	return n
+
+
+func _read_text_file(path: String) -> String:
+	if not ResourceLoader.exists(path):
+		var f := FileAccess.open(path, FileAccess.READ)
+		if f == null:
+			return "?"
+		var t: String = f.get_as_text()
+		f.close()
+		return t
+	return "?"
