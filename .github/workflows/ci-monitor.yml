@@ -195,7 +195,7 @@ jobs:
           cat /tmp/idx.head /tmp/idx.body > "$idx"
 
           # Trim oldest log files so the directory doesn't grow forever
-          ls -1t docs/observability/failures/*.log 2>/dev/null | tail -n +51 | xargs -r rm -f
+          find docs/observability/failures -maxdepth 1 -name '*.log' 2>/dev/null | sort -r | tail -n +51 | xargs -r rm -f
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

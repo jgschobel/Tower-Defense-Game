@@ -73,7 +73,7 @@ jobs:
               continue
             }
 
-            ASSET=$(ls assets/textures/towers/*.png | head -1)
+            ASSET=$(find assets/textures/towers -maxdepth 1 -name '*.png' | head -1)
             if [ -n "$ASSET" ] && git diff --name-only | grep -q 'assets/textures/towers'; then
               PROCESSED=$((PROCESSED + 1))
               # Stage the new/changed asset + delete the trigger

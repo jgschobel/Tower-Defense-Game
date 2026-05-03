@@ -50,7 +50,7 @@ jobs:
         id: godot
         run: |
           set -e
-          PINNED=$(cat .github/godot-version.txt | tr -d '[:space:]')
+          PINNED=$(tr -d '[:space:]' < .github/godot-version.txt)
           if [ -z "$PINNED" ]; then
             echo "ERROR: .github/godot-version.txt is empty"; exit 1
           fi
@@ -122,11 +122,11 @@ jobs:
             rm -f "$OUT/anim_${tag_full}"_*.png 2>/dev/null || true
           done
 
-          COUNT=$(ls -1 "$OUT"/*.png 2>/dev/null | wc -l | tr -d ' ')
-          GIFS=$(ls -1 "$OUT"/*.gif 2>/dev/null | wc -l | tr -d ' ')
+          COUNT=$(find "$OUT" -maxdepth 1 -name '*.png' 2>/dev/null | wc -l | tr -d ' ')
+          GIFS=$(find "$OUT" -maxdepth 1 -name '*.gif' 2>/dev/null | wc -l | tr -d ' ')
           echo "Captured $COUNT PNGs, $GIFS GIFs"
           echo "count=$COUNT" >> "$GITHUB_OUTPUT"
-          ls -la "$OUT/" | head -60 || true
+          find "$OUT" -maxdepth 1 | sort | head -60 || true
           if [ -f "$OUT/summary.md" ]; then
             echo "=== playtest summary ==="
             cat "$OUT/summary.md"
@@ -198,7 +198,7 @@ jobs:
           TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
           SHOT_COUNT=0
           if [ -d playtest_output ]; then
-            SHOT_COUNT=$(ls -1 playtest_output/*.png 2>/dev/null | wc -l | tr -d ' ')
+            SHOT_COUNT=$(find playtest_output -maxdepth 1 -name '*.png' 2>/dev/null | wc -l | tr -d ' ')
           fi
 
           # Copy 7 KEY screenshots into the repo so chat-session Claude can
@@ -207,7 +207,7 @@ jobs:
           copy_key_shot() {
             local pattern="$1"; local dest="docs/observability/screenshots/$2"
             local src
-            src=$(ls playtest_output/${pattern} 2>/dev/null | head -1)
+            src=$(find playtest_output -maxdepth 1 -name "${pattern}" 2>/dev/null | head -1)
             if [ -n "$src" ]; then cp "$src" "$dest"; echo "  $dest"; fi
           }
           echo "== Copying key screenshots =="

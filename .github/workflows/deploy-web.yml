@@ -35,7 +35,7 @@ jobs:
           # SoT: .github/godot-version.txt. Bump that one file when you
           # want to migrate. deploy-web AND playtest read the same value
           # so they're never on different engines.
-          PINNED=$(cat .github/godot-version.txt | tr -d '[:space:]')
+          PINNED=$(tr -d '[:space:]' < .github/godot-version.txt)
           if [ -z "$PINNED" ]; then
             echo "ERROR: .github/godot-version.txt is empty"; exit 1
           fi
@@ -67,7 +67,7 @@ jobs:
           # separator (e.g. "4.6.2.stable") not the tag's DASH form
           # ("4.6.2-stable"). This is a long-standing Godot quirk.
           curl -fsSL -o templates.tpz "${BASE}/Godot_v${GODOT_TAG}_export_templates.tpz"
-          VER_DIR="$(echo "${GODOT_TAG}" | sed 's/-/./g')"
+          VER_DIR="${GODOT_TAG//-/.}"
           echo "Installing templates to ~/.local/share/godot/export_templates/${VER_DIR}/"
           mkdir -p "$HOME/.local/share/godot/export_templates/${VER_DIR}"
           unzip -q templates.tpz -d /tmp/templates
@@ -93,7 +93,7 @@ jobs:
               -o assets/fonts/NotoEmoji.ttf \
               "https://raw.githubusercontent.com/googlefonts/noto-emoji/main/fonts/NotoEmoji-Regular.ttf"
           fi
-          ls -la assets/fonts/ || true
+          find assets/fonts -maxdepth 1 2>/dev/null | sort || true
           # Validate it's actually a TTF (curl might fail silently and write HTML)
           if [ -f assets/fonts/NotoEmoji.ttf ]; then
             head -c 4 assets/fonts/NotoEmoji.ttf | xxd | head -1
@@ -116,7 +116,7 @@ jobs:
         run: |
           set -e
           godot --headless --path . --export-release "Web" build/web/index.html
-          ls -la build/web/
+          find build/web -maxdepth 1 | sort
 
       - name: Emit build-info.json
         run: |

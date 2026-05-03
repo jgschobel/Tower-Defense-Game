@@ -85,9 +85,11 @@ jobs:
           DONE=$(grep -cE '^\s*-\s*\[x\]' ROADMAP.md 2>/dev/null || echo 0)
           TODO=$(grep -cE '^\s*-\s*\[ \]' ROADMAP.md 2>/dev/null || echo 0)
           PCT=$(( DONE * 100 / (DONE + TODO + 1) ))
-          echo "done=$DONE" >> "$GITHUB_OUTPUT"
-          echo "todo=$TODO" >> "$GITHUB_OUTPUT"
-          echo "pct=$PCT" >> "$GITHUB_OUTPUT"
+          {
+            echo "done=$DONE"
+            echo "todo=$TODO"
+            echo "pct=$PCT"
+          } >> "$GITHUB_OUTPUT"
 
       - name: File drift report issue
         env:

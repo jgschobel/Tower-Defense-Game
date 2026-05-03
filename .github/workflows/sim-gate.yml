@@ -38,7 +38,7 @@ jobs:
         id: godot
         run: |
           set -e
-          PINNED=$(cat .github/godot-version.txt | tr -d '[:space:]')
+          PINNED=$(tr -d '[:space:]' < .github/godot-version.txt)
           echo "tag=$PINNED" >> "$GITHUB_OUTPUT"
 
       - name: Install Godot binary

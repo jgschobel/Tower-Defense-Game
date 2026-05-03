@@ -64,6 +64,6 @@ jobs:
           git push -u origin "$BRANCH"
           gh pr create \
             --title "art(character): friend photo inbox → new icon(s)" \
-            --body "Processed $(ls assets/textures/towers/friend_*.png 2>/dev/null | wc -l) icon(s) from the inbox. A future build-content run will wire these into TowerData resources and the shop." \
+            --body "Processed $(find assets/textures/towers -maxdepth 1 -name 'friend_*.png' 2>/dev/null | wc -l) icon(s) from the inbox. A future build-content run will wire these into TowerData resources and the shop." \
             --base main \
             --head "$BRANCH"
