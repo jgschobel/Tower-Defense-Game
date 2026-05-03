@@ -19,6 +19,13 @@ var kill_count: int = 0             # enemies killed by this tower
 # default; 0-3 = override with FIRST/LAST/CLOSEST/STRONGEST. Player cycles
 # this via the tower-info panel; persists with the tower instance.
 var target_mode_override: int = -1
+# BTD5-style active ability cooldown (Tier 1C). Tracked in seconds.
+# Tower's tier 3+ unlocks an active ability (per-tower implementation in
+# trigger_active_ability). 0 = ready, > 0 = on cooldown.
+var ability_cooldown_remaining: float = 0.0
+# Triple-fire effect tracker for Lemurius "Banana-Storm" ability:
+# while > 0, _attack() spawns 3 projectiles instead of 1.
+var ability_triple_fire_remaining: float = 0.0
 
 # Computed stats (base + upgrades)
 var effective_damage: float = 0.0
@@ -257,10 +264,19 @@ func _process(delta: float) -> void:
 		sprite.rotation = lerpf(sprite.rotation, 0.0, 4.0 * delta)
 
 	# Attack
+	# Tick ability cooldowns + triple-fire timer (Tier 1C — active abilities)
+	if ability_cooldown_remaining > 0.0:
+		ability_cooldown_remaining = maxf(0.0, ability_cooldown_remaining - delta)
+	if ability_triple_fire_remaining > 0.0:
+		ability_triple_fire_remaining = maxf(0.0, ability_triple_fire_remaining - delta)
+
 	attack_timer -= delta
+	# When ability_triple_fire_remaining > 0, fire 3× as fast (Banana-Storm
+	# active ability for Lemurius t3+; future towers can use the same hook).
+	var fire_speed_mul: float = 3.0 if ability_triple_fire_remaining > 0.0 else 1.0
 	if attack_timer <= 0.0 and current_target:
 		_attack()
-		attack_timer = 1.0 / effective_speed
+		attack_timer = 1.0 / (effective_speed * fire_speed_mul)
 
 
 func has_camo_detection() -> bool:
@@ -1059,3 +1075,70 @@ func get_target_mode_label() -> String:
 		TowerData.TargetMode.CLOSEST:   return "Nöchschti" # Closest to tower
 		TowerData.TargetMode.STRONGEST: return "Stärchsti" # Strongest (most HP)
 		_: return "Erschti"
+
+
+# --- Active abilities (BTD5-style, Tier 1C) ---
+
+func get_max_tier() -> int:
+	# Highest tier this tower has reached on either path. Used to gate
+	# active-ability availability (only tier 3+ unlock abilities).
+	return max(path_a_tier, path_b_tier)
+
+
+func has_active_ability() -> bool:
+	# Currently only Lemurius (basic) gets an active ability at tier 3+.
+	# Other friend towers (sniper/splash/cordula/slow) get theirs in
+	# follow-up PRs once each is balanced + tested individually.
+	if not data:
+		return false
+	if get_max_tier() < 3:
+		return false
+	return data.id in ["basic"]  # extend as more abilities ship
+
+
+func get_ability_label() -> String:
+	if not data:
+		return ""
+	match data.id:
+		"basic":   return "BANANI-STURM"  # 5s triple-fire (60s CD)
+		"sniper":  return "POLLEN-WOLKE"  # placeholder for future
+		"splash":  return "MEGA-SPRITZ"   # placeholder
+		"cordula": return "VOLLEY-TORNADO" # placeholder
+		"slow":    return "ZUNGE-RUCK"    # placeholder
+	return ""
+
+
+func get_ability_cd_max() -> float:
+	if not data:
+		return 60.0
+	match data.id:
+		"basic":   return 60.0
+		"sniper":  return 90.0
+		"splash":  return 120.0
+		"cordula": return 90.0
+		"slow":    return 60.0
+	return 60.0
+
+
+func can_trigger_ability() -> bool:
+	return has_active_ability() and ability_cooldown_remaining <= 0.0
+
+
+func trigger_active_ability() -> bool:
+	# Returns true if the ability actually fired. Per-tower implementations
+	# below; fallback is "fire 1 quick volley + reset cooldown" so missing
+	# implementations are at least non-broken.
+	if not can_trigger_ability():
+		return false
+	ability_cooldown_remaining = get_ability_cd_max()
+	match data.id:
+		"basic":
+			# Banani-Sturm: 5 seconds of 3× fire rate
+			ability_triple_fire_remaining = 5.0
+			_float_taunt("BANANI-STURM!")
+		_:
+			# Default for un-implemented abilities — short triple-fire
+			ability_triple_fire_remaining = 3.0
+	if SfxManager and SfxManager.has_method("play_upgrade"):
+		SfxManager.play_upgrade()
+	return true
