@@ -8,7 +8,6 @@ the bottom of the log file directly via get_file_contents.
 | When (UTC) | Workflow | Run | Branch | Commit | Log |
 |---|---|---|---|---|---|
 | 2026-05-02T07:33:42Z | Autonomous Playtester | [#145](https://github.com/jgschobel/Tower-Defense-Game/actions/runs/25246862696) | main | `6742ebf` | [`autonomous-playtester__25246862696.log`](./autonomous-playtester__25246862696.log) |
-| 2026-05-02T09:53:22Z | Art Request Generator | [#131](https://github.com/jgschobel/Tower-Defense-Game/actions/runs/25249291227) | main | `5615fa0` | [`art-request-generator__25249291227.log`](./art-request-generator__25249291227.log) |
 | 2026-05-02T09:53:38Z | Art Request Generator | [#133](https://github.com/jgschobel/Tower-Defense-Game/actions/runs/25249295189) | main | `5615fa0` | [`art-request-generator__25249295189.log`](./art-request-generator__25249295189.log) |
 | 2026-05-02T09:53:49Z | Art Request Generator | [#135](https://github.com/jgschobel/Tower-Defense-Game/actions/runs/25249298198) | main | `5615fa0` | [`art-request-generator__25249298198.log`](./art-request-generator__25249298198.log) |
 | 2026-05-02T09:53:56Z | Art Request Generator | [#137](https://github.com/jgschobel/Tower-Defense-Game/actions/runs/25249301663) | main | `5615fa0` | [`art-request-generator__25249301663.log`](./art-request-generator__25249301663.log) |
@@ -58,3 +57,4 @@ the bottom of the log file directly via get_file_contents.
 | 2026-05-03T06:39:29Z | Wave-Balance Simulator Gate | [#68](https://github.com/jgschobel/Tower-Defense-Game/actions/runs/25272064081) | claude/auto/audit-polish-tier-hat | `9ddc1c6` | [`wave-balance-simulator-gate__25272064081.log`](./wave-balance-simulator-gate__25272064081.log) |
 | 2026-05-03T09:33:10Z | Autonomous Development Loop | [#31](https://github.com/jgschobel/Tower-Defense-Game/actions/runs/25275338860) | main | `5e94f30` | [`autonomous-development-loop__25275338860.log`](./autonomous-development-loop__25275338860.log) |
 | 2026-05-03T13:23:19Z | Autonomous Development Loop | [#32](https://github.com/jgschobel/Tower-Defense-Game/actions/runs/25280065936) | main | `43d6e66` | [`autonomous-development-loop__25280065936.log`](./autonomous-development-loop__25280065936.log) |
+| 2026-05-03T16:08:16Z | Daily Cleanup | [#6](https://github.com/jgschobel/Tower-Defense-Game/actions/runs/25284062781) | main | `58765d5` | [`daily-cleanup__25284062781.log`](./daily-cleanup__25284062781.log) |
