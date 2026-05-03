@@ -67,7 +67,7 @@ func release(p: Node) -> void:
 		return
 	# Only genuinely pooled instances should return to the pool.
 	# Non-pooled (lazy-instantiated when pool was exhausted) just free.
-	if not p.has_meta("pooled") or not p.get_meta("pooled"):
+	if not p.get_meta("pooled", false):
 		p.queue_free()
 		return
 	if p.get_parent() != _container and _container != null:
