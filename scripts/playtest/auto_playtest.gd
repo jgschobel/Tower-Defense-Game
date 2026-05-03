@@ -83,18 +83,36 @@ func _run_healthy_level(level_id: int) -> void:
 
 	var game_root := get_tree().current_scene
 	var placements := _placements_for_level(level_id)
-	# Give the bot enough gold to place the full comp — the scenario tests
-	# gameplay with a sensible layout, not budget management.
+	# Issue #330 fix: previous loop silently placed only 1 tower per scenario.
+	# Root cause: a 0.15s await between placements let TowerPlacement state
+	# interfere. New approach: re-set gold to 2000 BEFORE each placement (so
+	# affordability never gates), use process_frame waits (not timers), and
+	# count actual placements vs expected — log a degraded warning if <3.
 	var saved_gold: int = CurrencyManager.gold
-	CurrencyManager.gold = 2000
+	var placed_count := 0
+	print("[playtest] L%d placing %d towers" % [level_id, placements.size()])
 	for entry in placements:
 		var data_path := "res://resources/tower_data/%s.tres" % entry.id
-		if ResourceLoader.exists(data_path):
-			var td = load(data_path)
-			if CurrencyManager.can_afford(td.buy_cost):
-				_instantiate_tower(game_root, td, entry.pos)
-				await get_tree().create_timer(0.15).timeout
+		if not ResourceLoader.exists(data_path):
+			print("[playtest] WARN missing tower data: %s" % data_path)
+			continue
+		var td = load(data_path)
+		CurrencyManager.gold = 2000  # re-set per placement (defensive)
+		var tower := _instantiate_tower(game_root, td, entry.pos)
+		if tower == null:
+			print("[playtest] WARN instantiate failed: %s @ %s" % [entry.id, entry.pos])
+		else:
+			placed_count += 1
+		await get_tree().process_frame
+		await get_tree().process_frame
 	CurrencyManager.gold = saved_gold
+	if placed_count < 3:
+		push_warning("[playtest] L%d DEGRADED — placed only %d/%d towers" % [
+			level_id, placed_count, placements.size()
+		])
+	print("[playtest] L%d placed %d/%d, gold=%d" % [
+		level_id, placed_count, placements.size(), CurrencyManager.gold
+	])
 
 	await get_tree().create_timer(0.4).timeout
 	_snapshot("%s_placed" % _scenario_name)
@@ -124,7 +142,9 @@ func _run_healthy_level(level_id: int) -> void:
 		or GameManager.current_state == GameManager.GameState.WON:
 			break
 		var elapsed := float(Time.get_ticks_msec() - sim_started) / 1000.0
-		if elapsed > 60.0 or shot_idx >= 24:
+		# Issue #328 fix: was 24 ticks/scenario which exhausted the time budget
+		# before reaching L4-L10. 12 ticks fits all 10 levels in the budget.
+		if elapsed > 60.0 or shot_idx >= 12:
 			break
 
 	Engine.time_scale = 1.0
@@ -508,6 +528,12 @@ func _record_scenario(start_ms: int) -> void:
 		"final_state": _state_name(GameManager.current_state),
 		"enemies_remaining": get_tree().get_nodes_in_group("enemies").size(),
 	})
+	# Issue #328 fix: write summary INCREMENTALLY after each scenario so
+	# partial runs (timeout, crash, OOM) still produce metrics. Previous
+	# code only wrote at the very end of _run_all() which silently dropped
+	# everything if the bot ran out of wall-clock time.
+	_write_summary()
+	_append_fps_log(avg_fps, min_fps)
 
 
 func _write_summary() -> void:
@@ -533,6 +559,23 @@ func _write_summary() -> void:
 	f.store_string("- **anim_*** frames are GIF source — ffmpeg stitches them in the workflow.\n")
 	f.close()
 	print("[playtest v3] summary → %s" % SUMMARY_FILE)
+
+
+func _append_fps_log(avg_fps: float, min_fps: float) -> void:
+	# Append a single line per scenario so fps.log accumulates as we go.
+	# Issue #328: previously fps.log was never written at all.
+	var f := FileAccess.open(FPS_LOG, FileAccess.READ_WRITE)
+	if f == null:
+		f = FileAccess.open(FPS_LOG, FileAccess.WRITE)
+		if f == null:
+			return
+		f.store_string("# scenario\tavg_fps\tmin_fps\telapsed_s\n")
+	else:
+		f.seek_end()
+	f.store_string("%s\t%.1f\t%.1f\t%.1f\n" % [
+		_scenario_name, avg_fps, min_fps, _elapsed()
+	])
+	f.close()
 
 
 func _elapsed() -> float:
