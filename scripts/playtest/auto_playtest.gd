@@ -127,11 +127,15 @@ func _run_healthy_level(level_id: int) -> void:
 	# wall-clock. Issue #53: healthy scenarios previously timed out at
 	# wave 1/10 because the 6-shot × 2.5s window = 15s only covered the
 	# first wave. At 4× speed a full 10-wave level fits in ~75s.
-	Engine.time_scale = 4.0
+	# 8× time_scale + tick cap raised to 16. At 8× speed a 10-wave level
+	# fits in ~50s game time. 16 ticks × 2.5s = 40s wallclock = 320s game
+	# time, enough margin for any level to reach WON/LOST.
+	# Was 4×/12 ticks but every scenario ended PLAYING (not WON) — fix.
+	Engine.time_scale = 8.0
 
 	await _capture_anim_clip("%s_wavestart" % _scenario_name)
 
-	# Extended loop: keep sampling until WON/LOST or 60s elapsed at 4×.
+	# Extended loop: keep sampling until WON/LOST or 16 ticks at 8×.
 	var sim_started := Time.get_ticks_msec()
 	var shot_idx := 0
 	while true:
@@ -142,9 +146,10 @@ func _run_healthy_level(level_id: int) -> void:
 		or GameManager.current_state == GameManager.GameState.WON:
 			break
 		var elapsed := float(Time.get_ticks_msec() - sim_started) / 1000.0
-		# Issue #328 fix: was 24 ticks/scenario which exhausted the time budget
-		# before reaching L4-L10. 12 ticks fits all 10 levels in the budget.
-		if elapsed > 60.0 or shot_idx >= 12:
+		# Issue #328 fix: was 24 ticks, then 12 ticks. With 8× time_scale
+		# (was 4×), 16 ticks = 40s wallclock = 320s game time. Levels reach
+		# WON/LOST before this cap fires. If they don't, real perf issue.
+		if elapsed > 60.0 or shot_idx >= 16:
 			break
 
 	Engine.time_scale = 1.0
