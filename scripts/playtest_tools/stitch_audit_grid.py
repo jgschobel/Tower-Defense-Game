@@ -34,7 +34,7 @@ OUT_DIR.mkdir(parents=True, exist_ok=True)
 TILE_W = 320
 TILE_H = 180
 COLS = 4
-ROWS = 4
+MAX_ROWS = 8
 PADDING = 8
 
 
@@ -42,14 +42,18 @@ def collect_tiles() -> list[Path]:
     if not SRC_DIR.exists():
         print(f"[stitch] source dir missing: {SRC_DIR.relative_to(ROOT)}")
         return []
-    # All .png files in alphabetical order, capped to the grid capacity.
-    tiles = sorted(SRC_DIR.glob("*.png"))[: COLS * ROWS]
+    # Up to 32 tiles (8 rows × 4 cols). Grid sizes itself to actual count.
+    tiles = sorted(SRC_DIR.glob("*.png"))[: COLS * MAX_ROWS]
     return tiles
 
 
 def build_grid(tiles: list[Path]) -> Image.Image:
+    # Bug fix: was hardcoded 4×4=16 cells but only 7 tiles existed,
+    # leaving 9 black-bar empty cells. Now rows = ceil(N / COLS).
+    n = len(tiles)
+    rows = max(1, (n + COLS - 1) // COLS)
     w = COLS * TILE_W + (COLS + 1) * PADDING
-    h = ROWS * TILE_H + (ROWS + 1) * PADDING
+    h = rows * TILE_H + (rows + 1) * PADDING
     canvas = Image.new("RGB", (w, h), (20, 20, 24))
     for idx, tile_path in enumerate(tiles):
         r, c = divmod(idx, COLS)
