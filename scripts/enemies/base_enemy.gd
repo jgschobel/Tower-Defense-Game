@@ -788,7 +788,7 @@ func _celebrate_boss_death() -> void:
 func _show_gold_earned() -> void:
 	# D26: styled gold floater — coin prefix, bolder size, arc trajectory.
 	var label := Label.new()
-	label.text = "✦ +%d G" % gold_reward
+	label.text = "+%d G" % gold_reward  # was "✦ +N G" — sparkle removed (tofu on Android Noto-stripped)
 	# Three tiers: small reward 18px, medium 24px, big 30px. Big rewards
 	# also get a brief sparkle pop scale.
 	var font_size: int = 18

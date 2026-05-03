@@ -78,8 +78,10 @@ jobs:
       - name: Import project resources
         run: |
           set +e
+          # 360s/120s for first/second import pass — cold .ctex generation
+          # for 206+ assets exceeds the previous 120/60 budget.
+          xvfb-run -a -s "-screen 0 1280x720x24" timeout 360 godot --headless --path . --import
           xvfb-run -a -s "-screen 0 1280x720x24" timeout 120 godot --headless --path . --import
-          xvfb-run -a -s "-screen 0 1280x720x24" timeout 60  godot --headless --path . --import
           exit 0
 
       - name: Run playtest bot (renders to Xvfb)
@@ -211,13 +213,23 @@ jobs:
             if [ -n "$src" ]; then cp "$src" "$dest"; echo "  $dest"; fi
           }
           echo "== Copying key screenshots =="
-          copy_key_shot "*00_menu*.png" "00_menu.png"
-          copy_key_shot "*L1_healthy_final*.png" "L1_healthy_final.png"
-          copy_key_shot "*L2_healthy_final*.png" "L2_healthy_final.png"
-          copy_key_shot "*L3_healthy_final*.png" "L3_healthy_final.png"
-          copy_key_shot "*upgrades_tier_A3_B2*.png" "upgrades_tier_A3_B2.png"
-          copy_key_shot "*stress_t03*.png" "stress_t03.png"
-          copy_key_shot "*bughunt_after_cancel*.png" "bughunt_after_cancel.png"
+          copy_key_shot "*00_menu*.png"                "01_menu.png"
+          copy_key_shot "*ui_level_select*.png"        "02_level_select.png"
+          copy_key_shot "*ui_options*.png"             "03_options.png"
+          copy_key_shot "*ui_story*.png"               "04_story.png"
+          copy_key_shot "*L1_healthy_placed*.png"      "05_L1_placed.png"
+          copy_key_shot "*L1_healthy_final*.png"       "06_L1_final.png"
+          copy_key_shot "*L2_healthy_final*.png"       "07_L2_final.png"
+          copy_key_shot "*L3_healthy_final*.png"       "08_L3_final.png"
+          copy_key_shot "*L4_healthy_final*.png"       "09_L4_final.png"
+          copy_key_shot "*L5_healthy_final*.png"       "10_L5_final.png"
+          copy_key_shot "*upgrades_tier_A3*.png"       "11_upgrades_pathA.png"
+          copy_key_shot "*upgrades_tier_A3_B2*.png"    "12_upgrades_blend.png"
+          copy_key_shot "*new_towers_placed*.png"      "13_new_towers.png"
+          copy_key_shot "*new_towers_fight*.png"       "14_new_towers_fight.png"
+          copy_key_shot "*stress_spawned*.png"         "15_stress_spawned.png"
+          copy_key_shot "*stress_t03*.png"             "16_stress_mid.png"
+          copy_key_shot "*bughunt_after_cancel*.png"   "17_bughunt_clean.png"
 
           {
             echo "# Playtest Latest"
@@ -226,7 +238,7 @@ jobs:
             echo ""
             echo "## Key screenshots (Read these for visual audit)"
             echo ""
-            for f in 00_menu.png L1_healthy_final.png L2_healthy_final.png L3_healthy_final.png upgrades_tier_A3_B2.png stress_t03.png bughunt_after_cancel.png; do
+            for f in 01_menu.png 02_level_select.png 03_options.png 04_story.png 05_L1_placed.png 06_L1_final.png 07_L2_final.png 08_L3_final.png 09_L4_final.png 10_L5_final.png 11_upgrades_pathA.png 12_upgrades_blend.png 13_new_towers.png 14_new_towers_fight.png 15_stress_spawned.png 16_stress_mid.png 17_bughunt_clean.png; do
               if [ -f "docs/observability/screenshots/$f" ]; then
                 echo "- \`docs/observability/screenshots/$f\`"
               fi
