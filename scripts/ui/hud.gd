@@ -1115,12 +1115,14 @@ func _show_wave_announcement(current: int, _total: int) -> void:
 	announce.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	announce.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	announce.custom_minimum_size = Vector2(700, 80)
-	announce.set_anchors_preset(Control.PRESET_CENTER)
+	# Anchor top-center so the banner slides across near the HUD bar,
+	# not across the battlefield center (issue #289).
+	announce.set_anchors_preset(Control.PRESET_CENTER_TOP)
 	announce.pivot_offset = Vector2(350, 40)
 	add_child(announce)
 	# Slide in from the right, hold, then fade out — D27
 	announce.position.x = 1400.0
-	announce.position.y = -40.0
+	announce.position.y = 68.0
 	var tw := announce.create_tween()
 	tw.tween_property(announce, "position:x", -350.0, 0.22).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	tw.tween_property(announce, "position:x", -350.0, 0.55)  # hold
