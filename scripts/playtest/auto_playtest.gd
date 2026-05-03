@@ -31,7 +31,7 @@ func _ready() -> void:
 	if "--playtest" in args or "--headless-playtest" in args:
 		_active = true
 		_start_ms = Time.get_ticks_msec()
-		print("[playtest v4] bot activated — full coverage (all 7 levels + UI + new towers)")
+		print("[playtest v5] bot activated — full coverage (all 10 levels + UI + new towers)")
 		DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(SHOT_DIR))
 		call_deferred("_run_all")
 
@@ -51,8 +51,9 @@ func _run_all() -> void:
 	# All 7 levels get a healthy run — previously only L1-L3 were covered
 	# so L4-L7 regressions shipped undetected. Each level rotates its
 	# placement comp to exercise different towers (including the new
-	# joe/justus/seve).
-	for level_id in range(1, 8):
+	# joe/justus/seve). Updated 2026-05-03: extended to L8-L10 since
+	# the campaign now ships 10 levels with 30 waves each.
+	for level_id in range(1, 11):
 		await _run_healthy_level(level_id)
 
 	await _run_upgrade_flow()

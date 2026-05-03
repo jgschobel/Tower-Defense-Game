@@ -15,8 +15,8 @@ extends Control
 ## GameManager.get_preferred_variant("category/asset_id").
 
 const PREFS_PATH := "user://variants.json"
-const TOWER_IDS := ["basic", "sniper", "splash", "cordula", "slow"]
-const TOWER_DISPLAY := {"basic": "Lemurius", "sniper": "Kühne", "splash": "JoJo", "cordula": "Cordula", "slow": "Amösius"}
+const TOWER_IDS := ["basic", "sniper", "splash", "cordula", "slow", "farm", "support", "joe", "justus", "seve"]
+const TOWER_DISPLAY := {"basic": "Lemurius", "sniper": "Kühne", "splash": "JoJo", "cordula": "Cordula", "slow": "Amösius", "farm": "Banani-Bauer", "support": "Quartier-Chef", "joe": "Joe", "justus": "Justus", "seve": "Seve"}
 const ENEMY_IDS := ["basic", "fast", "tank", "healer", "flying", "swarm", "boss", "smoothie_slime", "berserker", "tofu_ninja", "linsen_golem", "cumulus_blob", "camo", "lead", "regrow", "glace_golem"]
 const ENEMY_DISPLAY := {"basic": "Brötli", "fast": "Toblerone", "tank": "Cervelat", "healer": "Dr. Rivella", "flying": "Fondue", "swarm": "Tofu", "boss": "M-Tüüfel", "smoothie_slime": "Smoothie-Schleim", "berserker": "Seitän-Berserker", "tofu_ninja": "Tofu-Ninja", "linsen_golem": "Linsen-Golem", "cumulus_blob": "Cumulus-Blob", "camo": "Schatte-Tofu", "lead": "Blei-Würschtli", "regrow": "Regrow-Geist", "glace_golem": "Glacé-Golem"}
 const DAMAGE_STATES := ["healthy", "hurt", "injured", "dying"]
@@ -101,6 +101,89 @@ const PALETTE_CATALOG := [
 	{"name": "COL_GOLD",          "where": "currency, accents"},
 ]
 
+# Every projectile_style declared in tower .tres files. Used by the
+# Projectiles tab to render a swatch + style hint per style.
+const PROJECTILE_CATALOG := [
+	{"style": "banana",     "tower": "Lemurius",      "color": Color(1.0, 0.92, 0.35), "trail": "khaki",  "note": "piercing — passes through targets at higher tiers"},
+	{"style": "pollen",     "tower": "Kühne",          "color": Color(0.95, 0.85, 0.55), "trail": "warm",   "note": "first-strike + camo-detect at higher tiers"},
+	{"style": "flask",      "tower": "JoJo",           "color": Color(0.55, 0.85, 0.45), "trail": "acid",   "note": "lingering acid puddle DoT on impact"},
+	{"style": "volleyball", "tower": "Cordula",        "color": Color(1.0, 0.95, 0.95), "trail": "white",  "note": "wide-arc cone burst"},
+	{"style": "tongue",     "tower": "Amösius",        "color": Color(0.85, 0.45, 0.55), "trail": "pink",   "note": "single-target reel-in pull mechanic"},
+	{"style": "formula",    "tower": "Joe",            "color": Color(0.65, 0.85, 1.0),  "trail": "ice",    "note": "freeze chance"},
+	{"style": "dumbbell",   "tower": "Justus",         "color": Color(0.6, 0.6, 0.65),   "trail": "gray",   "note": "heavy-hit knockback"},
+	{"style": "gear",       "tower": "Seve",           "color": Color(0.85, 0.7, 0.4),   "trail": "bronze", "note": "ricochet between targets"},
+]
+
+# Every visual effect EffectPlayer can spawn. Tab gives a button per
+# effect that fires it at a fixed map-center position so user can see.
+const EFFECT_CATALOG := [
+	{"label": "Muzzle flash (banana)",     "fn": "spawn_muzzle_flash",  "args": ["banana"]},
+	{"label": "Muzzle flash (pollen)",     "fn": "spawn_muzzle_flash",  "args": ["pollen"]},
+	{"label": "Muzzle flash (flask)",      "fn": "spawn_muzzle_flash",  "args": ["flask"]},
+	{"label": "Muzzle flash (volleyball)", "fn": "spawn_muzzle_flash",  "args": ["volleyball"]},
+	{"label": "Muzzle flash (tongue)",     "fn": "spawn_muzzle_flash",  "args": ["tongue"]},
+	{"label": "Impact sparks (warm)",      "fn": "spawn_impact_sparks", "args": [Color(1.0, 0.7, 0.3)]},
+	{"label": "Impact sparks (cool)",      "fn": "spawn_impact_sparks", "args": [Color(0.5, 0.85, 1.0)]},
+	{"label": "Death poof (small)",        "fn": "spawn_death_poof",    "args": [Color(0.85, 0.7, 0.45)]},
+	{"label": "Death poof (boss)",         "fn": "spawn_death_poof",    "args": [Color(0.7, 0.2, 0.2)]},
+	{"label": "Place sparkles",            "fn": "spawn_place_sparkles", "args": []},
+	{"label": "Step dust",                 "fn": "spawn_step_dust",     "args": []},
+]
+
+# Music tracks per level — clicking previews 4-5s of that level's track.
+const MUSIC_CATALOG := [
+	{"id": 1,  "name": "L1 Migros-Iigang",       "mood": "cheery shop bustle"},
+	{"id": 2,  "name": "L2 Tiefchüel-Abteilig",  "mood": "icy ambient"},
+	{"id": 3,  "name": "L3 Bäckerei",            "mood": "bakery-organ warmth"},
+	{"id": 4,  "name": "L4 Chäsi-Keller",        "mood": "cellar-dub murk"},
+	{"id": 5,  "name": "L5 Kasse",               "mood": "boss-intense"},
+	{"id": 6,  "name": "L6 Parkhuus",            "mood": "parkhuus-industrial"},
+	{"id": 7,  "name": "L7 S'Dach",              "mood": "rooftop-cinematic"},
+	{"id": 8,  "name": "L8 Coop-Iibruch",        "mood": "rival-supermarket tense"},
+	{"id": 9,  "name": "L9 Cumulus-Punkte-Kern", "mood": "glitchy neon"},
+	{"id": 10, "name": "L10 Tüüfel-Äste",        "mood": "finale gauntlet"},
+]
+
+# Atmosphere particles per level — cfg comes from game_level._spawn_atmosphere_particles.
+const ATMOSPHERE_CATALOG := [
+	{"id": 1,  "label": "L1",  "tint": "—",                            "note": "no atmosphere overlay (clean shop floor)"},
+	{"id": 2,  "label": "L2",  "tint": "frost (light blue, 35 count)",   "note": "freezer breath — gravity (10, 60)"},
+	{"id": 3,  "label": "L3",  "tint": "flour (cream, 28 count)",        "note": "bakery flour drift — gravity (-5, 25)"},
+	{"id": 4,  "label": "L4",  "tint": "acid (green bubbles)",           "note": "Chäsi-Keller toxic vapor"},
+	{"id": 5,  "label": "L5",  "tint": "cumulus-receipts (paper bits)",  "note": "kasse confetti receipt rain"},
+	{"id": 6,  "label": "L6",  "tint": "rain (blue streaks)",            "note": "parkhuus wet floor"},
+	{"id": 7,  "label": "L7",  "tint": "wind leaves (orange flecks)",    "note": "rooftop sunset autumn"},
+	{"id": 8,  "label": "L8",  "tint": "blue sparks",                    "note": "Coop-security electrical"},
+	{"id": 9,  "label": "L9",  "tint": "purple glitch",                  "note": "Cumulus core fragment"},
+	{"id": 10, "label": "L10", "tint": "rising embers",                  "note": "Tüüfel-Äste finale"},
+]
+
+# Damage-type ruleset — visualizes the armor math base_enemy.take_damage uses.
+const DAMAGE_TYPE_CATALOG := [
+	{"name": "PHYSICAL", "color": Color(0.85, 0.7, 0.45), "rule": "Full armor reduction. Lead enemies = effective_armor 0 with 15% resistance flat."},
+	{"name": "MAGIC",    "color": Color(0.65, 0.45, 1.0), "rule": "Bypasses 70% of armor. Defeats lead enemy 15%-resistance."},
+	{"name": "PURE",     "color": Color(1.0, 0.95, 0.85), "rule": "Ignores armor and lead resistance entirely. Rare on towers."},
+]
+
+# Difficulty modifier matrix — visualizes how Easy/Normal/Hard scale.
+const DIFFICULTY_CATALOG := [
+	{"name": "Easy",   "hp": "0.75×", "speed": "0.95×", "count": "0.90×", "gold": "0.80×", "aminos": "0.50×", "stars_max": 2, "color": Color(0.55, 0.85, 0.55)},
+	{"name": "Normal", "hp": "1.00×", "speed": "1.00×", "count": "1.00×", "gold": "1.00×", "aminos": "1.00×", "stars_max": 3, "color": Color(0.95, 0.85, 0.45)},
+	{"name": "Hard",   "hp": "1.40×", "speed": "1.10×", "count": "1.20×", "gold": "1.35×", "aminos": "1.75×", "stars_max": 3, "color": Color(0.95, 0.4, 0.35)},
+]
+
+# Tower synergy/adjacency pairs — buffs visible when both within ~150px.
+const SYNERGY_CATALOG := [
+	{"a": "Lemurius", "b": "Kühne",      "buff": "+15% range + pierce on bananas"},
+	{"a": "Cordula",  "b": "Amösius",    "buff": "+20% atk-speed when Amösius has glued target"},
+	{"a": "JoJo",     "b": "Banani-Bauer", "buff": "+1 gold per acid-puddle pop"},
+	{"a": "Kühne",    "b": "Quartier-Chef", "buff": "+10% crit chance"},
+	{"a": "Banani-Bauer", "b": "Quartier-Chef", "buff": "+25% farm payout"},
+]
+
+# Lore character bios — pulled from lore.gd CHARACTER_BIOS.
+const LORE_CHARACTER_IDS := ["lemurius", "amosius", "kuehne", "jojo", "cordula", "m_teufel"]
+
 var _prefs: Dictionary = {}
 var _content_root: VBoxContainer = null
 var _current_tab: String = "monsters"
@@ -168,13 +251,25 @@ func _populate_active_tab() -> void:
 	for c in _content_root.get_children():
 		c.queue_free()
 	match _current_tab:
-		"monsters": _populate_monsters_tab()
-		"towers":   _populate_towers_tab()
-		"variants": _populate_variants_tab()
-		"maps":     _populate_maps_tab()
-		"icons":    _populate_icons_tab()
-		"audio":    _populate_audio_tab()
-		"palette":  _populate_palette_tab()
+		"monsters":    _populate_monsters_tab()
+		"towers":      _populate_towers_tab()
+		"variants":    _populate_variants_tab()
+		"maps":        _populate_maps_tab()
+		"icons":       _populate_icons_tab()
+		"audio":       _populate_audio_tab()
+		"palette":     _populate_palette_tab()
+		"projectiles": _populate_projectiles_tab()
+		"effects":     _populate_effects_tab()
+		"music":       _populate_music_tab()
+		"waves":       _populate_waves_tab()
+		"levels":      _populate_levels_tab()
+		"story":       _populate_story_tab()
+		"damage":      _populate_damage_tab()
+		"difficulty":  _populate_difficulty_tab()
+		"synergies":   _populate_synergies_tab()
+		"atmosphere":  _populate_atmosphere_tab()
+		"lore":        _populate_lore_tab()
+		"diagnostics": _populate_diagnostics_tab()
 
 
 # ---------- Shell ----------
@@ -214,13 +309,25 @@ func _build_shell() -> void:
 	tabs.add_theme_constant_override("v_separation", DesignTokens.SP_S)
 	root.add_child(tabs)
 	for cfg in [
-		{"id": "monsters", "label": "Monster"},
-		{"id": "towers",   "label": "Türm × Tier"},
-		{"id": "variants", "label": "Variante"},
-		{"id": "maps",     "label": "Maps"},
-		{"id": "icons",    "label": "Icons & Emoji"},
-		{"id": "audio",    "label": "Audio"},
-		{"id": "palette",  "label": "Palette"},
+		{"id": "monsters",    "label": "Monster"},
+		{"id": "towers",      "label": "Türm × Tier"},
+		{"id": "projectiles", "label": "Projektile"},
+		{"id": "effects",     "label": "Effekt"},
+		{"id": "audio",       "label": "Audio"},
+		{"id": "music",       "label": "Musik"},
+		{"id": "waves",       "label": "Wellä"},
+		{"id": "levels",      "label": "Levels"},
+		{"id": "maps",        "label": "Maps"},
+		{"id": "story",       "label": "Story"},
+		{"id": "lore",        "label": "Lore"},
+		{"id": "damage",      "label": "Damage"},
+		{"id": "difficulty",  "label": "Schwierig."},
+		{"id": "synergies",   "label": "Synergie"},
+		{"id": "atmosphere",  "label": "Atmo"},
+		{"id": "variants",    "label": "Variante"},
+		{"id": "icons",       "label": "Icons"},
+		{"id": "palette",     "label": "Palette"},
+		{"id": "diagnostics", "label": "Diagnose"},
 	]:
 		var tab_btn := Button.new()
 		tab_btn.text = cfg.label
@@ -802,3 +909,632 @@ func _resolve_palette_color(name: String) -> Color:
 		"COL_BAD":           return DesignTokens.COL_BAD
 		"COL_GOLD":          return DesignTokens.COL_GOLD
 		_:                   return Color.MAGENTA
+
+
+# ---------- Tab: Projectiles ----------
+
+func _populate_projectiles_tab() -> void:
+	_add_hint("Alli 8 Projektil-Stil us de tower .tres files. Spalte: Stil-Name, Vorschau-Farb, dezugehöriger Turm, Trail-Farb, Mechanik. Klick uf 'Test Schuss' fürs Muzzle-Flash mit dem Stil aazlöse.")
+	var grid := GridContainer.new()
+	grid.columns = 1
+	grid.add_theme_constant_override("v_separation", DesignTokens.SP_S)
+	_content_root.add_child(grid)
+	for entry in PROJECTILE_CATALOG:
+		grid.add_child(_build_projectile_card(entry))
+
+
+func _build_projectile_card(entry: Dictionary) -> Control:
+	var card := PanelContainer.new()
+	card.custom_minimum_size = Vector2(0, 84)
+	card.add_theme_stylebox_override("panel", DesignTokens.panel_box(DesignTokens.COL_STROKE_FAINT, DesignTokens.RADIUS_S, DesignTokens.SP_S))
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", DesignTokens.SP_M)
+	card.add_child(row)
+	var swatch := ColorRect.new()
+	swatch.custom_minimum_size = Vector2(60, 60)
+	swatch.color = entry.color
+	row.add_child(swatch)
+	var info := VBoxContainer.new()
+	info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	info.add_theme_constant_override("separation", 2)
+	var name_lbl := Label.new()
+	name_lbl.text = "%s · %s" % [str(entry.style).capitalize(), entry.tower]
+	DesignTokens.style_label(name_lbl, DesignTokens.FONT_LABEL)
+	info.add_child(name_lbl)
+	var note_lbl := Label.new()
+	note_lbl.text = "Trail: %s · %s" % [entry.trail, entry.note]
+	note_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
+	DesignTokens.style_label(note_lbl, DesignTokens.FONT_LABEL_XS, true)
+	info.add_child(note_lbl)
+	row.add_child(info)
+	var test_btn := Button.new()
+	test_btn.text = "▶ Test Schuss"
+	test_btn.custom_minimum_size = Vector2(120, 36)
+	DesignTokens.style_button(test_btn, false, DesignTokens.FONT_LABEL_SM)
+	test_btn.pressed.connect(func():
+		var center: Vector2 = get_viewport_rect().size * 0.5
+		if EffectPlayer and EffectPlayer.has_method("spawn_muzzle_flash"):
+			EffectPlayer.spawn_muzzle_flash(center, Vector2.RIGHT, entry.color, entry.style)
+		if SfxManager:
+			SfxManager.play_shoot(entry.tower.to_lower(), 1))
+	row.add_child(test_btn)
+	return card
+
+
+# ---------- Tab: Effects ----------
+
+func _populate_effects_tab() -> void:
+	_add_hint("Visueller Effekt aalöse — gnaui Mitti vom Bildschirm. Nützlich zum prüefe öb d'Partikel-Farb, -Anzahl und -Lebensduur stimmt. Bi Bedarf hinder em Knopf de Code i scripts/systems/effect_player.gd.")
+	var grid := GridContainer.new()
+	grid.columns = 2
+	grid.add_theme_constant_override("h_separation", DesignTokens.SP_M)
+	grid.add_theme_constant_override("v_separation", DesignTokens.SP_S)
+	_content_root.add_child(grid)
+	for entry in EFFECT_CATALOG:
+		grid.add_child(_build_effect_button(entry))
+
+
+func _build_effect_button(entry: Dictionary) -> Control:
+	var btn := Button.new()
+	btn.text = "✦ " + str(entry.label)
+	btn.custom_minimum_size = Vector2(0, 44)
+	DesignTokens.style_button(btn, false, DesignTokens.FONT_LABEL_SM)
+	btn.pressed.connect(func():
+		if EffectPlayer == null:
+			return
+		var center: Vector2 = get_viewport_rect().size * 0.5
+		match entry.fn:
+			"spawn_muzzle_flash":
+				EffectPlayer.spawn_muzzle_flash(center, Vector2.RIGHT, Color(1.0, 0.85, 0.4), entry.args[0])
+			"spawn_impact_sparks":
+				EffectPlayer.spawn_impact_sparks(center, entry.args[0])
+			"spawn_death_poof":
+				EffectPlayer.spawn_death_poof(center, entry.args[0])
+			"spawn_place_sparkles":
+				EffectPlayer.spawn_place_sparkles(center)
+			"spawn_step_dust":
+				EffectPlayer.spawn_step_dust(center))
+	return btn
+
+
+# ---------- Tab: Music ----------
+
+func _populate_music_tab() -> void:
+	_add_hint("Eine Knopf pro Level-Track. Dräuckt MusicManager.set_level_track(N) — d'Musig wechslet sofort. «Stop» hört uf, dass d'Hand-Test-Session ruhig blibt.")
+	var stop_row := HBoxContainer.new()
+	_content_root.add_child(stop_row)
+	var stop_btn := Button.new()
+	stop_btn.text = "⏸ Stop"
+	stop_btn.custom_minimum_size = Vector2(120, 40)
+	DesignTokens.style_button(stop_btn, false, DesignTokens.FONT_LABEL_SM)
+	stop_btn.pressed.connect(func():
+		if MusicManager and MusicManager.has_method("stop_music"):
+			MusicManager.stop_music())
+	stop_row.add_child(stop_btn)
+	var grid := GridContainer.new()
+	grid.columns = 2
+	grid.add_theme_constant_override("h_separation", DesignTokens.SP_M)
+	grid.add_theme_constant_override("v_separation", DesignTokens.SP_S)
+	_content_root.add_child(grid)
+	for entry in MUSIC_CATALOG:
+		grid.add_child(_build_music_button(entry))
+
+
+func _build_music_button(entry: Dictionary) -> Control:
+	var card := PanelContainer.new()
+	card.custom_minimum_size = Vector2(0, 64)
+	card.add_theme_stylebox_override("panel", DesignTokens.panel_box(DesignTokens.COL_STROKE_FAINT, DesignTokens.RADIUS_S, DesignTokens.SP_S))
+	var row := HBoxContainer.new()
+	card.add_child(row)
+	var info := VBoxContainer.new()
+	info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	info.add_theme_constant_override("separation", 1)
+	var name_lbl := Label.new()
+	name_lbl.text = entry.name
+	DesignTokens.style_label(name_lbl, DesignTokens.FONT_LABEL)
+	info.add_child(name_lbl)
+	var mood_lbl := Label.new()
+	mood_lbl.text = entry.mood
+	DesignTokens.style_label(mood_lbl, DesignTokens.FONT_LABEL_XS, true)
+	info.add_child(mood_lbl)
+	row.add_child(info)
+	var play_btn := Button.new()
+	play_btn.text = "▶ Spille"
+	play_btn.custom_minimum_size = Vector2(120, 40)
+	DesignTokens.style_button(play_btn, false, DesignTokens.FONT_LABEL_SM)
+	play_btn.pressed.connect(func():
+		if MusicManager and MusicManager.has_method("set_level_track"):
+			MusicManager.set_level_track(entry.id))
+	row.add_child(play_btn)
+	return card
+
+
+# ---------- Tab: Waves ----------
+
+func _populate_waves_tab() -> void:
+	_add_hint("Alli 30 Wellä pro Level. Klick es Level zum d'Wellä uufdrücke. Pro Wellä gits «Total Feinde» und d'Compositioä. Use case: Schwierigkeits-Audit, Spawn-Stack-Sucht, BTD5-Vergleich.")
+	for level_id in range(1, 11):
+		_content_root.add_child(_build_waves_section(level_id))
+
+
+func _build_waves_section(level_id: int) -> Control:
+	var section := VBoxContainer.new()
+	section.add_theme_constant_override("separation", DesignTokens.SP_XS)
+	var heading := Button.new()
+	heading.text = "▸ L%d — %s" % [level_id, _level_display_name(level_id)]
+	heading.custom_minimum_size = Vector2(0, 36)
+	DesignTokens.style_button(heading, false, DesignTokens.FONT_LABEL_LG)
+	heading.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	section.add_child(heading)
+	var detail := VBoxContainer.new()
+	detail.visible = false
+	detail.add_theme_constant_override("separation", 2)
+	section.add_child(detail)
+	heading.pressed.connect(func():
+		detail.visible = not detail.visible
+		if detail.visible and detail.get_child_count() == 0:
+			_populate_waves_detail(level_id, detail))
+	return section
+
+
+func _populate_waves_detail(level_id: int, parent: VBoxContainer) -> void:
+	var path := "res://resources/level_data/level_%d.tres" % level_id
+	if not ResourceLoader.exists(path):
+		var miss := Label.new()
+		miss.text = "(level data missing)"
+		parent.add_child(miss)
+		return
+	var ld = load(path)
+	if not (ld and "waves" in ld and ld.waves is Array):
+		var miss2 := Label.new()
+		miss2.text = "(no waves array)"
+		parent.add_child(miss2)
+		return
+	for i in ld.waves.size():
+		var wave: Dictionary = ld.waves[i]
+		parent.add_child(_build_wave_row(i + 1, wave))
+
+
+func _build_wave_row(wave_num: int, wave: Dictionary) -> Control:
+	var card := PanelContainer.new()
+	card.custom_minimum_size = Vector2(0, 36)
+	card.add_theme_stylebox_override("panel", DesignTokens.panel_box(DesignTokens.COL_STROKE_FAINT, DesignTokens.RADIUS_S, DesignTokens.SP_XS))
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", DesignTokens.SP_S)
+	card.add_child(row)
+	var num_lbl := Label.new()
+	num_lbl.text = "W%d" % wave_num
+	num_lbl.custom_minimum_size = Vector2(40, 0)
+	DesignTokens.style_label(num_lbl, DesignTokens.FONT_LABEL_SM)
+	row.add_child(num_lbl)
+	var groups: Array = wave.get("groups", [])
+	var total: int = 0
+	var summary_parts: Array = []
+	for g in groups:
+		var c: int = int(g.get("count", 0))
+		total += c
+		summary_parts.append("%d×%s" % [c, g.get("enemy_id", "?")])
+	var total_lbl := Label.new()
+	total_lbl.text = "%d total" % total
+	total_lbl.custom_minimum_size = Vector2(80, 0)
+	DesignTokens.style_label(total_lbl, DesignTokens.FONT_LABEL_SM, true)
+	row.add_child(total_lbl)
+	var summary_lbl := Label.new()
+	summary_lbl.text = " · ".join(summary_parts)
+	summary_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	summary_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
+	DesignTokens.style_label(summary_lbl, DesignTokens.FONT_LABEL_XS)
+	row.add_child(summary_lbl)
+	return card
+
+
+# ---------- Tab: Levels ----------
+
+func _populate_levels_tab() -> void:
+	_add_hint("Alli 10 Level-Daten uf eim Blick — Name, Beschribig, Start-Gold/Lives, Wellä-Anzahl, Total-Feinde. Use case: Balancing-Audit über alli Level.")
+	for level_id in range(1, 11):
+		_content_root.add_child(_build_level_summary_card(level_id))
+
+
+func _build_level_summary_card(level_id: int) -> Control:
+	var card := PanelContainer.new()
+	card.add_theme_stylebox_override("panel", DesignTokens.panel_box(DesignTokens.COL_STROKE_FAINT, DesignTokens.RADIUS_S, DesignTokens.SP_S))
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 4)
+	card.add_child(col)
+	var path := "res://resources/level_data/level_%d.tres" % level_id
+	if not ResourceLoader.exists(path):
+		var miss := Label.new()
+		miss.text = "L%d — (level_data missing)" % level_id
+		col.add_child(miss)
+		return card
+	var ld = load(path)
+	var heading := Label.new()
+	heading.text = "L%d — %s" % [level_id, ld.level_name if "level_name" in ld else "?"]
+	DesignTokens.style_label(heading, DesignTokens.FONT_LABEL_LG)
+	col.add_child(heading)
+	var desc := Label.new()
+	desc.text = ld.description if "description" in ld else ""
+	desc.autowrap_mode = TextServer.AUTOWRAP_WORD
+	DesignTokens.style_label(desc, DesignTokens.FONT_LABEL_XS, true)
+	col.add_child(desc)
+	var total_enemies: int = 0
+	var bosses: int = 0
+	if "waves" in ld and ld.waves is Array:
+		for w in ld.waves:
+			for g in w.get("groups", []):
+				var c: int = int(g.get("count", 0))
+				total_enemies += c
+				if g.get("enemy_id", "") == "boss":
+					bosses += c
+	var stats := Label.new()
+	stats.text = "Wellä: %d · Start-Gold: %d · Liebe: %d · Total Feinde: %d · Bosse: %d" % [
+		(ld.waves.size() if "waves" in ld and ld.waves else 0),
+		(ld.starting_gold if "starting_gold" in ld else 0),
+		(ld.starting_lives if "starting_lives" in ld else 0),
+		total_enemies, bosses
+	]
+	DesignTokens.style_label(stats, DesignTokens.FONT_LABEL_SM)
+	col.add_child(stats)
+	return card
+
+
+# ---------- Tab: Story ----------
+
+func _populate_story_tab() -> void:
+	_add_hint("Lore-Iitritts-Pages pro Level. Lis durä, gimmer Feedback ob d'Sproch passt, ob d'Diktion stimmt, ob es zu lang isch.")
+	for level_id in range(1, 11):
+		_content_root.add_child(_build_story_section(level_id))
+
+
+func _build_story_section(level_id: int) -> Control:
+	var section := VBoxContainer.new()
+	section.add_theme_constant_override("separation", 4)
+	var heading := Button.new()
+	heading.text = "▸ L%d — %s" % [level_id, _level_display_name(level_id)]
+	heading.custom_minimum_size = Vector2(0, 36)
+	DesignTokens.style_button(heading, false, DesignTokens.FONT_LABEL_LG)
+	heading.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	section.add_child(heading)
+	var detail := VBoxContainer.new()
+	detail.visible = false
+	detail.add_theme_constant_override("separation", DesignTokens.SP_S)
+	section.add_child(detail)
+	heading.pressed.connect(func():
+		detail.visible = not detail.visible
+		if detail.visible and detail.get_child_count() == 0:
+			_populate_story_detail(level_id, detail))
+	return section
+
+
+func _populate_story_detail(level_id: int, parent: VBoxContainer) -> void:
+	if not ClassDB.class_exists("Lore"):
+		# Fall back to direct call. Lore is a static class via class_name.
+		pass
+	var pages: Array = []
+	if Engine.has_singleton("Lore"):
+		pages = Engine.get_singleton("Lore").get_level_pages(level_id)
+	else:
+		# Lore is not an autoload — call statically through a known reference.
+		var lore_script = load("res://scripts/systems/lore.gd")
+		if lore_script and lore_script.has_method("get_level_pages"):
+			pages = lore_script.get_level_pages(level_id)
+	if pages.is_empty():
+		var miss := Label.new()
+		miss.text = "(no pages)"
+		parent.add_child(miss)
+		return
+	for i in pages.size():
+		var page = pages[i]
+		var card := PanelContainer.new()
+		card.add_theme_stylebox_override("panel", DesignTokens.panel_box(DesignTokens.COL_STROKE_FAINT, DesignTokens.RADIUS_S, DesignTokens.SP_S))
+		var col := VBoxContainer.new()
+		col.add_theme_constant_override("separation", 2)
+		card.add_child(col)
+		var speaker_lbl := Label.new()
+		var speaker: String = page.get("speaker", "?") if page is Dictionary else "?"
+		speaker_lbl.text = "Page %d · %s" % [i + 1, speaker]
+		DesignTokens.style_label(speaker_lbl, DesignTokens.FONT_LABEL_SM)
+		col.add_child(speaker_lbl)
+		var text_lbl := Label.new()
+		text_lbl.text = page.get("text", "") if page is Dictionary else str(page)
+		text_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
+		DesignTokens.style_label(text_lbl, DesignTokens.FONT_LABEL)
+		col.add_child(text_lbl)
+		parent.add_child(card)
+
+
+# ---------- Tab: Damage Types ----------
+
+func _populate_damage_tab() -> void:
+	_add_hint("Damage-Type Regeln us base_enemy.take_damage. Wichtig: lead-Feinde wende d'15%-Resistenz statt em normale Armor — magische und reine Schäde gönd dur.")
+	for entry in DAMAGE_TYPE_CATALOG:
+		_content_root.add_child(_build_damage_type_card(entry))
+
+
+func _build_damage_type_card(entry: Dictionary) -> Control:
+	var card := PanelContainer.new()
+	card.add_theme_stylebox_override("panel", DesignTokens.panel_box(entry.color, DesignTokens.RADIUS_S, DesignTokens.SP_S))
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 4)
+	card.add_child(col)
+	var name_lbl := Label.new()
+	name_lbl.text = str(entry.name)
+	name_lbl.add_theme_color_override("font_color", entry.color)
+	DesignTokens.style_label(name_lbl, DesignTokens.FONT_LABEL_LG)
+	col.add_child(name_lbl)
+	var rule_lbl := Label.new()
+	rule_lbl.text = entry.rule
+	rule_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
+	DesignTokens.style_label(rule_lbl, DesignTokens.FONT_LABEL_SM)
+	col.add_child(rule_lbl)
+	return card
+
+
+# ---------- Tab: Difficulty ----------
+
+func _populate_difficulty_tab() -> void:
+	_add_hint("Multiplikatore pro Schwierigkeits-Stufe. Quelle: GameManager.DIFFICULTY_*. Use case: prüefe öb «Hard» wirklich härter isch und «Easy» nöd langwilig.")
+	_content_root.add_child(_build_grid_header(["Mode", "HP", "Speed", "Anzahl", "Gold", "Aminos", "Max Stärn"]))
+	for entry in DIFFICULTY_CATALOG:
+		_content_root.add_child(_build_difficulty_row(entry))
+
+
+func _build_difficulty_row(entry: Dictionary) -> Control:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", DesignTokens.SP_S)
+	var name_lbl := Label.new()
+	name_lbl.text = str(entry.name)
+	name_lbl.custom_minimum_size = Vector2(120, 36)
+	name_lbl.add_theme_color_override("font_color", entry.color)
+	DesignTokens.style_label(name_lbl, DesignTokens.FONT_LABEL)
+	row.add_child(name_lbl)
+	for key in ["hp", "speed", "count", "gold", "aminos"]:
+		var lbl := Label.new()
+		lbl.text = str(entry[key])
+		lbl.custom_minimum_size = Vector2(96, 36)
+		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		DesignTokens.style_label(lbl, DesignTokens.FONT_LABEL_SM)
+		row.add_child(lbl)
+	var stars_lbl := Label.new()
+	stars_lbl.text = str(entry.stars_max)
+	stars_lbl.custom_minimum_size = Vector2(96, 36)
+	stars_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	DesignTokens.style_label(stars_lbl, DesignTokens.FONT_LABEL_SM)
+	row.add_child(stars_lbl)
+	return row
+
+
+# ---------- Tab: Synergies ----------
+
+func _populate_synergies_tab() -> void:
+	_add_hint("Adjazenz-Buffs (~150px Radius). Zwei Türm gnueg nahe = sichtbarä Bonus + es feines goldigs Liini zwüsche ihne.")
+	_content_root.add_child(_build_grid_header(["Turm A", "Turm B", "Bonus"]))
+	for entry in SYNERGY_CATALOG:
+		_content_root.add_child(_build_synergy_row(entry))
+
+
+func _build_synergy_row(entry: Dictionary) -> Control:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", DesignTokens.SP_S)
+	var a_lbl := Label.new()
+	a_lbl.text = entry.a
+	a_lbl.custom_minimum_size = Vector2(160, 36)
+	DesignTokens.style_label(a_lbl, DesignTokens.FONT_LABEL)
+	row.add_child(a_lbl)
+	var plus := Label.new()
+	plus.text = "+"
+	plus.custom_minimum_size = Vector2(20, 36)
+	plus.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	DesignTokens.style_label(plus, DesignTokens.FONT_LABEL, true)
+	row.add_child(plus)
+	var b_lbl := Label.new()
+	b_lbl.text = entry.b
+	b_lbl.custom_minimum_size = Vector2(160, 36)
+	DesignTokens.style_label(b_lbl, DesignTokens.FONT_LABEL)
+	row.add_child(b_lbl)
+	var buff_lbl := Label.new()
+	buff_lbl.text = entry.buff
+	buff_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	buff_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
+	DesignTokens.style_label(buff_lbl, DesignTokens.FONT_LABEL_SM)
+	row.add_child(buff_lbl)
+	return row
+
+
+# ---------- Tab: Atmosphere particles ----------
+
+func _populate_atmosphere_tab() -> void:
+	_add_hint("Pro Level d'Hintergrund-Partikel. Quelle: game_level._spawn_atmosphere_particles. Wenn dir öppis kalt vorchunt obwohl's heiss sii sött, hie aapasse.")
+	_content_root.add_child(_build_grid_header(["Level", "Tint / cfg", "Notiz"]))
+	for entry in ATMOSPHERE_CATALOG:
+		_content_root.add_child(_build_atmosphere_row(entry))
+
+
+func _build_atmosphere_row(entry: Dictionary) -> Control:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", DesignTokens.SP_S)
+	var lvl_lbl := Label.new()
+	lvl_lbl.text = entry.label
+	lvl_lbl.custom_minimum_size = Vector2(80, 36)
+	DesignTokens.style_label(lvl_lbl, DesignTokens.FONT_LABEL)
+	row.add_child(lvl_lbl)
+	var tint_lbl := Label.new()
+	tint_lbl.text = entry.tint
+	tint_lbl.custom_minimum_size = Vector2(260, 36)
+	DesignTokens.style_label(tint_lbl, DesignTokens.FONT_LABEL_SM)
+	row.add_child(tint_lbl)
+	var note_lbl := Label.new()
+	note_lbl.text = entry.note
+	note_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	note_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
+	DesignTokens.style_label(note_lbl, DesignTokens.FONT_LABEL_XS, true)
+	row.add_child(note_lbl)
+	return row
+
+
+# ---------- Tab: Lore (character bios + enemy lore) ----------
+
+func _populate_lore_tab() -> void:
+	_add_hint("Charakter-Biografie + Feind-Lore us scripts/systems/lore.gd. Lis durä — wenn d'Wortwahl irgendwo eng-deutsch tönt anstatt Schwiizerdütsch, säg's.")
+	var lore_script = load("res://scripts/systems/lore.gd")
+	if lore_script == null:
+		_add_hint("(lore.gd konnt nöd glade werde)")
+		return
+	# CHARACTER_BIOS section
+	var heading_a := Label.new()
+	heading_a.text = "▸ Charakter-Biografie"
+	DesignTokens.style_heading(heading_a, DesignTokens.FONT_LABEL_LG)
+	_content_root.add_child(heading_a)
+	if "CHARACTER_BIOS" in lore_script:
+		var bios: Dictionary = lore_script.CHARACTER_BIOS
+		for char_id in bios.keys():
+			_content_root.add_child(_build_lore_card(str(char_id), bios[char_id]))
+	# ENEMY_LORE section
+	var heading_b := Label.new()
+	heading_b.text = "▸ Feind-Lore"
+	DesignTokens.style_heading(heading_b, DesignTokens.FONT_LABEL_LG)
+	_content_root.add_child(heading_b)
+	if "ENEMY_LORE" in lore_script:
+		var enemies: Dictionary = lore_script.ENEMY_LORE
+		for enemy_id in enemies.keys():
+			_content_root.add_child(_build_enemy_lore_card(str(enemy_id), str(enemies[enemy_id])))
+
+
+func _build_lore_card(char_id: String, bio) -> Control:
+	var card := PanelContainer.new()
+	card.add_theme_stylebox_override("panel", DesignTokens.panel_box(DesignTokens.COL_STROKE_FAINT, DesignTokens.RADIUS_S, DesignTokens.SP_S))
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 2)
+	card.add_child(col)
+	var name_lbl := Label.new()
+	if bio is Dictionary and "name" in bio:
+		name_lbl.text = "%s · %s" % [char_id, bio["name"]]
+	else:
+		name_lbl.text = char_id
+	DesignTokens.style_label(name_lbl, DesignTokens.FONT_LABEL_LG)
+	col.add_child(name_lbl)
+	if bio is Dictionary:
+		for key in bio.keys():
+			if key == "name":
+				continue
+			var line := Label.new()
+			line.text = "%s: %s" % [str(key), str(bio[key])]
+			line.autowrap_mode = TextServer.AUTOWRAP_WORD
+			DesignTokens.style_label(line, DesignTokens.FONT_LABEL_SM)
+			col.add_child(line)
+	return card
+
+
+func _build_enemy_lore_card(enemy_id: String, lore: String) -> Control:
+	var card := PanelContainer.new()
+	card.add_theme_stylebox_override("panel", DesignTokens.panel_box(DesignTokens.COL_STROKE_FAINT, DesignTokens.RADIUS_S, DesignTokens.SP_S))
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 2)
+	card.add_child(col)
+	var name_lbl := Label.new()
+	name_lbl.text = ENEMY_DISPLAY.get(enemy_id, enemy_id)
+	DesignTokens.style_label(name_lbl, DesignTokens.FONT_LABEL)
+	col.add_child(name_lbl)
+	var lore_lbl := Label.new()
+	lore_lbl.text = lore
+	lore_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
+	DesignTokens.style_label(lore_lbl, DesignTokens.FONT_LABEL_SM, true)
+	col.add_child(lore_lbl)
+	return card
+
+
+# ---------- Tab: Diagnostics (runtime debug stats) ----------
+
+func _populate_diagnostics_tab() -> void:
+	_add_hint("Live-Diagnose: Engine-FPS, Memory-Druck, Pool-Stand, autoloadi-Status. Use case: bevor Du Bug meldsch, hie luege ob öppis offensichtlich nöd stimmt.")
+	# Engine info
+	var engine_card := PanelContainer.new()
+	engine_card.add_theme_stylebox_override("panel", DesignTokens.panel_box(DesignTokens.COL_STROKE_FAINT, DesignTokens.RADIUS_S, DesignTokens.SP_S))
+	var engine_col := VBoxContainer.new()
+	engine_card.add_child(engine_col)
+	_add_kv(engine_col, "Engine", Engine.get_version_info().get("string", "?"))
+	_add_kv(engine_col, "FPS",          str(int(Engine.get_frames_per_second())))
+	_add_kv(engine_col, "Physics FPS",  str(Engine.physics_ticks_per_second))
+	_add_kv(engine_col, "Time scale",   "%.2f" % Engine.time_scale)
+	_add_kv(engine_col, "Viewport",     "%dx%d" % [int(get_viewport_rect().size.x), int(get_viewport_rect().size.y)])
+	_add_kv(engine_col, "OS",           OS.get_name() + " · " + OS.get_distribution_name())
+	_content_root.add_child(engine_card)
+	# Autoload status
+	var auto_heading := Label.new()
+	auto_heading.text = "▸ Autoload-Status"
+	DesignTokens.style_heading(auto_heading, DesignTokens.FONT_LABEL_LG)
+	_content_root.add_child(auto_heading)
+	for autoload_name in ["GameManager", "CurrencyManager", "AminosManager", "ComboTracker", "MusicManager", "SfxManager", "AutoPlaytest", "WaveSimulator", "ProjectilePool", "EnemyPool", "EffectPlayer"]:
+		var card := PanelContainer.new()
+		card.add_theme_stylebox_override("panel", DesignTokens.panel_box(DesignTokens.COL_STROKE_FAINT, DesignTokens.RADIUS_S, DesignTokens.SP_XS))
+		var row := HBoxContainer.new()
+		card.add_child(row)
+		var ok: bool = get_node_or_null("/root/" + autoload_name) != null
+		var name_lbl := Label.new()
+		name_lbl.text = autoload_name
+		name_lbl.custom_minimum_size = Vector2(220, 28)
+		DesignTokens.style_label(name_lbl, DesignTokens.FONT_LABEL_SM)
+		row.add_child(name_lbl)
+		var status_lbl := Label.new()
+		status_lbl.text = "✓ OK" if ok else "✕ MISSING"
+		status_lbl.add_theme_color_override("font_color", DesignTokens.COL_OK if ok else DesignTokens.COL_BAD)
+		DesignTokens.style_label(status_lbl, DesignTokens.FONT_LABEL_SM)
+		row.add_child(status_lbl)
+		_content_root.add_child(card)
+	# Pool status
+	var pool_heading := Label.new()
+	pool_heading.text = "▸ Pool-Status"
+	DesignTokens.style_heading(pool_heading, DesignTokens.FONT_LABEL_LG)
+	_content_root.add_child(pool_heading)
+	if EnemyPool and EnemyPool.has_method("stats"):
+		var es: Dictionary = EnemyPool.stats()
+		_add_kv(_content_root, "EnemyPool",       JSON.stringify(es))
+	if ProjectilePool and ProjectilePool.has_method("stats"):
+		var ps: Dictionary = ProjectilePool.stats()
+		_add_kv(_content_root, "ProjectilePool",  JSON.stringify(ps))
+	# Counts
+	var counts_heading := Label.new()
+	counts_heading.text = "▸ Asset-Aazahl"
+	DesignTokens.style_heading(counts_heading, DesignTokens.FONT_LABEL_LG)
+	_content_root.add_child(counts_heading)
+	_add_kv(_content_root, "Türm",       str(_count_files("res://resources/tower_data/")))
+	_add_kv(_content_root, "Feinde",     str(_count_files("res://resources/enemy_data/")))
+	_add_kv(_content_root, "Levels",     str(_count_files("res://resources/level_data/")))
+	# Refresh
+	var refresh := Button.new()
+	refresh.text = "↻ Diagnose neu laade"
+	refresh.custom_minimum_size = Vector2(220, 40)
+	DesignTokens.style_button(refresh, false, DesignTokens.FONT_LABEL_SM)
+	refresh.pressed.connect(_show_tab.bind("diagnostics"))
+	_content_root.add_child(refresh)
+
+
+func _add_kv(parent: Container, key: String, value: String) -> void:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", DesignTokens.SP_M)
+	var k := Label.new()
+	k.text = key
+	k.custom_minimum_size = Vector2(220, 24)
+	DesignTokens.style_label(k, DesignTokens.FONT_LABEL_SM, true)
+	row.add_child(k)
+	var v := Label.new()
+	v.text = value
+	v.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	DesignTokens.style_label(v, DesignTokens.FONT_LABEL_SM)
+	row.add_child(v)
+	parent.add_child(row)
+
+
+func _count_files(dir_path: String) -> int:
+	var dir := DirAccess.open(dir_path)
+	if dir == null:
+		return 0
+	var n: int = 0
+	dir.list_dir_begin()
+	var entry := dir.get_next()
+	while entry != "":
+		if entry.ends_with(".tres"):
+			n += 1
+		entry = dir.get_next()
+	return n
