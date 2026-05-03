@@ -112,6 +112,7 @@ var level_stars: Dictionary = {}
 var friend_photos: Dictionary = {}
 
 # Audio settings — 0.0 = muted, 1.0 = full volume. Persisted in save file.
+var master_volume: float = 1.0
 var music_volume: float = 0.7
 var sfx_volume: float = 0.8
 
@@ -159,6 +160,12 @@ func _warmup_textures() -> void:
 	]:
 		if ResourceLoader.exists(p):
 			load(p)
+
+
+func set_master_volume(v: float) -> void:
+	master_volume = clampf(v, 0.0, 1.0)
+	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Master"), linear_to_db(master_volume))
+	save_game()
 
 
 func set_music_volume(v: float) -> void:
@@ -270,6 +277,7 @@ func save_game() -> void:
 		"total_stars": total_stars,
 		"currency_total": CurrencyManager.total_gold_earned,
 		"friend_photos": friend_photos,
+		"master_volume": master_volume,
 		"music_volume": music_volume,
 		"sfx_volume": sfx_volume,
 		"total_kills": total_kills,
@@ -306,9 +314,11 @@ func load_game() -> void:
 			recomputed += int(v)
 		total_stars = recomputed
 		friend_photos = save_data.get("friend_photos", {})
+		master_volume = save_data.get("master_volume", 1.0)
 		music_volume = save_data.get("music_volume", 0.7)
 		sfx_volume = save_data.get("sfx_volume", 0.8)
 		total_kills = save_data.get("total_kills", 0)
+		AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Master"), linear_to_db(master_volume))
 
 
 func assign_friend_photo(character_id: String, texture_path: String) -> void:
