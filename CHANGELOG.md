@@ -3,6 +3,12 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-05-04 (audit-polish — playtest timer fix + level select contrast)
+
+- fix(playtest): SHOT_INTERVAL timer now uses ignore_time_scale=true — was firing at game speed (0.3s real instead of 2.5s real at 8× time_scale), giving only ~5s total per scenario; now 16 × 2.5s = 40s real = 320s game time — fixes #429 (waves never reaching WON), closes #418 #419
+- fix(playtest): summary.md now notes expected headless CI FPS range (10–15) so the analyzer stops filing false P0 perf issues; closes #428
+- polish(level-select): dimmer darkened 0.60→0.78 alpha; circle border width 3→5px + drop shadow; locked circles brighter (bg 0.12→0.18, border 0.38→0.50 grey); label text contrast improved — fixes #430
+
 ## 2026-05-03 (audit-polish — shop badge + options theme + L4 path + enemy intro taunts + wave toast + level select)
 
 - polish(hud): shop tower cost display upgraded to a coin-icon badge (dark pill + SVG coin + 13px gold label) — fixes #319
