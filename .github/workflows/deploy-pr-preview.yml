@@ -6,15 +6,18 @@ name: PR Preview Deploy
 #   jgschobel.github.io/Tower-Defense-Game/pr-42/
 
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - 'scripts/**'
-      - 'scenes/**'
-      - 'resources/**'
-      - 'project.godot'
-      - 'export_presets.cfg'
-      - 'assets/**'
+  # DISABLED 2026-05-04: the gh-pages git push fails because the Godot
+  # web export produces an `index.pck` of ~197 MB, exceeding GitHub's
+  # hard 100 MB per-file git limit. This caused every PR's
+  # `build-and-deploy` check to red-X, including the dev-menu fix
+  # (#421). Production `deploy-web.yml` is unaffected (uses the Pages
+  # artifact upload, not a git push).
+  #
+  # To revive PR previews:
+  #   - Switch to per-PR Pages artifact upload, OR
+  #   - Trim total .pck size <100 MB (audit assets/), OR
+  #   - Host previews off-GitHub (Cloudflare Pages, Netlify).
+  workflow_dispatch:
 
 permissions:
   contents: write
