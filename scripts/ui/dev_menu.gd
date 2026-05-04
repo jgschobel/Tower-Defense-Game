@@ -1037,7 +1037,7 @@ func _build_effect_button(entry: Dictionary) -> Control:
 			"spawn_place_sparkles":
 				EffectPlayer.spawn_place_sparkles(center)
 			"spawn_step_dust":
-				EffectPlayer.spawn_step_dust(center)
+				EffectPlayer.spawn_step_dust(center))
 	return btn
 
 
