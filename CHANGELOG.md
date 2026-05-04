@@ -3,6 +3,14 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-05-04 (audit-polish — enemy Swiss German consistency + art hygiene)
+
+- polish(hud): Swiss German short names for all 16 enemy types in wave-preview panel — new enemies no longer show raw English IDs like "Cumulus_blob"
+- polish(hud): distinct preview dot colors for 7 new enemy types (fondue_bomb=gold, glace_golem=ice-blue, berserker=crimson, cumulus_blob=indigo, linsen_golem=olive, smoothie_slime=green, tofu_ninja=cream)
+- polish(hud): Züridütsch taunt lines for 5 missing new enemies (berserker, cumulus_blob, linsen_golem, smoothie_slime, tofu_ninja)
+- chore(assets): deleted 5 orphaned tower art files (amosius_raw, cordula_final, cordula_upgrade, jojo_final, kuhne_final) — ~10.5 MB recovered, none referenced in .tres or code
+- chore(roadmap): ticked "Wire 11 new enemy textures" P0 item — textures already wired in .tres files, just needed verification
+
 ## 2026-05-03 (audit-polish — shop badge + options theme + L4 path + enemy intro taunts + wave toast + level select)
 
 - polish(hud): shop tower cost display upgraded to a coin-icon badge (dark pill + SVG coin + 13px gold label) — fixes #319

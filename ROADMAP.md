@@ -26,13 +26,11 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
 7 days; new P0 items get appended at the bottom.
 
 ### Game systems
-- [ ] **Wire 11 new enemy textures into .tres files** — `camo`, `lead`,
+- [x] **Wire 11 new enemy textures into .tres files** — `camo`, `lead`,
   `regrow`, `swarm`, `fondue_bomb`, `glace_golem`, `berserker`,
   `cumulus_blob`, `linsen_golem`, `smoothie_slime`, `tofu_ninja` all
-  have base PNGs in main but their `.tres` files don't reference them
-  via `custom_texture`. Add `[ext_resource type="Texture2D" path="..."]`
-  + `custom_texture = ExtResource("N")` to each. They render as flat
-  base_color circles otherwise.
+  have base PNGs in main and their `.tres` files reference them via
+  `custom_texture`. Verified 2026-05-04.
 
 - [ ] **Run enemy-damage-art for the 11 new enemies** — the
   `generate_enemy_damage_variants.py` script knows about them; just
