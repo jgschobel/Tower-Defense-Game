@@ -3,6 +3,109 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-05-03 → 2026-05-04 (Opus mega-session — BTD5 parity foundations)
+
+The largest single shipping session to date. Covers infrastructure
+rescue + BTD5-style Tier 1 features. See
+`docs/audits/2026-05-04-end-of-session.md` for the full rundown.
+
+### Foundations shipped to main (PR #384, #397)
+- **22-tab dev menu** (was 7) — Variante / Monster / Türm / Projektile /
+  Effekt / Audio / Musik / Wellä / Levels / Maps / Story / Lore /
+  Damage / Schwierig / Synergie / Atmo / Icons / Palette / Diagnose /
+  Mobile / Perf HUD / Build Info. Variante tab rewired to discover
+  tier variants from `assets/textures/towers/*_t*.png`.
+- **257 `.import` companion files** generated for orphaned PNGs (108
+  mass variants + 16 tower tier sprites + 11 enemy clean PNGs that
+  were committed without `.import` and silently invisible in the web
+  export). Idempotent script `.github/scripts/make_import_files.py`.
+- **17 enemies fully wired**: 6 existing .tres files updated to
+  reference `_clean.png` art via `custom_texture`; 5 new .tres files
+  created (berserker / cumulus_blob / linsen_golem / smoothie_slime /
+  tofu_ninja) with full stats from the damage-variant prompt analysis.
+- **Audio rip fix** (`sfx_manager.gd`): 22 050 → 44 100 Hz sample rate
+  (eliminates resample artifacts on 44.1k/48k device output) +
+  cosine-shaped 10 ms attack / 15 ms release envelopes (no clicks at
+  start/end of every SFX) + per-sound volume × 0.5 (was × 0.6) so
+  polyphonic stacks don't sum-clip the master bus.
+- **8 emoji uses migrated** to text/em-dash to kill tofu boxes on
+  Android phones with stripped Noto Emoji.
+- **Playtester 4× → 8× scale + 12 → 16 ticks** (auto_playtest.gd) so
+  scenarios actually reach WON/LOST instead of always ending PLAYING.
+- **4 art workflows patched** to call `make_import_files.py` and
+  commit `.import` companions automatically (art-request, mass-art,
+  enemy-damage-art, photo-to-character).
+
+### Tier 1 BTD5-style gameplay (PRs #397, #400, #403, #421, #433)
+- **Tier 1A — Per-tower targeting modes** (PR #397, in main):
+  `BaseTower.target_mode_override` field + cycler button
+  (Erschti / Letschti / Nöchschti / Stärchsti) in tower-info panel.
+- **Tier 1B — MOAB-class boss tier** (PR #400, auto-merging): 3 new
+  late-game enemies (`moab_migros` 800 HP slow, `bfb_cumulus` 1200 HP
+  flying camo, `ddt_schwarz` 600 HP fast camo lead) wired into L10
+  W19-W22 finale. Together with existing `boss` (M-Tüüfel) makes 4
+  distinct boss tiers per BTD5 progression.
+- **Tier 1C — Active tower abilities** (PR #403, auto-merging):
+  per-tower active ability framework with cooldown + UI button.
+  First implementation: Lemurius **Banani-Sturm** (5 s of 3× attack
+  rate, 60 s CD).
+- **Tier 1D — Game speed toggle 1×/2×/3×**: confirmed already in main
+  on `hud.gd` (no work needed).
+- **Tier 1E — Multi-stage spawn chains** (PR #397, in main): 7 enemies
+  now spawn smaller enemies on death via `spawns_on_death` field.
+
+### Discipline + observability infra (Phase 2/3)
+- **CLAUDE.md**: 5 new durable directives — *Push ≠ done*, *First MCP
+  call: list_pull_requests*, *Read asset_status.md before claiming
+  art is missing*, *NEVER use `issues:[opened]` triggers*,
+  *End-of-session ritual*.
+- **session-opener.yml** + `session_brief.py` — daily 03:00 UTC
+  generates `docs/observability/session_brief.md`, single source of
+  truth replacing 5 separate file reads.
+- **weekly-audit.yml** — Mondays 06:00 UTC, full audit with backlog
+  counts; replaces broken drift-scan.
+- **loop-killswitch.yml** — every 2h smart watchdog. Pauses the
+  autonomous loop only when no claude[bot] PR has merged in 24h AND
+  >5 stuck open PRs exist; auto-recovers when merges resume.
+- **pr-staleness-watchdog.yml** — every 12h, files / updates a
+  `stale-pr-tracker` issue listing PRs >48h old.
+- **asset-manifest.yml** + `asset_manifest.py` — daily reconciliation
+  of expected vs actual art written to `docs/observability/asset_status.md`.
+- **workflow-lint.yml fixed**: real bug discovered — regex anchor
+  (`$` was end-of-string instead of literal dollar via `re.escape`).
+  This is why workflow-lint never succeeded in 2 weeks.
+- **deploy-web.yml**: bumped Godot import timeout 180 → 360 s (cold
+  `.ctex` compression for 257 .imports needed more headroom) +
+  diagnostic logging + verify-gate step.
+- **validate.yml** (NEW): explicit `validate` job to satisfy branch
+  protection's required-status-check by name.
+
+### ROADMAP reconciliation
+- **1178 → 149 lines**: collapsed 6 conflicting "P0" sections from
+  different dates into one current P0. Old ROADMAP archived to
+  `docs/changelog/2026-05-03-roadmap-archive.md`.
+
+### Cleanup
+- **PR backlog**: 25+ → 0 stuck PRs. 13 duplicate art PRs closed.
+- **Stale ci-failure issues**: 2 known false-positives closed (the
+  `tsconfig.json directory mismatch` upstream bug in
+  `claude-code-action@v1` — not actionable from our side).
+- **14 old art-request issues** closed as completed (assets had
+  shipped via earlier merges; `asset_manifest.md` now confirms).
+- **Branch protection** wired: `validate` / `actionlint` /
+  `bash-syntax` required for main. Auto-merge enabled. Auto-delete
+  head branches on merge enabled.
+
+### Open follow-ups (next session)
+- Dev menu grey screen — fix in PR #421 (`dev_menu.gd:1040` parse
+  error + missing `_count_tres` / `_count_pngs` helpers in Build
+  Info tab) auto-merging now.
+- Tier 1C v2 — abilities for Kühne / JoJo / Cordula / Amösius
+  (currently only Lemurius has a real ability; others fall through
+  to default 3 s triple-fire).
+- Tier 2 — Lemurius hero (XP-based level-up + ultimate ability).
+- L7-L9 wave wiring for the 3 new MOAB-class bosses.
+
 ## 2026-05-03 (audit-polish — shop badge + options theme + L4 path + enemy intro taunts + wave toast + level select)
 
 - polish(hud): shop tower cost display upgraded to a coin-icon badge (dark pill + SVG coin + 13px gold label) — fixes #319

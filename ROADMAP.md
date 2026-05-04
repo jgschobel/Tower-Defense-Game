@@ -26,7 +26,7 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
 7 days; new P0 items get appended at the bottom.
 
 ### Game systems
-- [ ] **Wire 11 new enemy textures into .tres files** — `camo`, `lead`,
+- [x] **Wire 11 new enemy textures into .tres files** ✅ shipped 2026-05-04 (PR #384/#397) — `camo`, `lead`,
   `regrow`, `swarm`, `fondue_bomb`, `glace_golem`, `berserker`,
   `cumulus_blob`, `linsen_golem`, `smoothie_slime`, `tofu_ninja` all
   have base PNGs in main but their `.tres` files don't reference them
@@ -34,7 +34,7 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
   + `custom_texture = ExtResource("N")` to each. They render as flat
   base_color circles otherwise.
 
-- [ ] **Run enemy-damage-art for the 11 new enemies** — the
+- [x] **Run enemy-damage-art for the 11 new enemies** ✅ shipped 2026-05-03 (issue #386 → PR #387, 51 damage-state PNGs) — the
   `generate_enemy_damage_variants.py` script knows about them; just
   needs the workflow to fire (open issue with label `enemy-damage-art`
   and "all" as the title's first word). Will produce 33 damage-state
@@ -73,7 +73,7 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
   `claude-code-action@v1`. Currently files a `ci-failure` issue every
   autonomous-dev run, draining loop quota.
 
-- [ ] **Fix workflow-lint** — never succeeded. Either the `actionlint`
+- [x] **Fix workflow-lint** ✅ shipped 2026-05-03 (regex `re.escape($)` bug + shellcheck flag tuning) — never succeeded. Either the `actionlint`
   download or the `bash -n per run-block` step has a real bug.
   Re-trigger by editing a workflow file, then check the failure log.
 
@@ -107,16 +107,16 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
   "did you read asset_status.md? does this affect playtester signal?"
   before opening.
 
-- [ ] **`session-opener.yml`** — daily 03:00 UTC workflow that writes
+- [x] **`session-opener.yml`** ✅ shipped 2026-05-03 (+ pr-staleness-watchdog + weekly-audit + asset-manifest) — daily 03:00 UTC workflow that writes
   `docs/observability/session_brief.md` (open PR count, P0 head item,
   ci-failures, last deploy). Chat-session reads this BEFORE doing
   anything.
 
-- [ ] **Branch protection on main** with required CI checks
+- [x] **Branch protection on main** ✅ enabled 2026-05-03 by user — required checks (validate / actionlint / bash-syntax) + auto-merge + auto-delete-branch — with required CI checks
   (`validate.sh`, `workflow-lint`, `playtest`). Makes
   `gh pr merge --auto` actually wait for green CI.
 
-- [ ] **Autonomous-loop killswitch** — if 3 consecutive autonomous-dev
+- [x] **Autonomous-loop killswitch** ✅ shipped 2026-05-03 (loop-killswitch.yml — merge-based, smarter than exit-code based) — if 3 consecutive autonomous-dev
   runs fail, the next run pauses and instead opens a `loop-broken`
   issue. Prevents runaway broken loops.
 
