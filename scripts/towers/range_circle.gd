@@ -1,6 +1,8 @@
 extends Node2D
 
 ## Draws a semi-transparent range circle with an animated dashed border (D30).
+## Perf: _process disabled while hidden — only runs when the player has
+## tapped a tower to inspect its range (not during normal gameplay).
 
 var circle_radius: float = 150.0
 var circle_color: Color = Color(0.3, 0.6, 1.0, 0.16)
@@ -11,6 +13,17 @@ var _dash_offset: float = 0.0
 const DASH_LEN: float = 18.0   # arc-length of each dash in pixels
 const GAP_LEN: float  = 10.0   # gap between dashes
 const MARCH_SPEED: float = 25.0  # px/s that dashes travel clockwise
+
+
+func _ready() -> void:
+	visibility_changed.connect(_on_visibility_changed)
+	set_process(false)
+
+
+func _on_visibility_changed() -> void:
+	set_process(visible)
+	if visible:
+		queue_redraw()
 
 
 func set_radius(r: float) -> void:
@@ -27,8 +40,6 @@ func set_tint(c: Color) -> void:
 
 
 func _process(delta: float) -> void:
-	if not visible:
-		return
 	_dash_offset = fmod(_dash_offset + MARCH_SPEED * delta, DASH_LEN + GAP_LEN)
 	queue_redraw()
 

@@ -8,6 +8,12 @@ Each run appends one line.
 - fix(dev_menu): remove extra `)` at line 1040 inside match block — GDScript parse error when building export
 - fix(dev_menu): add missing `_count_tres()` and `_count_pngs()` helper functions — called in _populate_build_tab() but never defined, causing SCRIPT ERROR on every export build
 
+## 2026-05-04 (audit-polish — perf: EffectPlayer caps + glow ring + range circle)
+
+- perf(effects): EffectPlayer concurrent caps (MAX_FLASH 8, MAX_DUST 6, MAX_MISC 10) prevent burst CPUParticles2D allocation during heavy waves; particle counts reduced ~30% for muzzle/impact/death effects (closes partial #409)
+- perf(tower): glow ring draw calls cut 83% — 5 layers × 48 segments → 2 × 20 segments; visual glow preserved via opacity split
+- perf(tower): range_circle._process disabled via set_process(false) when hidden (visibility_changed signal) — eliminates per-tower per-frame tick during normal gameplay
+
 ## 2026-05-03 (audit-polish — shop badge + options theme + L4 path + enemy intro taunts + wave toast + level select)
 
 - polish(hud): shop tower cost display upgraded to a coin-icon badge (dark pill + SVG coin + 13px gold label) — fixes #319
