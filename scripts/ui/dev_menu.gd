@@ -1023,7 +1023,7 @@ func _build_effect_button(entry: Dictionary) -> Control:
 	btn.text = "✦ " + str(entry.label)
 	btn.custom_minimum_size = Vector2(0, 44)
 	DesignTokens.style_button(btn, false, DesignTokens.FONT_LABEL_SM)
-	btn.pressed.connect(func():
+	var _cb := func():
 		if EffectPlayer == null:
 			return
 		var center: Vector2 = get_viewport_rect().size * 0.5
@@ -1037,7 +1037,8 @@ func _build_effect_button(entry: Dictionary) -> Control:
 			"spawn_place_sparkles":
 				EffectPlayer.spawn_place_sparkles(center)
 			"spawn_step_dust":
-				EffectPlayer.spawn_step_dust(center))
+				EffectPlayer.spawn_step_dust(center)
+	btn.pressed.connect(_cb)
 	return btn
 
 

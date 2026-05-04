@@ -61,11 +61,12 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
   (Amösius). Output: `assets/textures/towers/{tower_id}_t{1,2}{a,b}.png`.
 
 ### Asset hygiene (from audit 2026-05-03)
-- [ ] **Delete supersedered art** — 12+ files with version suffixes
-  (`_raw`, `_v2`, `_v3`, `_old`, `_final`, `_upgrade`, `_img2img`)
-  cluttering `assets/textures/towers/`. 131 MB total is too much for
-  mobile (target <80 MB). Use the new asset_manifest output to
-  identify orphans.
+- [x] **Delete supersedered art** — deleted 5 orphaned files
+  (`amosius_raw`, `cordula_final`, `cordula_upgrade`, `jojo_final`,
+  `kuhne_final`; ~10.5 MB). Remaining `_v2` and `_img2img` variants
+  are all live-referenced by base_tower.gd or .tres files — kept.
+  Towers folder: 46 MB → 35 MB. Total assets still 282 MB; future
+  audit should check `variants/` (138 MB) and `monsters_new/` (22 MB).
 
 ### CI / observability
 - [ ] **Smarter ci-monitor** — suppress the `tsconfig.json directory

@@ -3,6 +3,11 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-05-04 (audit-polish — parse fix + art cleanup)
+
+- fix(dev_menu): extract effect-button lambda to `_cb` variable — fixes parse error "Expected expression for match pattern" at dev_menu.gd:1040 (GDScript can't close `connect(func():...)` with `)` inside a `match` block)
+- chore(assets): delete 5 orphaned tower art files (~10.5 MB): `amosius_raw`, `cordula_final`, `cordula_upgrade`, `jojo_final`, `kuhne_final` — none referenced in code, scenes, or resources. Towers folder 46 MB → 35 MB. Closes ROADMAP P0 "Delete superseeded art"
+
 ## 2026-05-03 (audit-polish — shop badge + options theme + L4 path + enemy intro taunts + wave toast + level select)
 
 - polish(hud): shop tower cost display upgraded to a coin-icon badge (dark pill + SVG coin + 13px gold label) — fixes #319
