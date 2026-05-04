@@ -3,6 +3,11 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-05-04 (audit-polish — dev_menu parse fixes)
+
+- fix(dev_menu): remove extra `)` at line 1040 inside match block — GDScript parse error when building export
+- fix(dev_menu): add missing `_count_tres()` and `_count_pngs()` helper functions — called in _populate_build_tab() but never defined, causing SCRIPT ERROR on every export build
+
 ## 2026-05-03 (audit-polish — shop badge + options theme + L4 path + enemy intro taunts + wave toast + level select)
 
 - polish(hud): shop tower cost display upgraded to a coin-icon badge (dark pill + SVG coin + 13px gold label) — fixes #319
