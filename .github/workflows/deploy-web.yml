@@ -1,5 +1,10 @@
 name: Deploy Web Build to GitHub Pages
 
+# Last forced redeploy: 2026-05-04 — force a fresh deploy of latest main
+# (commit includes PR #421 dev_menu.gd parse fix). Previous runs cancelled
+# each other via concurrency=pages cancel-in-progress as 4 PRs merged in
+# quick succession.
+
 on:
   push:
     branches: [main]
