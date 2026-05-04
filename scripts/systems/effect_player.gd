@@ -1,13 +1,24 @@
 extends Node
 
 ## Centralized one-shot combat effects (autoloaded as EffectPlayer).
-## spawn_muzzle_flash / spawn_impact_sparks / screen_shake all auto-free.
+## Perf: global concurrent caps prevent burst-allocation during heavy waves
+## (was unbounded — 20 enemies stepping = 20 new CPUParticles nodes/cycle).
+## Particle counts reduced ~30% for muzzle/impact/death (no visible diff).
+
+# Max concurrent live particles per category. Excess calls are skipped —
+# effects are decorative, missing one during a heavy wave is imperceptible.
+const MAX_FLASH: int = 8
+const MAX_DUST: int  = 6
+const MAX_MISC: int  = 10
+
+var _active_flash: int = 0
+var _active_dust: int  = 0
+var _active_misc: int  = 0
 
 
 func spawn_muzzle_flash(pos: Vector2, dir: Vector2, flash_color: Color, projectile_style: String = "") -> void:
-	# D6: shape varies by projectile_style. banana=tight burst, pollen=puff,
-	# flask=jagged crack, volleyball=star, tongue=tight ring. Falls back to
-	# the original wide cone for unknown styles.
+	if _active_flash >= MAX_FLASH:
+		return
 	var host := _get_host()
 	if not host:
 		return
@@ -20,35 +31,40 @@ func spawn_muzzle_flash(pos: Vector2, dir: Vector2, flash_color: Color, projecti
 	p.direction = dir.normalized() if dir.length_squared() > 0.0 else Vector2.RIGHT
 	match projectile_style:
 		"banana":
-			p.lifetime = 0.18; p.amount = 6; p.spread = 22.0
+			p.lifetime = 0.18; p.amount = 5; p.spread = 22.0
 			p.initial_velocity_min = 90.0; p.initial_velocity_max = 150.0
 			p.scale_amount_min = 4.0; p.scale_amount_max = 7.5
 		"pollen":
-			p.lifetime = 0.32; p.amount = 14; p.spread = 90.0
+			p.lifetime = 0.30; p.amount = 10; p.spread = 90.0
 			p.initial_velocity_min = 30.0; p.initial_velocity_max = 75.0
 			p.scale_amount_min = 4.5; p.scale_amount_max = 9.0
 		"flask":
-			p.lifetime = 0.24; p.amount = 10; p.spread = 65.0
+			p.lifetime = 0.24; p.amount = 7; p.spread = 65.0
 			p.initial_velocity_min = 50.0; p.initial_velocity_max = 160.0
 			p.scale_amount_min = 2.5; p.scale_amount_max = 7.0
 		"volleyball":
-			p.lifetime = 0.22; p.amount = 12; p.spread = 180.0  # full star burst
+			p.lifetime = 0.22; p.amount = 8; p.spread = 180.0
 			p.initial_velocity_min = 60.0; p.initial_velocity_max = 110.0
 			p.scale_amount_min = 4.0; p.scale_amount_max = 6.5
 		"tongue":
-			p.lifetime = 0.18; p.amount = 7; p.spread = 18.0
+			p.lifetime = 0.18; p.amount = 5; p.spread = 18.0
 			p.initial_velocity_min = 110.0; p.initial_velocity_max = 160.0
 			p.scale_amount_min = 3.5; p.scale_amount_max = 5.5
 		_:
-			p.lifetime = 0.22; p.amount = 8; p.spread = 38.0
+			p.lifetime = 0.22; p.amount = 6; p.spread = 38.0
 			p.initial_velocity_min = 70.0; p.initial_velocity_max = 130.0
 			p.scale_amount_min = 3.0; p.scale_amount_max = 7.0
 	host.add_child(p)
 	p.emitting = true
-	get_tree().create_timer(0.5).timeout.connect(p.queue_free)
+	_active_flash += 1
+	get_tree().create_timer(0.5).timeout.connect(func():
+		_active_flash -= 1
+		p.queue_free())
 
 
 func spawn_impact_sparks(pos: Vector2, spark_color: Color) -> void:
+	if _active_misc >= MAX_MISC:
+		return
 	var host := _get_host()
 	if not host:
 		return
@@ -56,8 +72,8 @@ func spawn_impact_sparks(pos: Vector2, spark_color: Color) -> void:
 	p.global_position = pos
 	p.one_shot = true
 	p.explosiveness = 1.0
-	p.lifetime = 0.32
-	p.amount = 10
+	p.lifetime = 0.30
+	p.amount = 7
 	p.direction = Vector2(0.0, -1.0)
 	p.spread = 85.0
 	p.initial_velocity_min = 55.0
@@ -68,22 +84,25 @@ func spawn_impact_sparks(pos: Vector2, spark_color: Color) -> void:
 	p.gravity = Vector2(0.0, 320.0)
 	host.add_child(p)
 	p.emitting = true
-	get_tree().create_timer(0.6).timeout.connect(p.queue_free)
+	_active_misc += 1
+	get_tree().create_timer(0.55).timeout.connect(func():
+		_active_misc -= 1
+		p.queue_free())
 
 
-## Bursty death effect — replaces the slow on-corpse death tween. 12 particles
-## radial with the enemy's tint, plus a quick white flash ring underneath.
+## Bursty death effect — radial burst with tint + white flash ring.
 func spawn_death_poof(pos: Vector2, tint: Color) -> void:
+	if _active_misc >= MAX_MISC:
+		return
 	var host := _get_host()
 	if not host:
 		return
-	# Colored burst
 	var p := CPUParticles2D.new()
 	p.global_position = pos
 	p.one_shot = true
 	p.explosiveness = 1.0
-	p.lifetime = 0.36
-	p.amount = 14
+	p.lifetime = 0.34
+	p.amount = 9
 	p.direction = Vector2(0.0, -0.4)
 	p.spread = 180.0
 	p.initial_velocity_min = 60.0
@@ -94,8 +113,11 @@ func spawn_death_poof(pos: Vector2, tint: Color) -> void:
 	p.gravity = Vector2(0.0, 220.0)
 	host.add_child(p)
 	p.emitting = true
-	get_tree().create_timer(0.7).timeout.connect(p.queue_free)
-	# White flash ring — a tiny ColorRect that scales up + fades.
+	_active_misc += 1
+	get_tree().create_timer(0.65).timeout.connect(func():
+		_active_misc -= 1
+		p.queue_free())
+	# White flash ring
 	var flash := ColorRect.new()
 	flash.color = Color(1, 1, 1, 0.7)
 	flash.size = Vector2(36, 36)
@@ -118,7 +140,7 @@ func spawn_place_sparkles(pos: Vector2) -> void:
 	p.one_shot = true
 	p.explosiveness = 1.0
 	p.lifetime = 0.55
-	p.amount = 16
+	p.amount = 12
 	p.direction = Vector2(0.0, -0.6)
 	p.spread = 180.0
 	p.initial_velocity_min = 70.0
@@ -133,7 +155,10 @@ func spawn_place_sparkles(pos: Vector2) -> void:
 
 
 ## Tiny dust puff at enemy feet on each step-down (ROADMAP #13).
+## Capped at MAX_DUST concurrent — heavy waves skip excess puffs silently.
 func spawn_step_dust(pos: Vector2) -> void:
+	if _active_dust >= MAX_DUST:
+		return
 	var host := _get_host()
 	if not host:
 		return
@@ -153,7 +178,10 @@ func spawn_step_dust(pos: Vector2) -> void:
 	p.gravity = Vector2(0.0, 80.0)
 	host.add_child(p)
 	p.emitting = true
-	get_tree().create_timer(0.35).timeout.connect(p.queue_free)
+	_active_dust += 1
+	get_tree().create_timer(0.35).timeout.connect(func():
+		_active_dust -= 1
+		p.queue_free())
 
 
 ## Briefly jitters the game scene's position (HUD CanvasLayer is unaffected).
@@ -162,9 +190,7 @@ func screen_shake(amplitude: float, duration: float) -> void:
 	if not (scene is Node2D):
 		return
 	var n := scene as Node2D
-	# Guard against concurrent shakes stacking onto a mid-shake position:
-	# kill any existing shake tween first and restore the true origin
-	# before building a new chain. Audit P2 #22.
+	# Guard against concurrent shakes stacking onto a mid-shake position.
 	if n.has_meta("shake_tween"):
 		var prev_tween = n.get_meta("shake_tween")
 		if prev_tween != null and prev_tween is Tween and prev_tween.is_valid():

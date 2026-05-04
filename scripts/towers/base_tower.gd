@@ -849,18 +849,16 @@ func _update_tier_glow(tier: int) -> void:
 func _glow_script() -> Script:
 	# Tiny inline script so the glow Node2D draws its own ring without
 	# needing a dedicated .gd file — keeps the feature self-contained.
+	# Perf: 2 layers × 20 seg (was 5 × 48) — same soft-glow look, 83% fewer
+	# draw calls per frame. Tween still pulses modulate.a for the beat.
 	var src := """
 extends Node2D
 func _draw() -> void:
 	var r: float = get_meta(\"radius\", 40.0)
 	var c: Color = get_meta(\"ring_color\", Color.YELLOW)
 	var a: float = get_meta(\"alpha\", 0.4)
-	var layers := 5
-	for i in layers:
-		var t: float = float(i) / float(layers - 1)
-		var radius: float = r * (0.85 + t * 0.35)
-		var alpha: float = a * (1.0 - t) * 0.8
-		draw_arc(Vector2.ZERO, radius, 0.0, TAU, 48, Color(c.r, c.g, c.b, alpha), 4.0, true)
+	draw_arc(Vector2.ZERO, r * 0.88, 0.0, TAU, 20, Color(c.r, c.g, c.b, a * 0.72), 5.0, true)
+	draw_arc(Vector2.ZERO, r * 1.12, 0.0, TAU, 20, Color(c.r, c.g, c.b, a * 0.28), 3.5, true)
 """
 	var s := GDScript.new()
 	s.source_code = src

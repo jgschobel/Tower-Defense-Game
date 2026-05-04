@@ -54,6 +54,10 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
   honest 3-5 tower scenarios (commit `8e89310` ships this), audit any
   scenario reporting min FPS < 30 and address. Suspects from old data:
   L1+L3 hitches, 80-enemy stress.
+  _Partial fix 2026-05-04: EffectPlayer concurrent caps (MAX_FLASH 8, MAX_DUST 6,
+  MAX_MISC 10) + ~30% particle count reductions; glow ring 5×48→2×20 arcs;
+  range_circle _process disabled when hidden. Next step: profile with Godot
+  headless --rendering.profiler once the headless FPS number stabilises._
 
 ### Tier-art completion
 - [ ] **D1/D2 portraits for remaining 3 towers** — Cordula and Kühne
