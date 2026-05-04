@@ -3,6 +3,12 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-05-04 (audit-polish — superseded art cleanup + ROADMAP audit)
+
+- chore(assets): deleted 11 orphaned tower/enemy art files (~16MB): amosius_raw, cordula_final, cordula_upgrade, jojo_final, jojo_gen, jojo_lotter_gen, kuhne_final, kuhne_fire_gen, kuhne_gen (towers/); enemy_damage_variants_v1, enemy_sprites_v2_set (enemies/). Tower textures: 46MB → 30MB. None were referenced by any .tres, .tscn, or GDScript file.
+- fix(dev_menu): PR #421 — remove extra `)` at dev_menu.gd:1040 + add missing _count_tres()/_count_pngs() helpers (auto-merge enabled)
+- chore(roadmap): ticked off "Wire 11 new enemy textures" (already done, ROADMAP was stale) + "Delete superseded art" P0 items
+
 ## 2026-05-03 (audit-polish — shop badge + options theme + L4 path + enemy intro taunts + wave toast + level select)
 
 - polish(hud): shop tower cost display upgraded to a coin-icon badge (dark pill + SVG coin + 13px gold label) — fixes #319

@@ -26,7 +26,7 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
 7 days; new P0 items get appended at the bottom.
 
 ### Game systems
-- [ ] **Wire 11 new enemy textures into .tres files** — `camo`, `lead`,
+- [x] **Wire 11 new enemy textures into .tres files** — `camo`, `lead`,
   `regrow`, `swarm`, `fondue_bomb`, `glace_golem`, `berserker`,
   `cumulus_blob`, `linsen_golem`, `smoothie_slime`, `tofu_ninja` all
   have base PNGs in main but their `.tres` files don't reference them
@@ -61,11 +61,12 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
   (Amösius). Output: `assets/textures/towers/{tower_id}_t{1,2}{a,b}.png`.
 
 ### Asset hygiene (from audit 2026-05-03)
-- [ ] **Delete supersedered art** — 12+ files with version suffixes
-  (`_raw`, `_v2`, `_v3`, `_old`, `_final`, `_upgrade`, `_img2img`)
-  cluttering `assets/textures/towers/`. 131 MB total is too much for
-  mobile (target <80 MB). Use the new asset_manifest output to
-  identify orphans.
+- [x] **Delete superseded art** — 11 files with version suffixes
+  (`_raw`, `_final`, `_upgrade`, `_gen`) deleted from `assets/textures/towers/`
+  and `assets/textures/enemies/`. Saved ~16MB; towers/ now 30MB (was 46MB).
+  Remaining `_v2.png` files kept — they ARE the active textures (priority 2
+  in base_tower.gd fallback chain). `_img2img.png` files kept — active
+  default in .tres files. Further cleanup needs asset_manifest audit first.
 
 ### CI / observability
 - [ ] **Smarter ci-monitor** — suppress the `tsconfig.json directory
