@@ -11,14 +11,15 @@ name: Workflow Lint
 #      directly, with no false positives
 
 on:
+  # Run on every PR + every push to main, with NO path filter. Branch
+  # protection requires the `actionlint` and `bash-syntax` check names to
+  # report on every PR. With a path filter these jobs simply never fire
+  # for code-only PRs, GitHub treats the required checks as `pending`
+  # forever, and every code-only PR is permanently blocked. Cost is tiny
+  # (actionlint ~30s, bash-syntax ~10s) and worth paying universally.
   pull_request:
-    paths:
-      - '.github/workflows/**'
-      - '.github/actionlint.yml'
   push:
     branches: [main]
-    paths:
-      - '.github/workflows/**'
   workflow_dispatch:
 
 permissions:
