@@ -1037,7 +1037,7 @@ func _build_effect_button(entry: Dictionary) -> Control:
 			"spawn_place_sparkles":
 				EffectPlayer.spawn_place_sparkles(center)
 			"spawn_step_dust":
-				EffectPlayer.spawn_step_dust(center))
+				EffectPlayer.spawn_step_dust(center)
 	return btn
 
 
@@ -1714,6 +1714,34 @@ func _count_pngs_recursive(path: String) -> int:
 		if dir.current_is_dir() and not entry.begins_with("."):
 			n += _count_pngs_recursive(path + "/" + entry)
 		elif entry.ends_with(".png"):
+			n += 1
+		entry = dir.get_next()
+	return n
+
+
+func _count_tres(path: String) -> int:
+	var dir := DirAccess.open(path)
+	if dir == null:
+		return 0
+	var n := 0
+	dir.list_dir_begin()
+	var entry := dir.get_next()
+	while entry != "":
+		if entry.ends_with(".tres"):
+			n += 1
+		entry = dir.get_next()
+	return n
+
+
+func _count_pngs(path: String) -> int:
+	var dir := DirAccess.open(path)
+	if dir == null:
+		return 0
+	var n := 0
+	dir.list_dir_begin()
+	var entry := dir.get_next()
+	while entry != "":
+		if entry.ends_with(".png"):
 			n += 1
 		entry = dir.get_next()
 	return n
