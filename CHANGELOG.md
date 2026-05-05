@@ -3,6 +3,14 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-05-05 (audit-polish — merge backlog clear + rescue 406/433)
+
+- fix(hud): Züridütsch taunts, preview colors, short names for all 16 enemy types — berserker/cumulus_blob/linsen_golem/smoothie_slime/tofu_ninja now have Swiss German text instead of falling through to capitalize(); "Tofu"→"Schwarm", adds Schatte/Büchse/Gipfeli/Glacé etc. (rescued from dirty PR #406)
+- fix(playtest): SHOT_INTERVAL timer now uses ignore_time_scale=true — at 8× time_scale each tick was firing after 0.3s real instead of 2.5s real, giving only ~5s total; now 16×2.5s=40s real=320s game time — fixes waves never reaching WON (rescued from dirty PR #433)
+- fix(playtest): summary.md now notes expected headless CI FPS range (10–15) to prevent false P0 perf issues
+- polish(level-select): locked circle borders wider + brighter with drop-shadow; locked labels brighter; button bg less dark for better mobile contrast (rescued from dirty PR #433)
+- chore(backlog): closed 10 stale/duplicate PRs; pushed ci-trigger commits to unblock 4 PRs (#387 #400 #403 #441) stuck because actionlint/bash-syntax checks never ran pre-#444
+
 ## 2026-05-04 (audit-polish — dev_menu parse fixes)
 
 - fix(dev_menu): remove extra `)` at line 1040 inside match block — GDScript parse error when building export
