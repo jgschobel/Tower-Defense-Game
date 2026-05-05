@@ -79,30 +79,36 @@ func _populate_levels() -> void:
 		btn.flat = true
 
 		var sb_normal := StyleBoxFlat.new()
-		sb_normal.bg_color = accent.darkened(0.55)
-		sb_normal.border_color = accent
-		sb_normal.set_border_width_all(3)
+		sb_normal.bg_color = accent.darkened(0.38)
+		sb_normal.border_color = accent.lightened(0.1)
+		sb_normal.set_border_width_all(5)
+		sb_normal.shadow_color = Color(0.0, 0.0, 0.0, 0.6)
+		sb_normal.shadow_size = 6
 		sb_normal.set_corner_radius_all(45)
 		btn.add_theme_stylebox_override("normal", sb_normal)
 
 		var sb_hover := StyleBoxFlat.new()
-		sb_hover.bg_color = accent.darkened(0.30)
-		sb_hover.border_color = accent.lightened(0.25)
-		sb_hover.set_border_width_all(4)
+		sb_hover.bg_color = accent.darkened(0.20)
+		sb_hover.border_color = accent.lightened(0.35)
+		sb_hover.set_border_width_all(6)
+		sb_hover.shadow_color = Color(0.0, 0.0, 0.0, 0.5)
+		sb_hover.shadow_size = 8
 		sb_hover.set_corner_radius_all(45)
 		btn.add_theme_stylebox_override("hover", sb_hover)
 
 		var sb_pressed := StyleBoxFlat.new()
-		sb_pressed.bg_color = accent.darkened(0.15)
-		sb_pressed.border_color = accent.lightened(0.4)
-		sb_pressed.set_border_width_all(5)
+		sb_pressed.bg_color = accent.darkened(0.10)
+		sb_pressed.border_color = accent.lightened(0.5)
+		sb_pressed.set_border_width_all(7)
 		sb_pressed.set_corner_radius_all(45)
 		btn.add_theme_stylebox_override("pressed", sb_pressed)
 
 		var sb_disabled := StyleBoxFlat.new()
-		sb_disabled.bg_color = Color(0.12, 0.12, 0.15, 0.85)
-		sb_disabled.border_color = Color(0.38, 0.38, 0.42)
-		sb_disabled.set_border_width_all(2)
+		sb_disabled.bg_color = Color(0.18, 0.18, 0.22, 0.92)
+		sb_disabled.border_color = Color(0.50, 0.50, 0.56)
+		sb_disabled.set_border_width_all(3)
+		sb_disabled.shadow_color = Color(0.0, 0.0, 0.0, 0.5)
+		sb_disabled.shadow_size = 4
 		sb_disabled.set_corner_radius_all(45)
 		btn.add_theme_stylebox_override("disabled", sb_disabled)
 
@@ -117,7 +123,7 @@ func _populate_levels() -> void:
 		num_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		num_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		num_lbl.add_theme_font_size_override("font_size", 32)
-		num_lbl.add_theme_color_override("font_color", accent.lightened(0.55) if unlocked else Color(0.45, 0.45, 0.50))
+		num_lbl.add_theme_color_override("font_color", accent.lightened(0.55) if unlocked else Color(0.62, 0.62, 0.68))
 		num_lbl.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.9))
 		num_lbl.add_theme_constant_override("outline_size", 4)
 		num_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -148,7 +154,7 @@ func _populate_levels() -> void:
 		name_lbl.text = _get_level_name(i) if unlocked else "???"
 		name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		name_lbl.add_theme_font_size_override("font_size", 11)
-		name_lbl.add_theme_color_override("font_color", accent.lightened(0.3) if unlocked else Color(0.40, 0.40, 0.45))
+		name_lbl.add_theme_color_override("font_color", accent.lightened(0.3) if unlocked else Color(0.55, 0.55, 0.62))
 		name_lbl.add_theme_color_override("font_outline_color", Color.BLACK)
 		name_lbl.add_theme_constant_override("outline_size", 2)
 		name_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
