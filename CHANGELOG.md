@@ -3,6 +3,11 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-05-05 (audit-polish — art cleanup + ROADMAP ticks)
+
+- chore(assets): deleted 8 orphaned PNG+import pairs from towers/ (amosius_raw, cordula_final, cordula_upgrade, cordula_v2, jojo_final, jojo_v2, kuhne_final, kuhne_v2) — ~13.8 MB recovered; none referenced in .tres/.gd/.tscn files
+- docs(roadmap): ticked 3 completed P0 items — enemy textures wired (verified all 11 have custom_texture), damage variants shipped via PR #387, superseded art deleted
+
 ## 2026-05-05 (audit-polish — merge backlog clear + rescue 406/433)
 
 - fix(hud): Züridütsch taunts, preview colors, short names for all 16 enemy types — berserker/cumulus_blob/linsen_golem/smoothie_slime/tofu_ninja now have Swiss German text instead of falling through to capitalize(); "Tofu"→"Schwarm", adds Schatte/Büchse/Gipfeli/Glacé etc. (rescued from dirty PR #406)
