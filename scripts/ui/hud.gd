@@ -1652,7 +1652,7 @@ func _refresh_tower_info() -> void:
 		_ensure_linear_upgrade_button(upgrade_btn)
 		var cost := _selected_tower.get_upgrade_cost()
 		if cost < 0:
-			upgrade_btn.text = "MAXIMUM"
+			upgrade_btn.text = "Maximal! ✓"
 			upgrade_btn.disabled = true
 		else:
 			upgrade_btn.text = "Verbessere %d" % cost
@@ -1683,7 +1683,7 @@ func _ensure_targeting_button() -> void:
 		btn = Button.new()
 		btn.name = "TargetingButton"
 		btn.custom_minimum_size = Vector2(0, 32)
-		btn.tooltip_text = "Zieliere: cycle First / Last / Strong / Close"
+		btn.tooltip_text = "Zieliere: Erschti / Letschti / Nöchschti / Stärchsti"
 		_apply_tower_info_button_style(btn, Color(0.45, 0.65, 0.85))
 		# Insert just above the HBox (before upgrade/sell row)
 		var hbox: HBoxContainer = vbox.get_node_or_null("HBox") as HBoxContainer
