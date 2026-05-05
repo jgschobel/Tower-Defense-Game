@@ -3,6 +3,11 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-05-05 (audit-polish — L5 balance fix + playtester kill tracking)
+
+- balance(level): L5 wave 1 fast 25→12 (delay 0.3→0.35s), wave 2 swarm 40→22 (delay 0.18→0.22s), starting_gold 160→185, starting_lives 18→20; closes #431 #412 (9-11 lives lost by wave 2)
+- feat(playtest): added level_kills column to playtester summary table so kill=0 issues like #475 are visible in CI output without reading screenshots
+
 ## 2026-05-05 (audit-polish — L2 balance + level-select contrast)
 
 - balance(level): L2 rebalanced — enemy counts reduced ~17% in waves 3-10, starting_gold 130→160; fixes playtester LOST with 47% kill rate (closes #458)
