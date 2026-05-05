@@ -22,6 +22,7 @@ var _base_v_offset: float = 0.0
 var slow_timer: float = 0.0
 var is_dead: bool = false
 var _has_regrown: bool = false  # Regrow mechanic allows only one resurrect
+var _last_killer: Node = null   # Source tower of the final blow (used for D7 death-cam)
 var _health_bar_tween: Tween = null
 var _death_tween: Tween = null
 # 0=healthy, 1=hurt, 2=injured, 3=dying. Drives sprite tint (and
@@ -134,7 +135,7 @@ func _process(delta: float) -> void:
 		return
 
 
-func take_damage(amount: float, damage_type: int = 0) -> void:
+func take_damage(amount: float, damage_type: int = 0, source_tower: Node = null) -> void:
 	if is_dead:
 		return
 
@@ -188,6 +189,7 @@ func take_damage(amount: float, damage_type: int = 0) -> void:
 			_update_health_bar()
 			_play_regrow_effect()
 			return
+		_last_killer = source_tower
 		die()
 
 
@@ -315,7 +317,7 @@ func die() -> void:
 	# + floating "TÜÜFEL GSTÜRZT!" text. Only for boss enemies so
 	# small kills don't spam the effects.
 	if data and data.id == "boss":
-		_celebrate_boss_death()
+		_celebrate_boss_death(_last_killer)
 
 	# Spawn children on death if configured
 	if data and data.spawns_on_death != "" and data.spawn_count > 0:
@@ -393,6 +395,7 @@ func reset_for_pool() -> void:
 		_update_visual()
 	is_dead = false
 	_has_regrown = false
+	_last_killer = null
 	_damage_state = 0
 	if sprite:
 		sprite.modulate = Color.WHITE
@@ -738,7 +741,7 @@ func _show_mini_pop() -> void:
 	tween.chain().tween_callback(label.queue_free)
 
 
-func _celebrate_boss_death() -> void:
+func _celebrate_boss_death(killer: Node = null) -> void:
 	# Big impact burst + screen shake + deep roar — makes toppling the
 	# M-Tüüfel feel like an event rather than another tick in the counter.
 	if SfxManager and SfxManager.has_method("play_boss_roar"):
@@ -783,6 +786,14 @@ func _celebrate_boss_death() -> void:
 		tw.tween_property(lbl, "global_position:y", lbl.global_position.y - 60.0, 1.2)
 		tw.tween_property(lbl, "modulate:a", 0.0, 1.2)
 		tw.chain().tween_callback(lbl.queue_free)
+
+	# D7: tier-3 tower kill on boss → cinematic bullet-time + name bubble
+	if killer != null and is_instance_valid(killer) and EffectPlayer and EffectPlayer.has_method("tier3_boss_kill"):
+		var killer_tier: int = 0
+		if "path_a_tier" in killer and "path_b_tier" in killer:
+			killer_tier = max(int(killer.path_a_tier), int(killer.path_b_tier))
+		if killer_tier >= 3:
+			EffectPlayer.tier3_boss_kill(killer, global_position)
 
 
 func _show_gold_earned() -> void:
