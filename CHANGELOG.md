@@ -3,6 +3,11 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-05-05 (audit-polish — L5 balance fix + playtester kill tracking)
+
+- balance(level): L5 wave 1 fast 25→12 (delay 0.3→0.35s), wave 2 swarm 40→22 (delay 0.18→0.22s), starting_gold 160→185, starting_lives 18→20; closes #431 #412 (9-11 lives lost by wave 2)
+- feat(playtest): added level_kills column to playtester summary table so kill=0 issues like #475 are visible in CI output without reading screenshots
+
 ## 2026-05-05 (audit-polish — D7 tier-3 boss kill death-cam)
 
 - polish(vfx): D7 Tier-3 boss kill cinematic — bullet-time (Engine.time_scale 0.05 for 0.4s real), 4-burst gold/white spark explosion, "✦ [Tower Name]" floating name bubble above killing tower; source_tower plumbed through take_damage → die → _celebrate_boss_death for all projectile/cone attack paths; ticked drag-and-drop + scrollable shop P0s as verified-done in code
