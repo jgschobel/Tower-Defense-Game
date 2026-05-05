@@ -3,6 +3,12 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-05-05 (audit-polish — CI false positive fixes + observability push repair)
+
+- polish(hud): Swiss German consistency — targeting tooltip "First/Last/Strong/Close" → "Erschti/Letschti/Nöchschti/Stärchsti"; max-upgraded tower button "MAXIMUM" → "Maximal! ✓"
+- chore(pr-backlog): closed 3 stale duplicate audit-grid PRs (#454, #456, #457); merged #441 (swarm enemy bg removal + L2 path opacity fix)
+- docs(roadmap): ticked 3 stale P0 CI items (ci-monitor false positive, workflow-lint, drift-scan/weekly-digest); added "Restore observability push" P0; documented workflow fixes blocked by missing `workflows` token scope
+
 ## 2026-05-05 (audit-polish — art cleanup + ROADMAP ticks)
 
 - chore(assets): deleted 8 orphaned PNG+import pairs from towers/ (amosius_raw, cordula_final, cordula_upgrade, cordula_v2, jojo_final, jojo_v2, kuhne_final, kuhne_v2) — ~13.8 MB recovered; none referenced in .tres/.gd/.tscn files
