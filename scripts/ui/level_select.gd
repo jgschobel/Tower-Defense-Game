@@ -2,7 +2,7 @@ extends Control
 
 ## Level selection screen with background art.
 
-@onready var level_grid: GridContainer = $MarginContainer/VBoxContainer/LevelGrid
+@onready var level_grid: GridContainer = $MarginContainer/VBoxContainer/GridBackdrop/GridPad/LevelGrid
 @onready var bg: TextureRect = $Background
 
 
@@ -11,6 +11,15 @@ func _ready() -> void:
 	var bg_path := "res://assets/textures/ui/levelselect_bg.png"
 	if bg and ResourceLoader.exists(bg_path):
 		bg.texture = load(bg_path)
+	# Style the grid backdrop so buttons always contrast against background art
+	var backdrop := get_node_or_null("MarginContainer/VBoxContainer/GridBackdrop") as PanelContainer
+	if backdrop:
+		var sb := StyleBoxFlat.new()
+		sb.bg_color = Color(0.04, 0.06, 0.12, 0.72)
+		sb.border_color = Color(0.30, 0.38, 0.55, 0.6)
+		sb.set_border_width_all(1)
+		sb.set_corner_radius_all(8)
+		backdrop.add_theme_stylebox_override("panel", sb)
 	_populate_levels()
 	_show_totals()
 
@@ -104,11 +113,11 @@ func _populate_levels() -> void:
 		btn.add_theme_stylebox_override("pressed", sb_pressed)
 
 		var sb_disabled := StyleBoxFlat.new()
-		sb_disabled.bg_color = Color(0.18, 0.18, 0.22, 0.92)
-		sb_disabled.border_color = Color(0.50, 0.50, 0.56)
+		sb_disabled.bg_color = Color(0.32, 0.34, 0.46)
+		sb_disabled.border_color = Color(0.68, 0.70, 0.84)
 		sb_disabled.set_border_width_all(3)
-		sb_disabled.shadow_color = Color(0.0, 0.0, 0.0, 0.5)
-		sb_disabled.shadow_size = 4
+		sb_disabled.shadow_color = Color(0.0, 0.0, 0.0, 0.7)
+		sb_disabled.shadow_size = 5
 		sb_disabled.set_corner_radius_all(45)
 		btn.add_theme_stylebox_override("disabled", sb_disabled)
 
@@ -123,7 +132,7 @@ func _populate_levels() -> void:
 		num_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		num_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		num_lbl.add_theme_font_size_override("font_size", 32)
-		num_lbl.add_theme_color_override("font_color", accent.lightened(0.55) if unlocked else Color(0.62, 0.62, 0.68))
+		num_lbl.add_theme_color_override("font_color", accent.lightened(0.55) if unlocked else Color(0.80, 0.82, 0.95))
 		num_lbl.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.9))
 		num_lbl.add_theme_constant_override("outline_size", 4)
 		num_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -154,7 +163,7 @@ func _populate_levels() -> void:
 		name_lbl.text = _get_level_name(i) if unlocked else "???"
 		name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		name_lbl.add_theme_font_size_override("font_size", 11)
-		name_lbl.add_theme_color_override("font_color", accent.lightened(0.3) if unlocked else Color(0.55, 0.55, 0.62))
+		name_lbl.add_theme_color_override("font_color", accent.lightened(0.3) if unlocked else Color(0.72, 0.74, 0.88))
 		name_lbl.add_theme_color_override("font_outline_color", Color.BLACK)
 		name_lbl.add_theme_constant_override("outline_size", 2)
 		name_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
