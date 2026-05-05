@@ -1641,6 +1641,8 @@ func _refresh_tower_info() -> void:
 	# Targeting-mode cycler (BTD5-style per-tower First/Last/Strong/Close).
 	# Lazily attached to a row above the upgrade/sell HBox.
 	_ensure_targeting_button()
+	# Active ability button (Tier 1C — only shows for tier 3+ Lemurius)
+	_ensure_ability_button()
 	# Re-clamp after refresh — post-upgrade the branching path buttons
 	# appear and grow the panel height, which can push it off-screen on
 	# narrow viewports. Agent-audit BUG #8.
@@ -2072,3 +2074,58 @@ func show_toast(message: String) -> void:
 	var tween := toast.create_tween()
 	tween.tween_property(toast, "modulate:a", 0.0, 1.2).set_delay(0.4)
 	tween.tween_callback(toast.queue_free)
+
+
+func _ensure_ability_button() -> void:
+	# Active ability button (BTD5-style cooldown click). Visible only when
+	# the selected tower has tier 3+ AND has an ability implementation
+	# (currently Lemurius only — Tier 1C v1, expanding in follow-up PRs).
+	if not _selected_tower or not tower_info:
+		return
+	var vbox: VBoxContainer = tower_info.get_node_or_null("VBox")
+	if vbox == null:
+		return
+	var btn: Button = vbox.get_node_or_null("AbilityButton")
+	var should_show: bool = _selected_tower.has_method("has_active_ability") \
+		and _selected_tower.has_active_ability()
+	if not should_show:
+		if btn:
+			btn.queue_free()
+		return
+	if btn == null:
+		btn = Button.new()
+		btn.name = "AbilityButton"
+		btn.custom_minimum_size = Vector2(0, 36)
+		btn.tooltip_text = "Aktive Fähigkeit (Tier 3+) — klick zum aalöse"
+		_apply_tower_info_button_style(btn, Color(0.95, 0.45, 0.18))
+		vbox.add_child(btn)
+		# Place ability button just above the targeting button
+		var targeting_btn: Button = vbox.get_node_or_null("TargetingButton") as Button
+		var hbox: HBoxContainer = vbox.get_node_or_null("HBox") as HBoxContainer
+		var anchor_idx: int = vbox.get_child_count() - 1
+		if targeting_btn:
+			anchor_idx = targeting_btn.get_index()
+		elif hbox:
+			anchor_idx = hbox.get_index()
+		vbox.move_child(btn, anchor_idx)
+		btn.pressed.connect(_on_ability_pressed)
+	# Refresh label every redraw — cooldown ticks down each frame
+	var cd_left: float = _selected_tower.ability_cooldown_remaining
+	var label: String = _selected_tower.get_ability_label()
+	if _selected_tower.ability_triple_fire_remaining > 0.0:
+		btn.text = "%s · AKTIV %.1fs" % [label, _selected_tower.ability_triple_fire_remaining]
+		btn.disabled = true
+	elif cd_left > 0.01:
+		btn.text = "%s · %ds" % [label, int(ceil(cd_left))]
+		btn.disabled = true
+	else:
+		btn.text = "%s · BEREIT" % label
+		btn.disabled = false
+
+
+func _on_ability_pressed() -> void:
+	if not _selected_tower or not is_instance_valid(_selected_tower):
+		return
+	if _selected_tower.has_method("trigger_active_ability"):
+		_selected_tower.trigger_active_ability()
+		_refresh_tower_info()
