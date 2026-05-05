@@ -534,6 +534,7 @@ func _record_scenario(start_ms: int) -> void:
 		"final_gold": CurrencyManager.gold,
 		"final_state": _state_name(GameManager.current_state),
 		"enemies_remaining": get_tree().get_nodes_in_group("enemies").size(),
+		"level_kills": GameManager.level_kills,
 	})
 	# Issue #328 fix: write summary INCREMENTALLY after each scenario so
 	# partial runs (timeout, crash, OOM) still produce metrics. Previous
@@ -550,13 +551,13 @@ func _write_summary() -> void:
 	f.store_string("# Playtest v3 Summary\n\n")
 	f.store_string("Timestamp: %s\n" % Time.get_datetime_string_from_system(true))
 	f.store_string("Total duration: %.1fs\n\n" % _elapsed())
-	f.store_string("| Scenario | Duration (s) | Avg FPS | Min FPS | Final Lives | State | Enemies Remaining |\n")
-	f.store_string("|---|---|---|---|---|---|---|\n")
+	f.store_string("| Scenario | Duration (s) | Avg FPS | Min FPS | Final Lives | Kills | State | Enemies Remaining |\n")
+	f.store_string("|---|---|---|---|---|---|---|---|\n")
 	for s in _scenario_summaries:
-		f.store_string("| %s | %.1f | %.1f | %.1f | %d | %s | %d |\n" % [
+		f.store_string("| %s | %.1f | %.1f | %.1f | %d | %d | %s | %d |\n" % [
 			s.name, float(s.elapsed_ms) / 1000.0,
 			s.avg_fps, s.min_fps,
-			s.final_lives, s.final_state, s.enemies_remaining,
+			s.final_lives, s.get("level_kills", 0), s.final_state, s.enemies_remaining,
 		])
 	f.store_string("\n## Interpretation hints\n\n")
 	f.store_string("- **L1/L2/L3_healthy**: should end WON, lives > 0. LOST here means the scenario tower placements no longer counter the waves (rebalance or retune placements).\n")
