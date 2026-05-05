@@ -217,6 +217,60 @@ func screen_shake(amplitude: float, duration: float) -> void:
 			n.remove_meta("shake_tween"))
 
 
+## D7: cinematic bullet-time when a tier-3 tower kills a boss.
+## Slows time to 5% for 0.4 real seconds, spawns an extra-large kill burst,
+## and floats the tower's name above it. Guard prevents re-entry during an
+## active sequence (multi-boss waves can overlap).
+func tier3_boss_kill(killer_tower: Node, kill_pos: Vector2) -> void:
+	if has_meta("t3_kill_active"):
+		return
+	set_meta("t3_kill_active", true)
+
+	# Extra-large gold/white spark burst at kill site
+	var host := _get_host()
+	if host:
+		for i in 3:
+			var burst_pos := kill_pos + Vector2(randf_range(-30, 30), randf_range(-30, 30))
+			spawn_impact_sparks(burst_pos, Color(1.0, 0.95, 0.3))
+		spawn_impact_sparks(kill_pos, Color(1.0, 1.0, 1.0))
+
+	# Tower name bubble: "✦ [Name]" floating above the killer
+	if host and is_instance_valid(killer_tower):
+		var tower_name: String = ""
+		if killer_tower.has_method("get") and "data" in killer_tower:
+			var td = killer_tower.data
+			if td != null and "display_name" in td:
+				tower_name = td.display_name
+		if tower_name == "" and "data" in killer_tower:
+			var td = killer_tower.data
+			if td != null and "id" in td:
+				tower_name = td.id.capitalize()
+		var lbl := Label.new()
+		lbl.text = "✦ %s" % tower_name
+		lbl.add_theme_font_size_override("font_size", 26)
+		lbl.add_theme_color_override("font_color", Color(1.0, 0.95, 0.3))
+		lbl.add_theme_color_override("font_outline_color", Color(0.15, 0.05, 0.0))
+		lbl.add_theme_constant_override("outline_size", 5)
+		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		lbl.size = Vector2(200, 36)
+		lbl.z_index = 40
+		lbl.z_as_relative = false
+		host.add_child(lbl)
+		lbl.global_position = killer_tower.global_position + Vector2(-100, -90)
+		var tw := create_tween()
+		tw.set_parallel(true)
+		tw.tween_property(lbl, "global_position:y", lbl.global_position.y - 55.0, 1.0)
+		tw.tween_property(lbl, "modulate:a", 0.0, 1.0)
+		tw.chain().tween_callback(lbl.queue_free)
+
+	# Bullet-time: store and slow Engine.time_scale, restore after 0.4s real time.
+	var prev_scale: float = Engine.time_scale
+	Engine.time_scale = 0.05
+	await get_tree().create_timer(0.4, false, false, true).timeout
+	Engine.time_scale = prev_scale
+	remove_meta("t3_kill_active")
+
+
 func _get_host() -> Node:
 	var tree := get_tree()
 	return tree.current_scene if tree else null

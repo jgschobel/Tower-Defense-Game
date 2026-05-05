@@ -212,7 +212,8 @@ func _hit() -> void:
 		# Capture is_dead BEFORE damage so we can credit the source tower
 		# if this hit was the killing blow.
 		var was_alive: bool = not target.is_dead
-		target.take_damage(damage, damage_type)
+		var _src := get_meta("source_tower") if has_meta("source_tower") else null
+		target.take_damage(damage, damage_type, _src)
 		target.show_hit_reaction()
 		_pierced_enemies.append(target)
 		# Impact sparks at the hit position, tinted by this projectile's color
@@ -256,7 +257,7 @@ func _hit() -> void:
 					continue
 			if global_position.distance_to(enemy.global_position) <= splash_radius:
 				var splash_was_alive: bool = not enemy.is_dead
-				enemy.take_damage(damage * splash_damage_pct, damage_type)
+				enemy.take_damage(damage * splash_damage_pct, damage_type, src_tower)
 				# Credit splash kills back to the owning tower too — was
 				# previously only crediting the direct-hit target. Agent-audit
 				# BUG #2 (JoJo's kill total was artificially low).

@@ -38,14 +38,16 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
   fondue_bomb, glace_golem, berserker, cumulus_blob, linsen_golem,
   smoothie_slime, tofu_ninja).
 
-- [ ] **Drag-and-drop tower placement** — biggest mobile UX win. Replace
-  the current tap-button → tap-map flow with a held-drag that shows the
-  range circle live and snaps on release. Existing
-  `TowerPlacement.start_placement()` is the entry point.
+- [x] **Drag-and-drop tower placement** — ghost appears on shop-tap and
+  follows finger, green tint = valid, red tint + ✕ icon = invalid;
+  tap map to place. Drag-from-shop tried (button_down) but was unreliable
+  on HTML5/touch and reverted (user report). Current tap-then-tap flow is
+  solid. Verified in code: TowerPlacement._unhandled_input with ScreenDrag.
 
-- [ ] **Scrollable side-widget tower shop (BTD-style)** — replace the
-  current static shop column with a right-anchored vertical strip that
-  scrolls. Already partially scaffolded in `hud.gd` `_populate_tower_shop`.
+- [x] **Scrollable side-widget tower shop (BTD-style)** — right-anchored
+  SideShop PanelContainer with ShopScroll ScrollContainer + TowerShop
+  VBoxContainer inside. Collapsible handle with 0.22s slide tween,
+  per-friend row tint, affordability dim. Verified in hud.tscn + hud.gd.
 
 ### Performance (data-blocked until playtest #330 + #328 fix lands)
 - [ ] **Real FPS pass** — once `playtest.yml` produces `fps.log` with
@@ -115,8 +117,9 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
 - [ ] **Cumulus meta-progression** — 1 Cumulus point per wave cleared,
   100 Cumulus = 1 starter perk. Spec in archived roadmap.
 
-- [ ] **D7 Tier-3 unique death-cam effect** — 0.4s freeze + zoom +
-  tower name bubble when a tier-3 tower kills the boss.
+- [x] **D7 Tier-3 unique death-cam effect** — 0.4s bullet-time (Engine.time_scale
+  0.05) + 4-burst gold/white spark explosion + "✦ [Tower Name]" floating name bubble
+  above the killing tower. Shipped 2026-05-05 via effect_player.tier3_boss_kill().
 
 - [ ] **Per-path projectile tier skins (D4)** — Lemurius normal banana
   → big banana → khaki missile. Pollen → icy flower → fire lily. Etc.

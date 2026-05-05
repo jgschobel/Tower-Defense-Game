@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-05-05 (audit-polish — D7 tier-3 boss kill death-cam)
+
+- polish(vfx): D7 Tier-3 boss kill cinematic — bullet-time (Engine.time_scale 0.05 for 0.4s real), 4-burst gold/white spark explosion, "✦ [Tower Name]" floating name bubble above killing tower; source_tower plumbed through take_damage → die → _celebrate_boss_death for all projectile/cone attack paths; ticked drag-and-drop + scrollable shop P0s as verified-done in code
+
 ## 2026-05-05 (audit-polish — CI false positive fixes + observability push repair)
 
 - polish(hud): Swiss German consistency — targeting tooltip "First/Last/Strong/Close" → "Erschti/Letschti/Nöchschti/Stärchsti"; max-upgraded tower button "MAXIMUM" → "Maximal! ✓"
