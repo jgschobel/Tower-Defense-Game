@@ -1037,7 +1037,8 @@ func _build_effect_button(entry: Dictionary) -> Control:
 			"spawn_place_sparkles":
 				EffectPlayer.spawn_place_sparkles(center)
 			"spawn_step_dust":
-				EffectPlayer.spawn_step_dust(center))
+				EffectPlayer.spawn_step_dust(center)
+	)
 	return btn
 
 
@@ -1680,13 +1681,13 @@ func _populate_build_tab() -> void:
 		["Godot version", Engine.get_version_info().get("string", "?")],
 		["Pin file",      _read_text_file("res://.github/godot-version.txt").strip_edges()],
 		["MAX_LEVELS",    str(GameManager.MAX_LEVELS) if GameManager else "?"],
-		["Tower count",   str(_count_tres("res://resources/tower_data"))],
-		["Enemy count",   str(_count_tres("res://resources/enemy_data"))],
-		["Level count",   str(_count_tres("res://resources/level_data"))],
+		["Tower count",   str(_count_files("res://resources/tower_data"))],
+		["Enemy count",   str(_count_files("res://resources/enemy_data"))],
+		["Level count",   str(_count_files("res://resources/level_data"))],
 		["Variants in /assets/textures/variants", str(_count_pngs_recursive("res://assets/textures/variants"))],
-		["Tower base PNGs", str(_count_pngs("res://assets/textures/towers"))],
-		["Enemy base PNGs", str(_count_pngs("res://assets/textures/enemies"))],
-		["Level maps",    str(_count_pngs("res://assets/textures/maps_v3"))],
+		["Tower base PNGs", str(_count_pngs_recursive("res://assets/textures/towers"))],
+		["Enemy base PNGs", str(_count_pngs_recursive("res://assets/textures/enemies"))],
+		["Level maps",    str(_count_pngs_recursive("res://assets/textures/maps_v3"))],
 	]
 	for r in rows:
 		var row := HBoxContainer.new()
