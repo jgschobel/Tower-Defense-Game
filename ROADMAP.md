@@ -26,19 +26,17 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
 7 days; new P0 items get appended at the bottom.
 
 ### Game systems
-- [ ] **Wire 11 new enemy textures into .tres files** — `camo`, `lead`,
+- [x] **Wire 11 new enemy textures into .tres files** — `camo`, `lead`,
   `regrow`, `swarm`, `fondue_bomb`, `glace_golem`, `berserker`,
   `cumulus_blob`, `linsen_golem`, `smoothie_slime`, `tofu_ninja` all
-  have base PNGs in main but their `.tres` files don't reference them
-  via `custom_texture`. Add `[ext_resource type="Texture2D" path="..."]`
-  + `custom_texture = ExtResource("N")` to each. They render as flat
-  base_color circles otherwise.
+  have base PNGs in main and their `.tres` files reference them via
+  `custom_texture`. Verified 2026-05-05.
 
-- [ ] **Run enemy-damage-art for the 11 new enemies** — the
-  `generate_enemy_damage_variants.py` script knows about them; just
-  needs the workflow to fire (open issue with label `enemy-damage-art`
-  and "all" as the title's first word). Will produce 33 damage-state
-  variants (11 × 3 states).
+- [x] **Run enemy-damage-art for the 11 new enemies** — PR #387 merged
+  2026-05-05 with 51 damage-state variants covering all 17 enemy types
+  (basic, fast, tank, healer, flying, boss, camo, lead, regrow, swarm,
+  fondue_bomb, glace_golem, berserker, cumulus_blob, linsen_golem,
+  smoothie_slime, tofu_ninja).
 
 - [ ] **Drag-and-drop tower placement** — biggest mobile UX win. Replace
   the current tap-button → tap-map flow with a held-drag that shows the
@@ -65,11 +63,12 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
   (Amösius). Output: `assets/textures/towers/{tower_id}_t{1,2}{a,b}.png`.
 
 ### Asset hygiene (from audit 2026-05-03)
-- [ ] **Delete supersedered art** — 12+ files with version suffixes
-  (`_raw`, `_v2`, `_v3`, `_old`, `_final`, `_upgrade`, `_img2img`)
-  cluttering `assets/textures/towers/`. 131 MB total is too much for
-  mobile (target <80 MB). Use the new asset_manifest output to
-  identify orphans.
+- [x] **Delete superseded art** — 8 orphaned PNG+import pairs deleted
+  (amosius_raw, cordula_final, cordula_upgrade, cordula_v2, jojo_final,
+  jojo_v2, kuhne_final, kuhne_v2) — ~13.8 MB recovered. Verified no
+  .tres/.gd/.tscn reference them (img2img and clean variants kept).
+  Remaining `_img2img` files (cordula, jojo, kuhne) are active tower
+  textures, not orphans.
 
 ### CI / observability
 - [ ] **Smarter ci-monitor** — suppress the `tsconfig.json directory
