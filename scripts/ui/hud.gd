@@ -741,18 +741,23 @@ func show_enemy_intro(enemy_id: String, enemy_data: Resource) -> void:
 
 	# Per-enemy Swiss German taunts — one line per enemy type.
 	var _taunts: Dictionary = {
-		"basic":      "Wir sii meh als ir dänkt...",
-		"fast":       "Z'schnäll für euch — ciao!",
-		"tank":       "Soja-Stahl — probier mal!",
-		"camo":       "Du gsehsch mi nöd... oder?",
-		"flying":     "Türm sii nöd für mich!",
-		"healer":     "Mii Kollege bruchä mi!",
-		"swarm":      "Mir sii überall — wehr di!",
-		"lead":       "Euri Sprüch chöme nöd dur!",
-		"regrow":     "Frisch us em Ofe — immer widr!",
-		"fondue_bomb":"Käse-Chaos... KABUMM!",
-		"glace_golem":"Kalt wie d'Tiefchüelabteilig!",
-		"boss":       "Jetzt isch alles vegan — für immer!!",
+		"basic":         "Wir sii meh als ir dänkt...",
+		"fast":          "Z'schnäll für euch — ciao!",
+		"tank":          "Soja-Stahl — probier mal!",
+		"camo":          "Du gsehsch mi nöd... oder?",
+		"flying":        "Türm sii nöd für mich!",
+		"healer":        "Mii Kollege bruchä mi!",
+		"swarm":         "Mir sii überall — wehr di!",
+		"lead":          "Euri Sprüch chöme nöd dur!",
+		"regrow":        "Frisch us em Ofe — immer widr!",
+		"fondue_bomb":   "Käse-Chaos... KABUMM!",
+		"glace_golem":   "Kalt wie d'Tiefchüelabteilig!",
+		"berserker":     "Seitän-Chraft — ir chömet nöd mit!",
+		"cumulus_blob":  "Dini Cumulus-Pukt ghöret mir!",
+		"linsen_golem":  "Linse mached mi unnütz stark!",
+		"smoothie_slime":"Grüen und grusig — das bini ich!",
+		"tofu_ninja":    "Du gsehsch mi nöd — ich bini überall!",
+		"boss":          "Jetzt isch alles vegan — für immer!!",
 	}
 
 	var overlay := PanelContainer.new()
@@ -1311,16 +1316,23 @@ func _enemy_icon_texture(enemy_id: String) -> Texture2D:
 
 func _enemy_preview_color(enemy_id: String) -> Color:
 	match enemy_id:
-		"basic": return Color(0.9, 0.8, 0.5)
-		"fast": return Color(0.8, 0.5, 0.2)
-		"tank": return Color(0.5, 0.35, 0.25)
-		"healer": return Color(0.4, 0.7, 0.95)
-		"flying": return Color(0.3, 0.75, 0.35)
-		"boss": return Color(0.9, 0.2, 0.15)
-		"swarm": return Color(0.9, 0.9, 0.75)
-		"camo": return Color(0.3, 0.4, 0.3)
-		"lead": return Color(0.5, 0.5, 0.55)
-		"regrow": return Color(0.5, 0.8, 0.4)
+		"basic":          return Color(0.9, 0.8, 0.5)
+		"fast":           return Color(0.8, 0.5, 0.2)
+		"tank":           return Color(0.5, 0.35, 0.25)
+		"healer":         return Color(0.4, 0.7, 0.95)
+		"flying":         return Color(0.3, 0.75, 0.35)
+		"boss":           return Color(0.9, 0.2, 0.15)
+		"swarm":          return Color(0.9, 0.9, 0.75)
+		"camo":           return Color(0.3, 0.4, 0.3)
+		"lead":           return Color(0.5, 0.5, 0.55)
+		"regrow":         return Color(0.5, 0.8, 0.4)
+		"fondue_bomb":    return Color(0.9, 0.7, 0.2)
+		"glace_golem":    return Color(0.5, 0.8, 0.95)
+		"berserker":      return Color(0.7, 0.15, 0.15)
+		"cumulus_blob":   return Color(0.4, 0.5, 0.85)
+		"linsen_golem":   return Color(0.5, 0.55, 0.25)
+		"smoothie_slime": return Color(0.25, 0.8, 0.3)
+		"tofu_ninja":     return Color(0.92, 0.92, 0.82)
 		_: return Color(0.6, 0.6, 0.7)
 
 
@@ -1328,13 +1340,23 @@ func _short_name_for_enemy(enemy_id: String) -> String:
 	# Compact display names for the preview panel — full names are too
 	# long for a single row with 3+ groups.
 	match enemy_id:
-		"basic": return "Brötli"
-		"fast": return "Toblerone"
-		"tank": return "Cervelat"
-		"healer": return "Dr.Rivella"
-		"flying": return "Fondue"
-		"swarm": return "Tofu"
-		"boss": return "M-TÜÜFEL"
+		"basic":          return "Brötli"
+		"fast":           return "Toblerone"
+		"tank":           return "Cervelat"
+		"healer":         return "Dr.Rivella"
+		"flying":         return "Fondue"
+		"swarm":          return "Schwarm"
+		"camo":           return "Schatte"
+		"lead":           return "Büchse"
+		"regrow":         return "Gipfeli"
+		"fondue_bomb":    return "Fondue-Bombe"
+		"glace_golem":    return "Glacé"
+		"berserker":      return "Seitän"
+		"cumulus_blob":   return "Cumulus"
+		"linsen_golem":   return "Linsen"
+		"smoothie_slime": return "Smoothie"
+		"tofu_ninja":     return "Ninja"
+		"boss":           return "M-TÜÜFEL"
 		_: return enemy_id.capitalize()
 
 
