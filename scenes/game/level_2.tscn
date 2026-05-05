@@ -64,7 +64,7 @@ texture = ExtResource("7")
 [node name="PathBorder" type="Line2D" parent="."]
 points = PackedVector2Array(-40, 360, 150, 480, 260, 620, 440, 550, 420, 250, 580, 80, 720, 180, 640, 450, 820, 620, 960, 380, 1040, 140, 1180, 260, 1200, 520, 1320, 360)
 width = 50.0
-default_color = Color(0.3, 0.5, 0.7, 0.4)
+default_color = Color(0.55, 0.65, 0.75, 0.18)
 begin_cap_mode = 1
 end_cap_mode = 1
 joint_mode = 2
@@ -72,7 +72,7 @@ joint_mode = 2
 [node name="PathDraw" type="Line2D" parent="."]
 points = PackedVector2Array(-40, 360, 150, 480, 260, 620, 440, 550, 420, 250, 580, 80, 720, 180, 640, 450, 820, 620, 960, 380, 1040, 140, 1180, 260, 1200, 520, 1320, 360)
 width = 40.0
-default_color = Color(0.4, 0.6, 0.8, 0.6)
+default_color = Color(0.6, 0.7, 0.8, 0.25)
 begin_cap_mode = 1
 end_cap_mode = 1
 joint_mode = 2
