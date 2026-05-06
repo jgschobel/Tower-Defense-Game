@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-05-06 (audit-polish — per-path projectile tier skins)
+
+- polish(vfx): per-tier projectile skins — banana grows + gildens at tiers 1–3; pollen shifts gold→icy→fire→cosmic; flask goes green→cyan→purple→crimson; volleyball gains gold then rainbow stripes; tongue thickens + deepens red at each tier. `shoot_tier` passed through `setup()` p_tier arg; `reset_for_pool()` resets tier to 0. Closes ROADMAP P1 "Per-path projectile tier skins (D4)"
+
 ## 2026-05-05 (audit-polish — L5 balance fix + playtester kill tracking)
 
 - balance(level): L5 wave 1 fast 25→12 (delay 0.3→0.35s), wave 2 swarm 40→22 (delay 0.18→0.22s), starting_gold 160→185, starting_lives 18→20; closes #431 #412 (9-11 lives lost by wave 2)
