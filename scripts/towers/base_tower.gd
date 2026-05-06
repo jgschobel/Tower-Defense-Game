@@ -239,12 +239,27 @@ func _process(delta: float) -> void:
 	if data.gold_per_round > 0 or data.is_support:
 		return
 
-	# Clean up dead enemies from range list
+	# Clean up dead enemies from range list, also drop any that strayed out
+	# of range without firing area_exited (common when physics lags at high
+	# time_scale — Area2D positions trail the enemy's visual global_position).
 	var valid_enemies: Array = []
 	for e in _enemies_in_range:
 		if is_instance_valid(e) and not e.is_dead:
-			valid_enemies.append(e)
+			if global_position.distance_to(e.global_position) <= effective_range + 30.0:
+				valid_enemies.append(e)
 	_enemies_in_range = valid_enemies
+
+	# Fallback: at high time_scale the physics server can't run enough steps
+	# per frame to keep Area2D positions in sync, so area_entered fires too
+	# rarely. Direct distance check ensures towers always see enemies that are
+	# visually in range even when physics lags (e.g. CI playtest at 8×).
+	if _enemies_in_range.is_empty() and effective_range > 0.0:
+		for enemy_node in get_tree().get_nodes_in_group("enemies"):
+			var enemy := enemy_node as BaseEnemy
+			if enemy == null or enemy.is_dead:
+				continue
+			if global_position.distance_to(enemy.global_position) <= effective_range:
+				_enemies_in_range.append(enemy)
 
 	# Find target
 	current_target = _find_target()
