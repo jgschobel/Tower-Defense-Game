@@ -121,8 +121,10 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
   0.05) + 4-burst gold/white spark explosion + "✦ [Tower Name]" floating name bubble
   above the killing tower. Shipped 2026-05-05 via effect_player.tier3_boss_kill().
 
-- [ ] **Per-path projectile tier skins (D4)** — Lemurius normal banana
+- [x] **Per-path projectile tier skins (D4)** — Lemurius normal banana
   → big banana → khaki missile. Pollen → icy flower → fire lily. Etc.
+  Shipped 2026-05-06: all 5 projectile styles (banana, pollen, flask, volleyball, tongue)
+  visually distinct at tiers 1–3 via `setup(…, p_tier)` + `_draw()` branching.
 
 - [ ] **L10 dedicated background** — currently reuses L1. Generate
   `level_10_finale.png` via art-request workflow.

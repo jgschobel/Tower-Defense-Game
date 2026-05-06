@@ -15,6 +15,8 @@ var splash_damage_pct: float = 0.5
 var slow_amount: float = 0.0
 var slow_duration: float = 0.0
 var color: Color = Color.YELLOW
+# Visual upgrade tier (0=base, 1–3 = progressively enhanced look)
+var tier: int = 0
 
 # Projectile style (banana / volleyball / flask / pollen / tongue)
 var style: String = "banana"
@@ -62,7 +64,8 @@ func setup(
 	p_leaves_pool: bool = false,
 	p_pool_duration: float = 3.0,
 	p_pool_dmg: float = 4.0,
-	p_pool_radius: float = 70.0
+	p_pool_radius: float = 70.0,
+	p_tier: int = 0
 ) -> void:
 	global_position = origin
 	_origin_pos = origin
@@ -80,6 +83,7 @@ func setup(
 	pool_duration = p_pool_duration
 	pool_dmg_per_tick = p_pool_dmg
 	pool_radius = p_pool_radius
+	tier = p_tier
 
 	if target:
 		_last_target_pos = target.global_position
@@ -101,6 +105,16 @@ func setup(
 		"pollen":   _spin_speed = 0.0
 		"volleyball": _spin_speed = 10.0
 		_:          _spin_speed = 12.0
+
+	# Banana (sprite-based) tier skins: progressively larger + golden/khaki tint
+	if style not in DRAWN_STYLES and has_node("Sprite2D"):
+		var sp: Sprite2D = $Sprite2D as Sprite2D
+		if sp:
+			match tier:
+				0: sp.scale = Vector2.ONE;          sp.modulate = Color.WHITE
+				1: sp.scale = Vector2(1.25, 1.25);  sp.modulate = Color(1.0, 1.0, 0.75, 1.0)
+				2: sp.scale = Vector2(1.5, 1.5);    sp.modulate = Color(0.95, 0.88, 0.5, 1.0)
+				_: sp.scale = Vector2(1.75, 1.75);  sp.modulate = Color(0.68, 0.62, 0.32, 1.0)
 
 
 func _ready() -> void:
@@ -155,54 +169,83 @@ func _process(delta: float) -> void:
 
 
 func _draw() -> void:
+	var t: float = float(Time.get_ticks_msec()) / 1000.0
 	match style:
 		"tongue":
-			# Hot pink tongue from tower's mouth to tip
+			# Amösius tongue — tier 0: hot pink; tier 1: bright red; tier 2: deep red; tier 3: crimson thick
 			var local_origin := to_local(_origin_pos)
-			draw_line(local_origin, Vector2.ZERO, Color(1.0, 0.1, 0.45, 1.0), 10.0)
-			draw_line(local_origin, Vector2.ZERO, Color(1.0, 0.4, 0.6, 0.7), 4.0)
-			draw_circle(Vector2.ZERO, 12.0, Color(1.0, 0.05, 0.35, 1.0))
+			var thickness: float = 10.0 + tier * 3.5
+			var tip_r: float = 12.0 + tier * 3.5
+			var line_c: Color
+			var tip_c: Color
+			match tier:
+				0: line_c = Color(1.0, 0.1, 0.45, 1.0); tip_c = Color(1.0, 0.05, 0.35, 1.0)
+				1: line_c = Color(1.0, 0.05, 0.2, 1.0);  tip_c = Color(1.0, 0.0, 0.15, 1.0)
+				2: line_c = Color(0.85, 0.0, 0.05, 1.0); tip_c = Color(0.9, 0.0, 0.05, 1.0)
+				_: line_c = Color(0.7, 0.0, 0.0, 1.0);   tip_c = Color(0.75, 0.0, 0.0, 1.0)
+			draw_line(local_origin, Vector2.ZERO, line_c, thickness)
+			draw_line(local_origin, Vector2.ZERO, Color(line_c.r, line_c.g + 0.3, line_c.b + 0.2, 0.6), thickness * 0.38)
+			draw_circle(Vector2.ZERO, tip_r, tip_c)
 		"volleyball":
-			# Cordula's fasnachts-volleyball — white with colorful stripes
-			draw_circle(Vector2.ZERO, 12.0, Color(1.0, 1.0, 1.0, 1.0))
-			draw_arc(Vector2.ZERO, 12.0, 0.0, TAU, 20, Color(0.15, 0.15, 0.2, 1), 2.0)
-			# Three curved stripes for volleyball pattern
-			var t: float = float(Time.get_ticks_msec()) / 1000.0
-			for i in 3:
-				var a: float = (float(i) / 3.0) * TAU + t * 4.0
-				var p: Vector2 = Vector2(cos(a), sin(a)) * 8.0
-				draw_circle(p, 2.5, Color(0.9, 0.2, 0.5, 1))
+			# Cordula's volleyball — tier 0: pink stripes; tier 1: gold; tier 2: rainbow; tier 3: rainbow+larger
+			var r: float = 12.0 + tier * 3.0
+			draw_circle(Vector2.ZERO, r, Color(1.0, 1.0, 1.0, 1.0))
+			draw_arc(Vector2.ZERO, r, 0.0, TAU, 24, Color(0.15, 0.15, 0.2, 1), 2.0)
+			var stripe_colors: Array
+			match tier:
+				0: stripe_colors = [Color(0.9, 0.2, 0.5, 1), Color(0.9, 0.2, 0.5, 1), Color(0.9, 0.2, 0.5, 1)]
+				1: stripe_colors = [Color(1.0, 0.75, 0.0, 1), Color(0.95, 0.6, 0.0, 1), Color(1.0, 0.85, 0.1, 1), Color(0.9, 0.65, 0.0, 1)]
+				2: stripe_colors = [Color(1, 0.2, 0.2, 1), Color(1, 0.6, 0, 1), Color(0.2, 0.9, 0.2, 1), Color(0.2, 0.45, 1, 1), Color(0.7, 0.15, 1, 1)]
+				_: stripe_colors = [Color(1, 0.15, 0.15, 1), Color(1, 0.55, 0, 1), Color(1, 1, 0, 1), Color(0.15, 0.9, 0, 1), Color(0, 0.5, 1, 1), Color(0.6, 0, 1, 1)]
+			for i in stripe_colors.size():
+				var a: float = (float(i) / stripe_colors.size()) * TAU + t * 4.0
+				var p: Vector2 = Vector2(cos(a), sin(a)) * (r * 0.65)
+				draw_circle(p, 2.5 + tier * 0.5, stripe_colors[i])
 		"flask":
-			# JoJo's chemical erlenmeyer-flask projectile — green liquid
-			# in a glass body that tumbles
-			var t: float = float(Time.get_ticks_msec()) / 1000.0
+			# JoJo's flask — tier 0: green; tier 1: cyan acid; tier 2: purple mystic; tier 3: crimson bio
 			var spin: float = t * _spin_speed
-			draw_set_transform(Vector2.ZERO, spin, Vector2.ONE)
-			# Glass body (downward triangle)
-			var glass := PackedVector2Array([
+			var sc: float = 1.0 + tier * 0.22
+			draw_set_transform(Vector2.ZERO, spin, Vector2(sc, sc))
+			var glass_c: Color
+			var liquid_c: Color
+			match tier:
+				0: glass_c = Color(0.85, 0.95, 1.0, 0.5); liquid_c = Color(0.3, 1.0, 0.4, 0.9)
+				1: glass_c = Color(0.7, 1.0, 1.0, 0.5);   liquid_c = Color(0.0, 0.9, 0.9, 0.9)
+				2: glass_c = Color(0.88, 0.72, 1.0, 0.5);  liquid_c = Color(0.68, 0.1, 1.0, 0.9)
+				_: glass_c = Color(1.0, 0.72, 0.72, 0.5);  liquid_c = Color(0.88, 0.05, 0.08, 0.9)
+			draw_colored_polygon(PackedVector2Array([
 				Vector2(-8, -10), Vector2(8, -10),
 				Vector2(10, 6), Vector2(0, 12), Vector2(-10, 6)
-			])
-			draw_colored_polygon(glass, Color(0.85, 0.95, 1.0, 0.5))
-			# Bubbling green liquid inside
+			]), glass_c)
 			draw_colored_polygon(PackedVector2Array([
 				Vector2(-7, 0), Vector2(7, 0),
 				Vector2(8, 5), Vector2(0, 11), Vector2(-8, 5)
-			]), Color(0.3, 1.0, 0.4, 0.9))
-			# Neck
+			]), liquid_c)
 			draw_line(Vector2(-3, -10), Vector2(-3, -15), Color(0.5, 0.7, 0.8, 1), 1.5)
 			draw_line(Vector2(3, -10), Vector2(3, -15), Color(0.5, 0.7, 0.8, 1), 1.5)
 			draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 		"pollen":
-			# Kühne's magical pollen cluster — pulsing violet/gold spheres
-			var t2: float = float(Time.get_ticks_msec()) / 1000.0
-			var pulse: float = 1.0 + 0.2 * sin(t2 * 10.0)
-			draw_circle(Vector2.ZERO, 8.0 * pulse, Color(0.95, 0.85, 0.3, 0.6))
-			draw_circle(Vector2.ZERO, 5.0 * pulse, Color(1.0, 0.95, 0.5, 1.0))
-			for i in 4:
-				var a2: float = (float(i) / 4.0) * TAU + t2 * 3.0
-				var p2: Vector2 = Vector2(cos(a2), sin(a2)) * 11.0
-				draw_circle(p2, 2.5, Color(0.7, 0.3, 0.9, 0.8))
+			# Kühne's pollen — tier 0: gold/violet; tier 1: icy aqua; tier 2: fire orange; tier 3: cosmic white
+			var pulse: float = 1.0 + 0.2 * sin(t * 10.0)
+			var base_r: float = (8.0 + tier * 3.0) * pulse
+			var inner_r: float = (5.0 + tier * 2.0) * pulse
+			var orbit_r: float = 11.0 + tier * 4.0
+			var dot_count: int = 4 + tier * 2
+			var orbit_speed: float = 3.0 + tier * 1.5
+			var outer_c: Color
+			var inner_c: Color
+			var orbit_c: Color
+			match tier:
+				0: outer_c = Color(0.95, 0.85, 0.3, 0.6);  inner_c = Color(1.0, 0.95, 0.5, 1.0);  orbit_c = Color(0.7, 0.3, 0.9, 0.8)
+				1: outer_c = Color(0.3, 0.95, 1.0, 0.6);   inner_c = Color(0.7, 1.0, 1.0, 1.0);   orbit_c = Color(0.1, 0.7, 1.0, 0.9)
+				2: outer_c = Color(1.0, 0.55, 0.1, 0.7);   inner_c = Color(1.0, 0.85, 0.2, 1.0);  orbit_c = Color(1.0, 0.25, 0.0, 0.9)
+				_: outer_c = Color(0.92, 0.92, 1.0, 0.85); inner_c = Color(1.0, 1.0, 1.0, 1.0);   orbit_c = Color(0.5, 0.25, 1.0, 1.0)
+			draw_circle(Vector2.ZERO, base_r, outer_c)
+			draw_circle(Vector2.ZERO, inner_r, inner_c)
+			for i in dot_count:
+				var a2: float = (float(i) / dot_count) * TAU + t * orbit_speed
+				var p2: Vector2 = Vector2(cos(a2), sin(a2)) * orbit_r
+				draw_circle(p2, 2.5 + tier * 0.5, orbit_c)
 		_:
 			pass  # "banana" uses default sprite2d (already textured)
 
@@ -315,6 +358,7 @@ func reset_for_pool() -> void:
 	target = null
 	damage = 0.0
 	damage_type = 0
+	tier = 0
 	remaining_pierce = 0
 	_pierced_enemies.clear()
 	pull_path_fraction = 0.0

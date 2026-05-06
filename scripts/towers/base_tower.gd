@@ -461,7 +461,8 @@ func _attack() -> void:
 			data.leaves_ground_pool,
 			data.ground_pool_duration,
 			data.ground_pool_damage_per_tick,
-			data.ground_pool_radius
+			data.ground_pool_radius,
+			shoot_tier
 		)
 		# Carry pierce budget across to the projectile (Lemurius).
 		if "remaining_pierce" in projectile:
