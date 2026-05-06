@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-05-06 (audit-polish — fix P1: towers get 0 kills at high time_scale)
+
+- fix(tower): physics-lag fallback in BaseTower._process — at time_scale=8× with headless ~18 FPS, Godot's Area2D physics position lags the enemy's visual global_position so area_entered signals rarely fire and _enemies_in_range stays empty → 0 kills. Fix: (1) BaseTower._process does a direct distance scan when _enemies_in_range is empty, (2) auto_playtest and wave_simulator set Engine.max_physics_steps_per_frame=32 before 8× so physics keeps up. Closes #490.
+
 ## 2026-05-06 (audit-polish — per-path projectile tier skins)
 
 - polish(vfx): per-tier projectile skins — banana grows + gildens at tiers 1–3; pollen shifts gold→icy→fire→cosmic; flask goes green→cyan→purple→crimson; volleyball gains gold then rainbow stripes; tongue thickens + deepens red at each tier. `shoot_tier` passed through `setup()` p_tier arg; `reset_for_pool()` resets tier to 0. Closes ROADMAP P1 "Per-path projectile tier skins (D4)"

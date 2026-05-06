@@ -131,6 +131,14 @@ func _run_healthy_level(level_id: int) -> void:
 	# fits in ~50s game time. 16 ticks × 2.5s = 40s wallclock = 320s game
 	# time, enough margin for any level to reach WON/LOST.
 	# Was 4×/12 ticks but every scenario ended PLAYING (not WON) — fix.
+	#
+	# Issue #490 fix: at 8× time_scale with headless ~18 FPS the physics
+	# server can only run 8×18=144 steps/s vs the required 480 — Area2D
+	# positions lag massively behind visual positions so area_entered never
+	# fires and towers get 0 kills. Raising max_physics_steps_per_frame to
+	# 32 lets physics keep up (32×18=576 ≥ 480) for reliable overlap signals.
+	# BaseTower._process also has a visual-position fallback (belt+suspenders).
+	Engine.max_physics_steps_per_frame = 32
 	Engine.time_scale = 8.0
 
 	await _capture_anim_clip("%s_wavestart" % _scenario_name)
@@ -155,6 +163,7 @@ func _run_healthy_level(level_id: int) -> void:
 			break
 
 	Engine.time_scale = 1.0
+	Engine.max_physics_steps_per_frame = 8  # restore default
 	_snapshot("%s_final" % _scenario_name)
 	_record_scenario(t0)
 	_cleanup_scene()

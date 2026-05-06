@@ -34,6 +34,9 @@ func _ready() -> void:
 
 func _run_all() -> void:
 	# Speed everything up so a wave takes ~5s wall-clock instead of 30s+
+	# Raise max_physics_steps_per_frame so Area2D overlaps stay accurate at 8×
+	# (see issue #490 — physics lag causes 0 tower kills at default 8 steps/frame).
+	Engine.max_physics_steps_per_frame = 32
 	Engine.time_scale = 8.0
 	await get_tree().process_frame
 
@@ -42,6 +45,7 @@ func _run_all() -> void:
 		await _simulate_level(level_id, "minimal")
 
 	Engine.time_scale = 1.0
+	Engine.max_physics_steps_per_frame = 8  # restore default
 	_write_csv()
 	print("[simulator] done — %d level/loadout combos in %.1fs" % [
 		_results.size(), float(Time.get_ticks_msec() - _started_ms) / 1000.0
