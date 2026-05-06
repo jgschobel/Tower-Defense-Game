@@ -235,9 +235,9 @@ func _show_difficulty_picker(level_id: int) -> void:
 	# Three buttons: Easy / Normal / Hard with diamond-shape SVG icon
 	# (E/N/H badges with semantic gradient: blue/gold/red).
 	var configs := [
-		{"diff": GameManager.Difficulty.EASY,   "label": "EASY",   "svg": "difficulty_easy",   "subtitle": "Chli langsamer · 0.5× Aminos · 0.8× Gold · max 2★", "primary": false},
-		{"diff": GameManager.Difficulty.NORMAL, "label": "NORMAL", "svg": "difficulty_normal", "subtitle": "Standard · 1.0× Aminos · 1.0× Gold · max 3★",       "primary": true},
-		{"diff": GameManager.Difficulty.HARD,   "label": "HARD",   "svg": "difficulty_hard",   "subtitle": "Brutal · 1.75× Aminos · 1.35× Gold · min 1★ free",  "primary": false},
+		{"diff": GameManager.Difficulty.EASY,   "label": "EIFACH", "svg": "difficulty_easy",   "subtitle": "Chli langsamer · 0.5× Aminos · 0.8× Gold · max 2★",    "primary": false},
+		{"diff": GameManager.Difficulty.NORMAL, "label": "NORMAL", "svg": "difficulty_normal", "subtitle": "Standard · 1.0× Aminos · 1.0× Gold · max 3★",         "primary": true},
+		{"diff": GameManager.Difficulty.HARD,   "label": "BRUTAL", "svg": "difficulty_hard",   "subtitle": "Brutal · 1.75× Aminos · 1.35× Gold · min 1★ gratis", "primary": false},
 	]
 	for cfg in configs:
 		var btn := Button.new()
