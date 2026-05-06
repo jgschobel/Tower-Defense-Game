@@ -7,7 +7,7 @@
 script = ExtResource("1")
 id = "basic"
 display_name = "Lemurius"
-description = "A cheeky lemur girl who flings bananas at enemies. Reliable all-rounder."
+description = "D'Lemurius schmeisst Banane uf d'Feind — zuverlässigi Allzweck-Waffe vo Affoltern."
 friend_character_id = "friend_1"
 buy_cost = 80
 sell_return_pct = 0.6
@@ -35,7 +35,7 @@ upgrade_costs = Array[int]([210, 420, 840])
 upgrade_damage_bonus = Array[float]([10.0, 20.0, 40.0])
 upgrade_range_bonus = Array[float]([15.0, 25.0, 40.0])
 upgrade_speed_bonus = Array[float]([0.1, 0.2, 0.3])
-upgrade_names = Array[String](["Banana Barrage", "Primate Power", "Lemur Lord"])
+upgrade_names = Array[String](["Bananen-Hagel", "Primaten-Chraft", "Bananen-Fürstin"])
 path_a_display = "Schnelli Banane"
 path_a_tier_names = Array[String](["Schnelli Banane I", "Schnelli Banane II", "Explosivi Khaki"])
 path_a_costs = Array[int]([210, 455, 1140])
