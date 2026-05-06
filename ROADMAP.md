@@ -130,9 +130,9 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
   `level_10_finale.png` via art-request workflow.
 
 ### Workflow / discipline
-- [ ] **PR template with verify-checklist** — forces author to confirm
+- [x] **PR template with verify-checklist** — forces author to confirm
   "did you read asset_status.md? does this affect playtester signal?"
-  before opening.
+  before opening. Shipped 2026-05-06 via `.github/PULL_REQUEST_TEMPLATE.md`.
 
 - [ ] **`session-opener.yml`** — daily 03:00 UTC workflow that writes
   `docs/observability/session_brief.md` (open PR count, P0 head item,

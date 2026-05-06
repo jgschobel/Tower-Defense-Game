@@ -33,7 +33,7 @@ func _show_totals() -> void:
 	lbl.name = "TotalsBadge"
 	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var max_stars: int = GameManager.MAX_LEVELS * 3
-	lbl.text = "Sterne: %d/%d  Kills: %d" % [GameManager.total_stars, max_stars, GameManager.total_kills]
+	lbl.text = "Sterne: %d/%d  K.O.: %d" % [GameManager.total_stars, max_stars, GameManager.total_kills]
 	lbl.add_theme_font_size_override("font_size", 18)
 	lbl.add_theme_color_override("font_color", Color(1, 0.9, 0.4))
 	lbl.add_theme_color_override("font_outline_color", Color.BLACK)
