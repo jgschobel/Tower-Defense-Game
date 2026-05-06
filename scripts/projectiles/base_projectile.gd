@@ -139,7 +139,7 @@ func _process(delta: float) -> void:
 			# Splash continues to last known position and detonates
 			_direction = (_last_target_pos - global_position).normalized()
 			global_position += _direction * speed * delta
-			if global_position.distance_to(_last_target_pos) < 15.0:
+			if global_position.distance_to(_last_target_pos) < maxf(15.0, speed * delta):
 				_hit()
 			return
 		else:
@@ -164,7 +164,7 @@ func _process(delta: float) -> void:
 		if has_node("Sprite2D"):
 			$Sprite2D.rotation += _spin_speed * delta
 
-	if global_position.distance_to(_last_target_pos) < 15.0:
+	if global_position.distance_to(_last_target_pos) < maxf(15.0, speed * delta):
 		_hit()
 
 
