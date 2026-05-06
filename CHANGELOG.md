@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-05-06 (audit-polish — Swiss German sweep + PR template)
+
+- polish(i18n): Swiss German consistency pass — "Kills:" → "K.O." on level select totals badge; "+ HEAL" threat badge → "+ HEILE"; wave announcement "WELLE %d" → "WÄLLE %d" (consistent with "WÄLLE GSCHAFFT!" celebration); wave label + farm tooltip + aminos shop description all updated to "Wälle". Added `.github/PULL_REQUEST_TEMPLATE.md` verify-checklist (P1 ROADMAP item ticked).
+
 ## 2026-05-06 (audit-polish — per-path projectile tier skins)
 
 - polish(vfx): per-tier projectile skins — banana grows + gildens at tiers 1–3; pollen shifts gold→icy→fire→cosmic; flask goes green→cyan→purple→crimson; volleyball gains gold then rainbow stripes; tongue thickens + deepens red at each tier. `shoot_tier` passed through `setup()` p_tier arg; `reset_for_pool()` resets tier to 0. Closes ROADMAP P1 "Per-path projectile tier skins (D4)"

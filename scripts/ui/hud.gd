@@ -163,7 +163,7 @@ func _refresh_threat_badges() -> void:
 				has_healer = true
 			"boss":
 				boss_refs.append(e)
-	_set_threat_badge("HealerBadge", has_healer, "+ HEAL", Color(0.4, 1.0, 0.5))
+	_set_threat_badge("HealerBadge", has_healer, "+ HEILE", Color(0.4, 1.0, 0.5))
 	_set_threat_badge("BossBadge", not boss_refs.is_empty(), "BOSS", Color(1.0, 0.35, 0.25))  # was "⚠ BOSS"
 	_refresh_boss_hpbar(boss_refs)
 
@@ -534,7 +534,7 @@ func _populate_tower_shop() -> void:
 				"Schussrate: %.1f/s" % (1.0 / maxf(td.attack_speed, 0.01)),
 			]
 			if "gold_per_round" in td and td.gold_per_round > 0:
-				tip_lines.append("+%d G / Welle" % td.gold_per_round)
+				tip_lines.append("+%d G / Wälle" % td.gold_per_round)
 			if "is_support" in td and td.is_support:
 				tip_lines.append("Buff: +25% Schade i de Nöchi")
 			btn.tooltip_text = "\n".join(tip_lines)
@@ -1096,7 +1096,7 @@ func update_wave_info(current: int, total: int) -> void:
 			wave_label.text = "Bereit"  # was "✦ Bereit" — sparkle dropped
 			wave_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.30))
 		else:
-			wave_label.text = "Welle %d/%d" % [current, total]
+			wave_label.text = "Wälle %d/%d" % [current, total]
 			wave_label.add_theme_color_override("font_color", Color(1.0, 0.95, 0.78))
 			# Wave announcement — big text that fades
 			_show_wave_announcement(current, total)
@@ -1150,7 +1150,7 @@ func _show_wave_announcement(current: int, _total: int) -> void:
 	container.add_theme_stylebox_override("panel", sb)
 
 	var lbl := Label.new()
-	lbl.text = "WELLE %d" % current
+	lbl.text = "WÄLLE %d" % current
 	lbl.add_theme_font_size_override("font_size", 26 if not is_danger else 30)
 	lbl.add_theme_color_override("font_color", txt_color)
 	lbl.add_theme_color_override("font_outline_color", Color(0.1, 0.04, 0))
