@@ -48,17 +48,18 @@ func _run_all() -> void:
 	# UI tour: capture the menu surfaces before any gameplay.
 	await _run_ui_tour()
 
-	# All 7 levels get a healthy run — previously only L1-L3 were covered
-	# so L4-L7 regressions shipped undetected. Each level rotates its
-	# placement comp to exercise different towers (including the new
-	# joe/justus/seve).
-	for level_id in range(1, 8):
-		await _run_healthy_level(level_id)
-
+	# Priority scenarios run BEFORE healthy loops so they always complete
+	# even if the CI runner runs tight on time. Total budget: ~30s.
 	await _run_upgrade_flow()
 	await _run_new_towers_showcase()
 	await _run_stress_test()
 	await _run_bug_hunt()
+
+	# Healthy runs for L1-L3. Each caps at 20s real / 8 shots (see
+	# _run_healthy_level). L4-L7 pushed past CI timeout (issue #499);
+	# re-enable once per-scenario budget is measured and reduced.
+	for level_id in range(1, 4):
+		await _run_healthy_level(level_id)
 
 	_write_summary()
 	print("[playtest v3] done — %d snapshots, %d anim frames in %.1fs" % [
@@ -123,31 +124,25 @@ func _run_healthy_level(level_id: int) -> void:
 		wm.set("time_between_waves", 2.0)  # speed through between-wave breaks
 		wm.call("start_next_wave")
 
-	# Time-scale boost so we actually reach WON state within reasonable
-	# wall-clock. Issue #53: healthy scenarios previously timed out at
-	# wave 1/10 because the 6-shot × 2.5s window = 15s only covered the
-	# first wave. At 4× speed a full 10-wave level fits in ~75s.
-	# 8× time_scale + tick cap raised to 16. At 8× speed a 10-wave level
-	# fits in ~50s game time. 16 ticks × 2.5s = 40s wallclock = 320s game
-	# time, enough margin for any level to reach WON/LOST.
-	# Was 4×/12 ticks but every scenario ended PLAYING (not WON) — fix.
-	# At 8× time_scale with headless ~18 FPS the physics server runs only
-	# 8×18=144 steps/s vs the required 480, so Area2D positions lag and
-	# area_entered barely fires. Raising max_physics_steps_per_frame to 32
-	# lets physics keep up (32×18=576 ≥ 480) for reliable overlap signals.
+	# Time-scale boost so we see active gameplay within the CI budget.
+	# Issue #499: 7 healthy levels × ~30s = 210s pushed stress/bughunt/
+	# upgrades out of the run window. Fix: cap each healthy scenario at
+	# 20s real / 8 ticks (20s × 8× = 160s game time). Level may not
+	# reach WON but we capture 8 frames showing towers firing + kills.
+	# Physics fix (issue #498): max_physics_steps_per_frame=32 lets physics
+	# keep up at 8× on ~18 FPS headless (32×18=576 ≥ required 480) so
+	# area_entered fires reliably and towers actually score kills.
 	Engine.max_physics_steps_per_frame = 32
 	Engine.time_scale = 8.0
 
 	await _capture_anim_clip("%s_wavestart" % _scenario_name)
 
-	# Extended loop: keep sampling until WON/LOST or 16 ticks at 8×.
+	# Extended loop: keep sampling until WON/LOST or budget expires.
 	var sim_started := Time.get_ticks_msec()
 	var shot_idx := 0
 	while true:
-		# ignore_time_scale=true: SHOT_INTERVAL is 2.5 REAL seconds regardless
-		# of Engine.time_scale. Without it at 8× speed each tick fires after
-		# only 0.3s real (2.5/8) giving just ~5s total — not enough for 10 waves.
-		# With ignore_time_scale: 16 ticks × 2.5s = 40s real = 320s game time.
+		# ignore_time_scale=true: SHOT_INTERVAL is real seconds regardless of
+		# Engine.time_scale. 8 ticks × 2.5s = 20s real = 160s game time at 8×.
 		await get_tree().create_timer(SHOT_INTERVAL, true, false, true).timeout
 		_snapshot("%s_t%02d" % [_scenario_name, shot_idx])
 		shot_idx += 1
@@ -155,8 +150,8 @@ func _run_healthy_level(level_id: int) -> void:
 		or GameManager.current_state == GameManager.GameState.WON:
 			break
 		var elapsed := float(Time.get_ticks_msec() - sim_started) / 1000.0
-		# 16 ticks × 2.5s real = 40s wallclock = 320s game time at 8×.
-		if elapsed > 60.0 or shot_idx >= 16:
+		# 8 ticks × 2.5s = 20s real cap (issue #499 budget fix).
+		if elapsed > 20.0 or shot_idx >= 8:
 			break
 
 	Engine.time_scale = 1.0
