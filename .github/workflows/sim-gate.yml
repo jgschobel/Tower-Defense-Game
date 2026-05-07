@@ -83,6 +83,7 @@ jobs:
         with:
           name: sim-results-${{ github.run_number }}
           path: sim_output/
+          retention-days: 1
 
       - name: Comment results on PR
         if: github.event_name == 'pull_request' && always()

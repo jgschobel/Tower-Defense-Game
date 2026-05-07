@@ -1,0 +1,80 @@
+name: Purge Old Artifacts
+
+# Frees GitHub Actions artifact storage. The free tier is 2 GB and can
+# fill up fast when deploy-web's ~200 MB Pages artifact lands every push.
+# Once full, ALL workflows that upload artifacts start failing — including
+# deploy-web and deploy-pages.
+#
+# This workflow:
+#   - Runs daily at 03:30 UTC
+#   - Also runs immediately on every push to main (cheap nudge)
+#   - workflow_dispatch for manual fire
+#   - Deletes any artifact older than `keep_days` days (default 1)
+#   - Skips Pages artifacts entirely (those are auto-deleted by Pages)
+
+on:
+  schedule:
+    - cron: '30 3 * * *'
+  workflow_dispatch:
+    inputs:
+      keep_days:
+        description: 'Keep artifacts newer than this many days'
+        default: '1'
+        required: false
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/purge-artifacts.yml'
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: purge-artifacts
+  cancel-in-progress: false
+
+jobs:
+  purge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete old artifacts
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          KEEP_DAYS: ${{ github.event.inputs.keep_days || '1' }}
+        run: |
+          set -e
+          CUTOFF=$(date -u -d "$KEEP_DAYS days ago" +%s)
+          echo "Cutoff: artifacts older than $KEEP_DAYS day(s) ($(date -u -d "@$CUTOFF" '+%Y-%m-%dT%H:%M:%SZ')) will be deleted"
+
+          PAGE=1
+          DELETED=0
+          KEPT=0
+          while true; do
+            RESPONSE=$(gh api "repos/${{ github.repository }}/actions/artifacts?per_page=100&page=$PAGE")
+            COUNT=$(echo "$RESPONSE" | jq '.artifacts | length')
+            if [ "$COUNT" = "0" ]; then break; fi
+
+            # Process each artifact
+            echo "$RESPONSE" | jq -c '.artifacts[]' | while read -r row; do
+              ID=$(echo "$row" | jq -r '.id')
+              NAME=$(echo "$row" | jq -r '.name')
+              CREATED=$(echo "$row" | jq -r '.created_at')
+              SIZE=$(echo "$row" | jq -r '.size_in_bytes')
+              CREATED_TS=$(date -u -d "$CREATED" +%s)
+
+              if [ "$CREATED_TS" -lt "$CUTOFF" ]; then
+                echo "DELETE id=$ID name=$NAME size=$SIZE created=$CREATED"
+                gh api -X DELETE "repos/${{ github.repository }}/actions/artifacts/$ID" || echo "  (delete failed, continuing)"
+              else
+                echo "KEEP   id=$ID name=$NAME size=$SIZE created=$CREATED"
+              fi
+            done
+
+            PAGE=$((PAGE + 1))
+            if [ "$PAGE" -gt 50 ]; then
+              echo "::warning::Pagination limit hit, more pages remain"
+              break
+            fi
+          done
+          echo "Done."

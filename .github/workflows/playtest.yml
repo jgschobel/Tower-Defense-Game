@@ -140,7 +140,7 @@ jobs:
         with:
           name: playtest-screenshots-${{ github.run_number }}
           path: playtest_output/
-          retention-days: 14
+          retention-days: 1
 
       - name: Run Claude vision analysis
         if: steps.collect.outputs.count != '0' && github.event_name != 'push'
