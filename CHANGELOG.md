@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-05-07 (audit-polish — Swiss German kills → K.O. sweep)
+
+- polish(i18n): "Kills" → "K.O." — main menu stats badge ("%d Kills" → "%d K.O."), game-over defeat/victory lines ("Kills dä Wäll: %d  •  Total: %d" → "K.O.s dä Rundi: %d  •  Total: %d"). Consistent with level_select ("K.O.: %d") and tower-info panel ("K.O.: %d") added in prior runs. Closes #382 (Kiltis string already fixed; max_stars 20→30 also already fixed).
+
 ## 2026-05-06 (audit-polish — Swiss German consistency sweep #2)
 
 - polish(i18n): Difficulty picker labels "EASY"→"EIFACH" and "HARD"→"BRUTAL"; "min 1★ free"→"min 1★ gratis" in level_select. Amösius slow.tres: corrected display_name "Amosius"→"Amösius" (missing umlaut), Swiss German description + upgrade_names (Sticky Tongue/Mega Lick/Tongue God all translated), path_b tier-3 "Tongue God"→"Zunge-Gott". Lemurius basic.tres: Swiss German description + upgrade_names (Banana Barrage/Primate Power/Lemur Lord translated).
