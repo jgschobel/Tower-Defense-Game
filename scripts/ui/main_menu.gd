@@ -104,7 +104,7 @@ func _show_run_stats() -> void:
 	kills_row.add_theme_constant_override("separation", DesignTokens.SP_XS)
 	kills_row.add_child(IconLibrary.make_rect("sword", 14, DesignTokens.COL_TEXT_MUTED))
 	var kills_lbl := Label.new()
-	kills_lbl.text = "%d Kills" % GameManager.total_kills
+	kills_lbl.text = "%d K.O." % GameManager.total_kills
 	DesignTokens.style_label(kills_lbl, DesignTokens.FONT_LABEL_SM, true)
 	kills_row.add_child(kills_lbl)
 	stats_v.add_child(kills_row)
