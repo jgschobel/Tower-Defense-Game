@@ -933,7 +933,7 @@ func _on_combo_changed(counter: int, multiplier: float) -> void:
 		_combo_tween.tween_property(badge, "modulate:a", 0.0, 0.25)
 		_clear_combo_screen_tint()
 		return
-	badge.text = "RUUSCH! x%d  ·  %.1fx Gold" % [counter, multiplier]
+	badge.text = "RUUSCH! ×%d  ·  %.1f× Gold" % [counter, multiplier]
 	badge.pivot_offset = badge.size * 0.5
 	_combo_tween = badge.create_tween().set_parallel(true)
 	_combo_tween.tween_property(badge, "modulate:a", 1.0, 0.1)

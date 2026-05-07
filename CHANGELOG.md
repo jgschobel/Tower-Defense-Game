@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-05-07 (audit-polish — i18n Kills→K.O. + star polish)
+
+- polish(i18n): last "Kills" strings in main_menu.gd ("%d Kills"→"%d K.O.") and game_over.gd ("Kills dä Wäll"→"K.O.s dä Rundi") eliminated. Star display in game_over now uses ★/☆ (consistent with level_select). Combo badge RUUSCH uses × instead of x (consistent with speed button).
+
 ## 2026-05-07 (audit-polish — DPS abbreviation → Swiss German)
 
 - polish(i18n): "DPS" replaced with "S/Sek" (Schade pro Sekunde) in both the side-shop compact label and the tower-info stats panel. Branching upgrade maxed-path label "[MAX]" → "[✓ Max]" to match the Swiss German style used elsewhere. Last player-visible English abbreviation in the tower UI.
