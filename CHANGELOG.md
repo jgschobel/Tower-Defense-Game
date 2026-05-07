@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-05-07 (audit-polish — DPS abbreviation → Swiss German)
+
+- polish(i18n): "DPS" replaced with "S/Sek" (Schade pro Sekunde) in both the side-shop compact label and the tower-info stats panel. Branching upgrade maxed-path label "[MAX]" → "[✓ Max]" to match the Swiss German style used elsewhere. Last player-visible English abbreviation in the tower UI.
+
 ## 2026-05-06 (audit-polish — Swiss German consistency sweep #2)
 
 - polish(i18n): Difficulty picker labels "EASY"→"EIFACH" and "HARD"→"BRUTAL"; "min 1★ free"→"min 1★ gratis" in level_select. Amösius slow.tres: corrected display_name "Amosius"→"Amösius" (missing umlaut), Swiss German description + upgrade_names (Sticky Tongue/Mega Lick/Tongue God all translated), path_b tier-3 "Tongue God"→"Zunge-Gott". Lemurius basic.tres: Swiss German description + upgrade_names (Banana Barrage/Primate Power/Lemur Lord translated).
