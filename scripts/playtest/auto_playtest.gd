@@ -240,7 +240,10 @@ func _run_new_towers_showcase() -> void:
 		wm.call("start_next_wave")
 	Engine.time_scale = 3.0
 	for i in 5:
-		await get_tree().create_timer(1.2).timeout
+		# ignore_time_scale=true: each tick is 1.2 REAL seconds regardless of
+		# time_scale. Without it at 3× each tick fires after 0.4s real (1.2/3),
+		# giving only 2s real / 6s game time — not enough to see kills.
+		await get_tree().create_timer(1.2, true, false, true).timeout
 		_snapshot("new_towers_fight_t%d" % i)
 	Engine.time_scale = 1.0
 	_snapshot("new_towers_final")
@@ -340,6 +343,11 @@ func _run_stress_test() -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame
 	_snapshot("stress_spawned")
+
+	# Also start the wave so WaveManager tracks enemies_alive correctly
+	# (issue #519 — stress scenario was stuck at "Bereit" with 0 waves).
+	if wm and wm.has_method("start_next_wave"):
+		wm.call("start_next_wave")
 
 	# Let them march for a bit, sampling FPS at realistic intervals
 	for i in 6:
@@ -480,6 +488,7 @@ func _instantiate_tower(parent: Node, tower_data: Resource, pos: Vector2) -> Bas
 	tower.is_placed = true
 	tower.global_position = pos
 	parent.add_child(tower)
+	tower.add_to_group("towers")
 	CurrencyManager.spend_gold(tower_data.buy_cost)
 	return tower
 
@@ -508,10 +517,16 @@ func _snapshot(tag: String) -> void:
 
 
 func _cleanup_scene() -> void:
+	# Release enemies via pool so pool slots are reclaimed for the next
+	# scenario (queue_free bypasses release, depleting EnemyPool after stress).
 	for e in get_tree().get_nodes_in_group("enemies"):
-		e.queue_free()
+		if EnemyPool and EnemyPool.has_method("release"):
+			EnemyPool.release(e)
+		elif is_instance_valid(e):
+			e.queue_free()
 	for t in get_tree().get_nodes_in_group("towers"):
-		t.queue_free()
+		if is_instance_valid(t):
+			t.queue_free()
 	GameManager.set_state(GameManager.GameState.MENU)
 
 
@@ -526,6 +541,8 @@ func _record_scenario(start_ms: int) -> void:
 	for v in _fps_samples:
 		if v > 0.0 and v < min_fps:
 			min_fps = v
+	var enemy_count: int = get_tree().get_nodes_in_group("enemies").size()
+	var tower_count: int = get_tree().get_nodes_in_group("towers").size()
 	_scenario_summaries.append({
 		"name": _scenario_name,
 		"elapsed_ms": Time.get_ticks_msec() - start_ms,
@@ -534,9 +551,13 @@ func _record_scenario(start_ms: int) -> void:
 		"final_lives": GameManager.lives,
 		"final_gold": CurrencyManager.gold,
 		"final_state": _state_name(GameManager.current_state),
-		"enemies_remaining": get_tree().get_nodes_in_group("enemies").size(),
+		"enemies_remaining": enemy_count,
 		"level_kills": GameManager.level_kills,
 	})
+	print("[playtest] %s — kills=%d lives=%d state=%s enemies=%d towers=%d fps=%.0f" % [
+		_scenario_name, GameManager.level_kills, GameManager.lives,
+		_state_name(GameManager.current_state), enemy_count, tower_count, avg_fps,
+	])
 	# Issue #328 fix: write summary INCREMENTALLY after each scenario so
 	# partial runs (timeout, crash, OOM) still produce metrics. Previous
 	# code only wrote at the very end of _run_all() which silently dropped
