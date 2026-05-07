@@ -933,7 +933,7 @@ func _on_combo_changed(counter: int, multiplier: float) -> void:
 		_combo_tween.tween_property(badge, "modulate:a", 0.0, 0.25)
 		_clear_combo_screen_tint()
 		return
-	badge.text = "RUUSCH! x%d  ·  %.1fx Gold" % [counter, multiplier]
+	badge.text = "RUUSCH! ×%d  ·  %.1f× Gold" % [counter, multiplier]
 	badge.pivot_offset = badge.size * 0.5
 	_combo_tween = badge.create_tween().set_parallel(true)
 	_combo_tween.tween_property(badge, "modulate:a", 1.0, 0.1)
@@ -1296,7 +1296,7 @@ func _refresh_next_wave_preview(visible_flag: bool) -> void:
 			hbox.add_child(swatch)
 		var entry := Label.new()
 		var display_name: String = _short_name_for_enemy(enemy_id)
-		entry.text = "%dx %s" % [group.get("count", 0), display_name]
+		entry.text = "%d× %s" % [group.get("count", 0), display_name]
 		entry.add_theme_font_size_override("font_size", 16)
 		entry.add_theme_color_override("font_color", Color(1, 0.95, 0.8))
 		hbox.add_child(entry)
