@@ -40,7 +40,8 @@ func show_victory(stars: int) -> void:
 	if title_label:
 		title_label.text = "SIEG!"
 	if stars_label:
-		stars_label.text = "★".repeat(stars) + "☆".repeat(3 - stars)
+		# Start with empty outlines — each earned star pops in sequentially
+		stars_label.text = "☆☆☆"
 	if message_label:
 		var flavor: String
 		if stars == 3:
@@ -58,6 +59,24 @@ func show_victory(stars: int) -> void:
 		next_button.text = "Wiiter"
 	if menu_button:
 		menu_button.text = "Menü"
+	_animate_star_reveal(stars)
+
+
+func _animate_star_reveal(stars: int) -> void:
+	if not stars_label or stars <= 0:
+		return
+	var tw := create_tween()
+	tw.tween_interval(2.65)  # panel finishes fading in at ~2.5s; small extra beat
+	for i in stars:
+		var step: int = i + 1
+		tw.tween_callback(func():
+			stars_label.text = "★".repeat(step) + "☆".repeat(3 - step)
+			stars_label.scale = Vector2(1.45, 1.45)
+			SfxManager.play_upgrade()
+		)
+		tw.tween_property(stars_label, "scale", Vector2.ONE, 0.28).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		if i < stars - 1:
+			tw.tween_interval(0.20)
 
 
 func show_defeat() -> void:
