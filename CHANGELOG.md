@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-05-07 (audit-polish — sequential star reveal on victory)
+
+- polish(vfx): victory screen stars now pop in one-by-one (BTD-style) — each earned ★ bounces in from 1.45× scale with a gentle ascending chime (play_upgrade), 0.2s gap between stars. Panel shows "☆☆☆" immediately for layout stability. Stars reveal starts 2.65s after level ends (0.15s after panel fades in). Defeat screen unchanged.
+
 ## 2026-05-07 (audit-polish — i18n final sweep)
 
 - polish(i18n): game_over ★/☆ stars instead of */-, "K.O.s dä Rundi" instead of "Kills dä Wäll"; main_menu "%d K.O." instead of "%d Kills"; hud combo badge "RUUSCH! ×%d · %.1f× Gold" (proper × glyph); wave-preview enemy count "%d× Brötli" consistent with speed button. Closes all remaining player-visible English strings.
