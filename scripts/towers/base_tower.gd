@@ -249,14 +249,15 @@ func _process(delta: float) -> void:
 				valid_enemies.append(e)
 	_enemies_in_range = valid_enemies
 
-	# Fallback: at high time_scale the physics server can't run enough steps
-	# per frame to keep Area2D positions in sync, so area_entered fires too
-	# rarely. Direct distance check ensures towers always see enemies that are
-	# visually in range even when physics lags (e.g. CI playtest at 8×).
-	if _enemies_in_range.is_empty() and effective_range > 0.0:
+	# Always-on direct distance scan: catches enemies missed by Area2D when
+	# physics lags at high time_scale. Running unconditionally (not just when
+	# list is empty) ensures towers don't miss enemies that Area2D partially
+	# detected — e.g. Area2D fires area_entered for 2 of 5 enemies in range,
+	# list is non-empty, conditional fallback skips, 3 enemies never targeted.
+	if effective_range > 0.0:
 		for enemy_node in get_tree().get_nodes_in_group("enemies"):
 			var enemy := enemy_node as BaseEnemy
-			if enemy == null or enemy.is_dead:
+			if enemy == null or enemy.is_dead or enemy in _enemies_in_range:
 				continue
 			if global_position.distance_to(enemy.global_position) <= effective_range:
 				_enemies_in_range.append(enemy)
