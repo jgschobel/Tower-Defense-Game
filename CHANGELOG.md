@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-05-07 (audit-polish — i18n final sweep)
+
+- polish(i18n): game_over ★/☆ stars instead of */-, "K.O.s dä Rundi" instead of "Kills dä Wäll"; main_menu "%d K.O." instead of "%d Kills"; hud combo badge "RUUSCH! ×%d · %.1f× Gold" (proper × glyph); wave-preview enemy count "%d× Brötli" consistent with speed button. Closes all remaining player-visible English strings.
+
 ## 2026-05-07 (audit-polish — fix 0-kills combat regression #518)
 
 - fix(combat+playtest): 5 fixes for issue #518 (0 kills all scenarios): (1) BaseTower fallback distance scan now runs every frame unconditionally — was only when list empty, missing enemies partially detected by Area2D at 8×; (2) _cleanup_scene() uses EnemyPool.release() instead of queue_free() so pool slots aren't wasted after stress test; (3) _instantiate_tower() adds towers to "towers" group for adjacency/buff correctness; (4) new_towers_showcase timers now use ignore_time_scale=true so combat runs 1.2s real not 0.4s; (5) stress_test now calls start_next_wave() — fixes #519 (wave stuck at Bereit). Added per-scenario diagnostic print.

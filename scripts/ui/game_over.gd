@@ -40,7 +40,7 @@ func show_victory(stars: int) -> void:
 	if title_label:
 		title_label.text = "SIEG!"
 	if stars_label:
-		stars_label.text = "*".repeat(stars) + "-".repeat(3 - stars)
+		stars_label.text = "★".repeat(stars) + "☆".repeat(3 - stars)
 	if message_label:
 		var flavor: String
 		if stars == 3:
@@ -49,7 +49,7 @@ func show_victory(stars: int) -> void:
 			flavor = _victory_messages_2[randi() % _victory_messages_2.size()]
 		else:
 			flavor = _victory_messages_1[randi() % _victory_messages_1.size()]
-		message_label.text = "%s\n\nKills dä Wäll: %d  •  Total: %d" % [flavor, GameManager.level_kills, GameManager.total_kills]
+		message_label.text = "%s\n\nK.O.s dä Rundi: %d  •  Total: %d" % [flavor, GameManager.level_kills, GameManager.total_kills]
 	if next_button:
 		next_button.visible = GameManager.current_level < GameManager.MAX_LEVELS
 	if retry_button:
@@ -71,7 +71,7 @@ func show_defeat() -> void:
 		stars_label.text = ""
 	if message_label:
 		var flavor: String = _defeat_messages[randi() % _defeat_messages.size()]
-		message_label.text = "%s\n\nKills dä Wäll: %d  •  Total: %d" % [flavor, GameManager.level_kills, GameManager.total_kills]
+		message_label.text = "%s\n\nK.O.s dä Rundi: %d  •  Total: %d" % [flavor, GameManager.level_kills, GameManager.total_kills]
 	if next_button:
 		next_button.visible = false
 	if retry_button:
