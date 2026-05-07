@@ -636,13 +636,13 @@ func _populate_tower_shop() -> void:
 		_cost_labels.append(cost_label)
 
 		var dps_label := Label.new()
-		# Farm towers (gold_per_round > 0) deal no DPS — show their economy
-		# stat instead. "DPS 0" was confusing for the Banani-Hof / farm
+		# Farm towers (gold_per_round > 0) deal no S/Sek — show their economy
+		# stat instead. "S/Sek 0" was confusing for the Banani-Hof / farm
 		# tower which is meant for income, not killing.
 		if "gold_per_round" in td and td.gold_per_round > 0:
 			dps_label.text = "+%d G/Wälle" % int(td.gold_per_round)
 		else:
-			dps_label.text = "DPS %.0f" % (td.damage * td.attack_speed)
+			dps_label.text = "S/Sek %.0f" % (td.damage * td.attack_speed)
 		dps_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 		dps_label.add_theme_font_size_override("font_size", 10)
 		dps_label.add_theme_color_override("font_color", Color(0.7, 0.85, 1.0, 0.9))
@@ -1637,7 +1637,7 @@ func _refresh_tower_info() -> void:
 			for i in max_tier:
 				pip_str += " [#]" if i < _selected_tower.path_b_tier else " [ ]"
 			pip_str += "\n"
-		stats_lbl.text = "%sSchade: %.0f   DPS: %.1f   K.O.: %d\nTempo: %.1f   Reichwiiti: %.0f" % [
+		stats_lbl.text = "%sSchade: %.0f   S/Sek: %.1f   K.O.: %d\nTempo: %.1f   Reichwiiti: %.0f" % [
 			pip_str,
 			_selected_tower.effective_damage,
 			dps,
@@ -1786,7 +1786,7 @@ func _style_path_button(btn: Button, path_letter: String, td: TowerData) -> void
 	var tint: Color = td.path_a_tint if path_letter == "a" else td.path_b_tint
 	var affordable: bool = cost >= 0 and _selected_tower.can_upgrade_path(path_letter)
 	if cost < 0:
-		btn.text = "%s  [MAX]" % display
+		btn.text = "%s  [✓ Max]" % display
 		btn.disabled = true
 	else:
 		var next_name := _selected_tower.get_path_next_tier_name(path_letter)
