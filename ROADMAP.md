@@ -110,9 +110,10 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
 ## ⚡ P1 — Important Polish & Content
 
 ### Content
-- [ ] **Hero system foundation** — one Friend, one game-changer ability.
-  Spec in archived roadmap, section "Game-Identity Levers". Pick
-  Lemurius as the first hero with a "Doppel-Banani-Wurf" cooldown.
+- [x] **Hero system foundation** — Lemurius "Banana-Storm" active ability at
+  tier 3+: 3–5s triple-fire burst on 30s cooldown. Tap-button in upgrade
+  panel (HUD _ensure_ability_button). Shipped via base_tower.gd
+  (ability_cooldown_remaining, trigger_active_ability) + hud.gd. Verified 2026-05-08.
 
 - [ ] **Cumulus meta-progression** — 1 Cumulus point per wave cleared,
   100 Cumulus = 1 starter perk. Spec in archived roadmap.
@@ -134,18 +135,17 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
   "did you read asset_status.md? does this affect playtester signal?"
   before opening. Shipped 2026-05-06 via `.github/PULL_REQUEST_TEMPLATE.md`.
 
-- [ ] **`session-opener.yml`** — daily 03:00 UTC workflow that writes
-  `docs/observability/session_brief.md` (open PR count, P0 head item,
-  ci-failures, last deploy). Chat-session reads this BEFORE doing
-  anything.
+- [x] **`session-opener.yml`** — daily 03:00 UTC workflow that writes
+  `docs/observability/session_brief.md`. Exists as
+  `.github/workflows/session-opener.yml`. Verified 2026-05-08.
 
 - [ ] **Branch protection on main** with required CI checks
   (`validate.sh`, `workflow-lint`, `playtest`). Makes
   `gh pr merge --auto` actually wait for green CI.
 
-- [ ] **Autonomous-loop killswitch** — if 3 consecutive autonomous-dev
-  runs fail, the next run pauses and instead opens a `loop-broken`
-  issue. Prevents runaway broken loops.
+- [x] **Autonomous-loop killswitch** — `.github/workflows/loop-killswitch.yml`
+  monitors merged PRs by claude[bot]; opens `loop-broken` issue + writes
+  PAUSE file if no PR merged in 24h with >5 stuck open PRs. Verified 2026-05-08.
 
 ---
 

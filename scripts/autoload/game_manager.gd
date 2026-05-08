@@ -121,6 +121,12 @@ var sfx_volume: float = 0.8
 var total_kills: int = 0
 var level_kills: int = 0
 
+# Cumulus meta-progression: 1 point per wave cleared, persists across sessions.
+# At 100 Cumulus the first perk unlocks (start_gold_50: +50 starting gold).
+# Displayed on game-over screen and main menu to drive "one more run".
+var cumulus_balance: int = 0
+var cumulus_waves_cleared: int = 0
+
 
 func _ready() -> void:
 	load_game()
@@ -199,6 +205,11 @@ func start_level(level_id: int, difficulty: int = -1) -> void:
 		Difficulty.HARD:   max_lives = maxi(10, max_lives - 3)
 		_:                 pass
 	lives = max_lives
+	# Cumulus perk: start_gold_50 unlocks at 100 Cumulus-Punkte.
+	var bonus := cumulus_start_gold_bonus()
+	if bonus > 0:
+		CurrencyManager.gold += bonus
+		CurrencyManager.gold_changed.emit(CurrencyManager.gold)
 	level_kills = 0
 	set_state(GameState.PLAYING)
 
@@ -206,6 +217,16 @@ func start_level(level_id: int, difficulty: int = -1) -> void:
 func record_kill() -> void:
 	level_kills += 1
 	total_kills += 1
+
+
+func earn_cumulus(amount: int) -> void:
+	cumulus_waves_cleared += amount
+	cumulus_balance += amount
+	save_game()
+
+
+func cumulus_start_gold_bonus() -> int:
+	return 50 if cumulus_balance >= 100 else 0
 
 
 func set_state(new_state: int) -> void:
@@ -281,6 +302,8 @@ func save_game() -> void:
 		"music_volume": music_volume,
 		"sfx_volume": sfx_volume,
 		"total_kills": total_kills,
+		"cumulus_balance": cumulus_balance,
+		"cumulus_waves_cleared": cumulus_waves_cleared,
 	}
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file:
@@ -318,6 +341,8 @@ func load_game() -> void:
 		music_volume = save_data.get("music_volume", 0.7)
 		sfx_volume = save_data.get("sfx_volume", 0.8)
 		total_kills = save_data.get("total_kills", 0)
+		cumulus_balance = int(save_data.get("cumulus_balance", 0))
+		cumulus_waves_cleared = int(save_data.get("cumulus_waves_cleared", 0))
 		AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Master"), linear_to_db(master_volume))
 
 
