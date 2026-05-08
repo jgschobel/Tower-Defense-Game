@@ -263,6 +263,7 @@ func _pay_farm_towers() -> void:
 
 
 func _on_wave_completed(_wave_num: int) -> void:
+	GameManager.earn_cumulus(1)
 	if not wave_manager.all_done:
 		hud.show_next_wave_button(true)
 		# Mid-game celebration — visible reward at every wave end (not just
