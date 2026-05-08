@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-05-08 (audit-polish — Cumulus meta-progression + ROADMAP hygiene)
+
+- feat(meta): Cumulus-Punkte system: 1 point per wave cleared (persists in save file), +50 starting gold unlocked at 100 points. Balance shown on game-over screen for both victory and defeat. Three P1 ROADMAP items ticked as already-done (hero system, session-opener.yml, loop-killswitch.yml).
+
 ## 2026-05-08 (audit-polish — 0-kills regression root cause fix #527)
 
 - fix(combat+pool): EnemyPool._deactivate() now calls remove_from_group("enemies") so parked pool enemies can't be targeted by towers — root cause of persistent 0-kills after #522. Additional guards: _find_target() filters is_dead enemies, _cleanup_scene() marks is_dead=true before releasing. Closes #527; also improves enemies_remaining accuracy in playtest summary (no more ghost counts from previous scenarios).
