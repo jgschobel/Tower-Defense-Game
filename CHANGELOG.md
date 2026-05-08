@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-05-08 (audit-polish — 0-kills regression root cause fix #527)
+
+- fix(combat+pool): EnemyPool._deactivate() now calls remove_from_group("enemies") so parked pool enemies can't be targeted by towers — root cause of persistent 0-kills after #522. Additional guards: _find_target() filters is_dead enemies, _cleanup_scene() marks is_dead=true before releasing. Closes #527; also improves enemies_remaining accuracy in playtest summary (no more ghost counts from previous scenarios).
+
 ## 2026-05-07 (audit-polish — sequential star reveal on victory)
 
 - polish(vfx): victory screen stars now pop in one-by-one (BTD-style) — each earned ★ bounces in from 1.45× scale with a gentle ascending chime (play_upgrade), 0.2s gap between stars. Panel shows "☆☆☆" immediately for layout stability. Stars reveal starts 2.65s after level ends (0.15s after panel fades in). Defeat screen unchanged.
