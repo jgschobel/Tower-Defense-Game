@@ -319,7 +319,7 @@ func _find_target() -> BaseEnemy:
 	var valid: Array = []
 	for e in _enemies_in_range:
 		var enemy := e as BaseEnemy
-		if enemy == null:
+		if enemy == null or enemy.is_dead:
 			continue
 		if not data.can_target_flying and enemy.data and enemy.data.is_flying:
 			continue

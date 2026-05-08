@@ -100,6 +100,12 @@ func _deactivate(e: Node) -> void:
 	if e is Node2D:
 		e.visible = false
 	e.process_mode = Node.PROCESS_MODE_DISABLED
+	# Remove from group so towers cannot lock onto parked pool enemies via
+	# get_nodes_in_group("enemies"). Without this, a forcibly-cleaned enemy
+	# (is_dead=false) left over from a previous scenario sits in the group
+	# and the distance scan in base_tower._process adds it to _enemies_in_range,
+	# causing towers to fire at invisible ghosts and miss all live enemies.
+	e.remove_from_group("enemies")
 
 
 func stats() -> Dictionary:

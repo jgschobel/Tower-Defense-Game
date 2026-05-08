@@ -519,7 +519,11 @@ func _snapshot(tag: String) -> void:
 func _cleanup_scene() -> void:
 	# Release enemies via pool so pool slots are reclaimed for the next
 	# scenario (queue_free bypasses release, depleting EnemyPool after stress).
+	# Mark is_dead=true before release so that if a parked enemy stays in the
+	# "enemies" group (edge case), base_tower distance scan skips it.
 	for e in get_tree().get_nodes_in_group("enemies"):
+		if e is BaseEnemy:
+			(e as BaseEnemy).is_dead = true
 		if EnemyPool and EnemyPool.has_method("release"):
 			EnemyPool.release(e)
 		elif is_instance_valid(e):
