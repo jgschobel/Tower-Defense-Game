@@ -56,10 +56,14 @@ func acquire() -> Node2D:
 			return candidate
 	# Pool exhausted (or all slots stale) — instantiate a fresh one.
 	# Mark it as NOT pooled so release() queue_frees instead of parking.
+	# Always add to scene tree — an unparented node cannot _process() and
+	# silently produces 0 damage (root cause of issue #567).
 	if _scene:
 		var p = _scene.instantiate()
 		if _container:
 			_container.add_child(p)
+		elif get_tree():
+			get_tree().root.add_child(p)
 		p.set_meta("pooled", false)
 		return p
 	return null

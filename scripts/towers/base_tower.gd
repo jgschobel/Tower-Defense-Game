@@ -450,6 +450,16 @@ func _attack() -> void:
 			# Pathological case — no current scene. Bail rather than crash.
 			projectile.queue_free()
 			return
+	# Defensive: pool fallback may return a valid-but-unparented node if
+	# _container wasn't ready yet (prewarm is deferred). An unparented node
+	# cannot _process() → projectile never moves → 0 kills (issue #567).
+	elif not projectile.is_inside_tree():
+		var scene_root := get_tree().current_scene
+		if scene_root:
+			scene_root.add_child(projectile)
+		else:
+			projectile.queue_free()
+			return
 	# Credit kills from this projectile back to us (used by tower-info
 	# panel for the per-tower kill counter)
 	projectile.set_meta("source_tower", self)

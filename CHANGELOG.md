@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-01 (fix — 0-kills regression: unparented projectile pool fallback)
+
+- fix(combat+pool): projectile_pool.acquire() fallback path skipped add_child() when _container was null (prewarm not yet run on wave-1). Unparented nodes cannot _process() → projectile never moves → 0 hits/kills (root cause of playtest-feedback #567). Fix: fallback now adds to get_tree().root when _container unavailable. Defensive second layer in base_tower._attack(): if acquired projectile is valid but not in scene tree, reparent it before setup(). Closes #567.
+
 ## 2026-06-01 (audit-polish — upgrade tint visibility fixes)
 
 - polish(tint): tier-1 path tint strength 0.45→0.70 (first upgrade now clearly visible); tier-2 0.85→0.90; path-B blend weight 1.5× so A3+B1/B2 clearly differ from A3+B0; tween bug fixed — upgrade_path() flash animation now returns to path tint instead of erasing it back to WHITE. Closes playtest-feedback #558 and #562.
