@@ -115,8 +115,10 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
   panel (HUD _ensure_ability_button). Shipped via base_tower.gd
   (ability_cooldown_remaining, trigger_active_ability) + hud.gd. Verified 2026-05-08.
 
-- [ ] **Cumulus meta-progression** — 1 Cumulus point per wave cleared,
-  100 Cumulus = 1 starter perk. Spec in archived roadmap.
+- [x] **Cumulus meta-progression** — 1 Cumulus point per wave cleared,
+  100 Cumulus = 1 starter perk (+50 starting gold). Shipped 2026-05-08 via
+  GameManager.earn_cumulus() + game_level._on_wave_completed() hook;
+  balance shown on game_over screen (victory + defeat). PR #553.
 
 - [x] **D7 Tier-3 unique death-cam effect** — 0.4s bullet-time (Engine.time_scale
   0.05) + 4-burst gold/white spark explosion + "✦ [Tower Name]" floating name bubble
