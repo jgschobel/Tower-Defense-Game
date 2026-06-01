@@ -667,11 +667,14 @@ func upgrade_path(path_letter: String) -> bool:
 
 	if sprite:
 		var base_sc2: Vector2 = _baseline_scale
+		# Capture the tint _apply_path_tint() just set so the flash animation
+		# returns to it instead of resetting to WHITE (which erased the tint).
+		var target_modulate: Color = sprite.modulate
 		var upg_tween := create_tween()
 		upg_tween.tween_property(sprite, "scale", base_sc2 * 1.2, 0.15)
 		upg_tween.tween_property(sprite, "scale", base_sc2, 0.2)
 		upg_tween.parallel().tween_property(sprite, "modulate", Color(1.45, 1.3, 0.6), 0.15)
-		upg_tween.tween_property(sprite, "modulate", Color.WHITE, 0.2)
+		upg_tween.tween_property(sprite, "modulate", target_modulate, 0.2)
 	if EffectPlayer and EffectPlayer.has_method("spawn_place_sparkles"):
 		EffectPlayer.spawn_place_sparkles(global_position)
 
@@ -704,34 +707,28 @@ func _apply_path_tint() -> void:
 	if path_a_tier == 0 and path_b_tier == 0:
 		sprite.modulate = Color.WHITE
 		return
-	# Per-tier visual delta fix (playtest-feedback #80): strength ramp alone
-	# collapsed into near-identical greens at A1/A2/A3 because lerp(WHITE,
-	# saturated_tint, 0.55..1.0) produces small perceptual steps on an
-	# already-green target. We now also darken each step so the player
-	# reads tier progression as "getting darker/richer", not just "slightly
-	# different green". T1 = pastel, T2 = mid, T3 = rich-dark.
 	var max_tier: int = max(path_a_tier, path_b_tier)
-	# Lookup-table per tier for strength + brightness. Hand-tuned for
-	# perceptual separation against Lemurius green and Cordula orange tints.
-	var strength: float = 0.45
+	# Strength/brightness LUT — T1 boosted to 0.70 (was 0.45) so first
+	# purchase is clearly visible (playtest-feedback #558).
+	var strength: float = 0.70
 	var brightness: float = 1.0
 	match max_tier:
 		1:
-			strength = 0.45
+			strength = 0.70
 			brightness = 1.0
 		2:
-			strength = 0.85
+			strength = 0.90
 			brightness = 0.88
 		_:  # 3+
 			strength = 1.0
 			brightness = 0.72
-	# Blend tints by their per-path weights
+	# Give path-B tiers 1.5× blend weight so investing in B is clearly
+	# visible even when A is at max tier (playtest-feedback #562).
 	var a_weight: float = float(path_a_tier)
-	var b_weight: float = float(path_b_tier)
+	var b_weight: float = float(path_b_tier) * 1.5
 	var total: float = a_weight + b_weight
 	var blended: Color = data.path_a_tint * (a_weight / total) + data.path_b_tint * (b_weight / total)
 	var tinted: Color = Color.WHITE.lerp(blended, strength)
-	# Apply brightness by scaling RGB (keep alpha)
 	sprite.modulate = Color(tinted.r * brightness, tinted.g * brightness, tinted.b * brightness, tinted.a)
 
 
