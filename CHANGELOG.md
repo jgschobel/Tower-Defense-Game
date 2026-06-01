@@ -3,6 +3,11 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-01 (art — level 10 finale background + ddt_schwarz sprite)
+
+- art(maps): generated level_10_finale.png (2016×1152, Stability SD3.5) — dark demonic Migros finale arena; wired into level_10.tscn replacing the level-1 placeholder. Closes L10-background ROADMAP item.
+- art(enemies): generated ddt_schwarz_clean.png (1536×1536, Stability SD3.5) — shadowy sinister vegan villain sprite unique to ddt_schwarz; replaces repurposed tofu_ninja texture. Wired into ddt_schwarz.tres.
+
 ## 2026-06-01 (fix — 0-kills regression: unparented projectile pool fallback)
 
 - fix(combat+pool): projectile_pool.acquire() fallback path skipped add_child() when _container was null (prewarm not yet run on wave-1). Unparented nodes cannot _process() → projectile never moves → 0 hits/kills (root cause of playtest-feedback #567). Fix: fallback now adds to get_tree().root when _container unavailable. Defensive second layer in base_tower._attack(): if acquired projectile is valid but not in scene tree, reparent it before setup(). Closes #567.
