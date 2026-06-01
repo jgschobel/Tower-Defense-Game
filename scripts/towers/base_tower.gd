@@ -487,11 +487,13 @@ func _attack() -> void:
 		if "pull_path_fraction" in projectile:
 			projectile.pull_path_fraction = data.pull_path_fraction
 	else:
-		push_warning("[tower] projectile has no setup() — releasing")
-		if ProjectilePool:
-			ProjectilePool.release(projectile)
-		else:
-			projectile.queue_free()
+		# Do NOT release back to pool here — it would be re-acquired on the
+		# next attack tick and trigger this same branch, creating an infinite
+		# acquire→no-setup→release loop where the tower never fires.
+		# queue_free destroys the node; pool skips freed entries via
+		# is_instance_valid() on next acquire().
+		push_warning("[tower] projectile has no setup() (class=%s) — destroying, not recycling" % projectile.get_class())
+		projectile.queue_free()
 
 
 func upgrade() -> bool:

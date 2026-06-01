@@ -44,6 +44,13 @@ func acquire() -> Node2D:
 	while not _free.is_empty():
 		var candidate = _free.pop_back()
 		if candidate != null and is_instance_valid(candidate):
+			# Guard against script-detached nodes (e.g. parse-order issue in
+			# headless runs): if the node lost its script, destroy it instead
+			# of handing it out — callers would get a no-setup loop otherwise.
+			if not candidate.has_method("reset_for_pool"):
+				push_warning("[ProjectilePool] slot missing script, destroying: %s" % candidate.get_class())
+				candidate.queue_free()
+				continue
 			candidate.set_meta("pooled", true)
 			_activate(candidate)
 			return candidate

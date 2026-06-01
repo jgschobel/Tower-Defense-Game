@@ -3,6 +3,11 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-01 (audit-polish — projectile pool no-setup infinite loop fix)
+
+- fix(combat+pool): projectile acquire→no-setup→release loop: base_tower now queue_frees broken projectiles instead of returning them to the pool (which caused re-acquire on every attack tick, silently discarding all shots). projectile_pool.acquire() now skips and destroys script-detached slots via has_method("reset_for_pool") guard. Towers in wave simulator now fire correctly.
+- chore(roadmap): tick off Cumulus meta-progression (shipped 2026-05-08 in PR #553, was still [ ])
+
 ## 2026-05-08 (audit-polish — Cumulus meta-progression + ROADMAP hygiene)
 
 - feat(meta): Cumulus-Punkte system: 1 point per wave cleared (persists in save file), +50 starting gold unlocked at 100 points. Balance shown on game-over screen for both victory and defeat. Three P1 ROADMAP items ticked as already-done (hero system, session-opener.yml, loop-killswitch.yml).
