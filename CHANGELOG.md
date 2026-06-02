@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-02 (audit-polish — projectile parse-order fix)
+
+- fix(projectile): remove `BaseEnemy` class_name type annotations from `base_projectile.gd` declarations — `var target: BaseEnemy`, `p_target: BaseEnemy` in setup(), `-> BaseEnemy` return type, and `as BaseEnemy` casts all cause GDScript parse-order failures in headless CI (same pattern CLAUDE.md warns about for signals). Replaced with untyped `var target = null`, `p_target: Node2D`, `-> Node2D`, and duck-typed `Node2D` casts. Fixes the persistent `[tower] projectile has no setup()` warning flood that breaks every playtester run on commit d275dd9.
+
 ## 2026-06-02 (audit-polish — comprehensive 0-kills projectile fix)
 
 - fix(combat+pool): two-path 0-kills fix — (1) base_tower falls back to preloaded _projectile_scene when pool returns a script-detached node (has_method("setup")=false in headless CI parse-order regression), discarding the bad node without recycling it; (2) projectile_pool exhausted-pool fallback now always adds fresh node to scene tree via get_tree().root.add_child when _container is null (unparented node silently blocks _process). Closes issue #567; supersedes PR #571.
