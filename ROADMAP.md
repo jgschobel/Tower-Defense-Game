@@ -163,6 +163,104 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
 - [ ] **Active power abilities** — Wagli-Räge, Rausch-Modus combo
   frenzy.
 
+### Ideated 2026-06-02 — Master architect batch
+
+- [ ] **Kassa-Punkte mid-run combo shop** (BTD-inspired remix). Once
+  the existing ComboTracker hits ×50, "Kassa-Punkte" begin to drip in
+  (1 KP per kill while combo holds). A small fold-out panel above the
+  combo badge offers three timed buys:
+  - **Donnschtig-Aktion** (100 KP) — +40 % damage for 10 s on all
+    towers.
+  - **Gold-Sturm** (200 KP) — every enemy popped in the next 12 s drops
+    2× gold.
+  - **Iisrad-Wirbel** (150 KP) — freeze the nearest 5 enemies for 4 s.
+  Why: turns the (currently passive) combo system into a per-wave
+  decision, gives JoJo/Cordula players a panic button without adding
+  a tower. Impl hint: extend `ComboTracker` autoload with KP counter +
+  signal; HUD reuses TowerInfo panel chrome for the popover. Resets
+  to 0 KP on game over. **Single-PR scoped.**
+
+- [ ] **Migros-Mitarbeiter support tower** (the missing Village). New
+  tower id `mitarbeiter`, cost 350 gold, no damage of its own.
+  Passive aura (radius 180 px) buffs every tower in range:
+  - Path A — "Lehrlig" → "Filialleiter" → "De Chef vo Affoltern":
+    +10 / +20 / +35 % range to adjacent towers.
+  - Path B — "Service-Cracher" → "Logistig-Profi" → "Cumulus-Gott":
+    +10 / +25 / +50 % damage; T3 also converts adjacent PHYSICAL hits
+    to MAGIC (cuts armor 70 %).
+  Why: BTD without Village support is half the game; we already have
+  unused tower slots (`farm`, `support`, `seve`) the HUD doesn't show.
+  Reuse the support slot — `resources/tower_data/support.tres` becomes
+  Migros-Mitarbeiter, add `_shop_tower_ids` entry in `hud.gd`. Sprite
+  reuses the placeholder portrait until art-request can paint a proper
+  Migros uniform.
+
+- [ ] **Camo-Bananen + detection mechanic** (BTD camo, Migros-flavored).
+  New enemy variant: plastic-wrapped banana that most towers cannot
+  target. Only **Kühne** (sniper, has scope) and **Cordula** (microscope)
+  see it natively. Other towers gain camo-vision when adjacent to a
+  Mitarbeiter T2+ (see above) — creates a real placement puzzle.
+  Spec: `resources/enemy_data/camo_banani.tres` (camo flag, 60 HP, 90 px/s),
+  appears in L4 wave 6, L7 wave 4, L9 waves 3+8, L10 wave 7. Add
+  `targets_camo: bool` to `TowerData`; default false; Kühne + Cordula
+  set it. Tower `_find_target()` filters camo enemies unless the tower
+  has detection. Visual: dim yellow tint + subtle "?" floater.
+  Why: forces the player to actually use Kühne/Cordula instead of
+  spamming JoJo, and gives the Mitarbeiter tower a strategic reason
+  to exist beyond pure buff stacking.
+
+- [ ] **Sandchaste-Modus** (sandbox / lazy-fantasy mode). Unlock after
+  L5: a single map (re-uses L1 path) where gold starts at 99 999, no
+  lives are lost, every tower deals 10× damage, all upgrades are free.
+  Pure "what if I built a 5-Cordula wall" experimentation. Toggle
+  "🏖️ Sandchaste" button on main menu, hidden until L5 cleared.
+  Why: zero balance risk (segregated mode), maximum delight, and it's
+  great content for screenshots / TikTok shares — the "screenshot-worthy"
+  moment the ideate brief asked for. Impl hint: new
+  `scenes/game/sandbox.tscn` extending game.tscn, sets `CurrencyManager.gold
+  = 99_999`, `GameManager.lives = INF`, multiplies all tower base damage
+  by 10 via a `sandbox_mode` flag on `BaseTower._fire()`. **1–2 runs.**
+
+- [ ] **"De Chef!" MOAB-class boss** (the screenshot moment). New
+  walking boss enemy: **Riccardo, de Filialleiter**, appears as the
+  finale of L7 wave 10 and at L10 wave 5 mid-act. 4 000 HP, 30 px/s,
+  immune to slow + freeze, carries 8 `cumulus_blob` enemies that
+  release on death (BTD MOAB-style). Quotes in Swiss German speech
+  bubbles every 15 s — sample: "Es git kei Bananä mehr!",
+  "Ihr händ kei Cumulus-Charte!", "Mir sind eu am vermisse, Banani-Diebe!"
+  Drops 600 gold + 5 Cumulus on kill. Spec: reuse
+  `resources/enemy_data/boss.tres` as base, new `riccardo.tres` with
+  `on_death_spawn: ["cumulus_blob"] × 8`, `taunt_lines: [...]` array
+  read by base_enemy. Why: every BTD veteran will instantly recognise
+  the MOAB silhouette and laugh at the Migros-store-manager remix —
+  exactly the "would surprise a BTD veteran" answer the brief asked
+  for. Requires the carrier-spawn architecture (see Architecture
+  Notes below) to land first or get hacked in.
+
+---
+
+## 🔎 Architecture Notes
+
+Dated observations from random gameplay-file audits. Each note is one
+specific friction the next builder will hit; not a P0, but worth
+ticking off before the codebase becomes load-bearing in painful ways.
+
+- **2026-06-02** — `scripts/towers/base_tower.gd` is **1 179 lines**
+  and `scripts/enemies/base_enemy.gd` is **827 lines**. Both classes
+  now juggle pool reuse, projectile spawning, active hero abilities,
+  damage-type math, upgrade flow, range-circle drawing, and tier
+  cosmetics in one file. **Concrete consequence**: the "De Chef!" boss
+  idea above needs `on_death_spawn` carrier behaviour — currently
+  that would mean adding a 7th concern to `base_enemy.die()` and
+  reaching into `wave_manager` from inside an enemy. Suggest a
+  pre-work refactor PR (audit-polish mode, single file at a time):
+  extract `BaseTower._fire_projectile_*()` into a sibling
+  `tower_combat.gd` helper, and pull `BaseEnemy.on_death_*` hooks into
+  a small `enemy_death_effects.gd` resource so we can compose
+  "spawns N children", "taunt line", "drops gold X" without touching
+  the base class. Until that lands, every new enemy archetype will
+  push `base_enemy.gd` past 1 000 lines.
+
 ---
 
 ## Loop directives

@@ -3,6 +3,11 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-02 (ideate — Kassa-Punkte / Mitarbeiter / Camo-Bananen / Sandchaste / De Chef)
+
+- docs(roadmap): 5 spec'd ideas under "Ideated 2026-06-02" — Kassa-Punkte mid-run combo shop, Migros-Mitarbeiter support tower (the missing BTD Village, reuses unused `support.tres` slot), Camo-Bananen enemy + per-tower detection flag, Sandchaste-Modus sandbox (unlock after L5), and the "De Chef!" MOAB-class boss (Riccardo de Filialleiter) for L7/L10 finales. Each idea is single- or two-PR scoped with concrete cost/HP/path numbers, file targets, and implementation hints.
+- docs(roadmap): new "🔎 Architecture Notes" section. First note: `base_tower.gd` (1 179 lines) + `base_enemy.gd` (827 lines) both balloon-classes. Concrete consequence — the De Chef carrier-spawn behaviour cannot land cleanly until `on_death_*` hooks are extracted into a small `enemy_death_effects.gd` resource. Flagged as pre-work for the boss idea.
+
 ## 2026-06-02 (audit-polish — comprehensive 0-kills projectile fix)
 
 - fix(combat+pool): two-path 0-kills fix — (1) base_tower falls back to preloaded _projectile_scene when pool returns a script-detached node (has_method("setup")=false in headless CI parse-order regression), discarding the bad node without recycling it; (2) projectile_pool exhausted-pool fallback now always adds fresh node to scene tree via get_tree().root.add_child when _container is null (unparented node silently blocks _process). Closes issue #567; supersedes PR #571.
