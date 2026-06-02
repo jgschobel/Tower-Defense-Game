@@ -56,10 +56,14 @@ func acquire() -> Node2D:
 			return candidate
 	# Pool exhausted (or all slots stale) — instantiate a fresh one.
 	# Mark it as NOT pooled so release() queue_frees instead of parking.
+	# Always parent the node: an unparented node cannot _process(), so a
+	# projectile launched from it would never move or deal damage (#567).
 	if _scene:
 		var p = _scene.instantiate()
 		if _container:
 			_container.add_child(p)
+		elif get_tree():
+			get_tree().root.add_child(p)
 		p.set_meta("pooled", false)
 		return p
 	return null
