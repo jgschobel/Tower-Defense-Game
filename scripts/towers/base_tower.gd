@@ -441,7 +441,17 @@ func _attack() -> void:
 	var projectile: Node = null
 	if ProjectilePool and ProjectilePool.has_method("acquire"):
 		projectile = ProjectilePool.acquire()
-	if projectile == null or not is_instance_valid(projectile):
+	# Three bad-pool cases all fall back to the preloaded scene:
+	#   (a) pool returned null / freed instance
+	#   (b) pool returned valid node with detached script — has_method("setup")
+	#       returns false in headless CI due to parse-order (issue #567)
+	#   (c) pool was exhausted and fallback node somehow lacks setup()
+	if projectile == null or not is_instance_valid(projectile) \
+			or not projectile.has_method("setup"):
+		if projectile != null and is_instance_valid(projectile):
+			# Discard the script-detached pool node without recycling it;
+			# recycling would re-queue the bad node and loop forever.
+			projectile.queue_free()
 		projectile = _projectile_scene.instantiate()
 		var scene_root := get_tree().current_scene
 		if scene_root:
@@ -450,10 +460,21 @@ func _attack() -> void:
 			# Pathological case — no current scene. Bail rather than crash.
 			projectile.queue_free()
 			return
+	elif not projectile.is_inside_tree():
+		# Pool returned a valid+scripted node that wasn't added to the tree
+		# (prewarm is deferred — possible on wave-1 in headless CI).
+		# An unparented node cannot _process() → projectile never moves → 0 kills.
+		var scene_root := get_tree().current_scene
+		if scene_root:
+			scene_root.add_child(projectile)
+		else:
+			projectile.queue_free()
+			return
 	# Credit kills from this projectile back to us (used by tower-info
 	# panel for the per-tower kill counter)
 	projectile.set_meta("source_tower", self)
-	# setup() must not throw. If it does, quietly release the projectile.
+	# setup() is guaranteed by the fallback chain above, but keep the guard
+	# so any future code path that skips the chain doesn't silently shoot blanks.
 	if projectile.has_method("setup"):
 		# Crit roll (ROADMAP #38). Kühne pulls 2× damage at configured
 		# chance; other towers skip by default (crit_chance = 0).

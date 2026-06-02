@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-02 (audit-polish — comprehensive 0-kills projectile fix)
+
+- fix(combat+pool): two-path 0-kills fix — (1) base_tower falls back to preloaded _projectile_scene when pool returns a script-detached node (has_method("setup")=false in headless CI parse-order regression), discarding the bad node without recycling it; (2) projectile_pool exhausted-pool fallback now always adds fresh node to scene tree via get_tree().root.add_child when _container is null (unparented node silently blocks _process). Closes issue #567; supersedes PR #571.
+
 ## 2026-06-01 (audit-polish — upgrade tint visibility fixes)
 
 - polish(tint): tier-1 path tint strength 0.45→0.70 (first upgrade now clearly visible); tier-2 0.85→0.90; path-B blend weight 1.5× so A3+B1/B2 clearly differ from A3+B0; tween bug fixed — upgrade_path() flash animation now returns to path tint instead of erasing it back to WHITE. Closes playtest-feedback #558 and #562.
