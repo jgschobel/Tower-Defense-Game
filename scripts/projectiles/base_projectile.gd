@@ -5,7 +5,7 @@ extends Area2D
 ## `style` drives the visual: each tower gets a distinct look (only Lemurius
 ## throws bananas). `leaves_ground_pool` spawns a lingering acid pool (JoJo).
 
-var target: BaseEnemy = null
+var target = null
 var damage: float = 0.0
 var damage_type: int = 0
 var speed: float = 500.0
@@ -51,7 +51,7 @@ const DRAWN_STYLES: Array = ["tongue", "volleyball", "flask", "pollen"]
 
 func setup(
 	origin: Vector2,
-	p_target: BaseEnemy,
+	p_target: Node2D,
 	p_damage: float,
 	p_damage_type: int,
 	p_color: Color,
@@ -279,7 +279,7 @@ func _hit() -> void:
 	# and keep flying instead of releasing.
 	if remaining_pierce > 0:
 		remaining_pierce -= 1
-		var next: BaseEnemy = _find_pierce_target()
+		var next = _find_pierce_target()
 		if next != null:
 			target = next
 			_last_target_pos = next.global_position
@@ -290,8 +290,8 @@ func _hit() -> void:
 		var src_tower = get_meta("source_tower") if has_meta("source_tower") else null
 		var enemies := get_tree().get_nodes_in_group("enemies")
 		for enemy_node in enemies:
-			var enemy := enemy_node as BaseEnemy
-			if enemy == null or enemy == target or enemy.is_dead:
+			var enemy = enemy_node
+			if not is_instance_valid(enemy) or enemy == target or enemy.get("is_dead"):
 				continue
 			# F10: camo enemies are invisible to towers without detection.
 			# Splash from a non-detector tower must not reveal/damage camo.
@@ -340,12 +340,12 @@ func _spawn_acid_pool() -> void:
 	host.add_child(pool)
 
 
-func _find_pierce_target() -> BaseEnemy:
-	var best: BaseEnemy = null
+func _find_pierce_target() -> Node2D:
+	var best: Node2D = null
 	var best_dist: float = 220.0  # cap how far pierce-chains reach
 	for enemy_node in get_tree().get_nodes_in_group("enemies"):
-		var enemy := enemy_node as BaseEnemy
-		if enemy == null or enemy.is_dead or enemy in _pierced_enemies:
+		var enemy: Node2D = enemy_node as Node2D
+		if enemy == null or enemy.get("is_dead") or enemy in _pierced_enemies:
 			continue
 		var d: float = global_position.distance_to(enemy.global_position)
 		if d < best_dist:
