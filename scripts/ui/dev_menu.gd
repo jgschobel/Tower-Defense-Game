@@ -1720,34 +1720,6 @@ func _count_pngs_recursive(path: String) -> int:
 	return n
 
 
-func _count_tres(path: String) -> int:
-	var dir := DirAccess.open(path)
-	if dir == null:
-		return 0
-	var n := 0
-	dir.list_dir_begin()
-	var entry := dir.get_next()
-	while entry != "":
-		if entry.ends_with(".tres"):
-			n += 1
-		entry = dir.get_next()
-	return n
-
-
-func _count_pngs(path: String) -> int:
-	var dir := DirAccess.open(path)
-	if dir == null:
-		return 0
-	var n := 0
-	dir.list_dir_begin()
-	var entry := dir.get_next()
-	while entry != "":
-		if entry.ends_with(".png"):
-			n += 1
-		entry = dir.get_next()
-	return n
-
-
 func _read_text_file(path: String) -> String:
 	if not ResourceLoader.exists(path):
 		var f := FileAccess.open(path, FileAccess.READ)

@@ -162,6 +162,11 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
   leaderboard.
 - [ ] **Active power abilities** — Wagli-Räge, Rausch-Modus combo
   frenzy.
+- [ ] **Wire `difficulty_count_mult()` into wave spawning** — From audit
+  2026-06-02: `GameManager.DIFFICULTY_COUNT_MULT := [0.90, 1.00, 1.20]`
+  is defined but never read. Intent was Hard = +20% spawns. Either wire
+  in `wave_manager.gd` or delete the constant + getter pair. See
+  `docs/audits/2026-06-02-codebase-hygiene.md`.
 
 ---
 

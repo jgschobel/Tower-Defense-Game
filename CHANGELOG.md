@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-02 (self-improve — codebase hygiene audit)
+
+- chore(audit): removed 5 unused functions (103 LoC) across base_enemy, combo_tracker, dev_menu — `_get_base_color`, `_show_damage_number`, `_show_mini_pop`, `current_counter`, `_count_tres`, `_count_pngs`. All single-reference, no dynamic dispatch. `_show_damage_number`/`_show_mini_pop` explicitly replaced by `_apply_damage_state_visual` per inline comment. Flagged 4 more (`time_left`, `difficulty_count_mult`, `set_volume`, `assign_friend_photo`) as kept-but-flagged in next audit. Full report: `docs/audits/2026-06-02-codebase-hygiene.md`. Last audit was 2026-04-19 (6 weeks stale).
+
 ## 2026-06-02 (audit-polish — comprehensive 0-kills projectile fix)
 
 - fix(combat+pool): two-path 0-kills fix — (1) base_tower falls back to preloaded _projectile_scene when pool returns a script-detached node (has_method("setup")=false in headless CI parse-order regression), discarding the bad node without recycling it; (2) projectile_pool exhausted-pool fallback now always adds fresh node to scene tree via get_tree().root.add_child when _container is null (unparented node silently blocks _process). Closes issue #567; supersedes PR #571.

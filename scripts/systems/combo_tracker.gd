@@ -38,10 +38,6 @@ func reset() -> void:
 	combo_changed.emit(0, 1.0)
 
 
-func current_counter() -> int:
-	return _counter
-
-
 func current_multiplier() -> float:
 	# Thresholds: 0-4 = 1.0×, 5-9 = 1.5×, 10-19 = 2.0×, 20+ = 3.0×.
 	if _counter >= 20:
