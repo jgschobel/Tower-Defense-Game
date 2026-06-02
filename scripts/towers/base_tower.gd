@@ -708,8 +708,9 @@ func _apply_path_tint() -> void:
 		sprite.modulate = Color.WHITE
 		return
 	var max_tier: int = max(path_a_tier, path_b_tier)
-	# Strength/brightness LUT — T1 boosted to 0.70 (was 0.45) so first
-	# purchase is clearly visible (playtest-feedback #558).
+	# Strength/brightness LUT. T1=0.70 keeps first purchase visible (#558).
+	# T3 brightness raised 0.72→0.85 — 0.72 squashed all hues to muddy browns
+	# on warm sprites, making A3 and A3+B2 perceptually identical (#576, #569).
 	var strength: float = 0.70
 	var brightness: float = 1.0
 	match max_tier:
@@ -721,11 +722,11 @@ func _apply_path_tint() -> void:
 			brightness = 0.88
 		_:  # 3+
 			strength = 1.0
-			brightness = 0.72
-	# Give path-B tiers 1.5× blend weight so investing in B is clearly
-	# visible even when A is at max tier (playtest-feedback #562).
+			brightness = 0.85
+	# Give path-B tiers 2.0× blend weight (was 1.5×) so a B investment reads
+	# clearly even against a maxed path-A baseline (#562, #569, #576).
 	var a_weight: float = float(path_a_tier)
-	var b_weight: float = float(path_b_tier) * 1.5
+	var b_weight: float = float(path_b_tier) * 2.0
 	var total: float = a_weight + b_weight
 	var blended: Color = data.path_a_tint * (a_weight / total) + data.path_b_tint * (b_weight / total)
 	var tinted: Color = Color.WHITE.lerp(blended, strength)

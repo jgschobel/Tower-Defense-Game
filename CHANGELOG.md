@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-02 (audit-polish — tier-3 tint visibility fix)
+
+- polish(tint): tier-3 brightness 0.72→0.85 (was drowning hue differences on warm sprites, making A3 and A3+B2 perceptually identical); path-B weight 1.5×→2.0× so B-path investment reads clearly against a maxed A-path baseline. Closes playtest-feedback #576, #569.
+
 ## 2026-06-01 (audit-polish — upgrade tint visibility fixes)
 
 - polish(tint): tier-1 path tint strength 0.45→0.70 (first upgrade now clearly visible); tier-2 0.85→0.90; path-B blend weight 1.5× so A3+B1/B2 clearly differ from A3+B0; tween bug fixed — upgrade_path() flash animation now returns to path tint instead of erasing it back to WHITE. Closes playtest-feedback #558 and #562.
