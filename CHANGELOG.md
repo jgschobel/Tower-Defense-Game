@@ -3,9 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
-## 2026-06-02 (audit-polish — tier-3 tint visibility fix)
+## 2026-06-02 (audit-polish — tier-3 tint + playtester timeout fixes)
 
 - polish(tint): tier-3 brightness 0.72→0.85 (was drowning hue differences on warm sprites, making A3 and A3+B2 perceptually identical); path-B weight 1.5×→2.0× so B-path investment reads clearly against a maxed A-path baseline. Closes playtest-feedback #576, #569.
+- fix(playtest): L3_healthy now completes within 120s CI budget — new_towers fight loop 5→3 combat ticks (saves 2.4s); healthy level shot cap 8/20s→6/15s per scenario (saves ~5s each). Total estimated runtime ~107s vs old ~129s. Closes #575.
 
 ## 2026-06-01 (audit-polish — upgrade tint visibility fixes)
 

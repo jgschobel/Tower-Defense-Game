@@ -138,11 +138,13 @@ func _run_healthy_level(level_id: int) -> void:
 	await _capture_anim_clip("%s_wavestart" % _scenario_name)
 
 	# Extended loop: keep sampling until WON/LOST or budget expires.
+	# Budget: MAX_SHOTS_PER_SCENARIO × SHOT_INTERVAL = 6×2.5s = 15s real / 120s game.
+	# Reduced from 8 ticks/20s — the full 3×30s healthy suite was hitting the
+	# 120s CI timeout (issue #575). 6 shots still show 3 wave transitions.
 	var sim_started := Time.get_ticks_msec()
 	var shot_idx := 0
 	while true:
-		# ignore_time_scale=true: SHOT_INTERVAL is real seconds regardless of
-		# Engine.time_scale. 8 ticks × 2.5s = 20s real = 160s game time at 8×.
+		# ignore_time_scale=true: SHOT_INTERVAL is real seconds regardless of Engine.time_scale.
 		await get_tree().create_timer(SHOT_INTERVAL, true, false, true).timeout
 		_snapshot("%s_t%02d" % [_scenario_name, shot_idx])
 		shot_idx += 1
@@ -150,8 +152,7 @@ func _run_healthy_level(level_id: int) -> void:
 		or GameManager.current_state == GameManager.GameState.WON:
 			break
 		var elapsed := float(Time.get_ticks_msec() - sim_started) / 1000.0
-		# 8 ticks × 2.5s = 20s real cap (issue #499 budget fix).
-		if elapsed > 20.0 or shot_idx >= 8:
+		if elapsed > 15.0 or shot_idx >= MAX_SHOTS_PER_SCENARIO:
 			break
 
 	Engine.time_scale = 1.0
@@ -239,10 +240,10 @@ func _run_new_towers_showcase() -> void:
 		wm.set("auto_start_waves", true)
 		wm.call("start_next_wave")
 	Engine.time_scale = 3.0
-	for i in 5:
-		# ignore_time_scale=true: each tick is 1.2 REAL seconds regardless of
-		# time_scale. Without it at 3× each tick fires after 0.4s real (1.2/3),
-		# giving only 2s real / 6s game time — not enough to see kills.
+	# 3 combat ticks (was 5) — saves 2.4s real. Still shows >3 wave events.
+	# Reduced to help L3_healthy fit within the 120s CI timeout (issue #575).
+	for i in 3:
+		# ignore_time_scale=true: each tick is 1.2 REAL seconds regardless of time_scale.
 		await get_tree().create_timer(1.2, true, false, true).timeout
 		_snapshot("new_towers_fight_t%d" % i)
 	Engine.time_scale = 1.0
