@@ -30,13 +30,20 @@ func _process(delta: float) -> void:
 
 
 func _tick_damage() -> void:
+	# Duck-typed: BaseEnemy class_name cannot be referenced here because this
+	# script is preloaded by base_projectile.gd at parse time, and ProjectilePool
+	# (autoload #9) loads base_projectile.tscn before EnemyPool (autoload #10)
+	# has registered BaseEnemy. Any `as BaseEnemy` / `: BaseEnemy` ref in this
+	# chain would parse-fail in headless CI, strip the script from the .tscn,
+	# and cause every projectile to spawn as a bare Area2D (see #567, #595, #605).
 	var enemies := get_tree().get_nodes_in_group("enemies")
 	for enemy_node in enemies:
-		var enemy := enemy_node as BaseEnemy
-		if enemy == null or enemy.is_dead:
+		if enemy_node == null or not is_instance_valid(enemy_node):
 			continue
-		if global_position.distance_to(enemy.global_position) <= radius:
-			enemy.take_damage(damage_per_tick, damage_type)
+		if enemy_node.get("is_dead"):
+			continue
+		if global_position.distance_to(enemy_node.global_position) <= radius:
+			enemy_node.take_damage(damage_per_tick, damage_type)
 
 
 func _draw() -> void:

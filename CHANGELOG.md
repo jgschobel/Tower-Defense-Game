@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-03 (build-content → forced fix — projectile parse-order: third regression hop)
+
+- fix(projectile): `acid_pool.gd` `as BaseEnemy` cast was the remaining parse-order trap that #595 missed. `base_projectile.gd` preloads `acid_pool.gd` at parse time (`const _ACID_POOL_SCRIPT := preload(...)`), and `ProjectilePool` (autoload #9) eager-loads `base_projectile.tscn` before `EnemyPool` (autoload #10) registers `BaseEnemy` — so acid_pool's parse failed, cascaded to base_projectile, and stripped the script from every instantiated projectile (class=Area2D, no `setup()`). Replaced with duck-typed `enemy_node.get("is_dead")` + `enemy_node.take_damage(...)`. Added a multi-line warning above the preload in base_projectile.gd so this trap can't be reintroduced without explicit notice. Closes #605, #608. Build-content run was forced into fix mode per CLAUDE.md priority rule #2 (playtest-feedback before new features).
+
 ## 2026-06-02 (audit-polish — projectile parse-order fix)
 
 - fix(projectile): remove `BaseEnemy` class_name type annotations from `base_projectile.gd` declarations — `var target: BaseEnemy`, `p_target: BaseEnemy` in setup(), `-> BaseEnemy` return type, and `as BaseEnemy` casts all cause GDScript parse-order failures in headless CI (same pattern CLAUDE.md warns about for signals). Replaced with untyped `var target = null`, `p_target: Node2D`, `-> Node2D`, and duck-typed `Node2D` casts. Fixes the persistent `[tower] projectile has no setup()` warning flood that breaks every playtester run on commit d275dd9.
