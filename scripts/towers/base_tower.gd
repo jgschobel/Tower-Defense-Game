@@ -729,17 +729,19 @@ func _apply_path_tint() -> void:
 		sprite.modulate = Color.WHITE
 		return
 	var max_tier: int = max(path_a_tier, path_b_tier)
-	# Strength/brightness LUT — T1 boosted to 0.70 (was 0.45) so first
-	# purchase is clearly visible (playtest-feedback #558).
+	# Strength/brightness LUT. Root-cause fix (#592): T1 was 0.70/1.0 (no
+	# darkening), making the hue shift too subtle to see on warm sprites.
+	# Reducing brightness suppresses the non-dominant channels and makes the
+	# tint colour punch through. T3 handled by open PR #579.
 	var strength: float = 0.70
 	var brightness: float = 1.0
 	match max_tier:
 		1:
-			strength = 0.70
-			brightness = 1.0
+			strength = 0.85
+			brightness = 0.90
 		2:
-			strength = 0.90
-			brightness = 0.88
+			strength = 0.93
+			brightness = 0.82
 		_:  # 3+
 			strength = 1.0
 			brightness = 0.72
@@ -885,8 +887,12 @@ func _update_tier_glow(tier: int) -> void:
 	glow.z_index = -2  # below sprite
 	var ring_color: Color = data.projectile_color
 	ring_color.a = 0.0  # alpha driven by _draw
-	var tier_radius: float = 30.0 + tier * 14.0
-	var tier_alpha: float = 0.25 + tier * 0.15
+	# Root-cause fix (#592): old radius 30+14*tier put the ring INSIDE the
+	# sprite's clip circle (~65-83px depending on tier scale), so TierGlow
+	# was fully hidden at T1/T2. New base 80px + 8*tier ensures the inner
+	# arc always extends beyond the sprite's edge at every tier.
+	var tier_radius: float = 80.0 + tier * 8.0
+	var tier_alpha: float = 0.35 + tier * 0.12
 	var pulse_speed: float = 2.0 + tier * 0.5
 	glow.set_meta("ring_color", ring_color)
 	glow.set_meta("radius", tier_radius)
@@ -910,8 +916,8 @@ func _draw() -> void:
 	var r: float = get_meta(\"radius\", 40.0)
 	var c: Color = get_meta(\"ring_color\", Color.YELLOW)
 	var a: float = get_meta(\"alpha\", 0.4)
-	draw_arc(Vector2.ZERO, r * 0.88, 0.0, TAU, 20, Color(c.r, c.g, c.b, a * 0.72), 5.0, true)
-	draw_arc(Vector2.ZERO, r * 1.12, 0.0, TAU, 20, Color(c.r, c.g, c.b, a * 0.28), 3.5, true)
+	draw_arc(Vector2.ZERO, r * 0.88, 0.0, TAU, 20, Color(c.r, c.g, c.b, a * 0.80), 7.0, true)
+	draw_arc(Vector2.ZERO, r * 1.12, 0.0, TAU, 20, Color(c.r, c.g, c.b, a * 0.40), 5.0, true)
 """
 	var s := GDScript.new()
 	s.source_code = src
