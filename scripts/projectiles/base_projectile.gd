@@ -320,6 +320,12 @@ func _hit() -> void:
 		queue_free()
 
 
+# NOTE: this preload runs at PARSE TIME of base_projectile.gd. Anything that
+# acid_pool.gd references with `as <ClassName>` / `: <ClassName>` must already
+# be a registered class_name when ProjectilePool (autoload #9) loads this scene.
+# In particular: NEVER add `as BaseEnemy` to acid_pool.gd — EnemyPool is
+# autoload #10 so BaseEnemy isn't registered yet (see #567, #595, #605).
+# Use duck-typing in acid_pool.gd, or move the preload into _spawn_acid_pool().
 const _ACID_POOL_SCRIPT := preload("res://scripts/projectiles/acid_pool.gd")
 
 func _spawn_acid_pool() -> void:
