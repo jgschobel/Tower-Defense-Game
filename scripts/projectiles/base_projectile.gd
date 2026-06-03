@@ -1,4 +1,3 @@
-class_name BaseProjectile
 extends Area2D
 
 ## Projectile fired by towers. Tracks a target enemy and deals damage on hit.
@@ -320,24 +319,22 @@ func _hit() -> void:
 		queue_free()
 
 
-# NOTE: this preload runs at PARSE TIME of base_projectile.gd. Anything that
-# acid_pool.gd references with `as <ClassName>` / `: <ClassName>` must already
-# be a registered class_name when ProjectilePool (autoload #9) loads this scene.
-# In particular: NEVER add `as BaseEnemy` to acid_pool.gd — EnemyPool is
-# autoload #10 so BaseEnemy isn't registered yet (see #567, #595, #605).
-# Use duck-typing in acid_pool.gd, or move the preload into _spawn_acid_pool().
-const _ACID_POOL_SCRIPT := preload("res://scripts/projectiles/acid_pool.gd")
-
 func _spawn_acid_pool() -> void:
-	# Defensive: class_name resolution can be flaky, use preload.
-	# Also guard against current_scene being null mid-transition.
+	# Load at runtime (not parse-time) so this script has no class-level
+	# dependency on acid_pool.gd. This eliminates the parse-order trap where
+	# ProjectilePool (#9) loads base_projectile.gd at startup and a compile-time
+	# preload of acid_pool.gd would pull in unregistered class names from
+	# autoloads that haven't initialised yet (#567, #595, #605, #609).
 	var tree := get_tree()
 	if tree == null:
 		return
 	var host: Node = tree.current_scene
 	if host == null:
 		return
-	var pool: Node2D = _ACID_POOL_SCRIPT.new()
+	var acid_script = load("res://scripts/projectiles/acid_pool.gd")
+	if acid_script == null:
+		return
+	var pool: Node2D = acid_script.new()
 	pool.global_position = global_position
 	pool.duration = pool_duration
 	pool.damage_per_tick = pool_dmg_per_tick

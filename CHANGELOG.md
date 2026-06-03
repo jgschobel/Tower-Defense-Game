@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-03 (audit-polish → forced fix — projectile parse-order: definitive fix)
+
+- fix(projectile): definitive parse-order fix — remove `class_name BaseProjectile` and `class_name AcidPool` (unused externally), move acid_pool.gd load from class-scope `const preload()` to runtime `load()` inside `_spawn_acid_pool()`, replace `is BaseEnemy` / `as BaseEnemy` in auto_playtest.gd with duck-typed `"is_dead" in e`. All prior fixes (#595, #609) removed `BaseEnemy` refs but left class-level `preload()` of acid_pool.gd in place; in Godot 4.6.2 headless CI this parse-time dependency chain still strips scripts from base_projectile.tscn instances, causing `has_method("setup") == false` and tower 0-kills. Runtime `load()` has no parse-time dependency — closes #608, #614.
+
 ## 2026-06-03 (build-content → forced fix — projectile parse-order: third regression hop)
 
 - fix(projectile): `acid_pool.gd` `as BaseEnemy` cast was the remaining parse-order trap that #595 missed. `base_projectile.gd` preloads `acid_pool.gd` at parse time (`const _ACID_POOL_SCRIPT := preload(...)`), and `ProjectilePool` (autoload #9) eager-loads `base_projectile.tscn` before `EnemyPool` (autoload #10) registers `BaseEnemy` — so acid_pool's parse failed, cascaded to base_projectile, and stripped the script from every instantiated projectile (class=Area2D, no `setup()`). Replaced with duck-typed `enemy_node.get("is_dead")` + `enemy_node.take_damage(...)`. Added a multi-line warning above the preload in base_projectile.gd so this trap can't be reintroduced without explicit notice. Closes #605, #608. Build-content run was forced into fix mode per CLAUDE.md priority rule #2 (playtest-feedback before new features).
