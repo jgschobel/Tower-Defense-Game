@@ -3,9 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
-## 2026-06-03 (audit-polish — tier-1/2 glow ring root-cause fix)
+## 2026-06-03 (audit-polish — full tint visibility overhaul + playtest budget)
 
-- polish(tint): fix upgrade glow ring invisible at T1/T2 (root cause: ring radius 30+14×tier put the inner arc inside the sprite's clip circle — hidden behind the sprite face; fix: radius 80+8×tier pushes all arcs outside the ~65-83px sprite edge). Also increase inner arc alpha 0.72→0.80 and width 5→7px, outer 0.28→0.40 and 3.5→5px. T1/T2 modulate strength boosted (0.70→0.85, 0.90→0.93) and brightness reduced (1.0→0.90, 0.88→0.82) so the hue shift suppresses non-dominant channels. Closes playtest-feedback #592.
+- polish(tint): fix upgrade glow ring invisible at T1/T2 — root cause: radius 30+14*tier placed arcs inside the sprite clip circle (~65-83px); fix: 80+8*tier ensures arcs extend past the sprite edge at every tier. Arc widths 5/3.5px to 7/5px. T1 modulate strength 0.70 to 0.85, brightness 1.0 to 0.90; T2 strength 0.90 to 0.93, brightness 0.88 to 0.82. T3 brightness 0.72 to 0.85 (was collapsing all hues to mud on warm sprites). B-weight 1.5x to 2.0x for clearer path-B investment. Closes #592, #576, #569.
+- fix(playtest): healthy level budget 20s/8 shots to 15s/MAX_SHOTS_PER_SCENARIO (6); new_towers fight loop 5 to 3 ticks — saves ~7s real, fits 3 healthy levels inside 120s CI budget. Closes #575, #568, #593.
 
 ## 2026-06-02 (audit-polish — projectile parse-order fix)
 

@@ -744,11 +744,13 @@ func _apply_path_tint() -> void:
 			brightness = 0.82
 		_:  # 3+
 			strength = 1.0
-			brightness = 0.72
-	# Give path-B tiers 1.5× blend weight so investing in B is clearly
-	# visible even when A is at max tier (playtest-feedback #562).
+			# 0.72 squashed all hues to muddy browns on warm sprites, making
+			# A3 and A3+B2 perceptually identical. Raised to 0.85 (#576, #569).
+			brightness = 0.85
+	# Give path-B tiers 2.0× blend weight (was 1.5×) so a B investment reads
+	# clearly even against a maxed path-A baseline (#562, #569, #576).
 	var a_weight: float = float(path_a_tier)
-	var b_weight: float = float(path_b_tier) * 1.5
+	var b_weight: float = float(path_b_tier) * 2.0
 	var total: float = a_weight + b_weight
 	var blended: Color = data.path_a_tint * (a_weight / total) + data.path_b_tint * (b_weight / total)
 	var tinted: Color = Color.WHITE.lerp(blended, strength)
