@@ -6,6 +6,7 @@ Each run appends one line.
 ## 2026-06-03 (audit-polish → forced fix — projectile parse-order: definitive fix)
 
 - fix(projectile): definitive parse-order fix — remove `class_name BaseProjectile` and `class_name AcidPool` (unused externally), move acid_pool.gd load from class-scope `const preload()` to runtime `load()` inside `_spawn_acid_pool()`, replace `is BaseEnemy` / `as BaseEnemy` in auto_playtest.gd with duck-typed `"is_dead" in e`. All prior fixes (#595, #609) removed `BaseEnemy` refs but left class-level `preload()` of acid_pool.gd in place; in Godot 4.6.2 headless CI this parse-time dependency chain still strips scripts from base_projectile.tscn instances, causing `has_method("setup") == false` and tower 0-kills. Runtime `load()` has no parse-time dependency — closes #608, #614.
+- chore(audit): dead-code removal — 5 unused functions (103 LoC) across 3 files: `_get_base_color`, `_show_damage_number`, `_show_mini_pop` in base_enemy.gd (replaced by `_apply_damage_state_visual`), `current_counter()` in combo_tracker.gd, `_count_tres`+`_count_pngs` in dev_menu.gd (superseded by `_count_pngs_recursive`). All verified single-reference with grep.
 
 ## 2026-06-03 (build-content → forced fix — projectile parse-order: third regression hop)
 
