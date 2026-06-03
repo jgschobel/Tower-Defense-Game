@@ -585,12 +585,6 @@ func _draw() -> void:
 			draw_circle(Vector2(4, -3), 1.0, Color.BLACK)
 
 
-func _get_base_color() -> Color:
-	if data:
-		return data.base_color
-	return Color.RED
-
-
 func _apply_damage_state_visual() -> void:
 	# BTD MOAB-style: enemy appearance shifts as HP drops, NO health bar.
 	# 4 states: 0=healthy (>66%), 1=hurt (33-66%), 2=injured (10-33%),
@@ -674,71 +668,6 @@ func _spawn_children() -> void:
 		# Stagger backward along the path so children don't stack at
 		# the parent's death point — spread over ~60 progress units
 		child.progress = max(0.0, base_progress - float(i + 1) * 20.0)
-
-
-func _show_damage_number(amount: float, damage_type: int = 0) -> void:
-	var label := Label.new()
-	var dmg: int = int(round(amount))
-	label.text = "-%d" % dmg
-	# Damage tier scales font size + color so big hits read big. Bumped
-	# all tiers +6 vs previous since the user reported "-20" reading
-	# small in screenshots — the relative pop wasn't enough.
-	# 1-9 small white-ish, 10-29 bright yellow, 30-79 orange, 80+ red+huge.
-	var size: int = 24
-	var col: Color
-	if dmg >= 80:
-		size = 44
-		col = Color(1.0, 0.18, 0.12)
-	elif dmg >= 30:
-		size = 34
-		col = Color(1.0, 0.55, 0.12)
-	elif dmg >= 10:
-		size = 28
-		col = Color(1.0, 0.92, 0.25)
-	else:
-		size = 22
-		col = Color(1.0, 0.95, 0.85)
-	# Damage-type override: magic purple, pure gold (ignore size scaling here
-	# so type still reads first; only physical follows the magnitude scale).
-	match damage_type:
-		1: col = Color(0.78, 0.36, 1.0)
-		2: col = Color(1.0, 0.85, 0.2)
-	label.add_theme_font_size_override("font_size", size)
-	label.add_theme_color_override("font_color", col)
-	label.add_theme_color_override("font_outline_color", Color.BLACK)
-	label.add_theme_constant_override("outline_size", 3)
-	label.position = Vector2(randf_range(-18, 18), -42)
-	label.z_index = 20
-	add_child(label)
-	# Bigger numbers float higher + linger slightly longer
-	var rise: float = -75.0 - float(size - 18) * 1.5
-	var dur: float = 0.55 + float(size - 18) * 0.012
-	# Pop-in scale for big hits — feels weighty
-	var pop_scale: float = 1.0 + minf(float(dmg) / 100.0, 0.6)
-	label.scale = Vector2(0.4, 0.4)
-	var tween := create_tween()
-	tween.set_parallel(true)
-	tween.tween_property(label, "scale", Vector2(pop_scale, pop_scale), 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tween.tween_property(label, "position:y", rise, dur)
-	tween.chain().tween_property(label, "modulate:a", 0.0, 0.18)
-	tween.chain().tween_callback(label.queue_free)
-
-
-func _show_mini_pop() -> void:
-	# Tiny damage spark. ASCII-safe: the previous glyph U+2726 rendered as
-	# a tofu box in the default Godot font on HTML5 builds.
-	var label := Label.new()
-	label.text = "*"
-	label.add_theme_font_size_override("font_size", 12)
-	label.add_theme_color_override("font_color", Color(1, 0.95, 0.5, 0.9))
-	label.position = Vector2(randf_range(-18, 18), randf_range(-20, -30))
-	label.z_index = 15
-	add_child(label)
-	var tween := create_tween()
-	tween.set_parallel(true)
-	tween.tween_property(label, "position:y", label.position.y - 20.0, 0.4)
-	tween.tween_property(label, "modulate:a", 0.0, 0.4)
-	tween.chain().tween_callback(label.queue_free)
 
 
 func _celebrate_boss_death(killer: Node = null) -> void:
