@@ -1,4 +1,3 @@
-class_name AcidPool
 extends Node2D
 
 ## JoJo's chemical acid pool — lingers on the ground after a flask
