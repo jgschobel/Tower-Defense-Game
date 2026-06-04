@@ -3,6 +3,11 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-04 (polish: upgrade path tints visible at all tiers — brightness curve fixed)
+
+- fix(visual): `_apply_path_tint()` brightness LUT adjusted — tier 1 was `brightness=1.0` (no darkening), making the hue shift invisible on bright textures. New values: T1→0.88, T2→0.80, T3→0.70. The 12-30% darkening makes the path-color shift read clearly from across the map (playtest-feedback #630, #635, #646).
+- fix(visual): `_maybe_swap_tier3_sprite()` now uses 130px target (was 90px), matching `_update_visual()`. Tier-3 art was appearing 30% smaller than the base sprite, making upgrades look like a downgrade.
+
 ## 2026-06-04 (fix: projectile script-identity check — root cause of recurring playtester timeout)
 
 - fix(combat+pool): replace `has_method("setup")` guards with `get_script()` identity check in both `ProjectilePool.acquire()` and `BaseTower._attack()`. `has_method()` is unreliable in Godot 4 headless at high time_scale (8×) — it can return false for valid nodes during GDScript VM pressure, causing every shot to fail silently and the playtester to time out (issues #647, #641). Script identity check is structurally stable — if `get_script() == expected_script`, the node is valid.

@@ -762,20 +762,22 @@ func _apply_path_tint() -> void:
 		sprite.modulate = Color.WHITE
 		return
 	var max_tier: int = max(path_a_tier, path_b_tier)
-	# Strength/brightness LUT — T1 boosted to 0.70 (was 0.45) so first
-	# purchase is clearly visible (playtest-feedback #558).
-	var strength: float = 0.70
-	var brightness: float = 1.0
+	# Strength/brightness LUT. Brightness < 1.0 darkens the sprite so the
+	# hue shift reads clearly from across the map — pure strength change is
+	# subtle on bright sprites. Tier 1 brightness 0.88 = 12% darker (was 1.0,
+	# invisible on bright textures per playtest-feedback #630/#646).
+	var strength: float = 0.80
+	var brightness: float = 0.88
 	match max_tier:
 		1:
-			strength = 0.70
-			brightness = 1.0
-		2:
-			strength = 0.90
+			strength = 0.80
 			brightness = 0.88
+		2:
+			strength = 0.95
+			brightness = 0.80
 		_:  # 3+
 			strength = 1.0
-			brightness = 0.72
+			brightness = 0.70
 	# Give path-B tiers 1.5× blend weight so investing in B is clearly
 	# visible even when A is at max tier (playtest-feedback #562).
 	# When both paths are invested, boost brightness so dual-path towers
@@ -1120,9 +1122,11 @@ func _maybe_swap_tier3_sprite(path_letter: String) -> void:
 	if new_tex == null:
 		return
 	sprite.texture = new_tex
-	# Re-fit baseline scale so the swapped sprite matches the existing fit size.
+	# Re-fit baseline scale to match _update_visual target size (130px).
+	# Was 90.0 — tier-3 sprites were 30% smaller than base tier, making
+	# upgrades look like a downgrade visually (playtest-feedback #630).
 	var max_dim := maxf(new_tex.get_width(), new_tex.get_height())
-	var s := 90.0 / max_dim
+	var s := 130.0 / max_dim
 	_baseline_scale = Vector2(s, s)
 	sprite.scale = _baseline_scale
 
