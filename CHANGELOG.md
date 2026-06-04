@@ -3,6 +3,12 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-04 (audit-polish — projectile emergency fallback + pool prewarm order fix)
+
+- fix(combat): `base_tower._attack()` now has a third-level emergency fallback when a projectile node passes the pool guard but still lacks `setup()` at fire-time (recurring headless CI parse-order edge case, issues #638/#641). Instead of silently dropping the shot, it instantiates directly from `_projectile_scene` and retries once. Removes the `if/else has_method` pattern that was swallowing shots.
+- fix(pool): `ProjectilePool._prewarm()` now adds nodes to `_container` BEFORE calling `_deactivate()` so `reset_for_pool()` can safely set `global_position` (requires a scene-tree parent). Previously, calling `global_position = Vector2.ZERO` on an unparented node caused errors in headless CI.
+- chore(merge): manually merged stale PR #637 (deferred enemy preload + dual-path tint + LETSCHT WÄLLE! final-wave text) which the previous loop created but failed to auto-merge.
+
 ## 2026-06-04 (audit-polish — deferred preload + dual-path tint + final-wave text)
 
 - fix(perf): `wave_manager.setup_waves()` defers `_preload_enemy_resources()` via `call_deferred` — GPU texture materialization (`_tex.get_size()`) no longer blocks the first rendered frame on level load. Enemy cache is warm before any player input is possible (human reaction time >> 1 frame).

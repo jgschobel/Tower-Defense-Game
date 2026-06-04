@@ -32,8 +32,10 @@ func _prewarm() -> void:
 	get_tree().root.add_child(_container)
 	for i in POOL_SIZE:
 		var p = _scene.instantiate()
-		_deactivate(p)
+		# Add to tree BEFORE deactivate so reset_for_pool() can safely
+		# set global_position (requires a scene-tree parent to resolve).
 		_container.add_child(p)
+		_deactivate(p)
 		_free.append(p)
 
 
