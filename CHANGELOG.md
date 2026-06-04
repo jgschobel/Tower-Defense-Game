@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-04 (polish: Swiss German consistency — S/Sek → Schad/Sek in shop + tower info)
+
+- chore(i18n): rename "S/Sek" label to "Schad/Sek" (Schade pro Sekunde = DPS) in shop tower cards and tower-info panel. "S/Sek" was ambiguous — could read as "Schüss/Sek" (shots/sec) but the displayed value is `damage × speed` (DPS). Swiss German abbreviation now matches the stat.
+
 ## 2026-06-04 (fix: playtester L3_healthy truncation + upgrade tints + projectile identity)
 
 - fix(playtest): healthy-level wave loop reduced from 8×2.5s=20s to 6×2.0s=12s real time cap. 3 levels × ~27s was hitting the 120s Godot process timeout before L3 wave screenshots could be captured (issue #640). New budget: 3×~20s = 60s, leaving ~60s for 5 other scenarios.
