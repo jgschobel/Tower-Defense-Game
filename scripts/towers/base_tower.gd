@@ -290,9 +290,18 @@ func _process(delta: float) -> void:
 	# When ability_triple_fire_remaining > 0, fire 3× as fast (Banana-Storm
 	# active ability for Lemurius t3+; future towers can use the same hook).
 	var fire_speed_mul: float = 3.0 if ability_triple_fire_remaining > 0.0 else 1.0
-	if attack_timer <= 0.0 and current_target:
+	var _atk_period: float = 1.0 / (effective_speed * fire_speed_mul)
+	# Use while + += so multiple attacks fire correctly in a single large-delta
+	# frame (required at high time_scale where delta > 1/attack_speed).
+	# Using += instead of = prevents discarding timer overshoot, which caused
+	# towers to fire at half the correct rate at 8× time_scale on CI (issue #619).
+	while attack_timer <= 0.0 and current_target:
 		_attack()
-		attack_timer = 1.0 / (effective_speed * fire_speed_mul)
+		attack_timer += _atk_period
+		if attack_timer <= 0.0:
+			current_target = _find_target()
+			if not current_target:
+				break
 
 
 func has_camo_detection() -> bool:

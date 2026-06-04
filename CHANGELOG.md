@@ -3,6 +3,12 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-03 (audit-polish — attack timer + upgrade tint screenshot)
+
+- fix(combat): attack timer `= period` → `+= period` + `if` → `while` in base_tower._process — fixes towers firing at half rate when `delta > 1/attack_speed` (8× time_scale on CI). Root cause of playtest-feedback balance regression #619: 8 kills in L1 wave 5, 2 kills in L3 wave 2. Fix correctly fires multiple attacks per large-delta frame. Closes #619.
+- fix(playtest): upgrade tint screenshot wait 0.4s → 0.7s in auto_playtest._run_upgrade_flow — upgrade animation tween takes 0.55s; previous 0.4s captured mid-tween when modulate was still washing out. All tiers (A1/A2/A3) will now show distinct color tints in screenshots. Closes #620.
+- chore(prs): closed 7 stale audit-grid PRs (#580–618) superseded by newer run #623.
+
 ## 2026-06-03 (audit-polish → forced fix — projectile parse-order: definitive fix)
 
 - fix(projectile): definitive parse-order fix — remove `class_name BaseProjectile` and `class_name AcidPool` (unused externally), move acid_pool.gd load from class-scope `const preload()` to runtime `load()` inside `_spawn_acid_pool()`, replace `is BaseEnemy` / `as BaseEnemy` in auto_playtest.gd with duck-typed `"is_dead" in e`. All prior fixes (#595, #609) removed `BaseEnemy` refs but left class-level `preload()` of acid_pool.gd in place; in Godot 4.6.2 headless CI this parse-time dependency chain still strips scripts from base_projectile.tscn instances, causing `has_method("setup") == false` and tower 0-kills. Runtime `load()` has no parse-time dependency — closes #608, #614.
