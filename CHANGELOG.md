@@ -3,6 +3,12 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-04 (audit-polish — deferred preload + dual-path tint + final-wave text)
+
+- fix(perf): `wave_manager.setup_waves()` defers `_preload_enemy_resources()` via `call_deferred` — GPU texture materialization (`_tex.get_size()`) no longer blocks the first rendered frame on level load. Enemy cache is warm before any player input is possible (human reaction time >> 1 frame).
+- polish(visual): dual-path brightness boost in `_apply_path_tint()` — when both A and B paths are invested, brightness gains +0.06 per combined tier above max_tier (capped 0.95). A3+B1 lifts from 0.72→0.78, A3+B3→0.90. Rewards dual-path investment visually.
+- polish(ux): final wave shows "LETSCHT WÄLLE!" announcement (gold text) instead of generic "WÄLLE 10"; danger waves and final waves share the larger 30px font for extra drama. (Closes stale PR #626.)
+
 ## 2026-06-04 (ideate — 5 new spec'd ideas + first Architecture Note)
 
 - docs(roadmap): 5 new P2 ideas spec'd with concrete impl hints — (1) Selbschtbedienigs-Wage MOAB-class boss that splits into a 6-enemy payload on death (BFB-with-cerams analogue, theme = self-checkout pain), (2) Migros-Bon active power giving 50% off next 3 actions, charges earned per level + Forschig unlock, (3) Geischter-Lauf ghost replay overlay for cleared levels (watch-mode + optimization tool, TikTok-ready), (4) Hei-Karte 1080×1080 share-card auto-generated on tier-3 finisher OR 50× combo (procedural QR + friend portrait + tagline), (5) DDT-Verwüschelig Tüüfel sabotage event between L8+ waves (Servelat smoke bombs → -50% range OR sympathy-refund OR Knoblauch-Tube cleanse).

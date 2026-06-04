@@ -754,6 +754,12 @@ func _apply_path_tint() -> void:
 			brightness = 0.72
 	# Give path-B tiers 1.5× blend weight so investing in B is clearly
 	# visible even when A is at max tier (playtest-feedback #562).
+	# When both paths are invested, boost brightness so dual-path towers
+	# look rewarded rather than darker (combined_tier > max_tier → extra
+	# brightness at 0.06 per extra tier, capped at 0.95).
+	var combined_tier: int = path_a_tier + path_b_tier
+	if path_a_tier > 0 and path_b_tier > 0 and combined_tier > max_tier:
+		brightness = minf(brightness + 0.06 * (combined_tier - max_tier), 0.95)
 	var a_weight: float = float(path_a_tier)
 	var b_weight: float = float(path_b_tier) * 1.5
 	var total: float = a_weight + b_weight
