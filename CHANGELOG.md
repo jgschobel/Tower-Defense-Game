@@ -3,6 +3,13 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-04 (fix: playtester L3_healthy truncation + upgrade tints + projectile identity)
+
+- fix(playtest): healthy-level wave loop reduced from 8×2.5s=20s to 6×2.0s=12s real time cap. 3 levels × ~27s was hitting the 120s Godot process timeout before L3 wave screenshots could be captured (issue #640). New budget: 3×~20s = 60s, leaving ~60s for 5 other scenarios.
+- fix(visual): `_apply_path_tint()` brightness LUT — T1 was `brightness=1.0` (no darkening), making hue shift invisible on bright textures. New: T1=0.88, T2=0.80, T3=0.70 (issues #630, #635, #646).
+- fix(visual): `_maybe_swap_tier3_sprite()` now uses 130px target (was 90px); tier-3 art appeared 30% smaller than base sprite.
+- fix(combat+pool): `get_script()` identity check replaces `has_method("setup")` for projectile validity in pool and towers. Eliminates playtester timeout from 8× time_scale projectile failures (issues #647, #641, #638, #639, #629, #645).
+
 ## 2026-06-04 (polish: upgrade path tints visible at all tiers — brightness curve fixed)
 
 - fix(visual): `_apply_path_tint()` brightness LUT adjusted — tier 1 was `brightness=1.0` (no darkening), making the hue shift invisible on bright textures. New values: T1→0.88, T2→0.80, T3→0.70. The 12-30% darkening makes the path-color shift read clearly from across the map (playtest-feedback #630, #635, #646).
