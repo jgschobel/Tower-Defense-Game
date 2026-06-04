@@ -43,7 +43,9 @@ func setup_waves(waves: Array) -> void:
 	_wave_data = waves
 	total_waves = waves.size()
 	current_wave = 0
-	_preload_enemy_resources(waves)
+	# Defer resource preloading so it doesn't block the first rendered frame.
+	# total_waves / _wave_data are set synchronously so HUD can display counts.
+	call_deferred("_preload_enemy_resources", waves)
 
 
 func get_next_wave_preview() -> Array:

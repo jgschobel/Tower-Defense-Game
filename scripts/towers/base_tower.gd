@@ -752,6 +752,11 @@ func _apply_path_tint() -> void:
 		_:  # 3+
 			strength = 1.0
 			brightness = 0.72
+	# When both paths have upgrades, boost brightness to reward dual investment.
+	# A3+B1 → 0.78, A3+B2 → 0.84, A3+B3 → 0.90 (vs 0.72 for A3 alone).
+	# Makes B-path visible against A-max without changing the hue blend.
+	if path_a_tier > 0 and path_b_tier > 0:
+		brightness = minf(brightness + (path_a_tier + path_b_tier - max_tier) * 0.06, 0.95)
 	# Give path-B tiers 1.5× blend weight so investing in B is clearly
 	# visible even when A is at max tier (playtest-feedback #562).
 	var a_weight: float = float(path_a_tier)

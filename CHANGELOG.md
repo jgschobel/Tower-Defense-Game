@@ -3,6 +3,11 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-04 (audit-polish — scene-load hitch + path-B tint)
+
+- fix(perf): defer `_preload_enemy_resources()` via `call_deferred` in `wave_manager.setup_waves()` — synchronous loading of all enemy .tres files + texture GPU decode was blocking the main thread on level load, causing 2–3 FPS min spikes at every scene transition. `total_waves` / `_wave_data` still set synchronously so HUD shows correct wave count immediately. Closes #622.
+- polish(visual): dual-path brightness boost in `_apply_path_tint()` — when both A and B paths have upgrades, brightness lifts by 0.06 per extra combined tier (A3+B1 → 0.78, A3+B2 → 0.84 vs 0.72 for A3 alone). Makes Path-B investment visually distinct from A-max without altering hue blend. Closes #603.
+
 ## 2026-06-03 (audit-polish — attack timer + upgrade tint screenshot)
 
 - fix(combat): attack timer `= period` → `+= period` + `if` → `while` in base_tower._process — fixes towers firing at half rate when `delta > 1/attack_speed` (8× time_scale on CI). Root cause of playtest-feedback balance regression #619: 8 kills in L1 wave 5, 2 kills in L3 wave 2. Fix correctly fires multiple attacks per large-delta frame. Closes #619.
