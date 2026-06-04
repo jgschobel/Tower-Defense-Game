@@ -1134,11 +1134,22 @@ func _update_wave_progress_bar(current: int, total: int) -> void:
 	bar.value = float(current) / float(total) * 100.0
 
 
-func _show_wave_announcement(current: int, _total: int) -> void:
+func _show_wave_announcement(current: int, total: int) -> void:
 	# Anchored to top-center so it never covers the battlefield (fixes #289).
 	# A small pill-shaped toast instead of the previous 700×80 center banner.
+	var is_final: bool = total > 0 and current == total
 	var is_danger: bool = current >= 7
-	var txt_color := Color(1, 0.3, 0.2) if is_danger else Color(1, 0.92, 0.2)
+	var txt_color: Color
+	var announce_text: String
+	if is_final:
+		txt_color = Color(1, 0.75, 0.1)  # gold for finale
+		announce_text = "LETSCHT WÄLLE!"
+	elif is_danger:
+		txt_color = Color(1, 0.3, 0.2)
+		announce_text = "WÄLLE %d" % current
+	else:
+		txt_color = Color(1, 0.92, 0.2)
+		announce_text = "WÄLLE %d" % current
 	var container := PanelContainer.new()
 	container.name = "WaveAnnounce"
 	container.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -1150,8 +1161,8 @@ func _show_wave_announcement(current: int, _total: int) -> void:
 	container.add_theme_stylebox_override("panel", sb)
 
 	var lbl := Label.new()
-	lbl.text = "WÄLLE %d" % current
-	lbl.add_theme_font_size_override("font_size", 26 if not is_danger else 30)
+	lbl.text = announce_text
+	lbl.add_theme_font_size_override("font_size", 30 if (is_final or is_danger) else 26)
 	lbl.add_theme_color_override("font_color", txt_color)
 	lbl.add_theme_color_override("font_outline_color", Color(0.1, 0.04, 0))
 	lbl.add_theme_constant_override("outline_size", 4)
