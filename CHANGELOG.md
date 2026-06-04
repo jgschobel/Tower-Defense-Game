@@ -3,6 +3,12 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-04 (fix: projectile script-identity check — root cause of recurring playtester timeout)
+
+- fix(combat+pool): replace `has_method("setup")` guards with `get_script()` identity check in both `ProjectilePool.acquire()` and `BaseTower._attack()`. `has_method()` is unreliable in Godot 4 headless at high time_scale (8×) — it can return false for valid nodes during GDScript VM pressure, causing every shot to fail silently and the playtester to time out (issues #647, #641). Script identity check is structurally stable — if `get_script() == expected_script`, the node is valid.
+- fix(pool): `ProjectilePool.release()` now guards against scene-transition race: when the game scene is freed, in-flight projectiles (children of that scene) get `queue_free()`'d but may reach `release()` in the same frame while `is_instance_valid()` still returns true. Pool now checks script identity before re-accepting a node, and verifies the parent is still valid before reparenting.
+- fix(tower): `BaseTower._attack()` now uses `ResourceLoader.CACHE_MODE_IGNORE` as a last-resort fallback when even a fresh instantiation fails, forcing a disk reload of the projectile scene (bypasses Godot's resource cache in case it has a stale script reference). Closes issues #647, #638.
+
 ## 2026-06-04 (audit-polish — projectile emergency fallback + pool prewarm order fix)
 
 - fix(combat): `base_tower._attack()` now has a third-level emergency fallback when a projectile node passes the pool guard but still lacks `setup()` at fire-time (recurring headless CI parse-order edge case, issues #638/#641). Instead of silently dropping the shot, it instantiates directly from `_projectile_scene` and retries once. Removes the `if/else has_method` pattern that was swallowing shots.

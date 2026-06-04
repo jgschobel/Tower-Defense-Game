@@ -39,6 +39,10 @@ var effective_speed: float = 0.0
 
 var _enemies_in_range: Array = []
 var _projectile_scene: PackedScene
+# Script reference cached for identity-check in _attack(). Using get_script()
+# comparison is more reliable than has_method() in Godot 4 headless — has_method
+# can spuriously return false during GDScript VM pressure at high time_scale.
+var _projectile_script: Script
 # Cached tier-pip geometry — recomputed on upgrade(), reused in _draw
 # so per-frame trig is avoided. ROADMAP PERF #7. Stored as
 # Array[Array] with entries [position: Vector2, tint: Color].
@@ -68,6 +72,7 @@ const TAUNTS: Dictionary = {
 
 func _ready() -> void:
 	_projectile_scene = preload("res://scenes/projectiles/base_projectile.tscn")
+	_projectile_script = preload("res://scripts/projectiles/base_projectile.gd")
 	if data:
 		_apply_data()
 		_update_visual()
@@ -304,6 +309,17 @@ func _process(delta: float) -> void:
 				break
 
 
+func _is_valid_projectile(p: Node) -> bool:
+	if p == null or not is_instance_valid(p):
+		return false
+	# Script identity check: more reliable than has_method() under GDScript VM
+	# pressure. If _projectile_script is null (edge case during early init),
+	# fall back to has_method so shots still work.
+	if _projectile_script != null:
+		return p.get_script() == _projectile_script
+	return p.has_method("setup")
+
+
 func has_camo_detection() -> bool:
 	if data and data.can_detect_camo:
 		return true
@@ -446,29 +462,48 @@ func _attack() -> void:
 		atk_tween.tween_property(sprite, "scale", base_sc, 0.14)
 
 	# Prefer the pool to avoid instantiate/queue_free churn at scale.
-	# Falls back to instantiation if pool is unavailable (loading order)
+	# Falls back to instantiation if pool is unavailable (loading order).
+	# Script identity (_projectile_script) is checked instead of has_method()
+	# because has_method() can spuriously return false in headless Godot at
+	# high time_scale when the GDScript VM is under pressure (#647).
 	var projectile: Node = null
 	if ProjectilePool and ProjectilePool.has_method("acquire"):
 		projectile = ProjectilePool.acquire()
-	# Three bad-pool cases all fall back to the preloaded scene:
-	#   (a) pool returned null / freed instance
-	#   (b) pool returned valid node with detached script — has_method("setup")
-	#       returns false in headless CI due to parse-order (issue #567)
-	#   (c) pool was exhausted and fallback node somehow lacks setup()
-	if projectile == null or not is_instance_valid(projectile) \
-			or not projectile.has_method("setup"):
+
+	# Validate the pool-returned node. Checks:
+	#   (a) null / freed instance
+	#   (b) script detached (scene-transition race — issue #647)
+	#   (c) wrong script (shouldn't happen, but guard it)
+	if not _is_valid_projectile(projectile):
 		if projectile != null and is_instance_valid(projectile):
-			# Discard the script-detached pool node without recycling it;
-			# recycling would re-queue the bad node and loop forever.
+			# Discard without recycling — a broken node must not re-enter pool.
 			projectile.queue_free()
+		# Fresh instantiation from cached scene.
 		projectile = _projectile_scene.instantiate()
 		var scene_root := get_tree().current_scene
-		if scene_root:
-			scene_root.add_child(projectile)
-		else:
-			# Pathological case — no current scene. Bail rather than crash.
+		if scene_root == null:
 			projectile.queue_free()
 			return
+		scene_root.add_child(projectile)
+		# If even a fresh instance is broken, the cached PackedScene may have
+		# a stale script reference. Force a cache-bypass reload from disk.
+		if not _is_valid_projectile(projectile):
+			projectile.queue_free()
+			var fresh_scene := ResourceLoader.load(
+				"res://scenes/projectiles/base_projectile.tscn",
+				"", ResourceLoader.CACHE_MODE_IGNORE
+			) as PackedScene
+			if fresh_scene == null:
+				push_error("[tower] projectile scene unloadable — aborting shot")
+				return
+			# Also refresh the cached references so future shots work.
+			_projectile_scene = fresh_scene
+			projectile = _projectile_scene.instantiate()
+			scene_root.add_child(projectile)
+			if not _is_valid_projectile(projectile):
+				push_error("[tower] projectile scene permanently broken — aborting shot")
+				projectile.queue_free()
+				return
 	elif not projectile.is_inside_tree():
 		# Pool returned a valid+scripted node that wasn't added to the tree
 		# (prewarm is deferred — possible on wave-1 in headless CI).
@@ -477,25 +512,6 @@ func _attack() -> void:
 		if scene_root:
 			scene_root.add_child(projectile)
 		else:
-			projectile.queue_free()
-			return
-	# Emergency fallback: if the node from pool/fallback-1 still lacks setup()
-	# (rare headless CI parse-order edge case even after #554/#567/#615 fixes),
-	# try one more direct instantiation before giving up on the shot.
-	# Do NOT release to pool — re-queuing a broken node creates the
-	# acquire→no-setup→release infinite loop fixed in #554.
-	if not projectile.has_method("setup"):
-		push_warning("[tower] projectile missing setup (class=%s) — emergency re-instantiate" % projectile.get_class())
-		if is_instance_valid(projectile):
-			projectile.queue_free()
-		projectile = _projectile_scene.instantiate()
-		var _em_root := get_tree().current_scene
-		if _em_root == null:
-			projectile.queue_free()
-			return
-		_em_root.add_child(projectile)
-		if not projectile.has_method("setup"):
-			push_warning("[tower] emergency fallback also lacks setup — aborting shot")
 			projectile.queue_free()
 			return
 	# Credit kills from this projectile back to us (used by tower-info
