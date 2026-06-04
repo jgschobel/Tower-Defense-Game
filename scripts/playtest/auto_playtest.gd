@@ -276,14 +276,16 @@ func _run_upgrade_flow() -> void:
 	for i in 3:
 		if tower and is_instance_valid(tower):
 			tower.upgrade_path("a")
-			await get_tree().create_timer(0.4).timeout
+			# 0.7s > 0.55s tween duration so the modulate restore completes
+			# before screenshot (issue #620 — tints imperceptible at A1/A2).
+			await get_tree().create_timer(0.7).timeout
 			_snapshot("upgrades_tier_A%d" % (i + 1))
 
 	# Then add path B tiers to test blend tint
 	for i in 2:
 		if tower and is_instance_valid(tower):
 			tower.upgrade_path("b")
-			await get_tree().create_timer(0.4).timeout
+			await get_tree().create_timer(0.7).timeout
 			_snapshot("upgrades_tier_A3_B%d" % (i + 1))
 
 	_record_scenario(t0)
