@@ -3,6 +3,11 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-04 (ideate — 5 new spec'd ideas + first Architecture Note)
+
+- docs(roadmap): 5 new P2 ideas spec'd with concrete impl hints — (1) Selbschtbedienigs-Wage MOAB-class boss that splits into a 6-enemy payload on death (BFB-with-cerams analogue, theme = self-checkout pain), (2) Migros-Bon active power giving 50% off next 3 actions, charges earned per level + Forschig unlock, (3) Geischter-Lauf ghost replay overlay for cleared levels (watch-mode + optimization tool, TikTok-ready), (4) Hei-Karte 1080×1080 share-card auto-generated on tier-3 finisher OR 50× combo (procedural QR + friend portrait + tagline), (5) DDT-Verwüschelig Tüüfel sabotage event between L8+ waves (Servelat smoke bombs → -50% range OR sympathy-refund OR Knoblauch-Tube cleanse).
+- docs(roadmap): new "🔎 Architecture Notes" section opened. First entry: `base_tower.gd` is a 1188-line god-object with two embedded mini-scripts (`_hat_script()`/`_glow_script()` return multi-line GDScript strings), making the visual logic invisible to validate.sh/`--check-only` and a merge-conflict hotspot. Refactor proposal: extract to `scripts/towers/visuals/tier_hat.gd` + `tier_glow.gd` + a sibling `TowerVisuals` node. Target: drop base_tower.gd below 700 lines.
+
 ## 2026-06-03 (audit-polish — attack timer + upgrade tint screenshot)
 
 - fix(combat): attack timer `= period` → `+= period` + `if` → `while` in base_tower._process — fixes towers firing at half rate when `delta > 1/attack_speed` (8× time_scale on CI). Root cause of playtest-feedback balance regression #619: 8 kills in L1 wave 5, 2 kills in L3 wave 2. Fix correctly fires multiple attacks per large-delta frame. Closes #619.
