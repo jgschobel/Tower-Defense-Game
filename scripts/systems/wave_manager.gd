@@ -43,7 +43,7 @@ func setup_waves(waves: Array) -> void:
 	_wave_data = waves
 	total_waves = waves.size()
 	current_wave = 0
-	_preload_enemy_resources(waves)
+	call_deferred("_preload_enemy_resources", waves)
 
 
 func get_next_wave_preview() -> Array:
