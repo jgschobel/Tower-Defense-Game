@@ -479,51 +479,59 @@ func _attack() -> void:
 		else:
 			projectile.queue_free()
 			return
+	# Emergency fallback: if the node from pool/fallback-1 still lacks setup()
+	# (rare headless CI parse-order edge case even after #554/#567/#615 fixes),
+	# try one more direct instantiation before giving up on the shot.
+	# Do NOT release to pool — re-queuing a broken node creates the
+	# acquire→no-setup→release infinite loop fixed in #554.
+	if not projectile.has_method("setup"):
+		push_warning("[tower] projectile missing setup (class=%s) — emergency re-instantiate" % projectile.get_class())
+		if is_instance_valid(projectile):
+			projectile.queue_free()
+		projectile = _projectile_scene.instantiate()
+		var _em_root := get_tree().current_scene
+		if _em_root == null:
+			projectile.queue_free()
+			return
+		_em_root.add_child(projectile)
+		if not projectile.has_method("setup"):
+			push_warning("[tower] emergency fallback also lacks setup — aborting shot")
+			projectile.queue_free()
+			return
 	# Credit kills from this projectile back to us (used by tower-info
 	# panel for the per-tower kill counter)
 	projectile.set_meta("source_tower", self)
-	# setup() is guaranteed by the fallback chain above, but keep the guard
-	# so any future code path that skips the chain doesn't silently shoot blanks.
-	if projectile.has_method("setup"):
-		# Crit roll (ROADMAP #38). Kühne pulls 2× damage at configured
-		# chance; other towers skip by default (crit_chance = 0).
-		var outbound_damage: float = effective_damage
-		if data.crit_chance > 0.0 and randf() < data.crit_chance:
-			outbound_damage *= data.crit_multiplier
-			if current_target and current_target.has_method("flash_crit"):
-				current_target.flash_crit()
-		projectile.setup(
-			origin_pos,
-			current_target,
-			outbound_damage,
-			data.damage_type,
-			data.projectile_color,
-			data.is_splash,
-			data.splash_radius,
-			data.splash_damage_pct,
-			data.slow_amount,
-			data.slow_duration,
-			data.projectile_style,
-			data.leaves_ground_pool,
-			data.ground_pool_duration,
-			data.ground_pool_damage_per_tick,
-			data.ground_pool_radius,
-			shoot_tier
-		)
-		# Carry pierce budget across to the projectile (Lemurius).
-		if "remaining_pierce" in projectile:
-			projectile.remaining_pierce = max(0, data.pierce_count - 1)
-		# Amösius pull fraction.
-		if "pull_path_fraction" in projectile:
-			projectile.pull_path_fraction = data.pull_path_fraction
-	else:
-		# Do NOT release back to pool here — it would be re-acquired on the
-		# next attack tick and trigger this same branch, creating an infinite
-		# acquire→no-setup→release loop where the tower never fires.
-		# queue_free destroys the node; pool skips freed entries via
-		# is_instance_valid() on next acquire().
-		push_warning("[tower] projectile has no setup() (class=%s) — destroying, not recycling" % projectile.get_class())
-		projectile.queue_free()
+	# Crit roll (ROADMAP #38). Kühne pulls 2× damage at configured
+	# chance; other towers skip by default (crit_chance = 0).
+	var outbound_damage: float = effective_damage
+	if data.crit_chance > 0.0 and randf() < data.crit_chance:
+		outbound_damage *= data.crit_multiplier
+		if current_target and current_target.has_method("flash_crit"):
+			current_target.flash_crit()
+	projectile.setup(
+		origin_pos,
+		current_target,
+		outbound_damage,
+		data.damage_type,
+		data.projectile_color,
+		data.is_splash,
+		data.splash_radius,
+		data.splash_damage_pct,
+		data.slow_amount,
+		data.slow_duration,
+		data.projectile_style,
+		data.leaves_ground_pool,
+		data.ground_pool_duration,
+		data.ground_pool_damage_per_tick,
+		data.ground_pool_radius,
+		shoot_tier
+	)
+	# Carry pierce budget across to the projectile (Lemurius).
+	if "remaining_pierce" in projectile:
+		projectile.remaining_pierce = max(0, data.pierce_count - 1)
+	# Amösius pull fraction.
+	if "pull_path_fraction" in projectile:
+		projectile.pull_path_fraction = data.pull_path_fraction
 
 
 func upgrade() -> bool:
