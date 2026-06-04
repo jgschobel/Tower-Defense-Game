@@ -163,6 +163,101 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
 - [ ] **Active power abilities** — Wagli-Räge, Rausch-Modus combo
   frenzy.
 
+### Added 2026-06-04 (ideate run)
+
+- [ ] **MOAB-class boss: "Selbschtbedienigs-Wage"** — self-checkout
+  shopping cart mega-boss that, when popped, splits into a payload of
+  6 stacked enemies (3× fast `pasta_express`, 2× swarm `cherry_bomb`,
+  1× camo `tofu_ninja`). HP 5,000, speed 40 px/s, 350 gold drop.
+  Debuts L7 wave 8, reappears L9 wave 6. New tres
+  `resources/enemy_data/selbschtbedienigs_wage.tres`; new
+  `_split_into_payload(payload_ids: Array, fan_offset_px: float)`
+  method on `BaseEnemy.die()` reusing EnemyPool.acquire so the spawn
+  doesn't tank perf. BTD analogue: BFB-with-cerams; theme: the
+  endless "Help required at self-checkout" gag every Swiss shopper
+  knows. **Impl hint:** payload spawns with the parent's
+  `path_progress`, fanned by `±h_offset` so they don't visually stack.
+
+- [ ] **Migros-Bon active power (50% off next 3 actions)** — top-bar
+  "🎫 Bon" button (only visible when ≥1 charge). Tap → next 3 tower
+  placements OR upgrades cost 50% gold. Charge cost: 200 Cumulus to
+  unlock first slot in Forschig menu; thereafter +1 charge per level
+  cleared (cap 3). New autoload field `GameManager.bon_charges: int`;
+  `CurrencyManager.try_spend()` consults `_pending_discount_uses`
+  before deducting. UI: HUD adds `BonButton` next to PauseButton,
+  60×60 px, animated 1.05× pulse when ≥1 charge. **Why it sticks:**
+  gives meta-currency a *visible* effect mid-run, not just a passive
+  +50 gold buff.
+
+- [ ] **"Geischter-Lauf" (ghost replay) — laziest-player fantasy** —
+  after each win, GameManager persists a JSON `replay_<lvl>.json`
+  with `{tick, action, params}` per significant event (tower place,
+  upgrade, wave_start, ability_trigger). MainMenu adds "▶ Geischter
+  schaue" entry on cleared levels: replays the run as a faint
+  translucent overlay (towers ghost-tinted to 60% alpha, enemies
+  follow the same RNG seed). Doubles as: (a) watch-mode for new
+  players to learn strategies, (b) ghost-line vs. current attempt
+  on re-play to push optimization. **Why it's a TikTok moment:**
+  side-by-side "first attempt vs. mastered" replays. Small first
+  cut: record only tower placements + wave timestamps, render the
+  ghost as static `Sprite2D` placements.
+
+- [ ] **"Hei-Karte" — share-card on tier-3 finisher or 50× combo** —
+  hooks `effect_player.tier3_boss_kill()` and
+  `combo_tracker._on_combo_changed` (when count crosses 50). On
+  fire: pause render, composite a 1080×1080 PNG via `Viewport.get_texture()`
+  with: kill frame, friend portrait (32×32 corner), combo count in
+  giant Züri-Bahnhof font, "Bi de Bani z'Affoltere" tagline, and a
+  QR (procedurally generated, no lib) pointing to the deployed Pages
+  URL. HTML5 → copy to clipboard via `JavaScriptBridge`. Native →
+  save to `user://share/`. **Why it's worth it:** the share card IS
+  the marketing — the user has named "screenshot worth sharing" as
+  the bar. New script `scripts/systems/share_card.gd`, dependency-free.
+
+- [ ] **"DDT-Verwüschelig" Tüüfel sabotage event (L8+)** — between
+  waves on L8/L9/L10, 25% chance the De Vegan-Tüüfel drops 3
+  Servelat-smoke bombs at random map positions (avoiding path tiles).
+  Towers within 80 px of any bomb get -50% range AND a purple
+  modulate tint for 12s. Player gets two counters: (a) sell any
+  affected tower for FULL refund during smoke window (sympathy
+  refund), or (b) place a one-shot "🧄 Knoblauch-Tube" (40 gold,
+  HUD inventory slot) on the bomb to cleanse it in 0.5s. **Mechanic:**
+  new `GameLevel._schedule_sabotage_event()` between waves;
+  `BaseTower._process()` reads `has_meta("ddt_smoked")` to apply
+  the range/tint mod. **Why:** adds rhythmic between-wave decisions
+  to the late game where current downtime is dead air.
+
+---
+
+## 🔎 Architecture Notes
+
+Long-form observations from periodic code reads. Each entry dated.
+Use as input for refactor sprints when the loop runs `self-improve`.
+
+- **2026-06-04 — `scripts/towers/base_tower.gd` is a 1188-line
+  god-object with TWO embedded mini-scripts.** Lines 827–828 and
+  911–912 define `_hat_script()` and `_glow_script()` getters that
+  return `GDScript` objects whose `.source_code` is a multi-line
+  string literal containing actual GDScript (`extends Node2D` +
+  `func _draw()` + helpers). Effects:
+  1. `validate.sh` and `godot --check-only` cannot parse these inner
+     scripts as files — syntax errors hide until runtime.
+  2. Editor "go to definition" doesn't work on `_draw_crown` /
+     `_draw_band` inside the embedded source.
+  3. The file mixes 6 responsibilities (targeting, upgrades, draw,
+     animation, abilities, tier visuals) and is the #1 merge-conflict
+     hotspot — 4 separate audit-polish branches modified it in May.
+
+  **Refactor proposal (1–2 audit-polish runs):**
+  - Extract `_hat_script()` → `scripts/towers/visuals/tier_hat.gd`
+    (true Script file, instantiated via `preload(...)`).
+  - Extract `_glow_script()` → `scripts/towers/visuals/tier_glow.gd`.
+  - Move `_apply_path_tint`, `_apply_tier_scale`, `_update_tier_hat`,
+    `_update_tier_glow`, `_rebuild_pip_cache` to a sibling
+    `TowerVisuals` node attached as a child in `base_tower.tscn`.
+  - Goal: drop `base_tower.gd` below 700 lines, all visual logic
+    parseable by validate.sh, fewer merge-conflict surfaces.
+
 ---
 
 ## Loop directives
