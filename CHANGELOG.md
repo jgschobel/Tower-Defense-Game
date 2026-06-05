@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-05 (audit-polish — kills=0 CACHE_MODE_IGNORE script-identity fix)
+
+- fix(combat): `_is_valid_projectile()` now uses script identity as primary check OR `has_method("setup")` as secondary — previously the strict `get_script() == _projectile_script` check rejected projectiles instantiated via `CACHE_MODE_IGNORE` (which loads a fresh Script object with different identity from the preloaded cached ref), causing ALL last-resort shots to abort with "permanently broken" error and kills=0 in L1/L2/L3 playtester scenarios (issues #672, #654, #601). Also updates `_projectile_script` cache after CACHE_MODE_IGNORE reload so subsequent shots skip the fallback path.
+
 ## 2026-06-05 (audit-polish — combat fix + tint visibility + playtester accuracy)
 
 - fix(combat+pool): replaced `has_method("setup")` guards in `ProjectilePool.acquire/release` and `BaseTower._attack` with `get_script() == _expected_script` identity checks — `has_method()` is unreliable in headless Godot 4 at 8× time_scale under GDScript VM pressure, causing towers to silently drop shots and the playtester to report kills=0 (issues #647, #653, #602). Also adds CACHE_MODE_IGNORE reload as last-resort fallback.

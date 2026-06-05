@@ -312,11 +312,12 @@ func _process(delta: float) -> void:
 func _is_valid_projectile(p: Node) -> bool:
 	if p == null or not is_instance_valid(p):
 		return false
-	# Script identity check: more reliable than has_method() under GDScript VM
-	# pressure. If _projectile_script is null (edge case during early init),
-	# fall back to has_method so shots still work.
-	if _projectile_script != null:
-		return p.get_script() == _projectile_script
+	# Primary: script identity (reliable under normal conditions).
+	# Secondary: has_method fallback covers the case where CACHE_MODE_IGNORE
+	# reloads the scene and produces a fresh script object with different
+	# identity than the cached _projectile_script — the node is still valid.
+	if _projectile_script != null and p.get_script() == _projectile_script:
+		return true
 	return p.has_method("setup")
 
 
@@ -500,6 +501,13 @@ func _attack() -> void:
 			_projectile_scene = fresh_scene
 			projectile = _projectile_scene.instantiate()
 			scene_root.add_child(projectile)
+			# Update _projectile_script to match the freshly-loaded scene's script.
+			# CACHE_MODE_IGNORE produces a new Script object with different identity
+			# from the old cached _projectile_script — updating here lets the next
+			# shot's identity check pass without falling back to has_method.
+			var refreshed := projectile.get_script() as Script
+			if refreshed != null:
+				_projectile_script = refreshed
 			if not _is_valid_projectile(projectile):
 				push_error("[tower] projectile scene permanently broken — aborting shot")
 				projectile.queue_free()
