@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-05 (audit-polish — Level 10 MOAB-tier enemy intro polish)
+
+- polish(hud): Level 10 super-enemies `moab_migros`, `bfb_cumulus`, `ddt_schwarz` now get Swiss German taunts, "MEGA-GFAHR!!" warning label (orange-red), and a softer orange screen flash + shake on first appearance, matching the existing boss "ENDGEGNER!!" treatment at reduced intensity.
+
 ## 2026-06-04 (audit-polish — projectile emergency fallback + pool prewarm order fix)
 
 - fix(combat): `base_tower._attack()` now has a third-level emergency fallback when a projectile node passes the pool guard but still lacks `setup()` at fire-time (recurring headless CI parse-order edge case, issues #638/#641). Instead of silently dropping the shot, it instantiates directly from `_projectile_scene` and retries once. Removes the `if/else has_method` pattern that was swallowing shots.
