@@ -227,6 +227,128 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
   the range/tint mod. **Why:** adds rhythmic between-wave decisions
   to the late game where current downtime is dead air.
 
+### Added 2026-06-05 (ideate run)
+
+- [ ] **"Synergie-Combo" — adjacent-friend passive bonuses** — when
+  two specific friend towers are placed within ~150 px of each other,
+  both get a small passive bonus AND a tiny `✦ Synergie` badge above
+  their hats. Predefined pairs (Swiss-cast specific, not generic):
+  - **Lemurius + Cordula** = +20 % range each (childhood-friends
+    "mir gsehnd alles" combo)
+  - **Kühne + JoJo** = +15 % damage each (precision + chaos)
+  - **Amösius + Cordula** = +0.5 s slow duration (icy support stack)
+  - **JoJo + Lemurius** = +1 projectile pierce (banana-volleyball)
+  - **Joe + Justus** = +25 % attack speed (Vater/Sohn rapid fire)
+
+  **Impl spec:** new `scripts/systems/synergy_table.gd` (data-driven
+  array of `{a_id, b_id, range_mul, dmg_mul, slow_dur_add, pierce_add,
+  atk_speed_mul}` entries). `BaseTower._refresh_synergies()` runs on
+  placement, sell, and via a `GameLevel.tower_topology_changed` signal
+  (not per-frame). Uses squared-distance check vs. 150² = 22 500 to
+  avoid `sqrt`. HUD badge: 12×12 `Polygon2D` star, gold (`#FFD27A`),
+  positioned above the tier-hat slot. Tower-info panel adds a
+  "🤝 Synergie:" row when active, listing the partner name in Swiss
+  German.
+
+  **Why it sticks:** BTD has no friend-pair-specific bonuses — this
+  rewards placement intelligence in a way that's unique to *this*
+  game's cast. Composes naturally with [[migros-bon-active-power]]
+  discount placements. ~250 LoC, no new art needed.
+
+- [ ] **"Migros-App" diegetic phone overlay (level-select skin)** —
+  optional cosmetic skin that reframes `level_select.tscn` as a fake
+  Migros mobile app. Static carousel of push-notification toasts
+  drops in every 8–12 s with Swiss German one-liners:
+  - "Mami: Bring no Brot mit! 🥖"
+  - "Cumulus-Aktion: Gratis Banani bi 5 Stern"
+  - "De Tüüfel hät dir gleicht. Hilfe gsuecht."
+  - "JoJo: Wo bisch? Voll spannend hie."
+
+  Gold balance shown as `Cumulus-Punkte 2,345 ★`; the "Spiele" button
+  styled as an in-app feature button with rounded `StyleBoxFlat` + a
+  subtle 1 px white border (mimics iOS list-cell). **Impl:** new
+  `scripts/ui/migros_app_skin.gd` that hooks into `level_select.gd`
+  via signal `_ready()`; toggle in `OptionsMenu` (`migros_app_skin: bool`
+  in `user://settings.cfg`, default `false` so existing players opt-in).
+  Hard-coded notification queue of ~15 strings in
+  `scripts/data/app_notifications.gd` (data, not logic).
+
+  **Why it sticks:** turns dead-air menu time into joke-delivery time.
+  ~150 LoC, no art (uses existing icons + emoji). Pairs perfectly with
+  [[hei-karte-share-card]] for cohesive "diegetic phone" feel.
+
+- [ ] **"Hoi-Schatz" tower love-tap easter egg** — tap any placed
+  friend tower 7 times in 3 s (without selecting it for upgrades) and
+  it plays a Swiss-German voice-line bubble above its head: Lemurius
+  → "Hoi Schatz!", Cordula → "Mir gönds guet, gell?", Kühne → "Ruig,
+  ruig, alles unter Kontrolle.", JoJo → "Was machsch du dänn?",
+  Amösius → "Brrr, kalt isch's!". 30 s per-tower cooldown so spam
+  doesn't ruin it.
+
+  **Impl:** `BaseTower._on_input_event` already exists for selection
+  — add a `_tap_count` + `_tap_window_start` tracker. When threshold
+  hit, spawn a 1.2 s tween-fade `Label` (no audio yet — pure text
+  bubble, audio comes later when we record friends). String table in
+  `scripts/data/easter_egg_lines.gd` keyed by `tower_id`. ~80 LoC,
+  pure addition (no behaviour conflicts).
+
+  **Why it sticks:** the kind of detail people screenshot and DM to
+  the friend named after the tower. Zero-risk surface area.
+
+- [ ] **"Wagli-Schub" — drag-to-push shopping cart active power** —
+  active player power: tap a top-bar `🛒 Wagli` button, then drag a
+  finger across the map. Enemies the drag-line crosses get pushed
+  backward along the path by 30–50 px (`path_follow.progress -=
+  push_amount`). Costs **30 gold** per use (immediate, no cooldown
+  but gold-gated so spam = bankruptcy). Unlocks at **150 Cumulus** in
+  the Forschig menu.
+
+  **Impl:** new `scripts/ui/wagli_cursor.gd` overlay listens to
+  `InputEventScreenDrag` during active mode. Each drag step queries
+  enemies via `EnemyPool.get_active()` and tests
+  `global_position.distance_squared_to(drag_pos) < 60²`; affected
+  enemies have their `PathFollow2D.progress` decreased by 35 (clamped
+  to >= 0). Visual feedback: cursor sprite swapped to a 32 px
+  shopping-cart icon (already exists at `assets/icons/wagli.svg`);
+  dust-puff `EffectPlayer.dust(...)` at each enemy hit; gold deducted
+  per *unique enemy* pushed (not per frame). Hard cap: max 4 enemies
+  pushed per drag-stroke (`_pushed_this_stroke: Set`) to prevent
+  trivializing dense waves.
+
+  **Why it sticks:** the user has named "active powers" as a P2
+  cluster but they've all been *passive triggers* or *taps*. This is
+  the first one requiring physical gesture — the BTD-vet surprise is
+  "you actually move them with your finger". Stacks with
+  [[migros-bon-active-power]] (Bon = strategic, Wagli = tactical).
+
+- [ ] **"Tag der Affoltern" — concrete daily-mission spec (closes the
+  abstract P2 placeholder)** — supersedes the "Daily challenge" P2
+  bullet with shippable details:
+  - **Seed:** `floor(unix_time / 86400)` → deterministic level
+    selection + tower-restriction + modifier per UTC day.
+  - **Restriction examples:** "L3, only Kühne + Amösius allowed",
+    "L5, no upgrades past tier 1", "L7, -30 % gold income",
+    "L1 with double-speed enemies start wave 1".
+  - **Reward:** 50 Cumulus on completion (~half a wave's worth),
+    +100 if completed without losing a life.
+  - **Persistence:** `user://daily/2026-06-05.json` records
+    `{seed, attempts, best_lives, best_wave_reached, won_bool}`. Hard
+    one-attempt-per-day; if user closes mid-run it auto-fails.
+  - **UI:** new MainMenu button "🌅 Tag der Affoltern" — golden
+    border, pulses when today's mission unplayed. Tap shows preview
+    panel (level thumbnail, restrictions, reward) before "Spiele!"
+    confirms the attempt-lock.
+
+  **Impl:** new `scripts/systems/daily_mission.gd` autoload (~200 LoC)
+  + `scenes/ui/daily_preview.tscn`. Hooks `GameLevel._on_level_won/lost`
+  to write the JSON. Mission generator is a pure function — no RNG
+  state, fully reproducible per seed.
+
+  **Why it sticks:** gives a reason to open the game on a day you
+  weren't planning to play. Composes with [[hei-karte-share-card]]
+  ("Tag-Karte" variant brags about today's seed). The local-only
+  leaderboard sidesteps the BFF complexity of online scores.
+
 ---
 
 ## 🔎 Architecture Notes
@@ -257,6 +379,55 @@ Use as input for refactor sprints when the loop runs `self-improve`.
     `TowerVisuals` node attached as a child in `base_tower.tscn`.
   - Goal: drop `base_tower.gd` below 700 lines, all visual logic
     parseable by validate.sh, fewer merge-conflict surfaces.
+
+- **2026-06-05 — `scripts/ui/hud.gd` is 2201 lines with 75 functions
+  — even bigger than [[base-tower-god-object]].** A rapid `grep`
+  shows at least seven separate responsibilities crammed in:
+  1. Tower shop population, styling, and collapse animation
+     (`_populate_tower_shop` L494, `_style_shop_button` L694,
+     `_refresh_side_shop_layout`, `_build_shop_collapse_handle`,
+     `_toggle_shop_collapse`).
+  2. Threat / boss-HP UI (`_start_threat_watcher`,
+     `_refresh_threat_badges`, `_refresh_boss_hpbar_live`,
+     `_build_boss_hpbar`).
+  3. Combo badge + screen-tint flash (`_ensure_combo_badge`,
+     `_on_combo_changed`, `_apply_combo_screen_tint`).
+  4. Enemy intro card + MOAB-tier telegraph
+     (`show_enemy_intro` L730, `_build_enemy_preview` L865,
+     `_flash_boss_telegraph`, `_flash_moab_telegraph`).
+  5. Wave progress bar (`_ensure_wave_progress_bar`).
+  6. Wave-clear celebration (`show_wave_clear_celebration`).
+  7. Safe-area handling for notched phones (`_apply_safe_area`).
+
+  **Symptoms already showing:** the 2201-line wall is the #2
+  merge-conflict surface after `base_tower.gd` (every shop tweak,
+  every combo tweak, every threat-badge tweak touches the same
+  file). Search-by-feature requires a `grep` because the file
+  outgrew "scroll-and-find". `_ready()` runs all subsystem setup
+  inline — adding one new HUD widget means editing 4+ places
+  (var declaration, `_ready` wiring, signal connection, layout
+  refresh).
+
+  **Refactor proposal (2–3 audit-polish runs, low risk because each
+  HUD subsystem is signal-driven and stateless across each other):**
+  - Extract subsystems to sibling scenes/scripts:
+    `scripts/ui/hud/tower_shop_panel.gd` (responsibilities 1),
+    `scripts/ui/hud/threat_indicator.gd` (2),
+    `scripts/ui/hud/combo_overlay.gd` (3),
+    `scripts/ui/hud/enemy_intro_card.gd` (4),
+    `scripts/ui/hud/wave_progress.gd` (5),
+    `scripts/ui/hud/wave_clear_burst.gd` (6).
+  - Keep `hud.gd` as a thin orchestrator (~400 lines) that owns
+    layout, safe-area, and forwards signals between subsystems.
+  - Composition over class explosion: each subsystem is a `Control`
+    sibling node added in `hud.tscn`, not a class hierarchy.
+  - **Bonus:** every extraction is a unit-testable surface — drop a
+    subsystem into a barebones scene in `tests/` to verify behaviour
+    in isolation, which currently requires running the full game.
+
+  Pair this refactor sequencing with the [[base-tower-god-object]]
+  one — both files are the structural debt blocking faster
+  feature work.
 
 ---
 

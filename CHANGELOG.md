@@ -3,6 +3,12 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-05 (ideate — 5 new spec'd ideas + second Architecture Note)
+
+- docs(roadmap): 5 new P2 ideas spec'd with concrete impl hints — (1) Synergie-Combo adjacent-friend bonuses (5 cast-specific pairs: Lemurius+Cordula range, Kühne+JoJo damage, Amösius+Cordula slow-duration, JoJo+Lemurius pierce, Joe+Justus attack-speed) with signal-driven `_refresh_synergies()` + ✦ HUD badge, (2) "Migros-App" diegetic level-select skin with 15-item Swiss German push-notification queue + opt-in toggle, (3) "Hoi-Schatz" tower love-tap easter egg (7 taps in 3s → voice-line bubble, 30s per-tower cooldown), (4) "Wagli-Schub" drag-to-push shopping cart active power (30 gold per use, max 4 enemies per stroke, 150 Cumulus unlock), (5) "Tag der Affoltern" daily-mission concrete spec superseding the abstract P2 placeholder (deterministic seed, restriction + reward + per-day attempt-lock).
+- docs(roadmap): second Architecture Note — `scripts/ui/hud.gd` is 2201 lines / 75 functions across 7 distinct responsibilities (tower shop, threat/boss HP, combo overlay, enemy intro, wave progress, wave-clear burst, safe-area). Now the #2 merge-conflict hotspot after `base_tower.gd`. Refactor proposal: extract 6 sibling Control nodes (`scripts/ui/hud/*`) keeping `hud.gd` as a thin ~400-line orchestrator. Pair sequencing with the base_tower refactor.
+- chore(loop-context): CI-health caveat noted in PR body — open `ci-failure` issues #649/#651/#656 trace back to the projectile-script-identity timeout that PR #648 (currently CONFLICTING with main) addresses. Not an ideate-mode fix; flagged for the next code-mode run.
+
 ## 2026-06-05 (audit-polish — Level 10 MOAB-tier enemy intro polish)
 
 - polish(hud): Level 10 super-enemies `moab_migros`, `bfb_cumulus`, `ddt_schwarz` now get Swiss German taunts, "MEGA-GFAHR!!" warning label (orange-red), and a softer orange screen flash + shake on first appearance, matching the existing boss "ENDGEGNER!!" treatment at reduced intensity.
