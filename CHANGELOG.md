@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-05 (audit-polish — circle_clip shader modulate fix, upgrade tints now visible)
+
+- fix(visual): `circle_clip.gdshader` was discarding `CanvasItem.modulate` — `COLOR = tex_color` replaced the incoming vertex color (which carries the modulate) so path-upgrade tints set via `sprite.modulate` had zero effect on rendered output. Fix: `COLOR = tex_color * COLOR` preserves modulate across the shader; `COLOR.a = tex_color.a * mask` applies circle clip cleanly. This makes A1/A2/A3/B1/B2/B3 tints all visible in-game (closes #673).
+
 ## 2026-06-05 (audit-polish — combat fix + tint visibility + playtester accuracy)
 
 - fix(combat+pool): replaced `has_method("setup")` guards in `ProjectilePool.acquire/release` and `BaseTower._attack` with `get_script() == _expected_script` identity checks — `has_method()` is unreliable in headless Godot 4 at 8× time_scale under GDScript VM pressure, causing towers to silently drop shots and the playtester to report kills=0 (issues #647, #653, #602). Also adds CACHE_MODE_IGNORE reload as last-resort fallback.
