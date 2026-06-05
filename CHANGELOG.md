@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-05 (audit-polish — B-path tier hue distinction)
+
+- polish(visual): per-tier hue rotation in `_apply_path_tint()` — B-path T2 shifts base hue +18° + saturation +10%, T3 shifts +36° + saturation +20%; A-path T2/T3 get smaller +12°/+24° hue shift + +8%/+16% saturation boost. Fixes B1→B2 visually indistinguishable issue (#666) — each tower upgrade tier now reads distinctly even when the other path is already at max tier.
+
 ## 2026-06-05 (audit-polish — combat fix + tint visibility + playtester accuracy)
 
 - fix(combat+pool): replaced `has_method("setup")` guards in `ProjectilePool.acquire/release` and `BaseTower._attack` with `get_script() == _expected_script` identity checks — `has_method()` is unreliable in headless Godot 4 at 8× time_scale under GDScript VM pressure, causing towers to silently drop shots and the playtester to report kills=0 (issues #647, #653, #602). Also adds CACHE_MODE_IGNORE reload as last-resort fallback.
