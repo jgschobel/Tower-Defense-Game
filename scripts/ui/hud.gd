@@ -735,9 +735,11 @@ func show_enemy_intro(enemy_id: String, enemy_data: Resource) -> void:
 	# the first spawn).
 	# Boss telegraph — a brief red screen flash + heavier shake fires
 	# BEFORE the panel slides in. Tells the player "danger" before they
-	# can read the text.
+	# can read the text. MOAB-tier enemies get a softer orange flash.
 	if enemy_id == "boss":
 		_flash_boss_telegraph()
+	elif enemy_id in ["moab_migros", "bfb_cumulus", "ddt_schwarz"]:
+		_flash_moab_telegraph()
 
 	# Per-enemy Swiss German taunts — one line per enemy type.
 	var _taunts: Dictionary = {
@@ -758,6 +760,9 @@ func show_enemy_intro(enemy_id: String, enemy_data: Resource) -> void:
 		"smoothie_slime":"Grüen und grusig — das bini ich!",
 		"tofu_ninja":    "Du gsehsch mi nöd — ich bini überall!",
 		"boss":          "Jetzt isch alles vegan — für immer!!",
+		"moab_migros":   "Vier Tanks inne — explodier ich... und guet Nacht!",
+		"bfb_cumulus":   "Flüge und unsichtbar — kein Turm stoppt mich!",
+		"ddt_schwarz":   "Schnäll, camo, bly — dr schlimmschte Alptraum!",
 	}
 
 	var overlay := PanelContainer.new()
@@ -784,10 +789,22 @@ func show_enemy_intro(enemy_id: String, enemy_data: Resource) -> void:
 	vbox.add_theme_constant_override("separation", 8)
 
 	var warning := Label.new()
-	warning.text = "ENDGEGNER!!" if enemy_id == "boss" else "NÖÖI BEDROHIG"  # was "☠ ..." / "⚠ ..."
+	var _moab_tier_ids: Array = ["moab_migros", "bfb_cumulus", "ddt_schwarz"]
+	if enemy_id == "boss":
+		warning.text = "ENDGEGNER!!"
+	elif enemy_id in _moab_tier_ids:
+		warning.text = "MEGA-GFAHR!!"
+	else:
+		warning.text = "NÖÖI BEDROHIG"
 	warning.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	warning.add_theme_font_size_override("font_size", 22)
-	var header_color := Color(1.0, 0.25, 0.2) if enemy_id == "boss" else Color(1, 0.6, 0.2)
+	var header_color: Color
+	if enemy_id == "boss":
+		header_color = Color(1.0, 0.25, 0.2)
+	elif enemy_id in _moab_tier_ids:
+		header_color = Color(1.0, 0.45, 0.15)
+	else:
+		header_color = Color(1, 0.6, 0.2)
 	warning.add_theme_color_override("font_color", header_color)
 	vbox.add_child(warning)
 
@@ -823,13 +840,16 @@ func show_enemy_intro(enemy_id: String, enemy_data: Resource) -> void:
 	overlay.add_child(vbox)
 	add_child(overlay)
 
-	# Screen-shake the game scene on boss reveal (HUD CanvasLayer unaffected)
+	# Screen-shake the game scene on boss/MOAB reveal (HUD CanvasLayer unaffected)
 	# + deep procedural roar for tactile "oh no" feedback.
 	if enemy_id == "boss":
 		if EffectPlayer:
 			EffectPlayer.screen_shake(7.0, 0.45)
 		if SfxManager and SfxManager.has_method("play_boss_roar"):
 			SfxManager.play_boss_roar()
+	elif enemy_id in _moab_tier_ids:
+		if EffectPlayer:
+			EffectPlayer.screen_shake(4.5, 0.3)
 
 	# Zoom-in + fade — 0.25s in, 0.7s hold, 0.25s out
 	overlay.scale = Vector2(2.0, 2.0)
@@ -988,6 +1008,23 @@ func _flash_boss_telegraph() -> void:
 		SfxManager.play_boss_roar()
 	if EffectPlayer and EffectPlayer.has_method("screen_shake"):
 		EffectPlayer.screen_shake(7.5, 0.45)
+
+
+func _flash_moab_telegraph() -> void:
+	# Orange flash for MOAB-tier enemies (moab_migros / bfb_cumulus / ddt_schwarz).
+	# Softer than the boss red flash — communicates "danger, but different".
+	var flash := ColorRect.new()
+	flash.color = Color(0.95, 0.55, 0.1, 0.0)
+	flash.anchors_preset = Control.PRESET_FULL_RECT
+	flash.anchor_right = 1.0
+	flash.anchor_bottom = 1.0
+	flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	flash.z_index = -1
+	add_child(flash)
+	var tw := flash.create_tween()
+	tw.tween_property(flash, "color:a", 0.28, 0.10)
+	tw.tween_property(flash, "color:a", 0.0, 0.40)
+	tw.tween_callback(flash.queue_free)
 
 
 func show_wave_clear_celebration() -> void:
