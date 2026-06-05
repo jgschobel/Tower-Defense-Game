@@ -11,10 +11,15 @@ extends Node
 
 const POOL_SIZE: int = 40
 const PROJECTILE_SCENE_PATH: String = "res://scenes/projectiles/base_projectile.tscn"
+const PROJECTILE_SCRIPT_PATH: String = "res://scripts/projectiles/base_projectile.gd"
 
 var _free: Array = []
 var _scene: PackedScene = null
 var _container: Node = null
+# Expected script reference — used to verify pool nodes haven't lost their
+# script (which can happen in headless Godot when scene transitions coincide
+# with in-flight projectile cleanup). More reliable than has_method().
+var _expected_script: Script = null
 
 
 func _ready() -> void:
@@ -22,6 +27,7 @@ func _ready() -> void:
 	if _scene == null:
 		push_warning("[ProjectilePool] scene missing — pool disabled")
 		return
+	_expected_script = load(PROJECTILE_SCRIPT_PATH) as Script
 	# Defer instantiation so we don't fight with the game scene loading
 	call_deferred("_prewarm")
 
@@ -46,11 +52,13 @@ func acquire() -> Node2D:
 	while not _free.is_empty():
 		var candidate = _free.pop_back()
 		if candidate != null and is_instance_valid(candidate):
-			# Guard against script-detached nodes (e.g. parse-order issue in
-			# headless runs): if the node lost its script, destroy it instead
-			# of handing it out — callers would get a no-setup loop otherwise.
-			if not candidate.has_method("reset_for_pool"):
-				push_warning("[ProjectilePool] slot missing script, destroying: %s" % candidate.get_class())
+			# Guard against script-detached nodes: verify script identity
+			# (more reliable than has_method in headless Godot — has_method
+			# can return false for valid nodes during scene-transition cleanup
+			# when the GDScript VM is under pressure at high time_scale).
+			var candidate_script = candidate.get_script()
+			if candidate_script == null or (_expected_script != null and candidate_script != _expected_script):
+				push_warning("[ProjectilePool] slot missing/wrong script, destroying: %s" % candidate.get_class())
 				candidate.queue_free()
 				continue
 			candidate.set_meta("pooled", true)
@@ -83,8 +91,24 @@ func release(p: Node) -> void:
 	if not p.get_meta("pooled", false):
 		p.queue_free()
 		return
+	# Guard against scene-transition race: when the game scene is freed,
+	# in-flight projectiles (children of game scene) get queue_free()'d too.
+	# If release() is called in the same frame, is_instance_valid(p) may still
+	# return true, but the node's script can be in an inconsistent state.
+	# Verify script identity before re-pooling; discard broken nodes instead.
+	var p_script = p.get_script()
+	if p_script == null or (_expected_script != null and p_script != _expected_script):
+		push_warning("[ProjectilePool] release: script detached, discarding node")
+		# Don't queue_free — the node may already be pending deletion.
+		return
 	if p.get_parent() != _container and _container != null:
-		p.get_parent().remove_child(p)
+		var parent := p.get_parent()
+		# Guard: skip reparent if parent is no longer valid (freed during
+		# scene transition). The node will be freed with its parent.
+		if parent != null and not is_instance_valid(parent):
+			return
+		if parent != null:
+			parent.remove_child(p)
 		_container.add_child(p)
 	_deactivate(p)
 	_free.append(p)
