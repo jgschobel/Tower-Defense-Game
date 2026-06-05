@@ -3,6 +3,14 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-05 (audit-polish — combat fix + tint visibility + playtester accuracy)
+
+- fix(combat+pool): replaced `has_method("setup")` guards in `ProjectilePool.acquire/release` and `BaseTower._attack` with `get_script() == _expected_script` identity checks — `has_method()` is unreliable in headless Godot 4 at 8× time_scale under GDScript VM pressure, causing towers to silently drop shots and the playtester to report kills=0 (issues #647, #653, #602). Also adds CACHE_MODE_IGNORE reload as last-resort fallback.
+- fix(visual): tint brightness LUT updated — T1: strength=0.80/brightness=0.88 (was 0.70/1.0), T2: 0.95/0.80 (was 0.90/0.88), T3: 1.0/0.70 (was 1.0/0.72). The 12–30% brightness reduction at each tier makes path-color shifts clearly readable on bright friend-photo sprites (fixes #660).
+- fix(visual): `_maybe_swap_tier3_sprite()` target size 90px→130px to match `_update_visual()` baseline — was making tier-3 art appear 30% smaller than base tier.
+- fix(playtest): healthy-level wave cap reduced 8×2.5s→6×2.0s real time so 3 back-to-back levels fit in the 120s Godot process budget without L3 truncation (issue #640).
+- chore(i18n): "S/Sek" → "Schad/Sek" in shop cards and tower-info stats panel for Swiss German clarity (Schade pro Sekunde = DPS).
+
 ## 2026-06-05 (ideate — 5 new spec'd ideas + second Architecture Note)
 
 - docs(roadmap): 5 new P2 ideas spec'd with concrete impl hints — (1) Synergie-Combo adjacent-friend bonuses (5 cast-specific pairs: Lemurius+Cordula range, Kühne+JoJo damage, Amösius+Cordula slow-duration, JoJo+Lemurius pierce, Joe+Justus attack-speed) with signal-driven `_refresh_synergies()` + ✦ HUD badge, (2) "Migros-App" diegetic level-select skin with 15-item Swiss German push-notification queue + opt-in toggle, (3) "Hoi-Schatz" tower love-tap easter egg (7 taps in 3s → voice-line bubble, 30s per-tower cooldown), (4) "Wagli-Schub" drag-to-push shopping cart active power (30 gold per use, max 4 enemies per stroke, 150 Cumulus unlock), (5) "Tag der Affoltern" daily-mission concrete spec superseding the abstract P2 placeholder (deterministic seed, restriction + reward + per-day attempt-lock).

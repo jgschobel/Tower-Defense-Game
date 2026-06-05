@@ -142,16 +142,19 @@ func _run_healthy_level(level_id: int) -> void:
 	var shot_idx := 0
 	while true:
 		# ignore_time_scale=true: SHOT_INTERVAL is real seconds regardless of
-		# Engine.time_scale. 8 ticks × 2.5s = 20s real = 160s game time at 8×.
-		await get_tree().create_timer(SHOT_INTERVAL, true, false, true).timeout
+		# Engine.time_scale. 6 ticks × 2.0s = 12s real = 96s game time at 8×.
+		# Was 8×2.5=20s — L3_healthy was being cut by the 120s total timeout
+		# because 3 levels × ~27s each barely fit (issue #640). Reduced to
+		# 6×2.0=12s to give all 3 levels breathing room in the 120s budget.
+		await get_tree().create_timer(2.0, true, false, true).timeout
 		_snapshot("%s_t%02d" % [_scenario_name, shot_idx])
 		shot_idx += 1
 		if GameManager.current_state == GameManager.GameState.LOST \
 		or GameManager.current_state == GameManager.GameState.WON:
 			break
 		var elapsed := float(Time.get_ticks_msec() - sim_started) / 1000.0
-		# 8 ticks × 2.5s = 20s real cap (issue #499 budget fix).
-		if elapsed > 20.0 or shot_idx >= 8:
+		# 6 ticks × 2.0s = 12s real cap (reduced from 8×2.5=20s, issue #640).
+		if elapsed > 14.0 or shot_idx >= 6:
 			break
 
 	Engine.time_scale = 1.0
