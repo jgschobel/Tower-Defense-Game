@@ -1539,6 +1539,23 @@ func _notification(_what: int) -> void:
 	pass
 
 
+func _process(_delta: float) -> void:
+	# Per-frame cooldown countdown for the active ability button so the
+	# text ticks down in real-time instead of only updating on tap.
+	# Guard: skip entirely when no tier-3+ tower is selected.
+	if not _selected_tower or not tower_info:
+		return
+	if not _selected_tower.has_method("has_active_ability") or not _selected_tower.has_active_ability():
+		return
+	var vbox: VBoxContainer = tower_info.get_node_or_null("VBox")
+	if vbox == null:
+		return
+	var btn: Button = vbox.get_node_or_null("AbilityButton")
+	if btn == null:
+		return
+	_update_ability_button_state(btn, vbox)
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	# Auto-hide tower info panel when user taps on empty map area. Audit
 	# #3: the panel occludes the middle band of the map and towers
@@ -2148,8 +2165,7 @@ func show_toast(message: String) -> void:
 
 func _ensure_ability_button() -> void:
 	# Active ability button (BTD5-style cooldown click). Visible only when
-	# the selected tower has tier 3+ AND has an ability implementation
-	# (currently Lemurius only — Tier 1C v1, expanding in follow-up PRs).
+	# the selected tower has tier 3+ AND has an ability implementation.
 	if not _selected_tower or not tower_info:
 		return
 	var vbox: VBoxContainer = tower_info.get_node_or_null("VBox")
@@ -2161,11 +2177,15 @@ func _ensure_ability_button() -> void:
 	if not should_show:
 		if btn:
 			btn.queue_free()
+		var bar: ProgressBar = vbox.get_node_or_null("AbilityCooldownBar")
+		if bar:
+			bar.queue_free()
 		return
 	if btn == null:
 		btn = Button.new()
 		btn.name = "AbilityButton"
-		btn.custom_minimum_size = Vector2(0, 36)
+		# ≥52px for mobile touch targets (was 36px).
+		btn.custom_minimum_size = Vector2(0, 52)
 		btn.tooltip_text = "Aktive Fähigkeit (Tier 3+) — klick zum aalöse"
 		_apply_tower_info_button_style(btn, Color(0.95, 0.45, 0.18))
 		vbox.add_child(btn)
@@ -2179,18 +2199,60 @@ func _ensure_ability_button() -> void:
 			anchor_idx = hbox.get_index()
 		vbox.move_child(btn, anchor_idx)
 		btn.pressed.connect(_on_ability_pressed)
-	# Refresh label every redraw — cooldown ticks down each frame
+		# Thin cooldown-progress bar directly below the button.
+		var bar: ProgressBar = ProgressBar.new()
+		bar.name = "AbilityCooldownBar"
+		bar.custom_minimum_size = Vector2(0, 5)
+		bar.show_percentage = false
+		bar.min_value = 0.0
+		bar.max_value = 1.0
+		var bg_sb := StyleBoxFlat.new()
+		bg_sb.bg_color = Color(0.15, 0.15, 0.15, 0.85)
+		var fill_sb := StyleBoxFlat.new()
+		fill_sb.bg_color = Color(0.95, 0.45, 0.18)
+		bar.add_theme_stylebox_override("background", bg_sb)
+		bar.add_theme_stylebox_override("fill", fill_sb)
+		vbox.add_child(bar)
+		vbox.move_child(bar, btn.get_index() + 1)
+	_update_ability_button_state(btn, vbox)
+
+
+func _update_ability_button_state(btn: Button, vbox: VBoxContainer) -> void:
+	if not _selected_tower:
+		return
 	var cd_left: float = _selected_tower.ability_cooldown_remaining
-	var label: String = _selected_tower.get_ability_label()
+	var ability_label: String = _selected_tower.get_ability_label()
+	var was_on_cooldown: bool = btn.disabled
 	if _selected_tower.ability_triple_fire_remaining > 0.0:
-		btn.text = "%s · AKTIV %.1fs" % [label, _selected_tower.ability_triple_fire_remaining]
+		btn.text = "%s · AKTIV %.1fs" % [ability_label, _selected_tower.ability_triple_fire_remaining]
 		btn.disabled = true
 	elif cd_left > 0.01:
-		btn.text = "%s · %ds" % [label, int(ceil(cd_left))]
+		btn.text = "%s · %ds" % [ability_label, int(ceil(cd_left))]
 		btn.disabled = true
 	else:
-		btn.text = "%s · BEREIT" % label
+		if was_on_cooldown:
+			_pulse_ability_ready(btn)
+		btn.text = "%s · BEREIT" % ability_label
 		btn.disabled = false
+	# Keep cooldown bar in sync.
+	var bar: ProgressBar = vbox.get_node_or_null("AbilityCooldownBar")
+	if bar:
+		if cd_left > 0.01:
+			var cd_max: float = _selected_tower.get_ability_cd_max() if _selected_tower.has_method("get_ability_cd_max") else 60.0
+			bar.value = 1.0 - cd_left / maxf(cd_max, 0.01)
+			bar.visible = true
+		elif _selected_tower.ability_triple_fire_remaining > 0.0:
+			bar.value = 1.0
+			bar.visible = true
+		else:
+			bar.visible = false
+
+
+func _pulse_ability_ready(btn: Button) -> void:
+	# Two quick flash pulses to signal the ability is ready.
+	var t := btn.create_tween().set_loops(2)
+	t.tween_property(btn, "self_modulate", Color(1.5, 1.2, 0.7), 0.10)
+	t.tween_property(btn, "self_modulate", Color.WHITE, 0.12)
 
 
 func _on_ability_pressed() -> void:
