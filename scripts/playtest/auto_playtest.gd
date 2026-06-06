@@ -415,13 +415,8 @@ func _placements_for_level(level_id: int) -> Array:
 	var game_root := get_tree().current_scene
 	var path := game_root.get_node_or_null("EnemyPath") as Path2D if game_root else null
 	if path and path.curve and path.curve.get_baked_length() > 100:
-		var ids: Array
-		match level_id:
-			4: ids = ["basic", "sniper", "slow", "seve", "splash", "joe"]
-			5: ids = ["justus", "sniper", "cordula", "seve", "splash"]
-			6: ids = ["joe", "slow", "basic", "justus", "cordula", "sniper"]
-			7: ids = ["justus", "cordula", "seve", "splash", "joe", "slow", "sniper"]
-			_: ids = ["basic", "sniper", "splash"]
+		# Generic fallback for levels 8+ (no hardcoded entries yet)
+		var ids: Array = ["basic", "sniper", "splash"]
 		return _sample_placements_along(path, ids)
 	push_warning("[playtest] no path found for level %d — using empty fallback" % level_id)
 	return []
@@ -470,6 +465,38 @@ func _hardcoded_placements(level_id: int) -> Array:
 			{ "id": "sniper",  "pos": Vector2(880, 440) },
 			{ "id": "splash",  "pos": Vector2(500, 520) },
 			{ "id": "slow",    "pos": Vector2(740, 380) },
+		]
+		4: return [
+			{ "id": "basic",   "pos": Vector2(200, 300) },
+			{ "id": "sniper",  "pos": Vector2(480, 420) },
+			{ "id": "slow",    "pos": Vector2(640, 240) },
+			{ "id": "seve",    "pos": Vector2(840, 460) },
+			{ "id": "splash",  "pos": Vector2(1060, 500) },
+			{ "id": "joe",     "pos": Vector2(1180, 380) },
+		]
+		5: return [
+			{ "id": "justus",  "pos": Vector2(300, 340) },
+			{ "id": "sniper",  "pos": Vector2(440, 380) },
+			{ "id": "cordula", "pos": Vector2(680, 500) },
+			{ "id": "seve",    "pos": Vector2(820, 430) },
+			{ "id": "splash",  "pos": Vector2(1000, 480) },
+		]
+		6: return [
+			{ "id": "joe",     "pos": Vector2(180, 240) },
+			{ "id": "slow",    "pos": Vector2(360, 500) },
+			{ "id": "basic",   "pos": Vector2(540, 340) },
+			{ "id": "justus",  "pos": Vector2(700, 180) },
+			{ "id": "cordula", "pos": Vector2(820, 400) },
+			{ "id": "sniper",  "pos": Vector2(1000, 560) },
+		]
+		7: return [
+			{ "id": "justus",  "pos": Vector2(300, 200) },
+			{ "id": "cordula", "pos": Vector2(420, 300) },
+			{ "id": "seve",    "pos": Vector2(560, 520) },
+			{ "id": "splash",  "pos": Vector2(720, 500) },
+			{ "id": "joe",     "pos": Vector2(780, 220) },
+			{ "id": "slow",    "pos": Vector2(940, 460) },
+			{ "id": "sniper",  "pos": Vector2(1060, 340) },
 		]
 		_: return []
 
