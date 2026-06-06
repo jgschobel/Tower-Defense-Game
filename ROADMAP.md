@@ -129,8 +129,8 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
   Shipped 2026-05-06: all 5 projectile styles (banana, pollen, flask, volleyball, tongue)
   visually distinct at tiers 1–3 via `setup(…, p_tier)` + `_draw()` branching.
 
-- [ ] **L10 dedicated background** — currently reuses L1. Generate
-  `level_10_finale.png` via art-request workflow.
+- [x] **L10 dedicated background** — `level_10_finale.png` generated via
+  Stability AI SD3.5-large (dark hellfire Migros vault). Verified 2026-06-06.
 
 ### Workflow / discipline
 - [x] **PR template with verify-checklist** — forces author to confirm
