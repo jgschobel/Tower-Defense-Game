@@ -349,11 +349,6 @@ func _run_stress_test() -> void:
 	await get_tree().process_frame
 	_snapshot("stress_spawned")
 
-	# Also start the wave so WaveManager tracks enemies_alive correctly
-	# (issue #519 — stress scenario was stuck at "Bereit" with 0 waves).
-	if wm and wm.has_method("start_next_wave"):
-		wm.call("start_next_wave")
-
 	# Let them march for a bit, sampling FPS at realistic intervals
 	for i in 6:
 		await get_tree().create_timer(1.0).timeout
