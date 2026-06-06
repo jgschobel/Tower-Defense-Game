@@ -1017,14 +1017,15 @@ func _update_visual() -> void:
 	if tex:
 		sprite.texture = tex
 		var max_dim := maxf(tex.get_width(), tex.get_height())
-		# Portrait textures (AI-generated friend photos, img2img) fill the
-		# entire texture area with the subject's face. Cartoon sprites
-		# (Lemurius etc.) leave ~70% transparent padding so the visible
-		# character is much smaller than the texture bounds.
-		# Use 72px for portrait towers so the face reads at the same visual
-		# weight as Lemurius's ~40px cartoon character in a 130px sprite.
-		# Non-friend towers keep 130px for correct cartoon proportions.
-		var is_portrait := data != null and data.friend_character_id != ""
+		# Portrait textures (AI-generated img2img or uploaded friend photos)
+		# fill the entire texture area with a face; max_dim is typically
+		# 1024px or larger. Cartoon sprites (lemurius.png, amosius.png) leave
+		# ~70% transparent padding; max_dim is 512px or smaller.
+		# Use 72px target for portraits so the visible face matches the
+		# visual weight of Lemurius's ~40px cartoon character in its 130px circle.
+		# Also treat ImageTexture (from get_friend_photo()) as portrait regardless
+		# of size since it's always a user-uploaded photo.
+		var is_portrait := (tex is ImageTexture) or (max_dim >= 900)
 		var target_size := 72.0 if is_portrait else 130.0
 		if max_dim > 0:
 			var s := target_size / max_dim
@@ -1152,12 +1153,10 @@ func _maybe_swap_tier3_sprite(path_letter: String) -> void:
 	if new_tex == null:
 		return
 	sprite.texture = new_tex
-	# Re-fit baseline using same portrait/cartoon logic as _update_visual:
-	# tier-swap art for friend-character towers is full-bleed portrait (72px),
-	# cartoon towers keep 130px.
-	var is_portrait_swap := data.friend_character_id != ""
-	var target_swap := 72.0 if is_portrait_swap else 130.0
+	# Re-fit baseline using same portrait/cartoon heuristic as _update_visual:
+	# tier-swap art ≥ 900px max-dim = portrait (72px); cartoon art < 900px = 130px.
 	var max_dim := maxf(new_tex.get_width(), new_tex.get_height())
+	var target_swap := 72.0 if max_dim >= 900 else 130.0
 	var s := target_swap / max_dim if max_dim > 0 else target_swap / 512.0
 	_baseline_scale = Vector2(s, s)
 	sprite.scale = _baseline_scale
