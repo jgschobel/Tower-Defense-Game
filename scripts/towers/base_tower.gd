@@ -1017,18 +1017,26 @@ func _update_visual() -> void:
 	if tex:
 		sprite.texture = tex
 		var max_dim := maxf(tex.get_width(), tex.get_height())
-		# Tower size: 90 → 140 → 185 → 240 → 175 → 130. User screenshots
-		# at 175 still showed towers eating ~30% of viewport height. 130
-		# fits cleanly within a path tile and reads as a character without
-		# dominating. Pedestal radii also reduced (42 → 32, etc).
-		var target_size := 130.0
-		var s := target_size / max_dim
-		_baseline_scale = Vector2(s, s)
+		# Portrait textures (AI-generated friend photos, img2img) fill the
+		# entire texture area with the subject's face. Cartoon sprites
+		# (Lemurius etc.) leave ~70% transparent padding so the visible
+		# character is much smaller than the texture bounds.
+		# Use 72px for portrait towers so the face reads at the same visual
+		# weight as Lemurius's ~40px cartoon character in a 130px sprite.
+		# Non-friend towers keep 130px for correct cartoon proportions.
+		var is_portrait := data != null and data.friend_character_id != ""
+		var target_size := 72.0 if is_portrait else 130.0
+		if max_dim > 0:
+			var s := target_size / max_dim
+			_baseline_scale = Vector2(s, s)
+		else:
+			# get_width() returned 0 — headless/dummy renderer hasn't
+			# initialized the texture yet. Use a conservative fallback
+			# so the sprite doesn't render at infinite scale.
+			_baseline_scale = Vector2(target_size / 512.0, target_size / 512.0)
 		sprite.scale = _baseline_scale
 		sprite.modulate = Color.WHITE
-		# Texture filtering — LINEAR_WITH_MIPMAPS smooths the edge
-		# artifacts left by background removal (rembg cuts can look
-		# jagged around eyes/hair when scaled down).
+		# LINEAR_WITH_MIPMAPS smooths jagged edges from background removal.
 		sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	else:
 		_baseline_scale = Vector2.ONE
@@ -1144,11 +1152,13 @@ func _maybe_swap_tier3_sprite(path_letter: String) -> void:
 	if new_tex == null:
 		return
 	sprite.texture = new_tex
-	# Re-fit baseline scale to match _update_visual target size (130px).
-	# Was 90.0 — tier-3 sprites were 30% smaller than base tier, making
-	# upgrades look like a downgrade visually (playtest-feedback #630).
+	# Re-fit baseline using same portrait/cartoon logic as _update_visual:
+	# tier-swap art for friend-character towers is full-bleed portrait (72px),
+	# cartoon towers keep 130px.
+	var is_portrait_swap := data.friend_character_id != ""
+	var target_swap := 72.0 if is_portrait_swap else 130.0
 	var max_dim := maxf(new_tex.get_width(), new_tex.get_height())
-	var s := 130.0 / max_dim
+	var s := target_swap / max_dim if max_dim > 0 else target_swap / 512.0
 	_baseline_scale = Vector2(s, s)
 	sprite.scale = _baseline_scale
 
