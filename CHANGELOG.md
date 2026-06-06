@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-06 (audit-polish — active ability button UX polish)
+
+- polish(hud): ability button min-height 36→52px (mobile touch target); per-frame cooldown countdown via `_process` so the timer ticks in real-time instead of only updating on tap; thin 5px progress bar below button fills as cooldown drains; double-pulse flash animation when ability transitions from cooldown→ready. Affects all 5 towers (Lemurius/Kühne/JoJo/Cordula/Amösius).
+
 ## 2026-06-06 (audit-polish — portrait tower sprite scale fix)
 
 - fix(visual): `_update_visual()` now uses `target_size = 72px` for portrait towers (`friend_character_id != ""`) vs `130px` for cartoon towers. AI-photo textures fill the full texture area with a face, making a 130px circle appear 3-4× visually heavier than Lemurius's ~40px cartoon character in its 130px sprite (transparent padding). 72px portrait circles match the visual weight of Lemurius on map. Also added `max_dim > 0` guard to prevent `130/0 = inf` scale in headless/dummy-renderer contexts where `CompressedTexture2D.get_width()` may not yet be initialized. Fixes playtest-feedback #671.
