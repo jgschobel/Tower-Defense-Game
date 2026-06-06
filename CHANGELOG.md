@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-06 (audit-polish — portrait tower sprite scale fix)
+
+- fix(visual): `_update_visual()` now uses `target_size = 72px` for portrait towers (`friend_character_id != ""`) vs `130px` for cartoon towers. AI-photo textures fill the full texture area with a face, making a 130px circle appear 3-4× visually heavier than Lemurius's ~40px cartoon character in its 130px sprite (transparent padding). 72px portrait circles match the visual weight of Lemurius on map. Also added `max_dim > 0` guard to prevent `130/0 = inf` scale in headless/dummy-renderer contexts where `CompressedTexture2D.get_width()` may not yet be initialized. Fixes playtest-feedback #671.
+
 ## 2026-06-05 (audit-polish — B-path tier hue distinction)
 
 - polish(visual): per-tier hue rotation in `_apply_path_tint()` — B-path T2 shifts base hue +18° + saturation +10%, T3 shifts +36° + saturation +20%; A-path T2/T3 get smaller +12°/+24° hue shift + +8%/+16% saturation boost. Fixes B1→B2 visually indistinguishable issue (#666) — each tower upgrade tier now reads distinctly even when the other path is already at max tier.
