@@ -80,12 +80,13 @@ func _populate_levels() -> void:
 		vbox.add_theme_constant_override("separation", 4)
 		vbox.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 
-		# Circular button — uses StyleBoxFlat for all visual states
+		# Circular button — uses StyleBoxFlat for all visual states.
+		# flat=false (default) so disabled stylebox always renders; flat=true
+		# can suppress it in GL Compatibility renderer on some drivers.
 		var btn := Button.new()
 		btn.custom_minimum_size = Vector2(90, 90)
 		btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 		btn.disabled = not unlocked
-		btn.flat = true
 
 		var sb_normal := StyleBoxFlat.new()
 		sb_normal.bg_color = accent.darkened(0.38)
@@ -112,27 +113,26 @@ func _populate_levels() -> void:
 		sb_pressed.set_corner_radius_all(45)
 		btn.add_theme_stylebox_override("pressed", sb_pressed)
 
+		# Locked levels: medium-contrast slate circle so they're clearly
+		# visible against the dark grid backdrop but obviously "not yet open".
 		var sb_disabled := StyleBoxFlat.new()
-		sb_disabled.bg_color = Color(0.32, 0.34, 0.46)
-		sb_disabled.border_color = Color(0.68, 0.70, 0.84)
+		sb_disabled.bg_color = Color(0.22, 0.25, 0.38)
+		sb_disabled.border_color = Color(0.55, 0.58, 0.75)
 		sb_disabled.set_border_width_all(3)
-		sb_disabled.shadow_color = Color(0.0, 0.0, 0.0, 0.7)
-		sb_disabled.shadow_size = 5
+		sb_disabled.shadow_color = Color(0.0, 0.0, 0.0, 0.5)
+		sb_disabled.shadow_size = 4
 		sb_disabled.set_corner_radius_all(45)
 		btn.add_theme_stylebox_override("disabled", sb_disabled)
 
-		# Level number — large, centred inside the circle. Locked levels
-		# show "—" (em-dash, universally renderable) instead of the 🔒
-		# emoji which tofus on Android phones with stripped Noto Emoji.
-		# The disabled stylebox already greys the button so the lock state
-		# is unambiguous.
+		# Level number always visible — unlocked bright, locked dimmed.
+		# Showing the number (not "—") tells players how many levels exist.
 		var num_lbl := Label.new()
-		num_lbl.text = str(i) if unlocked else "—"
+		num_lbl.text = str(i)
 		num_lbl.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		num_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		num_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		num_lbl.add_theme_font_size_override("font_size", 32)
-		num_lbl.add_theme_color_override("font_color", accent.lightened(0.55) if unlocked else Color(0.80, 0.82, 0.95))
+		num_lbl.add_theme_color_override("font_color", accent.lightened(0.55) if unlocked else Color(0.55, 0.58, 0.72))
 		num_lbl.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.9))
 		num_lbl.add_theme_constant_override("outline_size", 4)
 		num_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
