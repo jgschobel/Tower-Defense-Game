@@ -126,7 +126,7 @@ func _build_spawn_queue(wave: Dictionary) -> void:
 	for group in groups:
 		var group_dict: Dictionary = group
 		var enemy_id: String = group_dict.get("enemy_id", "basic")
-		var count: int = group_dict.get("count", 1)
+		var count: int = maxi(1, roundi(group_dict.get("count", 1) * (GameManager.difficulty_count_mult() if GameManager else 1.0)))
 		var raw_delay: float = group_dict.get("spawn_delay", 1.0)
 		var delay: float = maxf(raw_delay, MIN_DELAY)
 
