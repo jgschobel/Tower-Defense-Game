@@ -313,11 +313,16 @@ func _is_valid_projectile(p: Node) -> bool:
 	if p == null or not is_instance_valid(p):
 		return false
 	# Primary: script identity (reliable under normal conditions).
-	# Secondary: has_method fallback covers the case where CACHE_MODE_IGNORE
-	# reloads the scene and produces a fresh script object with different
-	# identity than the cached _projectile_script — the node is still valid.
 	if _projectile_script != null and p.get_script() == _projectile_script:
 		return true
+	# Secondary: property-presence check. More reliable than has_method() in
+	# headless Godot 4 at 8× time_scale where GDScript VM pressure can cause
+	# has_method() to return false for valid nodes. A node with `damage` and
+	# `speed` properties is a functionally valid BaseProjectile regardless of
+	# whether the script identity matches (e.g. post-CACHE_MODE_IGNORE reload).
+	if "damage" in p and "speed" in p:
+		return true
+	# Tertiary: has_method fallback (least reliable — kept as last resort).
 	return p.has_method("setup")
 
 
