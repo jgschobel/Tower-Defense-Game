@@ -7,6 +7,10 @@ Each run appends one line.
 
 - art(level10): generated `level_10_finale.png` via Stability AI SD3.5-large — dark hellfire underground Migros vault with glowing crimson M-rune symbols and cursed vegan products. Level 10 now has its own unique atmosphere matching `background_color` (0.35, 0.05, 0.08). Previously reused `level_1_obst.png` (closes P1 ROADMAP item).
 
+## 2026-06-06 (audit-polish — robust projectile validation, 0-kills fix)
+
+- fix(combat): `_is_valid_projectile()` now uses a three-tier check — (1) script identity, (2) property-presence (`"damage" in p and "speed" in p`), (3) `has_method("setup")` as last resort. Property check is more reliable than `has_method()` in headless Godot 4 at 8× time_scale where GDScript VM pressure causes `has_method()` to return false for valid nodes (persistent kills=0 regression, issues #715, #708). `ProjectilePool.acquire()` and `release()` also updated: identity mismatch now does property-presence verification before destroying pool slots, preventing the pool from being depleted by post-CACHE_MODE_IGNORE identity drift and forcing the tower into the "permanently broken — aborting shot" path.
+
 ## 2026-06-06 (audit-polish — active ability button UX polish)
 
 - polish(hud): ability button min-height 36→52px (mobile touch target); per-frame cooldown countdown via `_process` so the timer ticks in real-time instead of only updating on tap; thin 5px progress bar below button fills as cooldown drains; double-pulse flash animation when ability transitions from cooldown→ready. Affects all 5 towers (Lemurius/Kühne/JoJo/Cordula/Amösius).
