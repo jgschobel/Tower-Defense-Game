@@ -1195,14 +1195,11 @@ func get_max_tier() -> int:
 
 
 func has_active_ability() -> bool:
-	# Currently only Lemurius (basic) gets an active ability at tier 3+.
-	# Other friend towers (sniper/splash/cordula/slow) get theirs in
-	# follow-up PRs once each is balanced + tested individually.
 	if not data:
 		return false
 	if get_max_tier() < 3:
 		return false
-	return data.id in ["basic"]  # extend as more abilities ship
+	return data.id in ["basic", "sniper", "splash", "cordula", "slow"]
 
 
 func get_ability_label() -> String:
@@ -1242,11 +1239,26 @@ func trigger_active_ability() -> bool:
 	ability_cooldown_remaining = get_ability_cd_max()
 	match data.id:
 		"basic":
-			# Banani-Sturm: 5 seconds of 3× fire rate
+			# Banani-Sturm: 5s of 3× fire rate
 			ability_triple_fire_remaining = 5.0
 			_float_taunt("BANANI-STURM!")
+		"sniper":
+			# Pollen-Wolke: 6s sustained 3× fire rate — methodical burst
+			ability_triple_fire_remaining = 6.0
+			_float_taunt("POLLEN-WOLKE!")
+		"splash":
+			# Mega-Spritz: 4s of 3× AoE barrages
+			ability_triple_fire_remaining = 4.0
+			_float_taunt("MEGA-SPRITZ!")
+		"cordula":
+			# Volley-Tornado: 5s rapid-fire volley
+			ability_triple_fire_remaining = 5.0
+			_float_taunt("VOLLEY-TORNADO!")
+		"slow":
+			# Zunge-Ruck: 4s 3× slow bursts — stacks debuff on every enemy
+			ability_triple_fire_remaining = 4.0
+			_float_taunt("ZUNGE-RUCK!")
 		_:
-			# Default for un-implemented abilities — short triple-fire
 			ability_triple_fire_remaining = 3.0
 	if SfxManager and SfxManager.has_method("play_upgrade"):
 		SfxManager.play_upgrade()
