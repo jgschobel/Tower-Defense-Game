@@ -786,10 +786,24 @@ func _apply_path_tint() -> void:
 	var combined_tier: int = path_a_tier + path_b_tier
 	if path_a_tier > 0 and path_b_tier > 0 and combined_tier > max_tier:
 		brightness = minf(brightness + 0.06 * (combined_tier - max_tier), 0.95)
+	# Per-tier hue rotation: each additional B-path tier beyond T1 shifts the
+	# hue by 18° and boosts saturation by 10%, making B1/B2/B3 visually
+	# distinct even when A is already at max tier (fixes playtest-feedback #666).
+	# A-path gets a smaller 12°/8% shift for symmetry.
+	var effective_b_tint: Color = data.path_b_tint
+	if path_b_tier >= 2:
+		var extra: int = path_b_tier - 1
+		var bh: float = fmod(data.path_b_tint.h + (18.0 / 360.0) * extra, 1.0)
+		effective_b_tint = Color.from_hsv(bh, minf(data.path_b_tint.s + 0.10 * extra, 1.0), data.path_b_tint.v)
+	var effective_a_tint: Color = data.path_a_tint
+	if path_a_tier >= 2:
+		var extra: int = path_a_tier - 1
+		var ah: float = fmod(data.path_a_tint.h + (12.0 / 360.0) * extra, 1.0)
+		effective_a_tint = Color.from_hsv(ah, minf(data.path_a_tint.s + 0.08 * extra, 1.0), data.path_a_tint.v)
 	var a_weight: float = float(path_a_tier)
 	var b_weight: float = float(path_b_tier) * 1.5
 	var total: float = a_weight + b_weight
-	var blended: Color = data.path_a_tint * (a_weight / total) + data.path_b_tint * (b_weight / total)
+	var blended: Color = effective_a_tint * (a_weight / total) + effective_b_tint * (b_weight / total)
 	var tinted: Color = Color.WHITE.lerp(blended, strength)
 	sprite.modulate = Color(tinted.r * brightness, tinted.g * brightness, tinted.b * brightness, tinted.a)
 
