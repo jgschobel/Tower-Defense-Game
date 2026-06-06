@@ -52,13 +52,25 @@ func acquire() -> Node2D:
 	while not _free.is_empty():
 		var candidate = _free.pop_back()
 		if candidate != null and is_instance_valid(candidate):
-			# Guard against script-detached nodes: verify script identity
-			# (more reliable than has_method in headless Godot — has_method
-			# can return false for valid nodes during scene-transition cleanup
-			# when the GDScript VM is under pressure at high time_scale).
+			# Guard against script-detached nodes. Null script = truly broken node.
+			# Identity mismatch (post-CACHE_MODE_IGNORE reload) is verified with
+			# a property-presence check before discarding — prevents depleting the
+			# pool when CACHE_MODE_IGNORE produces a new Script identity object.
 			var candidate_script = candidate.get_script()
-			if candidate_script == null or (_expected_script != null and candidate_script != _expected_script):
-				push_warning("[ProjectilePool] slot missing/wrong script, destroying: %s" % candidate.get_class())
+			if candidate_script == null:
+				push_warning("[ProjectilePool] slot script-null, destroying: %s" % candidate.get_class())
+				candidate.queue_free()
+				continue
+			if _expected_script != null and candidate_script != _expected_script:
+				# Identity mismatch — check properties before destroying.
+				# Post-reload race: script IS attached but has a different identity
+				# object than expected (common after CACHE_MODE_IGNORE reload).
+				if "damage" in candidate and "speed" in candidate:
+					# Functionally valid despite identity mismatch — accept it.
+					candidate.set_meta("pooled", true)
+					_activate(candidate)
+					return candidate
+				push_warning("[ProjectilePool] slot wrong/invalid script, destroying: %s" % candidate.get_class())
 				candidate.queue_free()
 				continue
 			candidate.set_meta("pooled", true)
@@ -97,10 +109,15 @@ func release(p: Node) -> void:
 	# return true, but the node's script can be in an inconsistent state.
 	# Verify script identity before re-pooling; discard broken nodes instead.
 	var p_script = p.get_script()
-	if p_script == null or (_expected_script != null and p_script != _expected_script):
+	if p_script == null:
 		push_warning("[ProjectilePool] release: script detached, discarding node")
-		# Don't queue_free — the node may already be pending deletion.
 		return
+	if _expected_script != null and p_script != _expected_script:
+		# Identity mismatch — verify properties before discarding.
+		if not ("damage" in p and "speed" in p):
+			push_warning("[ProjectilePool] release: wrong script, discarding node")
+			return
+		# Functionally valid despite identity mismatch — allow re-pooling.
 	if p.get_parent() != _container and _container != null:
 		var parent := p.get_parent()
 		# Guard: skip reparent if parent is no longer valid (freed during
