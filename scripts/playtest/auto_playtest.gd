@@ -410,31 +410,26 @@ func _run_bug_hunt() -> void:
 # --- Helpers ---
 
 func _placements_for_level(level_id: int) -> Array:
-	# Auto-detect placements by sampling the level's Path2D curve.
-	# We pick N points along the path then offset perpendicular by ~80px
-	# to land beside the path (not on it). Falls back to hardcoded if
-	# path can't be found.
+	# Hardcoded positions are manually verified to be within tower attack
+	# range for each level's specific serpentine path — prefer them over
+	# auto-sampling which can land towers outside range (issue #686).
+	var hardcoded := _hardcoded_placements(level_id)
+	if not hardcoded.is_empty():
+		return hardcoded
+	# Fall back to path-sampling for levels without hardcoded positions.
 	var game_root := get_tree().current_scene
 	var path := game_root.get_node_or_null("EnemyPath") as Path2D if game_root else null
 	if path and path.curve and path.curve.get_baked_length() > 100:
 		var ids: Array
-		# Cheap-first ordering so that if starting-gold runs out, we still
-		# get a decent early comp. Playtest-feedback #74: L3 was leaking
-		# wave-1 because the expensive splash/slow placements came first
-		# and consumed the budget before basic/sniper could go down.
 		match level_id:
-			1: ids = ["basic", "basic", "sniper", "splash"]
-			2: ids = ["basic", "sniper", "slow", "joe"]
-			3: ids = ["basic", "sniper", "cordula", "justus", "splash"]
 			4: ids = ["basic", "sniper", "slow", "seve", "splash", "joe"]
 			5: ids = ["justus", "sniper", "cordula", "seve", "splash"]
 			6: ids = ["joe", "slow", "basic", "justus", "cordula", "sniper"]
 			7: ids = ["justus", "cordula", "seve", "splash", "joe", "slow", "sniper"]
 			_: ids = ["basic", "sniper", "splash"]
 		return _sample_placements_along(path, ids)
-	# Fallback (path missing or degenerate)
-	push_warning("[playtest] no path found for level %d — using hardcoded fallback" % level_id)
-	return _hardcoded_placements(level_id)
+	push_warning("[playtest] no path found for level %d — using empty fallback" % level_id)
+	return []
 
 
 func _sample_placements_along(path: Path2D, ids: Array) -> Array:
