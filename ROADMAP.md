@@ -155,13 +155,19 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
 
 - [ ] **Forschig (Research) menu** — 9 permanent upgrades unlockable
   with Cumulus/Spezial currency. Spec in archived roadmap.
-- [ ] **Difficulty modes** — Eifach/Normal/Hard/Expert per level.
+- [x] **Difficulty modes** — Eifach/Normal/Hard/Expert per level.
+  _2026-06-06: difficulty_count_mult wired into wave_manager (PR #689);
+  HP/speed/gold/aminos multipliers were already active. UI picker already
+  present in level_select.gd._
 - [ ] **Bonus levels** — "Self-Scan-Hölli", "Banani-Träume",
   "De Tüüfel kommt heim", "Cumulus-Bingo".
 - [ ] **Daily challenge** — single-attempt daily mission with
   leaderboard.
-- [ ] **Active power abilities** — Wagli-Räge, Rausch-Modus combo
-  frenzy.
+- [x] **Active power abilities** — all 5 friend towers now have tier-3+
+  active abilities (PR #690). Kühne: POLLEN-WOLKE (6s, 90s CD), JoJo:
+  MEGA-SPRITZ (4s, 120s CD), Cordula: VOLLEY-TORNADO (5s, 90s CD),
+  Amösius: ZUNGE-RUCK (4s, 60s CD). All use 3× fire-rate burst.
+  _TODO: tower-specific VFX + differentiated attack patterns in a later PR._
 
 ### Added 2026-06-04 (ideate run)
 
