@@ -7,6 +7,11 @@ Each run appends one line.
 
 - polish(hud): ability button min-height 36→52px (mobile touch target); per-frame cooldown countdown via `_process` so the timer ticks in real-time instead of only updating on tap; thin 5px progress bar below button fills as cooldown drains; double-pulse flash animation when ability transitions from cooldown→ready. Affects all 5 towers (Lemurius/Kühne/JoJo/Cordula/Amösius).
 
+## 2026-06-06 (audit-polish — level-select locked visibility + playtest timing)
+
+- polish(level-select): remove `flat=true` from level buttons so disabled stylebox always renders in GL Compatibility renderer; show level numbers even for locked levels (BTD-style dimmed numbers instead of "—") so players see all 10 levels exist; improved locked-level contrast (closes playtest-feedback #685)
+- fix(playtest): healthy-scenario loop 6→7 ticks (12s→14s real / 96→112s game time) — the last wave's enemies were not clearing before the old 96s budget expired, causing PLAYING state instead of WON (issue #699)
+
 ## 2026-06-06 (audit-polish — portrait tower sprite scale fix)
 
 - fix(visual): `_update_visual()` now uses `target_size = 72px` for portrait towers (`friend_character_id != ""`) vs `130px` for cartoon towers. AI-photo textures fill the full texture area with a face, making a 130px circle appear 3-4× visually heavier than Lemurius's ~40px cartoon character in its 130px sprite (transparent padding). 72px portrait circles match the visual weight of Lemurius on map. Also added `max_dim > 0` guard to prevent `130/0 = inf` scale in headless/dummy-renderer contexts where `CompressedTexture2D.get_width()` may not yet be initialized. Fixes playtest-feedback #671.
