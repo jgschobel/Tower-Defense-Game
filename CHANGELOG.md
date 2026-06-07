@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-07 (audit-polish — async scene preload, FPS hitch fix)
+
+- perf(scene-load): async ResourceLoader.load_threaded_request() in story_screen._ready() + level_select._on_level_pressed() — level scene preloads during dialogue/picker so change_scene_to_packed() can be used instead of sync change_scene_to_file(), eliminating the 1–3 FPS spike on every level transition (closes #701, #717). Fallback to sync load if preload not ready.
+
 ## 2026-06-06 (audit-polish — L10 dedicated background)
 
 - art(level10): generated `level_10_finale.png` via Stability AI SD3.5-large — dark hellfire underground Migros vault with glowing crimson M-rune symbols and cursed vegan products. Level 10 now has its own unique atmosphere matching `background_color` (0.35, 0.05, 0.08). Previously reused `level_1_obst.png` (closes P1 ROADMAP item).

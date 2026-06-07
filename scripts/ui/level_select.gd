@@ -190,6 +190,13 @@ func _stars_text(count: int) -> String:
 
 func _on_level_pressed(level_id: int) -> void:
 	SfxManager.play_click()
+	# Kick off background load immediately — player will spend several seconds
+	# on the difficulty picker + story dialogue before the level actually loads.
+	var lvl_scene := "res://scenes/game/level_%d.tscn" % level_id
+	if not ResourceLoader.exists(lvl_scene):
+		lvl_scene = "res://scenes/game/game.tscn"
+	if ResourceLoader.load_threaded_get_status(lvl_scene) == ResourceLoader.THREAD_LOAD_INVALID_RESOURCE:
+		ResourceLoader.load_threaded_request(lvl_scene)
 	# Show difficulty picker overlay before launching. Player picks
 	# Easy/Normal/Hard → start_level called with chosen difficulty.
 	_show_difficulty_picker(level_id)
