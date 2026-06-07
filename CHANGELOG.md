@@ -3,6 +3,11 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-07 (audit-polish — L2 wave balance + playtester placement)
+
+- balance(level2): waves 1/3/4 softened — wave 1 reduced 6→4 fast (0.9s delay), wave 3 reduced 2→1 tank (first-tank intro is now solo), wave 4 reduced 8→6 fast. Closes #700, #710, #716.
+- fix(playtest): L2 hardcoded placements now include 5th tower (justus at 920,250) covering mid-right path segment — previously 4 towers had dead zone on upper-right path section.
+
 ## 2026-06-07 (audit-polish — banana scale, tier-1 tint, scenario timing)
 
 - polish(projectile): banana Sprite2D scale 0.15→0.07 — banana was 70px wide (same as basic enemy); now 33px, clearly a small projectile. Closes oversized gold coin sprites issue #736.
