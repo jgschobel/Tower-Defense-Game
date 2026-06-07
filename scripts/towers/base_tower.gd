@@ -58,6 +58,14 @@ var _is_attack_pulsing: bool = false
 # towers fill the screen on first attack.
 var _baseline_scale: Vector2 = Vector2.ONE
 
+# Love-tap easter egg: 7 taps within 3s triggers a personal Swiss German voice-line.
+var _love_tap_count: int = 0
+var _love_tap_window_start: float = 0.0
+var _love_tap_cd_remaining: float = 0.0
+const _LOVE_TAP_THRESHOLD: int = 7
+const _LOVE_TAP_WINDOW: float = 3.0
+const _LOVE_TAP_COOLDOWN: float = 30.0
+
 # Taunt memes — one per character. Randomly floated above the tower every
 # 6-12s while placed, to give each friend some personality. Strings are
 # exactly what each friend would actually yell in the scenario.
@@ -183,6 +191,55 @@ func _float_taunt(text: String) -> void:
 	tw.chain().tween_callback(lbl.queue_free)
 
 
+# Called by game_level on every tap that lands on this tower.
+# Counts rapid taps; at threshold shows a personal voice-line bubble.
+func on_tapped() -> void:
+	if _love_tap_cd_remaining > 0.0:
+		return
+	var now := Time.get_ticks_msec() / 1000.0
+	if now - _love_tap_window_start > _LOVE_TAP_WINDOW:
+		_love_tap_count = 0
+		_love_tap_window_start = now
+	_love_tap_count += 1
+	if _love_tap_count >= _LOVE_TAP_THRESHOLD:
+		_love_tap_count = 0
+		_love_tap_cd_remaining = _LOVE_TAP_COOLDOWN
+		_show_love_line()
+
+
+func _show_love_line() -> void:
+	if not data:
+		return
+	var lines: Array = EasterEggLines.get_lines(data.id)
+	if lines.is_empty():
+		return
+	var line: String = lines[randi() % lines.size()]
+	var lbl := Label.new()
+	lbl.text = line
+	lbl.add_theme_font_size_override("font_size", 18)
+	lbl.add_theme_color_override("font_color", Color(0.5, 0.95, 1.0))
+	lbl.add_theme_color_override("font_outline_color", Color(0.0, 0.1, 0.2, 0.9))
+	lbl.add_theme_constant_override("outline_size", 3)
+	var local_x := -70.0
+	var vp_rect := get_viewport().get_visible_rect()
+	var screen_left := global_position.x + local_x
+	var screen_right := screen_left + 140.0
+	if screen_left < 10.0:
+		local_x += (10.0 - screen_left)
+	elif screen_right > vp_rect.size.x - 10.0:
+		local_x -= (screen_right - (vp_rect.size.x - 10.0))
+	lbl.position = Vector2(local_x, -90)
+	lbl.size = Vector2(140, 26)
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.z_index = 20
+	add_child(lbl)
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(lbl, "position:y", -130.0, 1.2)
+	tw.tween_property(lbl, "modulate:a", 0.0, 1.2)
+	tw.chain().tween_callback(lbl.queue_free)
+
+
 func _apply_data() -> void:
 	_recalculate_stats()
 	_rebuild_pip_cache()
@@ -238,6 +295,10 @@ func _recalculate_stats() -> void:
 func _process(delta: float) -> void:
 	if not is_placed or not data:
 		return
+
+	# Tick love-tap cooldown for all placed towers (farm/support included).
+	if _love_tap_cd_remaining > 0.0:
+		_love_tap_cd_remaining = maxf(0.0, _love_tap_cd_remaining - delta)
 
 	# Farm + support towers have no offensive loop (ROADMAP #38). Idle bob
 	# tween keeps them "alive"; gold/buff effects fire from signal hooks.

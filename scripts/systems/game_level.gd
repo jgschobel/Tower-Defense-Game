@@ -380,6 +380,7 @@ func _check_tower_tap(screen_pos: Vector2) -> void:
 	for tower_node in get_tree().get_nodes_in_group("towers"):
 		var tower := tower_node as BaseTower
 		if tower and tower.global_position.distance_to(world_pos) < 50.0:
+			tower.on_tapped()
 			hud.show_tower_info(tower)
 			return
 
