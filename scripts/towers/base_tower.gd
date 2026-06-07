@@ -779,15 +779,15 @@ func _apply_path_tint() -> void:
 	# hue shift reads clearly from across the map — pure strength change is
 	# subtle on bright sprites. Tier 1 brightness 0.88 = 12% darker (was 1.0,
 	# invisible on bright textures per playtest-feedback #630/#646/#660).
-	var strength: float = 0.80
-	var brightness: float = 0.88
+	var strength: float = 1.0
+	var brightness: float = 0.82
 	match max_tier:
 		1:
-			strength = 0.80
-			brightness = 0.88
+			strength = 1.0
+			brightness = 0.82
 		2:
-			strength = 0.95
-			brightness = 0.80
+			strength = 1.0
+			brightness = 0.76
 		_:  # 3+
 			strength = 1.0
 			brightness = 0.70

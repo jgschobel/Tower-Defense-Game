@@ -3,6 +3,12 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-07 (audit-polish — banana scale, tier-1 tint, scenario timing)
+
+- polish(projectile): banana Sprite2D scale 0.15→0.07 — banana was 70px wide (same as basic enemy); now 33px, clearly a small projectile. Closes oversized gold coin sprites issue #736.
+- polish(upgrade): tier-1 path tint strength 0.80→1.0, brightness 0.88→0.82 — full-color jump on first upgrade, immediately visible against tier-0 white. Tiers 1/2/3 now step at 0.82/0.76/0.70 brightness. Closes #735.
+- fix(playtest): healthy scenario ticks 7→8, cap 17s→19s real (128s game time at 8×) — was 112s which cut off last wave at ~120s, leaving L1/L2/L3 in PLAYING state. Closes #732, #733.
+
 ## 2026-06-07 (audit-polish — revert change_scene_to_packed, fix 0-kills P1 regression)
 
 - fix(combat): reverted change_scene_to_packed() from ff53d36 — background-thread-loaded PackedScene causes null-script GDScript nodes in headless Godot 4, aborting every projectile shot (0 kills, issues #728/#725). Cache-warming load_threaded_request() is preserved so no disk-read hitch. Stress scenario now registers enemies with WaveManager so HUD shows "Wälle 1/1" and FPS reflects combat load (issue #727). Closes #725, #727, #728.

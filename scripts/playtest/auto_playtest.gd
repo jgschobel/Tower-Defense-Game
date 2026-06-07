@@ -142,12 +142,11 @@ func _run_healthy_level(level_id: int) -> void:
 	var shot_idx := 0
 	while true:
 		# ignore_time_scale=true: SHOT_INTERVAL is real seconds regardless of
-		# Engine.time_scale. 7 ticks × 2.0s = 14s real = 112s game time at 8×.
-		# Was 6×2.0=12s (96s game time) which is just barely enough for 10 waves
-		# (~95-100s game time each), causing WON to be missed when the last wave
-		# hadn't cleared yet at the budget deadline (issue #699).
-		# Budget check: 3 levels × ~17s setup+loop = ~51s + ~25s other = ~76s
-		# total; 76 << 120s limit so one extra tick is safe (issue #640 guard).
+		# Engine.time_scale. 8 ticks × 2.0s = 16s real = 128s game time at 8×.
+		# Was 7×2.0=14s (112s) which cut off the last wave (~120s game time
+		# for 10 waves × avg 10s + 2s between), leaving L1/L2/L3 in PLAYING.
+		# Budget check: 3 levels × ~19s setup+loop ≈ 57s + ~25s other = ~82s
+		# total; 82 << 120s CI limit (issues #731, #732, #733).
 		await get_tree().create_timer(2.0, true, false, true).timeout
 		_snapshot("%s_t%02d" % [_scenario_name, shot_idx])
 		shot_idx += 1
@@ -155,8 +154,8 @@ func _run_healthy_level(level_id: int) -> void:
 		or GameManager.current_state == GameManager.GameState.WON:
 			break
 		var elapsed := float(Time.get_ticks_msec() - sim_started) / 1000.0
-		# 7 ticks × 2.0s = 14s real cap.
-		if elapsed > 17.0 or shot_idx >= 7:
+		# 8 ticks × 2.0s = 16s real cap.
+		if elapsed > 19.0 or shot_idx >= 8:
 			break
 
 	Engine.time_scale = 1.0
