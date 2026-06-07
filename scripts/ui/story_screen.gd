@@ -23,6 +23,9 @@ var _char_index: int = 0
 var _typing: bool = false
 var _last_tick_char: int = -1  # last _char_index at which a typewriter tick played
 var _chars_per_second: float = 60.0
+# Path used for async preload — resolved in _ready() so the level scene is
+# already in memory by the time the player taps through all dialogue pages.
+var _preload_path: String = ""
 
 
 func _current_page_text() -> String:
@@ -45,6 +48,12 @@ func _current_page_speaker() -> String:
 
 func _ready() -> void:
 	_level_id = GameManager.current_level
+	# Kick off background scene load immediately — player reads dialogue for
+	# several seconds, giving the thread enough time to finish before tap.
+	_preload_path = "res://scenes/game/level_%d.tscn" % _level_id
+	if not ResourceLoader.exists(_preload_path):
+		_preload_path = "res://scenes/game/game.tscn"
+	ResourceLoader.load_threaded_request(_preload_path)
 	var intro := Lore.get_level_intro(_level_id)
 
 	var bg_paths := {
@@ -210,8 +219,15 @@ func _on_continue_button_pressed() -> void:
 			var fade_in := story_label.create_tween()
 			fade_in.tween_property(story_label, "modulate:a", 1.0, 0.18)
 	else:
-		var level_path := "res://scenes/game/level_%d.tscn" % _level_id
-		if ResourceLoader.exists(level_path):
-			get_tree().change_scene_to_file(level_path)
+		# Use the preloaded scene if ready — avoids sync-load FPS hitch on transition.
+		var status := ResourceLoader.load_threaded_get_status(_preload_path) \
+			if _preload_path != "" else ResourceLoader.THREAD_LOAD_INVALID_RESOURCE
+		if status == ResourceLoader.THREAD_LOAD_LOADED:
+			var packed = ResourceLoader.load_threaded_get(_preload_path)
+			get_tree().change_scene_to_packed(packed)
 		else:
-			get_tree().change_scene_to_file("res://scenes/game/game.tscn")
+			var level_path := "res://scenes/game/level_%d.tscn" % _level_id
+			if ResourceLoader.exists(level_path):
+				get_tree().change_scene_to_file(level_path)
+			else:
+				get_tree().change_scene_to_file("res://scenes/game/game.tscn")
