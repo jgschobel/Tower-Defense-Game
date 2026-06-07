@@ -473,6 +473,7 @@ func _hardcoded_placements(level_id: int) -> Array:
 			{ "id": "slow",    "pos": Vector2(620, 300) },
 			{ "id": "sniper",  "pos": Vector2(880, 420) },
 			{ "id": "splash",  "pos": Vector2(520, 520) },
+			{ "id": "justus",  "pos": Vector2(920, 250) },
 		]
 		3: return [
 			{ "id": "basic",   "pos": Vector2(340, 440) },

@@ -10,10 +10,10 @@ description = "Alles isch chalt und aggressiv. Fischstäbli händ es Militär bi
 starting_gold = 160
 starting_lives = 25
 waves = [
-	{"groups": [{"enemy_id": "fast", "count": 6, "spawn_delay": 0.7}]},
+	{"groups": [{"enemy_id": "fast", "count": 4, "spawn_delay": 0.9}]},
 	{"groups": [{"enemy_id": "fast", "count": 5, "spawn_delay": 0.6}, {"enemy_id": "basic", "count": 4, "spawn_delay": 0.8}]},
-	{"groups": [{"enemy_id": "basic", "count": 8, "spawn_delay": 0.7}, {"enemy_id": "tank", "count": 2, "spawn_delay": 1.5}]},
-	{"groups": [{"enemy_id": "fast", "count": 8, "spawn_delay": 0.5}, {"enemy_id": "healer", "count": 2, "spawn_delay": 1.2}]},
+	{"groups": [{"enemy_id": "basic", "count": 8, "spawn_delay": 0.7}, {"enemy_id": "tank", "count": 1, "spawn_delay": 1.8}]},
+	{"groups": [{"enemy_id": "fast", "count": 6, "spawn_delay": 0.5}, {"enemy_id": "healer", "count": 2, "spawn_delay": 1.2}]},
 	{"groups": [{"enemy_id": "tank", "count": 3, "spawn_delay": 1.2}, {"enemy_id": "basic", "count": 8, "spawn_delay": 0.6}]},
 	{"groups": [{"enemy_id": "healer", "count": 2, "spawn_delay": 1.0}, {"enemy_id": "fast", "count": 10, "spawn_delay": 0.4}]},
 	{"groups": [{"enemy_id": "basic", "count": 12, "spawn_delay": 0.5}, {"enemy_id": "tank", "count": 3, "spawn_delay": 1.0}]},
