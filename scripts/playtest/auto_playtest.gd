@@ -125,10 +125,6 @@ func _run_healthy_level(level_id: int) -> void:
 		wm.call("start_next_wave")
 
 	# Time-scale boost so we see active gameplay within the CI budget.
-	# Issue #499: 7 healthy levels × ~30s = 210s pushed stress/bughunt/
-	# upgrades out of the run window. Fix: cap each healthy scenario at
-	# 20s real / 8 ticks (20s × 8× = 160s game time). Level may not
-	# reach WON but we capture 8 frames showing towers firing + kills.
 	# Physics fix (issue #498): max_physics_steps_per_frame=32 lets physics
 	# keep up at 8× on ~18 FPS headless (32×18=576 ≥ required 480) so
 	# area_entered fires reliably and towers actually score kills.
@@ -138,15 +134,17 @@ func _run_healthy_level(level_id: int) -> void:
 	await _capture_anim_clip("%s_wavestart" % _scenario_name)
 
 	# Extended loop: keep sampling until WON/LOST or budget expires.
+	# Budget: 14 ticks × 2.0s = 28s real = 224s game time at 8×. Each of
+	# L2/L3's 10 waves takes ~19s game time + 2s between = ~210s total —
+	# the old 8-tick (128s) cap cut off at wave 4 (issues #747, #745).
+	# WON/LOST early-exit keeps real time short in the happy path (~20s);
+	# the 32s ceiling is a safety net for slow or unbalanced levels.
+	# 3 levels × ≤32s + ~40s other scenarios ≈ ≤136s total; CI has headroom.
 	var sim_started := Time.get_ticks_msec()
 	var shot_idx := 0
 	while true:
-		# ignore_time_scale=true: SHOT_INTERVAL is real seconds regardless of
-		# Engine.time_scale. 8 ticks × 2.0s = 16s real = 128s game time at 8×.
-		# Was 7×2.0=14s (112s) which cut off the last wave (~120s game time
-		# for 10 waves × avg 10s + 2s between), leaving L1/L2/L3 in PLAYING.
-		# Budget check: 3 levels × ~19s setup+loop ≈ 57s + ~25s other = ~82s
-		# total; 82 << 120s CI limit (issues #731, #732, #733).
+		# ignore_time_scale=true: each 2.0s wait is real-clock seconds,
+		# so the game runs 2.0 × 8 = 16 game-seconds between screenshots.
 		await get_tree().create_timer(2.0, true, false, true).timeout
 		_snapshot("%s_t%02d" % [_scenario_name, shot_idx])
 		shot_idx += 1
@@ -154,8 +152,7 @@ func _run_healthy_level(level_id: int) -> void:
 		or GameManager.current_state == GameManager.GameState.WON:
 			break
 		var elapsed := float(Time.get_ticks_msec() - sim_started) / 1000.0
-		# 8 ticks × 2.0s = 16s real cap.
-		if elapsed > 19.0 or shot_idx >= 8:
+		if elapsed > 32.0 or shot_idx >= 14:
 			break
 
 	Engine.time_scale = 1.0
