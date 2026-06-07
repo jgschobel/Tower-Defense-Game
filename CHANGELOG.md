@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-07 (audit-polish — revert change_scene_to_packed, fix 0-kills P1 regression)
+
+- fix(combat): reverted change_scene_to_packed() from ff53d36 — background-thread-loaded PackedScene causes null-script GDScript nodes in headless Godot 4, aborting every projectile shot (0 kills, issues #728/#725). Cache-warming load_threaded_request() is preserved so no disk-read hitch. Stress scenario now registers enemies with WaveManager so HUD shows "Wälle 1/1" and FPS reflects combat load (issue #727). Closes #725, #727, #728.
+
 ## 2026-06-07 (audit-polish — async scene preload, FPS hitch fix)
 
 - perf(scene-load): async ResourceLoader.load_threaded_request() in story_screen._ready() + level_select._on_level_pressed() — level scene preloads during dialogue/picker so change_scene_to_packed() can be used instead of sync change_scene_to_file(), eliminating the 1–3 FPS spike on every level transition (closes #701, #717). Fallback to sync load if preload not ready.
