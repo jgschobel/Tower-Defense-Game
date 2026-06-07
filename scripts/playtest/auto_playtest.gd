@@ -345,6 +345,20 @@ func _run_stress_test() -> void:
 			if curve_length > 0.0:
 				e.progress = fmod(float(i) * 25.0, curve_length - 40.0)
 
+	# Register manually-spawned enemies with the WaveManager so the HUD shows
+	# "Wälle 1/1" instead of "Bereit" and _decrement_enemies() fires correctly.
+	# Without this the stress FPS benchmark reflects an idle pre-wave state
+	# rather than active combat (issue #727).
+	if wm:
+		wm.current_wave = 1
+		wm.wave_in_progress = true
+		wm.is_spawning = false
+		wm.enemies_alive = STRESS_ENEMY_COUNT
+		if wm.has_signal("wave_started"):
+			wm.wave_started.emit(1, 1)
+		if wm.has_signal("enemies_remaining_changed"):
+			wm.enemies_remaining_changed.emit(STRESS_ENEMY_COUNT)
+
 	# Force a frame flush so the renderer actually draws 80 sprites
 	# BEFORE we screenshot (was snapping before the tree settled).
 	await get_tree().process_frame

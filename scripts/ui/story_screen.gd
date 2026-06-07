@@ -219,15 +219,17 @@ func _on_continue_button_pressed() -> void:
 			var fade_in := story_label.create_tween()
 			fade_in.tween_property(story_label, "modulate:a", 1.0, 0.18)
 	else:
-		# Use the preloaded scene if ready — avoids sync-load FPS hitch on transition.
-		var status := ResourceLoader.load_threaded_get_status(_preload_path) \
-			if _preload_path != "" else ResourceLoader.THREAD_LOAD_INVALID_RESOURCE
-		if status == ResourceLoader.THREAD_LOAD_LOADED:
-			var packed = ResourceLoader.load_threaded_get(_preload_path)
-			get_tree().change_scene_to_packed(packed)
+		# Background preload warmed the cache; always use change_scene_to_file()
+		# here. Using change_scene_to_packed() with a background-thread-loaded
+		# PackedScene causes GDScript nodes to instantiate with null scripts in
+		# headless Godot 4 — towers fire "permanently broken" projectiles and
+		# deal 0 damage (issue #728). change_scene_to_file() reads from the warm
+		# cache so there is no disk-read hitch either way.
+		if _preload_path != "" and \
+				ResourceLoader.load_threaded_get_status(_preload_path) == ResourceLoader.THREAD_LOAD_LOADED:
+			ResourceLoader.load_threaded_get(_preload_path)  # consume to free pending slot
+		var level_path := "res://scenes/game/level_%d.tscn" % _level_id
+		if ResourceLoader.exists(level_path):
+			get_tree().change_scene_to_file(level_path)
 		else:
-			var level_path := "res://scenes/game/level_%d.tscn" % _level_id
-			if ResourceLoader.exists(level_path):
-				get_tree().change_scene_to_file(level_path)
-			else:
-				get_tree().change_scene_to_file("res://scenes/game/game.tscn")
+			get_tree().change_scene_to_file("res://scenes/game/game.tscn")
