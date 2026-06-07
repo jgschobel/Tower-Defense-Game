@@ -7,6 +7,10 @@ Each run appends one line.
 
 - polish(tower): "Hoi-Schatz" love-tap easter egg — tap any placed tower 7× in 3s to trigger a personal Swiss German voice-line bubble (e.g. "Hoi Schatz!" for Lemurius, "Ruig, alles unter Kontrolle." for Kühne). 30s per-tower cooldown. New EasterEggLines data class, ~80 LoC, pure addition.
 
+## 2026-06-07 (audit-polish — playtest wave budget fix)
+
+- fix(playtest): per-level shot cap 8→14 ticks, elapsed safety net 19s→32s real (224s game time at 8×) — old 128s cap cut L2/L3 off at wave 4/10; all 10 waves now run within budget. Closes #747, #745.
+
 ## 2026-06-07 (audit-polish — L2 wave balance + playtester placement)
 
 - balance(level2): waves 1/3/4 softened — wave 1 reduced 6→4 fast (0.9s delay), wave 3 reduced 2→1 tank (first-tank intro is now solo), wave 4 reduced 8→6 fast. Closes #700, #710, #716.
