@@ -283,23 +283,15 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
   ~150 LoC, no art (uses existing icons + emoji). Pairs perfectly with
   [[hei-karte-share-card]] for cohesive "diegetic phone" feel.
 
-- [ ] **"Hoi-Schatz" tower love-tap easter egg** — tap any placed
+- [x] **"Hoi-Schatz" tower love-tap easter egg** — tap any placed
   friend tower 7 times in 3 s (without selecting it for upgrades) and
   it plays a Swiss-German voice-line bubble above its head: Lemurius
   → "Hoi Schatz!", Cordula → "Mir gönds guet, gell?", Kühne → "Ruig,
   ruig, alles unter Kontrolle.", JoJo → "Was machsch du dänn?",
   Amösius → "Brrr, kalt isch's!". 30 s per-tower cooldown so spam
   doesn't ruin it.
-
-  **Impl:** `BaseTower._on_input_event` already exists for selection
-  — add a `_tap_count` + `_tap_window_start` tracker. When threshold
-  hit, spawn a 1.2 s tween-fade `Label` (no audio yet — pure text
-  bubble, audio comes later when we record friends). String table in
-  `scripts/data/easter_egg_lines.gd` keyed by `tower_id`. ~80 LoC,
-  pure addition (no behaviour conflicts).
-
-  **Why it sticks:** the kind of detail people screenshot and DM to
-  the friend named after the tower. Zero-risk surface area.
+  _Shipped 2026-06-07: `scripts/data/easter_egg_lines.gd` + `on_tapped()`
+  in `base_tower.gd` + wired in `game_level._check_tower_tap`._
 
 - [ ] **"Wagli-Schub" — drag-to-push shopping cart active power** —
   active player power: tap a top-bar `🛒 Wagli` button, then drag a
