@@ -3,6 +3,11 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-08 (audit-polish — playtester T2-A upgrade, balance fix)
+
+- fix(playtest): upgrade playtester hardcoded towers from T1-A to T2-A — T1-A gave only 110 dmg/pass vs 100 HP basic enemy (thin margin at 8× time_scale); T2-A gives ~200 dmg/pass (2× buffer), making L1/L2/L3_healthy scenarios reach WON instead of LOST. Closes playtest-feedback #760, #761.
+- chore(playtest): add WARN log lines when kills=0 to distinguish "off-path towers" from "DPS insufficient" failure modes.
+
 ## 2026-06-07 (audit-polish — Hoi-Schatz easter egg)
 
 - polish(tower): "Hoi-Schatz" love-tap easter egg — tap any placed tower 7× in 3s to trigger a personal Swiss German voice-line bubble (e.g. "Hoi Schatz!" for Lemurius, "Ruig, alles unter Kontrolle." for Kühne). 30s per-tower cooldown. New EasterEggLines data class, ~80 LoC, pure addition.

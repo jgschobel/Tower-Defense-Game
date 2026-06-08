@@ -104,13 +104,16 @@ func _run_healthy_level(level_id: int) -> void:
 			print("[playtest] WARN instantiate failed: %s @ %s" % [entry.id, entry.pos])
 		else:
 			placed_count += 1
-			# Tier-1 path-A upgrade: raises basic DPS from ~24 to ~33 (23 dmg × 1.45
-			# shots/s), enough to kill a 100 HP basic enemy in a single 3.3s range pass.
-			# Without this, tier-0 fires only 3.75 shots (75 dmg) per pass and every
-			# enemy escapes alive — explaining the persistent kills=0 metric.
+			# Tier-2 path-A upgrade: at T1-A basic DPS = 33 (23 dmg x 1.45/s), just
+			# barely above the 100 HP kill threshold. At 8x time_scale the ~110 dmg/pass
+			# margin is too thin -- physics variance lets enemies slip through, giving
+			# kills=0 (issues #760, #761). T2-A raises DPS to ~55 (29 dmg x 1.9/s),
+			# a 2x buffer that kills basic/fast reliably in headless CI.
 			CurrencyManager.gold = 2000
 			if tower.has_method("upgrade_path"):
-				tower.upgrade_path("a")
+				tower.upgrade_path("a")  # T0 -> T1-A
+				CurrencyManager.gold = 2000
+				tower.upgrade_path("a")  # T1-A -> T2-A
 		await get_tree().process_frame
 		await get_tree().process_frame
 	CurrencyManager.gold = saved_gold
@@ -613,6 +616,10 @@ func _record_scenario(start_ms: int) -> void:
 		_scenario_name, GameManager.level_kills, tower_kills, GameManager.lives,
 		_state_name(GameManager.current_state), enemy_count, tower_count, avg_fps,
 	])
+	if GameManager.level_kills == 0 and tower_count > 0 and enemy_count > 0:
+		print("[playtest] WARN kills=0 with %d towers + %d enemies still alive — towers may be off-path or physics missed" % [tower_count, enemy_count])
+	elif GameManager.level_kills == 0 and tower_count > 0 and GameManager.current_state == GameManager.GameState.LOST:
+		print("[playtest] WARN kills=0 but LOST — all enemies escaped without dying, DPS insufficient for wave density")
 	# Issue #328 fix: write summary INCREMENTALLY after each scenario so
 	# partial runs (timeout, crash, OOM) still produce metrics. Previous
 	# code only wrote at the very end of _run_all() which silently dropped
