@@ -294,7 +294,7 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
   _Shipped 2026-06-07: `scripts/data/easter_egg_lines.gd` + `on_tapped()`
   in `base_tower.gd` + wired in `game_level._check_tower_tap`._
 
-- [ ] **"Wagli-Schub" — drag-to-push shopping cart active power** —
+- [x] **"Wagli-Schub" — drag-to-push shopping cart active power** —
   active player power: tap a top-bar `🛒 Wagli` button, then drag a
   finger across the map. Enemies the drag-line crosses get pushed
   backward along the path by 30–50 px (`path_follow.progress -=
@@ -319,6 +319,7 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
   the first one requiring physical gesture — the BTD-vet surprise is
   "you actually move them with your finger". Stacks with
   [[migros-bon-active-power]] (Bon = strategic, Wagli = tactical).
+  Shipped PR #766 (2026-06-08): wagli_cursor.gd overlay + HUD button, 30g/enemy, cap 4/stroke.
 
 - [ ] **"Tag der Affoltern" — concrete daily-mission spec (closes the
   abstract P2 placeholder)** — supersedes the "Daily challenge" P2
