@@ -262,7 +262,7 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
   discount placements. ~250 LoC, no new art needed.
   Shipped PR #758 (2026-06-07): `scripts/systems/synergy_table.gd` + `BaseTower._refresh_synergies()` + ✦ badge.
 
-- [ ] **"Migros-App" diegetic phone overlay (level-select skin)** —
+- [x] **"Migros-App" diegetic phone overlay (level-select skin)** —
   optional cosmetic skin that reframes `level_select.tscn` as a fake
   Migros mobile app. Static carousel of push-notification toasts
   drops in every 8–12 s with Swiss German one-liners:
@@ -283,6 +283,7 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
   **Why it sticks:** turns dead-air menu time into joke-delivery time.
   ~150 LoC, no art (uses existing icons + emoji). Pairs perfectly with
   [[hei-karte-share-card]] for cohesive "diegetic phone" feel.
+  Shipped (2026-06-08): 15 rotating toasts in level_select.gd, slide-in animation, 8-14s interval. PR #766.
 
 - [x] **"Hoi-Schatz" tower love-tap easter egg** — tap any placed
   friend tower 7 times in 3 s (without selecting it for upgrades) and
