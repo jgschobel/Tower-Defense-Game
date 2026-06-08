@@ -235,7 +235,7 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
 
 ### Added 2026-06-05 (ideate run)
 
-- [ ] **"Synergie-Combo" — adjacent-friend passive bonuses** — when
+- [x] **"Synergie-Combo" — adjacent-friend passive bonuses** — when
   two specific friend towers are placed within ~150 px of each other,
   both get a small passive bonus AND a tiny `✦ Synergie` badge above
   their hats. Predefined pairs (Swiss-cast specific, not generic):
@@ -260,6 +260,7 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
   rewards placement intelligence in a way that's unique to *this*
   game's cast. Composes naturally with [[migros-bon-active-power]]
   discount placements. ~250 LoC, no new art needed.
+  Shipped PR #758 (2026-06-07): `scripts/systems/synergy_table.gd` + `BaseTower._refresh_synergies()` + ✦ badge.
 
 - [ ] **"Migros-App" diegetic phone overlay (level-select skin)** —
   optional cosmetic skin that reframes `level_select.tscn` as a fake
