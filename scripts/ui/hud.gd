@@ -37,6 +37,10 @@ var shop_collapsed: bool = false
 var _shop_width: float = 152.0
 var _shop_collapse_tween: Tween = null
 
+var _wagli_button: Button = null
+var _wagli_cursor: Control = null
+var _wagli_active: bool = false
+
 
 func _ready() -> void:
 	CurrencyManager.gold_changed.connect(_on_gold_changed)
@@ -64,6 +68,7 @@ func _ready() -> void:
 	_apply_safe_area()
 	_build_shop_collapse_handle()
 	_start_threat_watcher()
+	_build_wagli_button()
 	# Re-apply layout if the viewport resizes (orientation change, window
 	# resize on desktop / web). Both events can fire; idempotent refresh.
 	get_tree().root.size_changed.connect(_on_viewport_resized)
@@ -125,6 +130,55 @@ func _apply_tower_info_button_style(btn: Button, accent: Color) -> void:
 	btn.add_theme_stylebox_override("pressed", pressed)
 	btn.add_theme_color_override("font_color", Color(1, 0.95, 0.85))
 	btn.add_theme_font_size_override("font_size", 16)
+
+
+func _build_wagli_button() -> void:
+	var hbox := get_node_or_null("TopBar/HBox")
+	if hbox == null:
+		return
+	var btn := Button.new()
+	btn.name = "WagliButton"
+	btn.text = "🛒 30g"
+	btn.tooltip_text = "Wagli-Schub: zieh Gschwind d'Fiiend zrugg (30g/Fiiend, max 4)"
+	DesignTokens.style_button(btn)
+	btn.custom_minimum_size = Vector2(72, 44)
+	btn.pressed.connect(_on_wagli_button_pressed)
+	hbox.add_child(btn)
+	hbox.move_child(btn, hbox.get_child_count() - 2)
+	_wagli_button = btn
+
+	var cursor := load("res://scripts/ui/wagli_cursor.gd").new()
+	cursor.name = "WagliCursor"
+	cursor.mode_deactivated.connect(_on_wagli_deactivated)
+	add_child(cursor)
+	_wagli_cursor = cursor
+
+
+func _on_wagli_button_pressed() -> void:
+	if _wagli_active:
+		_deactivate_wagli()
+		return
+	if not CurrencyManager.can_afford(30):
+		return
+	_wagli_active = true
+	if _wagli_button:
+		_wagli_button.modulate = Color(1.0, 0.85, 0.2, 1.0)
+	if _wagli_cursor and _wagli_cursor.has_method("activate"):
+		_wagli_cursor.activate()
+
+
+func _deactivate_wagli() -> void:
+	_wagli_active = false
+	if _wagli_button:
+		_wagli_button.modulate = Color.WHITE
+	if _wagli_cursor and _wagli_cursor.has_method("deactivate"):
+		_wagli_cursor.deactivate()
+
+
+func _on_wagli_deactivated() -> void:
+	_wagli_active = false
+	if _wagli_button:
+		_wagli_button.modulate = Color.WHITE
 
 
 func _start_threat_watcher() -> void:
