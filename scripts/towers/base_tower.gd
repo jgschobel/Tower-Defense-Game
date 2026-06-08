@@ -887,30 +887,31 @@ func _apply_path_tint() -> void:
 		_:  # 3+
 			strength = 1.0
 			brightness = 0.70
-	# Give path-B tiers 1.5× blend weight so investing in B is clearly
-	# visible even when A is at max tier (playtest-feedback #562).
+	# Give path-B tiers 2.0× blend weight so investing in B is clearly
+	# visible even when A is at max tier (was 1.5×, playtest-feedback #562 #777).
 	# When both paths are invested, boost brightness so dual-path towers
 	# look rewarded rather than darker (combined_tier > max_tier → extra
 	# brightness at 0.06 per extra tier, capped at 0.95).
 	var combined_tier: int = path_a_tier + path_b_tier
 	if path_a_tier > 0 and path_b_tier > 0 and combined_tier > max_tier:
 		brightness = minf(brightness + 0.06 * (combined_tier - max_tier), 0.95)
-	# Per-tier hue rotation: each additional B-path tier beyond T1 shifts the
-	# hue by 18° and boosts saturation by 10%, making B1/B2/B3 visually
-	# distinct even when A is already at max tier (fixes playtest-feedback #666).
-	# A-path gets a smaller 12°/8% shift for symmetry.
+	# Per-tier hue rotation: B-path shifts 30°/tier starting at B1, plus
+	# 15% saturation boost per tier — makes B1/B2/B3 clearly distinct even
+	# when A is at max tier (was 18°/10% starting at B2; B1 was invisible,
+	# B2 barely readable — playtest-feedback #777).
+	# A-path keeps a smaller 15°/10% shift starting at A2 for symmetry.
 	var effective_b_tint: Color = data.path_b_tint
-	if path_b_tier >= 2:
-		var extra: int = path_b_tier - 1
-		var bh: float = fmod(data.path_b_tint.h + (18.0 / 360.0) * extra, 1.0)
-		effective_b_tint = Color.from_hsv(bh, minf(data.path_b_tint.s + 0.10 * extra, 1.0), data.path_b_tint.v)
+	if path_b_tier >= 1:
+		var extra: int = path_b_tier
+		var bh: float = fmod(data.path_b_tint.h + (30.0 / 360.0) * extra, 1.0)
+		effective_b_tint = Color.from_hsv(bh, minf(data.path_b_tint.s + 0.15 * extra, 1.0), data.path_b_tint.v)
 	var effective_a_tint: Color = data.path_a_tint
 	if path_a_tier >= 2:
 		var extra: int = path_a_tier - 1
-		var ah: float = fmod(data.path_a_tint.h + (12.0 / 360.0) * extra, 1.0)
-		effective_a_tint = Color.from_hsv(ah, minf(data.path_a_tint.s + 0.08 * extra, 1.0), data.path_a_tint.v)
+		var ah: float = fmod(data.path_a_tint.h + (15.0 / 360.0) * extra, 1.0)
+		effective_a_tint = Color.from_hsv(ah, minf(data.path_a_tint.s + 0.10 * extra, 1.0), data.path_a_tint.v)
 	var a_weight: float = float(path_a_tier)
-	var b_weight: float = float(path_b_tier) * 1.5
+	var b_weight: float = float(path_b_tier) * 2.0
 	var total: float = a_weight + b_weight
 	var blended: Color = effective_a_tint * (a_weight / total) + effective_b_tint * (b_weight / total)
 	var tinted: Color = Color.WHITE.lerp(blended, strength)

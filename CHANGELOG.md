@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-08 (audit-polish — path B tint polish)
+
+- polish(tower): upgrade Path B tint visibility — B1 now shifts hue 30° + saturation +15% immediately (was no hue shift at B1), B2 gets 60° shift; B-weight raised from 1.5× to 2.0× so B tiers are clearly distinguishable from A-max even at a glance. Closes playtest-feedback #777. Also merged PR #773 (kills=0 fix, glow tween lambda freed fix). Closes #770 #772 #775 #776 #778.
+
 ## 2026-06-08 (audit-polish — playtester T2-A upgrade, balance fix)
 
 - fix(playtest): upgrade playtester hardcoded towers from T1-A to T2-A — T1-A gave only 110 dmg/pass vs 100 HP basic enemy (thin margin at 8× time_scale); T2-A gives ~200 dmg/pass (2× buffer), making L1/L2/L3_healthy scenarios reach WON instead of LOST. Closes playtest-feedback #760, #761.
