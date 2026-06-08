@@ -5,6 +5,30 @@ extends Control
 @onready var level_grid: GridContainer = $MarginContainer/VBoxContainer/GridBackdrop/GridPad/LevelGrid
 @onready var bg: TextureRect = $Background
 
+# Push-notification toasts that drop in every 8-12s while browsing levels.
+# Swiss German one-liners to make menu dead-air feel alive (ROADMAP P2).
+const _NOTIFICATIONS: Array = [
+	"Mami: Bring no Brot mit! 🥖",
+	"Cumulus-Aktion: Gratis Banani bi 5 Stern ⭐",
+	"De Tüüfel hät dir gleicht. Hilfe gsuecht. 😈",
+	"JoJo: Wo bisch? Voll spannend hie. 🏐",
+	"Lemurius hät di gmisst. 🍌",
+	"Migros Affoltern: Heute länger offe bis 21:00 Uhr 🛒",
+	"Kühne: Alles unter Kontrolle. Ruhig Blut. 🎯",
+	"Cordula: Mir gsehnd eus morge? ❄️",
+	"POLLEN-ALARM: Amösius sagt, bliibt dihei. 👅",
+	"Dini Cumulus-Karte hät %d Punkte. Stark! 🌟",
+	"Neue Aktion: 3 Banane zum Priis vo 2 🍌🍌🍌",
+	"De Selbschtbedienigs-Wage macht Lärm. Schau dich um. 🛒",
+	"Lemurius & Cordula gsehnd d'Fiiend scho! 🍌❄️",
+	"Amösius friert alli Banane. Sehr gut. 👅",
+	"Jetzt spiele? D'Migros bruucht di. ⚡",
+]
+
+var _notif_label: Label = null
+var _notif_tween: Tween = null
+var _notif_idx: int = 0
+
 
 func _ready() -> void:
 	# Try to load level select background
@@ -22,6 +46,7 @@ func _ready() -> void:
 		backdrop.add_theme_stylebox_override("panel", sb)
 	_populate_levels()
 	_show_totals()
+	_start_notification_ticker()
 
 
 func _show_totals() -> void:
@@ -47,6 +72,76 @@ func _show_totals() -> void:
 	lbl.offset_bottom = 50
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	add_child(lbl)
+
+
+func _start_notification_ticker() -> void:
+	var t := Timer.new()
+	t.name = "NotifTimer"
+	t.wait_time = randf_range(6.0, 10.0)
+	t.one_shot = true
+	t.autostart = true
+	add_child(t)
+	t.timeout.connect(_show_next_notification)
+
+
+func _show_next_notification() -> void:
+	if not is_inside_tree():
+		return
+	var raw: String = _NOTIFICATIONS[_notif_idx % _NOTIFICATIONS.size()]
+	_notif_idx += 1
+	var text: String = raw.replace("%d", str(AminosManager.cumulus_balance if AminosManager else 0))
+	if _notif_label == null or not is_instance_valid(_notif_label):
+		var lbl := Label.new()
+		lbl.name = "NotifLabel"
+		lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		lbl.add_theme_font_size_override("font_size", 16)
+		lbl.add_theme_color_override("font_color", Color(0.95, 0.95, 0.95))
+		lbl.add_theme_color_override("font_outline_color", Color(0.1, 0.05, 0.2, 0.9))
+		lbl.add_theme_constant_override("outline_size", 3)
+		lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		var sb := StyleBoxFlat.new()
+		sb.bg_color = Color(0.12, 0.06, 0.22, 0.88)
+		sb.border_color = Color(0.55, 0.30, 0.85, 0.9)
+		sb.set_border_width_all(1)
+		sb.set_corner_radius_all(6)
+		sb.content_margin_left = 12
+		sb.content_margin_right = 12
+		sb.content_margin_top = 6
+		sb.content_margin_bottom = 6
+		lbl.add_theme_stylebox_override("normal", sb)
+		lbl.anchor_left = 0.0
+		lbl.anchor_right = 0.0
+		lbl.anchor_top = 0.0
+		lbl.anchor_bottom = 0.0
+		lbl.offset_left = 20
+		lbl.offset_right = 360
+		lbl.offset_top = -60
+		lbl.offset_bottom = 0
+		lbl.modulate = Color(1, 1, 1, 0)
+		add_child(lbl)
+		_notif_label = lbl
+	_notif_label.text = "📱 " + text
+	_notif_label.offset_top = -60
+	_notif_label.offset_bottom = 0
+	_notif_label.modulate = Color(1, 1, 1, 0)
+	if _notif_tween and _notif_tween.is_valid():
+		_notif_tween.kill()
+	_notif_tween = create_tween().set_parallel(true)
+	_notif_tween.tween_property(_notif_label, "modulate:a", 1.0, 0.3)
+	_notif_tween.tween_property(_notif_label, "offset_top", 12, 0.35).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_notif_tween.tween_property(_notif_label, "offset_bottom", 72, 0.35).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	await get_tree().create_timer(3.8).timeout
+	if _notif_tween and _notif_tween.is_valid():
+		_notif_tween.kill()
+	_notif_tween = create_tween()
+	_notif_tween.tween_property(_notif_label, "modulate:a", 0.0, 0.4)
+	await _notif_tween.finished
+	var t := Timer.new()
+	t.wait_time = randf_range(8.0, 14.0)
+	t.one_shot = true
+	add_child(t)
+	t.timeout.connect(_show_next_notification)
+	t.start()
 
 
 func _populate_levels() -> void:
