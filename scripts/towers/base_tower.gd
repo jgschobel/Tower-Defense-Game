@@ -52,6 +52,9 @@ var _pip_cache: Array = []
 var _taunt_pool: Array = []
 # Guard so rapid-fire attacks don't stack pulse tweens on the sprite scale.
 var _is_attack_pulsing: bool = false
+# Tracked so we can kill it before freeing the glow node on tier changes,
+# preventing the lambda from accessing a freed Node2D.
+var _glow_pulse_tween: Tween = null
 # Fitted sprite scale from _update_visual — tweens use this as the idle
 # baseline instead of data.sprite_scale. Friend photos are ~1024px so the
 # fit scale is ~0.12, not 1.0; tweens returning to data.sprite_scale made
@@ -605,9 +608,12 @@ func _attack() -> void:
 			var refreshed := projectile.get_script() as Script
 			if refreshed != null:
 				_projectile_script = refreshed
-			if not _is_valid_projectile(projectile):
+			# Only abort if the node is literally null/freed — GDScript VM
+			# pressure in headless CI at 8× time_scale can cause spurious
+			# has_method()/property-check failures on a perfectly valid node,
+			# which previously aborted every shot and produced kills=0 (#770).
+			if projectile == null or not is_instance_valid(projectile):
 				push_error("[tower] projectile scene permanently broken — aborting shot")
-				projectile.queue_free()
 				return
 	elif not projectile.is_inside_tree():
 		# Pool returned a valid+scripted node that wasn't added to the tree
@@ -1039,6 +1045,11 @@ func _update_tier_glow(tier: int) -> void:
 	# Per-tier glow ring (ROADMAP #23). Ring radius + alpha scale with
 	# tier so upgrades READ from across the map. Uses a single Node2D
 	# with custom _draw cached as _glow_node; recreated on tier change.
+	# Kill the old pulse tween BEFORE freeing the glow node so its looping
+	# lambda cannot fire on a freed Node2D (was: "Lambda capture freed" CI spam).
+	if _glow_pulse_tween != null and _glow_pulse_tween.is_valid():
+		_glow_pulse_tween.kill()
+	_glow_pulse_tween = null
 	var glow: Node2D = get_node_or_null("TierGlow")
 	if glow:
 		glow.queue_free()
@@ -1057,10 +1068,11 @@ func _update_tier_glow(tier: int) -> void:
 	glow.set_meta("alpha", tier_alpha)
 	glow.set_script(_glow_script())
 	add_child(glow)
-	# Pulse tween
-	var pulse := create_tween().set_loops()
-	pulse.tween_method(func(v: float): glow.modulate.a = v, 0.55, 1.0, 1.0 / pulse_speed).set_trans(Tween.TRANS_SINE)
-	pulse.tween_method(func(v: float): glow.modulate.a = v, 1.0, 0.55, 1.0 / pulse_speed).set_trans(Tween.TRANS_SINE)
+	# Pulse tween — stored in _glow_pulse_tween so it can be killed on
+	# the next tier change before the old glow node is freed.
+	_glow_pulse_tween = create_tween().set_loops()
+	_glow_pulse_tween.tween_method(func(v: float): glow.modulate.a = v, 0.55, 1.0, 1.0 / pulse_speed).set_trans(Tween.TRANS_SINE)
+	_glow_pulse_tween.tween_method(func(v: float): glow.modulate.a = v, 1.0, 0.55, 1.0 / pulse_speed).set_trans(Tween.TRANS_SINE)
 
 
 func _glow_script() -> Script:
