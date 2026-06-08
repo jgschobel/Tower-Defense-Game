@@ -104,6 +104,13 @@ func _run_healthy_level(level_id: int) -> void:
 			print("[playtest] WARN instantiate failed: %s @ %s" % [entry.id, entry.pos])
 		else:
 			placed_count += 1
+			# Tier-1 path-A upgrade: raises basic DPS from ~24 to ~33 (23 dmg × 1.45
+			# shots/s), enough to kill a 100 HP basic enemy in a single 3.3s range pass.
+			# Without this, tier-0 fires only 3.75 shots (75 dmg) per pass and every
+			# enemy escapes alive — explaining the persistent kills=0 metric.
+			CurrencyManager.gold = 2000
+			if tower.has_method("upgrade_path"):
+				tower.upgrade_path("a")
 		await get_tree().process_frame
 		await get_tree().process_frame
 	CurrencyManager.gold = saved_gold
@@ -583,6 +590,13 @@ func _record_scenario(start_ms: int) -> void:
 			min_fps = v
 	var enemy_count: int = get_tree().get_nodes_in_group("enemies").size()
 	var tower_count: int = get_tree().get_nodes_in_group("towers").size()
+	# Secondary kill counter: sum per-tower kill_count to cross-check GameManager.level_kills.
+	# If tower_kills > 0 but level_kills = 0, the kill event fires but record_kill() is broken.
+	# If both = 0, towers genuinely aren't landing killing blows.
+	var tower_kills: int = 0
+	for t in get_tree().get_nodes_in_group("towers"):
+		if "kill_count" in t:
+			tower_kills += t.kill_count
 	_scenario_summaries.append({
 		"name": _scenario_name,
 		"elapsed_ms": Time.get_ticks_msec() - start_ms,
@@ -593,9 +607,10 @@ func _record_scenario(start_ms: int) -> void:
 		"final_state": _state_name(GameManager.current_state),
 		"enemies_remaining": enemy_count,
 		"level_kills": GameManager.level_kills,
+		"tower_kills": tower_kills,
 	})
-	print("[playtest] %s — kills=%d lives=%d state=%s enemies=%d towers=%d fps=%.0f" % [
-		_scenario_name, GameManager.level_kills, GameManager.lives,
+	print("[playtest] %s — kills=%d tower_kills=%d lives=%d state=%s enemies=%d towers=%d fps=%.0f" % [
+		_scenario_name, GameManager.level_kills, tower_kills, GameManager.lives,
 		_state_name(GameManager.current_state), enemy_count, tower_count, avg_fps,
 	])
 	# Issue #328 fix: write summary INCREMENTALLY after each scenario so
@@ -613,13 +628,13 @@ func _write_summary() -> void:
 	f.store_string("# Playtest v3 Summary\n\n")
 	f.store_string("Timestamp: %s\n" % Time.get_datetime_string_from_system(true))
 	f.store_string("Total duration: %.1fs\n\n" % _elapsed())
-	f.store_string("| Scenario | Duration (s) | Avg FPS | Min FPS | Final Lives | Kills | State | Enemies Remaining |\n")
-	f.store_string("|---|---|---|---|---|---|---|---|\n")
+	f.store_string("| Scenario | Duration (s) | Avg FPS | Min FPS | Final Lives | Kills (GM) | Kills (towers) | State | Enemies Remaining |\n")
+	f.store_string("|---|---|---|---|---|---|---|---|---|\n")
 	for s in _scenario_summaries:
-		f.store_string("| %s | %.1f | %.1f | %.1f | %d | %d | %s | %d |\n" % [
+		f.store_string("| %s | %.1f | %.1f | %.1f | %d | %d | %d | %s | %d |\n" % [
 			s.name, float(s.elapsed_ms) / 1000.0,
 			s.avg_fps, s.min_fps,
-			s.final_lives, s.get("level_kills", 0), s.final_state, s.enemies_remaining,
+			s.final_lives, s.get("level_kills", 0), s.get("tower_kills", 0), s.final_state, s.enemies_remaining,
 		])
 	f.store_string("\n## Interpretation hints\n\n")
 	f.store_string("- **L1/L2/L3_healthy**: should end WON, lives > 0. LOST here means the scenario tower placements no longer counter the waves (rebalance or retune placements).\n")
