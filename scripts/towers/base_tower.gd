@@ -58,6 +58,10 @@ var _is_attack_pulsing: bool = false
 # towers fill the screen on first attack.
 var _baseline_scale: Vector2 = Vector2.ONE
 
+# Active pair-synergy bonus (see SynergyTable). Empty = no synergy active.
+# Keys: range_mul, dmg_mul, atk_speed_mul, slow_dur_add, pierce_add, label.
+var _synergy_bonus: Dictionary = {}
+
 # Love-tap easter egg: 7 taps within 3s triggers a personal Swiss German voice-line.
 var _love_tap_count: int = 0
 var _love_tap_window_start: float = 0.0
@@ -245,6 +249,27 @@ func _apply_data() -> void:
 	_rebuild_pip_cache()
 
 
+func _refresh_synergies() -> void:
+	if not data or not is_placed:
+		return
+	var old_label: String = _synergy_bonus.get("label", "")
+	_synergy_bonus = {}
+	for tower_node in get_tree().get_nodes_in_group("towers"):
+		var other := tower_node as BaseTower
+		if other == null or other == self or not other.data:
+			continue
+		if global_position.distance_squared_to(other.global_position) > 22500.0:  # 150² px
+			continue
+		var bonus: Dictionary = SynergyTable.find_bonus(data.id, other.data.id)
+		if not bonus.is_empty():
+			_synergy_bonus = bonus.duplicate()
+			break
+	_recalculate_stats()
+	_update_range_collider()
+	if _synergy_bonus.get("label", "") != old_label:
+		queue_redraw()
+
+
 func _recalculate_stats() -> void:
 	if not data:
 		return
@@ -290,6 +315,12 @@ func _recalculate_stats() -> void:
 
 	effective_damage *= (1.0 + buff_damage)
 	effective_speed *= (1.0 + buff_speed)
+
+	# Pair-synergy multipliers applied last (on top of all other bonuses).
+	if not _synergy_bonus.is_empty():
+		effective_range *= _synergy_bonus.get("range_mul", 1.0)
+		effective_damage *= _synergy_bonus.get("dmg_mul", 1.0)
+		effective_speed *= _synergy_bonus.get("atk_speed_mul", 1.0)
 
 
 func _process(delta: float) -> void:
@@ -608,7 +639,7 @@ func _attack() -> void:
 		data.splash_radius,
 		data.splash_damage_pct,
 		data.slow_amount,
-		data.slow_duration,
+		data.slow_duration + _synergy_bonus.get("slow_dur_add", 0.0),
 		data.projectile_style,
 		data.leaves_ground_pool,
 		data.ground_pool_duration,
@@ -617,8 +648,9 @@ func _attack() -> void:
 		shoot_tier
 	)
 	# Carry pierce budget across to the projectile (Lemurius).
+	# Banana-Volleyball synergy (JoJo+Lemurius) adds +1 pierce via _synergy_bonus.
 	if "remaining_pierce" in projectile:
-		projectile.remaining_pierce = max(0, data.pierce_count - 1)
+		projectile.remaining_pierce = max(0, data.pierce_count - 1 + _synergy_bonus.get("pierce_add", 0))
 	# Amösius pull fraction.
 	if "pull_path_fraction" in projectile:
 		projectile.pull_path_fraction = data.pull_path_fraction
@@ -713,6 +745,9 @@ func play_place_animation() -> void:
 
 
 func sell() -> void:
+	# Leave the group immediately so synergy scans triggered by tower_sold
+	# don't count this tower as still present.
+	remove_from_group("towers")
 	var refund: int
 	if data.has_branching_upgrades():
 		refund = data.get_sell_value_branched(path_a_tier, path_b_tier)
@@ -1145,6 +1180,28 @@ func _draw() -> void:
 		var tint: Color = entry[1]
 		draw_circle(p, 6.0, Color(0, 0, 0, 0.55))
 		draw_circle(p, 4.5, tint)
+	# Synergie-Combo badge — gold star above the tower when a pair synergy is active
+	if not _synergy_bonus.is_empty():
+		_draw_synergy_badge()
+
+
+func _draw_synergy_badge() -> void:
+	# 5-pointed gold star (12×12 px), positioned top-right of the pedestal.
+	const GOLD: Color = Color(1.0, 0.824, 0.478, 1.0)   # #FFD27A
+	const OUTLINE: Color = Color(0.58, 0.44, 0.14, 0.9)
+	const R_OUT: float = 7.0
+	const R_IN: float = 3.0
+	var cx: float = 24.0  # right of center so it doesn't overlap tier hat
+	var cy: float = -68.0  # above the sprite baseline
+	var pts := PackedVector2Array()
+	for i in 10:
+		var a: float = -PI * 0.5 + (float(i) * PI / 5.0)
+		var r: float = R_OUT if i % 2 == 0 else R_IN
+		pts.append(Vector2(cx + cos(a) * r, cy + sin(a) * r))
+	draw_colored_polygon(pts, GOLD)
+	var loop := pts.duplicate()
+	loop.append(pts[0])
+	draw_polyline(loop, OUTLINE, 1.0)
 
 
 func _rebuild_pip_cache() -> void:

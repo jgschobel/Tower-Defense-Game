@@ -300,11 +300,19 @@ func _on_tower_placed(_tower: Node2D) -> void:
 	_ensure_adjacency_viz()
 	if _adjacency_viz:
 		_adjacency_viz.refresh()
+	call_deferred("_refresh_all_synergies")
 
 
 func _on_tower_removed(_tower: Node2D) -> void:
 	if _adjacency_viz:
 		_adjacency_viz.refresh()
+	call_deferred("_refresh_all_synergies")
+
+
+func _refresh_all_synergies() -> void:
+	for t in get_tree().get_nodes_in_group("towers"):
+		if t.has_method("_refresh_synergies"):
+			t._refresh_synergies()
 
 
 func _ensure_adjacency_viz() -> void:
