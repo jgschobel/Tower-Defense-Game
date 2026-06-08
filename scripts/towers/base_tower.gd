@@ -781,6 +781,10 @@ func get_upgrade_cost() -> int:
 	return data.upgrade_costs[upgrade_level]
 
 
+func get_active_synergy() -> Dictionary:
+	return _synergy_bonus
+
+
 # -- Branching upgrades (BTD5-style) --
 
 func can_upgrade_path(path_letter: String) -> bool:

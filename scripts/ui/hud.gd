@@ -1725,6 +1725,8 @@ func _refresh_tower_info() -> void:
 
 	if sell_btn:
 		_paint_sell_button(sell_btn)
+	# Synergy label — gold row showing active pair-bonus name + stats.
+	_ensure_synergy_label()
 	# Targeting-mode cycler (BTD5-style per-tower First/Last/Strong/Close).
 	# Lazily attached to a row above the upgrade/sell HBox.
 	_ensure_targeting_button()
@@ -1735,6 +1737,64 @@ func _refresh_tower_info() -> void:
 	# narrow viewports. Agent-audit BUG #8.
 	if tower_info and tower_info.visible:
 		_clamp_tower_info_to_viewport()
+
+
+func _ensure_synergy_label() -> void:
+	if not _selected_tower or not tower_info:
+		return
+	var vbox: VBoxContainer = tower_info.get_node_or_null("VBox")
+	if vbox == null:
+		return
+	var syn: Dictionary = _selected_tower.get_active_synergy()
+	var lbl: Label = vbox.get_node_or_null("SynergyLabel")
+	if syn.is_empty():
+		if lbl:
+			lbl.visible = false
+		return
+	if lbl == null:
+		lbl = Label.new()
+		lbl.name = "SynergyLabel"
+		lbl.add_theme_font_size_override("font_size", 13)
+		lbl.add_theme_color_override("font_color", Color(1.0, 0.86, 0.24))
+		lbl.add_theme_color_override("font_outline_color", Color(0.25, 0.15, 0.0, 0.95))
+		lbl.add_theme_constant_override("outline_size", 2)
+		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		vbox.add_child(lbl)
+		# Place directly after Header so it sits below the portrait+stats row.
+		var header: Node = vbox.get_node_or_null("Header")
+		if header:
+			vbox.move_child(lbl, header.get_index() + 1)
+	var new_text: String = "✦ %s  %s" % [syn.get("label", ""), _format_synergy_bonus(syn)]
+	if new_text != lbl.text:
+		lbl.text = new_text
+		# Brief pop animation so the player notices the bonus just activated.
+		var tw := lbl.create_tween().set_parallel(true)
+		tw.tween_property(lbl, "scale", Vector2(1.12, 1.12), 0.07)
+		tw.chain().tween_property(lbl, "scale", Vector2.ONE, 0.14).set_trans(Tween.TRANS_SINE)
+	lbl.visible = true
+
+
+func _format_synergy_bonus(syn: Dictionary) -> String:
+	var parts: PackedStringArray = []
+	var range_mul: float = syn.get("range_mul", 1.0)
+	var dmg_mul: float = syn.get("dmg_mul", 1.0)
+	var atk_mul: float = syn.get("atk_speed_mul", 1.0)
+	var slow_add: float = syn.get("slow_dur_add", 0.0)
+	var pierce: int = syn.get("pierce_add", 0)
+	if range_mul > 1.005:
+		parts.append("+%d%% Reichwiiti" % roundi((range_mul - 1.0) * 100.0))
+	if dmg_mul > 1.005:
+		parts.append("+%d%% Schade" % roundi((dmg_mul - 1.0) * 100.0))
+	if atk_mul > 1.005:
+		parts.append("+%d%% Tempo" % roundi((atk_mul - 1.0) * 100.0))
+	if slow_add > 0.005:
+		parts.append("+%.1fs Verlangsamig" % slow_add)
+	if pierce > 0:
+		parts.append("+%d Pierce" % pierce)
+	if parts.is_empty():
+		return ""
+	return "(%s)" % ", ".join(parts)
 
 
 func _ensure_targeting_button() -> void:

@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-08 (audit-polish — synergy info label in TowerInfo panel)
+
+- polish(hud): TowerInfo panel now shows active pair-synergy as a gold "✦ Label (bonus)" row below the portrait+stats. `BaseTower.get_active_synergy()` exposes `_synergy_bonus`; `_ensure_synergy_label()` lazily creates/updates the Label with a brief pop-scale tween on first activation. Completes the "tower-info panel adds a Synergie: row" spec from PR #758 that was left unshipped.
+
 ## 2026-06-08 (audit-polish — kills=0 + glow tween fix)
 
 - fix(tower): kills=0 regression — glow tween lambda accessed freed Node2D on upgrade; tracked tween in `_glow_pulse_tween` and kill() before freeing old glow node. Also removed hard projectile abort when CI GDScript VM pressure caused spurious validation failures (was aborting every shot → kills=0 in headless playtester). Closes #770, #772.
