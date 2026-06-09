@@ -1365,6 +1365,18 @@ func can_trigger_ability() -> bool:
 	return has_active_ability() and ability_cooldown_remaining <= 0.0
 
 
+func _get_ability_color() -> Color:
+	if not data:
+		return Color(1.0, 0.9, 0.3)
+	match data.id:
+		"basic":   return Color(1.0, 0.85, 0.15)  # Lemurius: banana gold
+		"sniper":  return Color(0.25, 0.85, 0.55)  # Kühne: pollen teal-green
+		"splash":  return Color(1.0, 0.45, 0.10)   # JoJo: hot orange
+		"cordula": return Color(1.0, 0.35, 0.75)   # Cordula: volleyball pink
+		"slow":    return Color(0.20, 0.90, 1.00)  # Amösius: ice cyan
+	return Color(1.0, 0.9, 0.3)
+
+
 func trigger_active_ability() -> bool:
 	# Returns true if the ability actually fired. Per-tower implementations
 	# below; fallback is "fire 1 quick volley + reset cooldown" so missing
@@ -1395,6 +1407,7 @@ func trigger_active_ability() -> bool:
 			_float_taunt("ZUNGE-RUCK!")
 		_:
 			ability_triple_fire_remaining = 3.0
+	EffectPlayer.spawn_ability_burst(global_position, _get_ability_color())
 	if SfxManager and SfxManager.has_method("play_upgrade"):
 		SfxManager.play_upgrade()
 	return true
