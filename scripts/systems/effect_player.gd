@@ -271,6 +271,54 @@ func tier3_boss_kill(killer_tower: Node, kill_pos: Vector2) -> void:
 	remove_meta("t3_kill_active")
 
 
+## Expanding ring + radial particle burst at a tower's position when its
+## active ability fires. Each tower passes its signature color so the burst
+## reads as "this ability belongs to that tower" at a glance.
+func spawn_ability_burst(pos: Vector2, color: Color) -> void:
+	var host := _get_host()
+	if not host:
+		return
+	# Expanding ring: Line2D circle, tweened from small → large + fade out
+	var ring := Line2D.new()
+	var pts := PackedVector2Array()
+	var N := 28
+	for i in N + 1:
+		var a := TAU * float(i) / float(N)
+		pts.append(Vector2(cos(a), sin(a)) * 26.0)
+	ring.points = pts
+	ring.width = 5.0
+	ring.default_color = Color(color.r, color.g, color.b, 0.88)
+	ring.global_position = pos
+	ring.z_index = 25
+	ring.z_as_relative = false
+	host.add_child(ring)
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(ring, "scale", Vector2(3.4, 3.4), 0.50).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tw.tween_property(ring, "modulate:a", 0.0, 0.50).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	tw.chain().tween_callback(ring.queue_free)
+	# Radial sparkle burst outward from the center
+	var p := CPUParticles2D.new()
+	p.global_position = pos
+	p.one_shot = true
+	p.explosiveness = 1.0
+	p.lifetime = 0.45
+	p.amount = 18
+	p.spread = 180.0
+	p.direction = Vector2(0.0, -1.0)
+	p.initial_velocity_min = 90.0
+	p.initial_velocity_max = 170.0
+	p.scale_amount_min = 3.0
+	p.scale_amount_max = 7.0
+	p.color = Color(color.r, color.g, color.b, 0.8)
+	p.gravity = Vector2.ZERO
+	p.z_index = 24
+	p.z_as_relative = false
+	host.add_child(p)
+	p.emitting = true
+	get_tree().create_timer(0.7).timeout.connect(p.queue_free)
+
+
 func _get_host() -> Node:
 	var tree := get_tree()
 	return tree.current_scene if tree else null

@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-09 (audit-polish — ability activation VFX)
+
+- polish(tower): tower-specific ability activation VFX — expanding colored ring + radial particle burst when each friend fires their active power. Lemurius: banana gold, Kühne: pollen teal, JoJo: hot orange, Cordula: volleyball pink, Amösius: ice cyan. `EffectPlayer.spawn_ability_burst()` + `_get_ability_color()` in base_tower.gd.
+
 ## 2026-06-08 (audit-polish — kills=0 + glow tween fix)
 
 - fix(tower): kills=0 regression — glow tween lambda accessed freed Node2D on upgrade; tracked tween in `_glow_pulse_tween` and kill() before freeing old glow node. Also removed hard projectile abort when CI GDScript VM pressure caused spurious validation failures (was aborting every shot → kills=0 in headless playtester). Closes #770, #772.
