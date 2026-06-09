@@ -23,9 +23,13 @@ var target_mode_override: int = -1
 # Tower's tier 3+ unlocks an active ability (per-tower implementation in
 # trigger_active_ability). 0 = ready, > 0 = on cooldown.
 var ability_cooldown_remaining: float = 0.0
-# Triple-fire effect tracker for Lemurius "Banana-Storm" ability:
-# while > 0, _attack() spawns 3 projectiles instead of 1.
+# Triple-fire effect tracker: while > 0, _attack() fires 3× as fast.
 var ability_triple_fire_remaining: float = 0.0
+# Per-tower ability side-effects (reset when triple-fire window closes):
+var ability_pollen_aoe_remaining: float = 0.0  # Kühne: AoE slow every shot
+var ability_splash_mul: float = 1.0            # JoJo: splash radius multiplier
+var ability_full_court: bool = false           # Cordula: 360° cone during ability
+var ability_pierce_bonus: int = 0              # Lemurius: extra pierce per shot
 
 # Computed stats (base + upgrades)
 var effective_damage: float = 0.0
@@ -385,6 +389,12 @@ func _process(delta: float) -> void:
 		ability_cooldown_remaining = maxf(0.0, ability_cooldown_remaining - delta)
 	if ability_triple_fire_remaining > 0.0:
 		ability_triple_fire_remaining = maxf(0.0, ability_triple_fire_remaining - delta)
+		if ability_triple_fire_remaining == 0.0:
+			ability_splash_mul = 1.0
+			ability_full_court = false
+			ability_pierce_bonus = 0
+	if ability_pollen_aoe_remaining > 0.0:
+		ability_pollen_aoe_remaining = maxf(0.0, ability_pollen_aoe_remaining - delta)
 
 	attack_timer -= delta
 	# When ability_triple_fire_remaining > 0, fire 3× as fast (Banana-Storm
@@ -499,6 +509,14 @@ func _attack() -> void:
 		current_target = null
 		return
 
+	# Kühne POLLEN-WOLKE: each shot releases a pollen cloud that slows every
+	# enemy in range (60% slow for 3s), distinct from the normal single-target snipe.
+	if data and data.id == "sniper" and ability_pollen_aoe_remaining > 0.0:
+		for _pe in _enemies_in_range:
+			var _pec := _pe as BaseEnemy
+			if _pec and not _pec.is_dead and _pec.has_method("apply_slow"):
+				_pec.apply_slow(0.6, 3.0)
+
 	# Projectile spawns from per-tower offset (Amösius tongue from mouth,
 	# Lemurius bananas from hand, etc). Falls back to attack_origin marker
 	# then to tower center.
@@ -527,8 +545,8 @@ func _attack() -> void:
 
 	# Cordula cone burst (ROADMAP #38). Any enemy within data.cone_half_angle
 	# of the aim direction takes 60% damage instantly, in addition to the
-	# main projectile hit. No visible extra projectile — the main burst
-	# animation already reads as an arc.
+	# main projectile hit. VOLLEY-TORNADO expands this to a full 360° sweep
+	# (every enemy in range), making it a whole-court multi-target blast.
 	if data.cone_half_angle > 0.0 and current_target:
 		var aim: Vector2 = (current_target.global_position - global_position).normalized()
 		var range_sq: float = data.attack_range * data.attack_range
@@ -536,11 +554,14 @@ func _attack() -> void:
 			var enemy := enemy_node as BaseEnemy
 			if enemy == null or enemy == current_target or enemy.is_dead:
 				continue
-			var delta: Vector2 = enemy.global_position - global_position
-			if delta.length_squared() > range_sq:
+			var _ediff: Vector2 = enemy.global_position - global_position
+			if _ediff.length_squared() > range_sq:
 				continue
-			var angle_to: float = acos(clamp(aim.dot(delta.normalized()), -1.0, 1.0))
-			if angle_to <= data.cone_half_angle:
+			var in_arc: bool = ability_full_court
+			if not in_arc:
+				var angle_to: float = acos(clamp(aim.dot(_ediff.normalized()), -1.0, 1.0))
+				in_arc = angle_to <= data.cone_half_angle
+			if in_arc:
 				var cone_was_alive: bool = not enemy.is_dead
 				enemy.take_damage(effective_damage * 0.6, data.damage_type, self)
 				enemy.show_hit_reaction()
@@ -650,7 +671,7 @@ func _attack() -> void:
 		data.damage_type,
 		data.projectile_color,
 		data.is_splash,
-		data.splash_radius,
+		data.splash_radius * ability_splash_mul,
 		data.splash_damage_pct,
 		data.slow_amount,
 		data.slow_duration + _synergy_bonus.get("slow_dur_add", 0.0),
@@ -663,8 +684,9 @@ func _attack() -> void:
 	)
 	# Carry pierce budget across to the projectile (Lemurius).
 	# Banana-Volleyball synergy (JoJo+Lemurius) adds +1 pierce via _synergy_bonus.
+	# BANANI-STURM adds extra pierce so bananas punch through multiple enemies.
 	if "remaining_pierce" in projectile:
-		projectile.remaining_pierce = max(0, data.pierce_count - 1 + _synergy_bonus.get("pierce_add", 0))
+		projectile.remaining_pierce = max(0, data.pierce_count - 1 + _synergy_bonus.get("pierce_add", 0) + ability_pierce_bonus)
 	# Amösius pull fraction.
 	if "pull_path_fraction" in projectile:
 		projectile.pull_path_fraction = data.pull_path_fraction
@@ -1394,20 +1416,24 @@ func trigger_active_ability() -> bool:
 	ability_cooldown_remaining = get_ability_cd_max()
 	match data.id:
 		"basic":
-			# Banani-Sturm: 5s of 3× fire rate
+			# Banani-Sturm: 5s of 3× fire rate + extra pierce (bananas pass through)
 			ability_triple_fire_remaining = 5.0
+			ability_pierce_bonus = 2
 			_float_taunt("BANANI-STURM!")
 		"sniper":
-			# Pollen-Wolke: 6s sustained 3× fire rate — methodical burst
-			ability_triple_fire_remaining = 6.0
+			# Pollen-Wolke: 6s — each shot douses ALL in-range enemies with slow
+			# (precision cloud, not a fire-rate boost)
+			ability_pollen_aoe_remaining = 6.0
 			_float_taunt("POLLEN-WOLKE!")
 		"splash":
-			# Mega-Spritz: 4s of 3× AoE barrages
+			# Mega-Spritz: 4s of 3× fire rate + 2.5× splash radius (enormous AoE)
 			ability_triple_fire_remaining = 4.0
+			ability_splash_mul = 2.5
 			_float_taunt("MEGA-SPRITZ!")
 		"cordula":
-			# Volley-Tornado: 5s rapid-fire volley
+			# Volley-Tornado: 5s rapid-fire + 360° cone (hits every enemy in range)
 			ability_triple_fire_remaining = 5.0
+			ability_full_court = true
 			_float_taunt("VOLLEY-TORNADO!")
 		"slow":
 			# Zunge-Ruck: mass-freeze ALL on-screen enemies instantly

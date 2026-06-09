@@ -166,8 +166,8 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
 - [x] **Active power abilities** — all 5 friend towers now have tier-3+
   active abilities (PR #690). Kühne: POLLEN-WOLKE (6s, 90s CD), JoJo:
   MEGA-SPRITZ (4s, 120s CD), Cordula: VOLLEY-TORNADO (5s, 90s CD),
-  Amösius: ZUNGE-RUCK (4s, 60s CD). All use 3× fire-rate burst.
-  _VFX done 2026-06-09: expanding ring + radial particle burst per tower in signature color (banana gold, pollen teal, hot orange, volleyball pink, ice cyan). Differentiated attack patterns still TODO._
+  Amösius: ZUNGE-RUCK (4s, 60s CD).
+  _VFX done 2026-06-09. Differentiated 2026-06-09: Lemurius +2 pierce, Kühne AoE slow field (no rapid-fire), JoJo 2.5× splash radius + 3× fire, Cordula 360° cone + 3× fire, Amösius mass-freeze. All 5 are mechanically distinct._
 
 ### Added 2026-06-04 (ideate run)
 

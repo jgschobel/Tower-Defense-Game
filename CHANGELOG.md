@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-09 (audit-polish — differentiated active abilities)
+
+- polish(tower): differentiated all 4 non-Amösius active abilities — Lemurius BANANI-STURM gains +2 pierce (bananas punch through enemies), Kühne POLLEN-WOLKE becomes an AoE slow field (60% slow / 3s on all in-range enemies every shot, no rapid-fire), JoJo MEGA-SPRITZ keeps 3× fire rate AND 2.5× splash radius, Cordula VOLLEY-TORNADO keeps rapid-fire AND expands cone to 360° (full-court multi-target blast). Closes "differentiated attack patterns still TODO" in ROADMAP.
+
 ## 2026-06-09 (audit-polish — projectile setup crash)
 
 - fix(tower): projectile.setup() crash on script-detached Area2D — CACHE_MODE_IGNORE fallback only guarded null/freed but not get_script()==null; added explicit check so a genuinely script-less node aborts the shot instead of crashing. Closes ci-failure #791.
