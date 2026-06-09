@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-09 (audit-polish — projectile setup crash)
+
+- fix(tower): projectile.setup() crash on script-detached Area2D — CACHE_MODE_IGNORE fallback only guarded null/freed but not get_script()==null; added explicit check so a genuinely script-less node aborts the shot instead of crashing. Closes ci-failure #791.
+
 ## 2026-06-09 (audit-polish — ability activation VFX)
 
 - polish(tower): tower-specific ability activation VFX — expanding colored ring + radial particle burst when each friend fires their active power. Lemurius: banana gold, Kühne: pollen teal, JoJo: hot orange, Cordula: volleyball pink, Amösius: ice cyan. `EffectPlayer.spawn_ability_burst()` + `_get_ability_color()` in base_tower.gd.
