@@ -3,6 +3,11 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-09 (audit-polish — path B tints + synergy label rebase)
+
+- polish(tower): path B tint visibility — B1 now gets 30°/15% hue+sat shift immediately (was no shift until B2); B-weight raised 1.5×→2.0× so B tiers are clearly distinct from A-max at a glance. Rebases conflicting PR #779.
+- polish(hud): TowerInfo panel shows active Synergie-Combo as gold "✦ Label (bonus)" row with pop-scale tween on first activation. `BaseTower.get_active_synergy()` exposes `_synergy_bonus`. Rebases conflicting PR #785.
+
 ## 2026-06-09 (audit-polish — projectile setup crash)
 
 - fix(tower): projectile.setup() crash on script-detached Area2D — CACHE_MODE_IGNORE fallback only guarded null/freed but not get_script()==null; added explicit check so a genuinely script-less node aborts the shot instead of crashing. Closes ci-failure #791.
