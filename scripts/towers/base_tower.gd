@@ -1349,11 +1349,11 @@ func get_ability_label() -> String:
 	if not data:
 		return ""
 	match data.id:
-		"basic":   return "BANANI-STURM"  # 5s triple-fire (60s CD)
-		"sniper":  return "POLLEN-WOLKE"  # placeholder for future
-		"splash":  return "MEGA-SPRITZ"   # placeholder
-		"cordula": return "VOLLEY-TORNADO" # placeholder
-		"slow":    return "ZUNGE-RUCK"    # placeholder
+		"basic":   return "BANANI-STURM"   # 5s rapid-fire (60s CD)
+		"sniper":  return "POLLEN-WOLKE"   # 6s rapid-fire (90s CD)
+		"splash":  return "MEGA-SPRITZ"    # 4s AoE barrage (120s CD)
+		"cordula": return "VOLLEY-TORNADO" # 5s volley (90s CD)
+		"slow":    return "ZUNGE-RUCK"     # mass-freeze all + 2s burst (60s CD)
 	return ""
 
 
@@ -1410,8 +1410,14 @@ func trigger_active_ability() -> bool:
 			ability_triple_fire_remaining = 5.0
 			_float_taunt("VOLLEY-TORNADO!")
 		"slow":
-			# Zunge-Ruck: 4s 3× slow bursts — stacks debuff on every enemy
-			ability_triple_fire_remaining = 4.0
+			# Zunge-Ruck: mass-freeze ALL on-screen enemies instantly
+			# (Amösius's tongue lashes out across the whole path), then
+			# 2s rapid-fire to keep enemies locked in the slow zone.
+			var slow_str: float = data.slow_amount if data else 0.35
+			for _e in get_tree().get_nodes_in_group("enemies"):
+				if _e is BaseEnemy and not _e.is_dead and _e.has_method("apply_slow"):
+					_e.apply_slow(slow_str, 8.0)
+			ability_triple_fire_remaining = 2.0
 			_float_taunt("ZUNGE-RUCK!")
 		_:
 			ability_triple_fire_remaining = 3.0

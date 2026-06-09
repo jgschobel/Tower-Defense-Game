@@ -6,6 +6,7 @@ Each run appends one line.
 ## 2026-06-09 (audit-polish — projectile setup crash)
 
 - fix(tower): projectile.setup() crash on script-detached Area2D — CACHE_MODE_IGNORE fallback only guarded null/freed but not get_script()==null; added explicit check so a genuinely script-less node aborts the shot instead of crashing. Closes ci-failure #791.
+- polish(tower): Amösius ZUNGE-RUCK now mass-freezes ALL on-screen enemies instantly (apply_slow to every enemy in group) + 2s rapid-fire burst, replacing the generic 4s triple-fire. Removes "placeholder" comments from ability labels.
 
 ## 2026-06-09 (audit-polish — ability activation VFX)
 
