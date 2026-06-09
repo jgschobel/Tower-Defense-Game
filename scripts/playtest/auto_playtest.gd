@@ -152,11 +152,33 @@ func _run_healthy_level(level_id: int) -> void:
 	# 3 levels × ≤32s + ~40s other scenarios ≈ ≤136s total; CI has headroom.
 	var sim_started := Time.get_ticks_msec()
 	var shot_idx := 0
+	var _diag_done := false
 	while true:
 		# ignore_time_scale=true: each 2.0s wait is real-clock seconds,
 		# so the game runs 2.0 × 8 = 16 game-seconds between screenshots.
 		await get_tree().create_timer(2.0, true, false, true).timeout
 		_snapshot("%s_t%02d" % [_scenario_name, shot_idx])
+		# After first combat tick: emit a mid-combat diagnostic so kills=0
+		# root cause is visible in CI logs even before the scenario ends.
+		if not _diag_done and shot_idx == 0:
+			_diag_done = true
+			var e_count := get_tree().get_nodes_in_group("enemies").size()
+			var t_count := get_tree().get_nodes_in_group("towers").size()
+			print("[playtest] MID-COMBAT %s t=1 enemies=%d towers=%d kills=%d" % [
+				_scenario_name, e_count, t_count, GameManager.level_kills
+			])
+			for t in get_tree().get_nodes_in_group("towers"):
+				var tid: String = t.data.id if "data" in t and t.data else "?"
+				var t_atk: int = t._diag_attack_count if "_diag_attack_count" in t else -1
+				var t_det: int = t._diag_detect_count if "_diag_detect_count" in t else -1
+				print("[playtest]   tower=%s attacks=%d detects=%d" % [tid, t_atk, t_det])
+			for ei in get_tree().get_nodes_in_group("enemies"):
+				var eid: String = ei.data.id if "data" in ei and ei.data else "?"
+				var epos: Vector2 = ei.global_position if ei is Node2D else Vector2.ZERO
+				print("[playtest]   enemy=%s pos=(%.0f,%.0f) is_dead=%s" % [
+					eid, epos.x, epos.y,
+					str(ei.is_dead if "is_dead" in ei else "?")
+				])
 		shot_idx += 1
 		if GameManager.current_state == GameManager.GameState.LOST \
 		or GameManager.current_state == GameManager.GameState.WON:
@@ -620,6 +642,20 @@ func _record_scenario(start_ms: int) -> void:
 		print("[playtest] WARN kills=0 with %d towers + %d enemies still alive — towers may be off-path or physics missed" % [tower_count, enemy_count])
 	elif GameManager.level_kills == 0 and tower_count > 0 and GameManager.current_state == GameManager.GameState.LOST:
 		print("[playtest] WARN kills=0 but LOST — all enemies escaped without dying, DPS insufficient for wave density")
+	# Diagnostic dump: print per-tower attack/detect counts to trace kills=0 root cause.
+	if GameManager.level_kills == 0 and tower_count > 0:
+		print("[playtest] DIAG tower breakdown:")
+		for t in get_tree().get_nodes_in_group("towers"):
+			var tid: String = t.data.id if "data" in t and t.data else "?"
+			var tpos: Vector2 = t.global_position if t is Node2D else Vector2.ZERO
+			var t_range: float = t.effective_range if "effective_range" in t else -1.0
+			var t_spd: float = t.effective_speed if "effective_speed" in t else -1.0
+			var t_atk: int = t._diag_attack_count if "_diag_attack_count" in t else -1
+			var t_det: int = t._diag_detect_count if "_diag_detect_count" in t else -1
+			var t_kc: int = t.kill_count if "kill_count" in t else -1
+			print("[playtest]   tower=%s pos=(%.0f,%.0f) range=%.0f spd=%.2f attacks=%d detects=%d kills=%d" % [
+				tid, tpos.x, tpos.y, t_range, t_spd, t_atk, t_det, t_kc
+			])
 	# Issue #328 fix: write summary INCREMENTALLY after each scenario so
 	# partial runs (timeout, crash, OOM) still produce metrics. Previous
 	# code only wrote at the very end of _run_all() which silently dropped

@@ -42,6 +42,9 @@ var effective_speed: float = 0.0
 @onready var detection_area: Area2D = $DetectionArea
 
 var _enemies_in_range: Array = []
+# Diagnostic counters — written to playtest summary to trace kills=0 root cause.
+var _diag_attack_count: int = 0   # total _attack() calls this session
+var _diag_detect_count: int = 0   # total frames where ≥1 enemy in range
 var _projectile_scene: PackedScene
 # Script reference cached for identity-check in _attack(). Using get_script()
 # comparison is more reliable than has_method() in Godot 4 headless — has_method
@@ -366,6 +369,10 @@ func _process(delta: float) -> void:
 			if global_position.distance_to(enemy.global_position) <= effective_range:
 				_enemies_in_range.append(enemy)
 
+	# Diagnostic: track how often enemies are in range.
+	if not _enemies_in_range.is_empty():
+		_diag_detect_count += 1
+
 	# Find target
 	current_target = _find_target()
 
@@ -502,6 +509,7 @@ func _find_target() -> BaseEnemy:
 
 
 func _attack() -> void:
+	_diag_attack_count += 1
 	if not current_target:
 		return
 	# Double check target is still valid
