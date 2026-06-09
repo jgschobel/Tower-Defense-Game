@@ -167,7 +167,7 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
   active abilities (PR #690). Kühne: POLLEN-WOLKE (6s, 90s CD), JoJo:
   MEGA-SPRITZ (4s, 120s CD), Cordula: VOLLEY-TORNADO (5s, 90s CD),
   Amösius: ZUNGE-RUCK (4s, 60s CD). All use 3× fire-rate burst.
-  _TODO: tower-specific VFX + differentiated attack patterns in a later PR._
+  _VFX done 2026-06-09: expanding ring + radial particle burst per tower in signature color (banana gold, pollen teal, hot orange, volleyball pink, ice cyan). Differentiated attack patterns still TODO._
 
 ### Added 2026-06-04 (ideate run)
 
