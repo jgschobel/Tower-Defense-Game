@@ -108,3 +108,4 @@ by a daily cron pruner.
 - 2026-05-03T16:01:56Z · playtest · ok · run=25283846968 · shots=100 · key=7
 - 2026-05-03T16:12:03Z · playtest · ok · run=25283967624 · shots=100 · key=7
 - 2026-05-03T16:31:17Z · deploy-web · ok · run=25284518575 · sha=d08c8d2
+- 2026-06-11T22:32:41Z · deploy-web · ok · run=27381514472 · sha=dd1c950
