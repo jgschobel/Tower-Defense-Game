@@ -59,6 +59,7 @@ func _ready() -> void:
 	_load_wave_data()
 	_apply_level_tint()
 	_soften_background()
+	_smooth_path_overlay()
 	_spawn_atmosphere_particles()
 	wave_manager.setup_waves(wave_definitions)
 	hud.show_next_wave_button(true)
@@ -67,23 +68,56 @@ func _ready() -> void:
 
 
 func _soften_background() -> void:
-	# The maps_v3 AI art contains a giant faded "M" / Migros watermark
-	# baked into the texture. Modulate dim + translucent overlay weren't
-	# enough — the M shape still dominated. Going nuclear: dim to 0.30
-	# and add a more opaque overlay (alpha 0.55) so the watermark is
-	# essentially invisible. Fruit crates / path are still readable
-	# because their bright colors saturate through.
+	# The maps_v3 AI art contains a faded "M" watermark baked into the
+	# texture. The old nuclear approach (modulate 0.35 + 55% grey wash)
+	# hid the watermark but murdered the art — every level read as dark
+	# mud in playtests. New balance: keep most of the painting's life
+	# (modulate 0.72) and use a light desaturating wash (alpha 0.22)
+	# that takes the edge off the watermark without burying the map.
+	# Gameplay readability comes from the path overlay + enemy contrast,
+	# not from blacking out the floor.
 	var bg := get_node_or_null("Background")
 	if bg is Sprite2D:
-		bg.modulate = Color(0.35, 0.35, 0.38, 1.0)
+		bg.modulate = Color(0.72, 0.72, 0.74, 1.0)
 		var overlay := ColorRect.new()
 		overlay.name = "FloorWash"
-		overlay.color = Color(0.42, 0.40, 0.38, 0.55)
+		overlay.color = Color(0.42, 0.40, 0.38, 0.22)
 		overlay.size = Vector2(1280, 720)
 		overlay.position = Vector2.ZERO
 		overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		overlay.z_index = -90
 		add_child(overlay)
+
+
+func _smooth_path_overlay() -> void:
+	# The per-level PathBorder/PathDraw Line2D nodes were authored with
+	# the curve's raw CONTROL POINTS as straight segments — a hard-angled
+	# zigzag that doesn't even match where enemies actually walk (the
+	# Path2D curve has bezier in/out handles). Replace both with the
+	# curve's baked points so the drawn walkway is smooth and hugs the
+	# true route on every level, then restyle as a subtle trodden-floor
+	# band instead of a loud solid stripe.
+	if not enemy_path or not enemy_path.curve:
+		return
+	var baked: PackedVector2Array = enemy_path.curve.get_baked_points()
+	if baked.size() < 2:
+		return
+	var border := get_node_or_null("PathBorder")
+	if border is Line2D:
+		border.points = baked
+		border.width = 52.0
+		border.default_color = Color(0.12, 0.08, 0.05, 0.30)
+		border.joint_mode = Line2D.LINE_JOINT_ROUND
+		border.begin_cap_mode = Line2D.LINE_CAP_ROUND
+		border.end_cap_mode = Line2D.LINE_CAP_ROUND
+	var draw := get_node_or_null("PathDraw")
+	if draw is Line2D:
+		draw.points = baked
+		draw.width = 40.0
+		draw.default_color = Color(0.88, 0.80, 0.62, 0.14)
+		draw.joint_mode = Line2D.LINE_JOINT_ROUND
+		draw.begin_cap_mode = Line2D.LINE_CAP_ROUND
+		draw.end_cap_mode = Line2D.LINE_CAP_ROUND
 
 
 func _apply_level_tint() -> void:
