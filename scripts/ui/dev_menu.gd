@@ -1721,11 +1721,13 @@ func _count_pngs_recursive(path: String) -> int:
 
 
 func _read_text_file(path: String) -> String:
-	if not ResourceLoader.exists(path):
-		var f := FileAccess.open(path, FileAccess.READ)
-		if f == null:
-			return "?"
-		var t: String = f.get_as_text()
-		f.close()
-		return t
-	return "?"
+	# Plain FileAccess read. The old guard was inverted (`if not
+	# ResourceLoader.exists`) so existing files always returned "?".
+	# ResourceLoader.exists is the wrong check anyway — .txt files
+	# aren't resources; FileAccess.open failing is the real signal.
+	var f := FileAccess.open(path, FileAccess.READ)
+	if f == null:
+		return "?"
+	var t: String = f.get_as_text().strip_edges()
+	f.close()
+	return t if t != "" else "?"
