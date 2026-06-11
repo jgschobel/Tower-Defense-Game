@@ -433,7 +433,22 @@ func _update_visual() -> void:
 		var photo := GameManager.get_friend_photo(data.friend_character_id)
 		if photo:
 			sprite.texture = photo
-			sprite.scale = Vector2.ONE * data.scale_factor * 0.5
+			# Normalize to the same on-screen size as custom-texture
+			# enemies. The old `scale_factor * 0.5` ignored texture
+			# dimensions, so a 1024px photo rendered ~10× too big —
+			# giant raw faces floating over the map.
+			var photo_max := maxf(photo.get_width(), photo.get_height())
+			var photo_target := 50.0 * data.scale_factor
+			if photo_max > 0:
+				sprite.scale = Vector2.ONE * (photo_target / photo_max)
+			else:
+				sprite.scale = Vector2.ONE * (photo_target / 512.0)
+			# Same circular clip the towers use — photo reads as a face
+			# token, not a pasted rectangle.
+			if sprite.material == null:
+				var clip := ShaderMaterial.new()
+				clip.shader = preload("res://assets/shaders/circle_clip.gdshader")
+				sprite.material = clip
 			return
 
 	# Use custom texture if set
