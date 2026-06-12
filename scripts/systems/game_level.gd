@@ -135,19 +135,35 @@ func _smooth_path_overlay() -> void:
 	var baked: PackedVector2Array = enemy_path.curve.get_baked_points()
 	if baked.size() < 2:
 		return
+	# Per-level contrast tuning. On dark levels (L2 freezer shelves, L8
+	# coop blue-tile, L9 cumulus neon, L10 finale dark) the warm trodden
+	# overlay disappears into the floor pattern — players had to guess
+	# where enemies walk. Bright levels (L1 crates, L3 bakery) keep the
+	# subtle trodden look so the painted floor reads. Dark levels get a
+	# warm gold line that pops against cool/dark backgrounds.
+	var dark_level_ids: Array = [2, 4, 8, 9, 10]
+	var is_dark: bool = level_id in dark_level_ids
+	var border_color: Color
+	var draw_color: Color
+	if is_dark:
+		border_color = Color(0.05, 0.03, 0.0, 0.55)
+		draw_color = Color(1.0, 0.82, 0.40, 0.34)
+	else:
+		border_color = Color(0.12, 0.08, 0.05, 0.35)
+		draw_color = Color(0.88, 0.80, 0.55, 0.22)
 	var border := get_node_or_null("PathBorder")
 	if border is Line2D:
 		border.points = baked
-		border.width = 52.0
-		border.default_color = Color(0.12, 0.08, 0.05, 0.30)
+		border.width = 54.0 if is_dark else 52.0
+		border.default_color = border_color
 		border.joint_mode = Line2D.LINE_JOINT_ROUND
 		border.begin_cap_mode = Line2D.LINE_CAP_ROUND
 		border.end_cap_mode = Line2D.LINE_CAP_ROUND
 	var draw := get_node_or_null("PathDraw")
 	if draw is Line2D:
 		draw.points = baked
-		draw.width = 40.0
-		draw.default_color = Color(0.88, 0.80, 0.62, 0.14)
+		draw.width = 42.0 if is_dark else 38.0
+		draw.default_color = draw_color
 		draw.joint_mode = Line2D.LINE_JOINT_ROUND
 		draw.begin_cap_mode = Line2D.LINE_CAP_ROUND
 		draw.end_cap_mode = Line2D.LINE_CAP_ROUND
