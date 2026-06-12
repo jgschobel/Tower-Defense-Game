@@ -254,7 +254,7 @@ func _hit() -> void:
 		# Capture is_dead BEFORE damage so we can credit the source tower
 		# if this hit was the killing blow.
 		var was_alive: bool = not target.is_dead
-		var _src := get_meta("source_tower") if has_meta("source_tower") else null
+		var _src: Node = get_meta("source_tower") as Node if has_meta("source_tower") else null
 		target.take_damage(damage, damage_type, _src)
 		target.show_hit_reaction()
 		_pierced_enemies.append(target)
