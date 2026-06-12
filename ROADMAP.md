@@ -49,6 +49,13 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
   VBoxContainer inside. Collapsible handle with 0.22s slide tween,
   per-friend row tint, affordability dim. Verified in hud.tscn + hud.gd.
 
+- [x] **Fix kills=0 playtester regression (P0)** — GDScript recompilation
+  race: loading any scene that transitively preloads base_projectile.gd
+  detached scripts from all 40 pool nodes, so every attack aborted.
+  Fix: ProjectilePool.acquire() reloads + re-attaches script on null
+  instead of destroying. base_tower._attack() CACHE_MODE_IGNORE path
+  also tries set_script() before aborting. PR #853 merged 2026-06-12.
+
 ### Performance (data-blocked until playtest #330 + #328 fix lands)
 - [ ] **Real FPS pass** — once `playtest.yml` produces `fps.log` with
   honest 3-5 tower scenarios (commit `8e89310` ships this), audit any
