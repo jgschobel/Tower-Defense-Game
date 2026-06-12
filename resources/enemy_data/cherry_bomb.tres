@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/enemy_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/textures/enemies/swarm_clean.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "cherry_bomb"
+display_name = "Kirsch-Bombe"
+friend_character_id = "enemy_swarm"
+max_health = 80.0
+move_speed = 200.0
+armor = 0.0
+gold_reward = 12
+base_color = Color(0.85, 0.10, 0.15, 1)
+scale_factor = 1.5
+custom_texture = ExtResource("2")
+is_flying = false
+heals_nearby = false
