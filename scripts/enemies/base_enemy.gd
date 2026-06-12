@@ -320,7 +320,7 @@ func die() -> void:
 		_celebrate_boss_death(_last_killer)
 
 	# Spawn children on death if configured
-	if data and data.spawns_on_death != "" and data.spawn_count > 0:
+	if data and (data.spawn_payload.size() > 0 or (data.spawns_on_death != "" and data.spawn_count > 0)):
 		_spawn_children()
 
 	# Fondue-Bomb (ROADMAP #31): on death, heal nearby enemies.
@@ -671,21 +671,42 @@ func _heal_nearby() -> void:
 
 
 func _spawn_children() -> void:
-	if not data or data.spawns_on_death == "" or data.spawn_count <= 0:
+	if not data:
 		return
 	var parent_path := get_parent() as Path2D
 	if not parent_path or not parent_path.curve:
+		return
+	var curve_length: float = parent_path.curve.get_baked_length()
+	var base_progress: float = clampf(progress, 0.0, curve_length - 40.0)
+
+	# Multi-type payload overrides single-type spawns_on_death.
+	if data.spawn_payload.size() > 0:
+		for i in data.spawn_payload.size():
+			var enemy_id: String = str(data.spawn_payload[i])
+			var dp := "res://resources/enemy_data/%s.tres" % enemy_id
+			if not ResourceLoader.exists(dp):
+				push_warning("[base_enemy] spawn_payload entry missing: %s (skipped)" % dp)
+				continue
+			var child_data = load(dp)
+			var child: Node = null
+			if EnemyPool and EnemyPool.has_method("acquire"):
+				child = EnemyPool.acquire(child_data, parent_path)
+			if child == null:
+				child = preload("res://scenes/enemies/base_enemy.tscn").instantiate()
+				child.data = child_data
+				parent_path.add_child(child)
+			child.add_to_group("enemies")
+			child.progress = max(0.0, base_progress - float(i + 1) * 20.0)
+		return
+
+	# Single-type fallback (original behaviour).
+	if data.spawns_on_death == "" or data.spawn_count <= 0:
 		return
 	var data_path := "res://resources/enemy_data/%s.tres" % data.spawns_on_death
 	if not ResourceLoader.exists(data_path):
 		push_warning("[base_enemy] spawns_on_death data missing: %s (skipped)" % data_path)
 		return
 	var child_data = load(data_path)
-	# Bounds-check: if parent died past the end of the path (progress
-	# edge cases), spawn children BEHIND current position instead of
-	# ahead-off-path where they'd be invisible/unreachable. Audit #4.
-	var curve_length: float = parent_path.curve.get_baked_length()
-	var base_progress: float = clampf(progress, 0.0, curve_length - 40.0)
 	for i in data.spawn_count:
 		var child: Node = null
 		if EnemyPool and EnemyPool.has_method("acquire"):
@@ -695,8 +716,6 @@ func _spawn_children() -> void:
 			child.data = child_data
 			parent_path.add_child(child)
 		child.add_to_group("enemies")
-		# Stagger backward along the path so children don't stack at
-		# the parent's death point — spread over ~60 progress units
 		child.progress = max(0.0, base_progress - float(i + 1) * 20.0)
 
 
