@@ -919,51 +919,38 @@ func _apply_path_tint() -> void:
 		sprite.modulate = Color.WHITE
 		return
 	var max_tier: int = max(path_a_tier, path_b_tier)
-	# Strength/brightness LUT. Brightness < 1.0 darkens the sprite so the
-	# hue shift reads clearly from across the map — pure strength change is
-	# subtle on bright sprites. Tier 1 brightness 0.88 = 12% darker (was 1.0,
-	# invisible on bright textures per playtest-feedback #630/#646/#660).
-	var strength: float = 1.0
-	var brightness: float = 0.82
-	match max_tier:
-		1:
-			strength = 1.0
-			brightness = 0.82
-		2:
-			strength = 1.0
-			brightness = 0.76
-		_:  # 3+
-			strength = 1.0
-			brightness = 0.70
+	# Brightness drops per tier so the hue tint reads clearly at distance.
+	# Each tier is 8% darker than the previous (was: 6% — too subtle per #831).
+	# Dual-path towers get brightness restored so investment reads as rewarded.
+	var brightness: float = 1.0 - (0.08 * max_tier)
+	brightness = clampf(brightness, 0.60, 1.0)
 	# Give path-B tiers 2.0× blend weight so investing in B is clearly
 	# visible even when A is at max tier (was 1.5×, playtest-feedback #562 #777).
-	# When both paths are invested, boost brightness so dual-path towers
-	# look rewarded rather than darker (combined_tier > max_tier → extra
-	# brightness at 0.06 per extra tier, capped at 0.95).
+	# Dual-path bonus: +0.08 per extra tier above max, capped at 0.95 to avoid
+	# washing out the tint.
 	var combined_tier: int = path_a_tier + path_b_tier
 	if path_a_tier > 0 and path_b_tier > 0 and combined_tier > max_tier:
-		brightness = minf(brightness + 0.06 * (combined_tier - max_tier), 0.95)
-	# Per-tier hue rotation: B-path shifts 30°/tier starting at B1, plus
-	# 15% saturation boost per tier — makes B1/B2/B3 clearly distinct even
-	# when A is at max tier (was 18°/10% starting at B2; B1 was invisible,
-	# B2 barely readable — playtest-feedback #777).
-	# A-path keeps a smaller 15°/10% shift starting at A2 for symmetry.
+		brightness = minf(brightness + 0.08 * (combined_tier - max_tier), 0.95)
+	# Per-tier hue rotation: B-path shifts 45°/tier starting at B1, plus
+	# 20% saturation boost — makes B1/B2/B3 clearly distinct even at max A
+	# (was 30°/15%; B1 vs B2 were indistinguishable per #826).
+	# A-path shifts 22°/12% starting at A1 — was invisible at A1 and subtle
+	# at A2 because the previous logic skipped A1 entirely (#831).
 	var effective_b_tint: Color = data.path_b_tint
 	if path_b_tier >= 1:
 		var extra: int = path_b_tier
-		var bh: float = fmod(data.path_b_tint.h + (30.0 / 360.0) * extra, 1.0)
-		effective_b_tint = Color.from_hsv(bh, minf(data.path_b_tint.s + 0.15 * extra, 1.0), data.path_b_tint.v)
+		var bh: float = fmod(data.path_b_tint.h + (45.0 / 360.0) * extra, 1.0)
+		effective_b_tint = Color.from_hsv(bh, minf(data.path_b_tint.s + 0.20 * extra, 1.0), data.path_b_tint.v)
 	var effective_a_tint: Color = data.path_a_tint
-	if path_a_tier >= 2:
-		var extra: int = path_a_tier - 1
-		var ah: float = fmod(data.path_a_tint.h + (15.0 / 360.0) * extra, 1.0)
-		effective_a_tint = Color.from_hsv(ah, minf(data.path_a_tint.s + 0.10 * extra, 1.0), data.path_a_tint.v)
+	if path_a_tier >= 1:
+		var extra: int = path_a_tier
+		var ah: float = fmod(data.path_a_tint.h + (22.0 / 360.0) * extra, 1.0)
+		effective_a_tint = Color.from_hsv(ah, minf(data.path_a_tint.s + 0.12 * extra, 1.0), data.path_a_tint.v)
 	var a_weight: float = float(path_a_tier)
 	var b_weight: float = float(path_b_tier) * 2.0
 	var total: float = a_weight + b_weight
 	var blended: Color = effective_a_tint * (a_weight / total) + effective_b_tint * (b_weight / total)
-	var tinted: Color = Color.WHITE.lerp(blended, strength)
-	sprite.modulate = Color(tinted.r * brightness, tinted.g * brightness, tinted.b * brightness, tinted.a)
+	sprite.modulate = Color(blended.r * brightness, blended.g * brightness, blended.b * brightness, blended.a)
 
 
 func _apply_tier_scale() -> void:

@@ -643,8 +643,11 @@ func _record_scenario(start_ms: int) -> void:
 	elif GameManager.level_kills == 0 and tower_count > 0 and GameManager.current_state == GameManager.GameState.LOST:
 		print("[playtest] WARN kills=0 but LOST — all enemies escaped without dying, DPS insufficient for wave density")
 	# Diagnostic dump: print per-tower attack/detect counts to trace kills=0 root cause.
+	# Also stored in scenario dict so _write_summary() can include it in summary.md
+	# where the Claude analysis agent can read it (stdout-only data was invisible, #825).
 	if GameManager.level_kills == 0 and tower_count > 0:
 		print("[playtest] DIAG tower breakdown:")
+		var diag_rows: Array = []
 		for t in get_tree().get_nodes_in_group("towers"):
 			var tid: String = t.data.id if "data" in t and t.data else "?"
 			var tpos: Vector2 = t.global_position if t is Node2D else Vector2.ZERO
@@ -653,9 +656,17 @@ func _record_scenario(start_ms: int) -> void:
 			var t_atk: int = t._diag_attack_count if "_diag_attack_count" in t else -1
 			var t_det: int = t._diag_detect_count if "_diag_detect_count" in t else -1
 			var t_kc: int = t.kill_count if "kill_count" in t else -1
-			print("[playtest]   tower=%s pos=(%.0f,%.0f) range=%.0f spd=%.2f attacks=%d detects=%d kills=%d" % [
-				tid, tpos.x, tpos.y, t_range, t_spd, t_atk, t_det, t_kc
+			var t_dmg: float = t.effective_damage if "effective_damage" in t else -1.0
+			print("[playtest]   tower=%s pos=(%.0f,%.0f) range=%.0f spd=%.2f dmg=%.1f attacks=%d detects=%d kills=%d" % [
+				tid, tpos.x, tpos.y, t_range, t_spd, t_dmg, t_atk, t_det, t_kc
 			])
+			diag_rows.append({
+				"id": tid, "pos": tpos, "range": t_range, "speed": t_spd,
+				"damage": t_dmg, "attacks": t_atk, "detects": t_det, "kills": t_kc,
+			})
+		# Back-patch the last scenario summary with the collected diagnostic rows
+		if not _scenario_summaries.is_empty():
+			_scenario_summaries[-1]["tower_diag"] = diag_rows
 	# Issue #328 fix: write summary INCREMENTALLY after each scenario so
 	# partial runs (timeout, crash, OOM) still produce metrics. Previous
 	# code only wrote at the very end of _run_all() which silently dropped
@@ -685,6 +696,33 @@ func _write_summary() -> void:
 	f.store_string("- **stress**: 80 simultaneous enemies. Avg FPS < 30 = performance regression; projectile / pathfollow scaling needs attention (object pooling overdue).\n")
 	f.store_string("- **bughunt**: rapid invalid placements. Expect placement toasts firing and no crashes. shot `bughunt_after_cancel` should show the normal HUD, no stuck ghost tower.\n")
 	f.store_string("- **anim_*** frames are GIF source — ffmpeg stitches them in the workflow.\n")
+	# Per-tower kill-chain diagnostic — only emitted for scenarios where kills=0.
+	# This data lives in summary.md so the Claude analysis agent can diagnose
+	# whether the issue is detection (detects=0), targeting (attacks=0), or
+	# damage delivery (attacks>0 but kills=0). Previously lived only in stdout.
+	var any_diag := false
+	for s in _scenario_summaries:
+		if s.has("tower_diag") and not (s["tower_diag"] as Array).is_empty():
+			any_diag = true
+			break
+	if any_diag:
+		f.store_string("\n## Kill-chain diagnostic (kills=0 scenarios)\n\n")
+		f.store_string("| Scenario | Tower | Pos | Range | Speed | Damage | Detects | Attacks | Kills |\n")
+		f.store_string("|---|---|---|---|---|---|---|---|---|\n")
+		for s in _scenario_summaries:
+			if not s.has("tower_diag"):
+				continue
+			for row in (s["tower_diag"] as Array):
+				var r: Dictionary = row
+				f.store_string("| %s | %s | (%.0f,%.0f) | %.0f | %.2f | %.1f | %d | %d | %d |\n" % [
+					s.name, r.get("id", "?"),
+					r.get("pos", Vector2.ZERO).x, r.get("pos", Vector2.ZERO).y,
+					r.get("range", -1.0), r.get("speed", -1.0), r.get("damage", -1.0),
+					r.get("detects", -1), r.get("attacks", -1), r.get("kills", -1),
+				])
+		f.store_string("\n**Interpretation**: detects=0 → tower never saw enemies (range/path mismatch). ")
+		f.store_string("attacks=0 → enemies detected but target selection failed. ")
+		f.store_string("attacks>0,kills=0 → projectiles fired but did not deal lethal damage (check damage vs enemy HP, pool release race).\n")
 	f.store_string("\n## Headless CI FPS note\n\n")
 	f.store_string("This playtest runs headlessly on a GitHub Actions runner without a GPU.\n")
 	f.store_string("Headless Godot FPS is typically **10–15 FPS** even on fast code — this is\n")
