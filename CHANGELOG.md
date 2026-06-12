@@ -3,6 +3,12 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-12 (ideate — 5 spec'd ideas + 2 architecture-note updates)
+
+- docs(roadmap): 5 new spec'd ideas under "Ideas To Explore" — Brot-Stab petrify-line active power, De Hauswart janitor support tower, Selbschtskan-Schiff copycat punishment enemy, Coupon-Kombo spend-streak gold multiplier, Pausbeleg diegetic between-wave receipt overlay. Each entry includes mechanics, impl hints, costs, unlock costs, and "why it sticks" rationale.
+- docs(arch): hud.gd drift note updated — file is now 2321 lines / 80 functions, net +120 lines and +5 functions in 7 days since the 2026-06-05 note while the refactor sits unstarted. Next audit-polish should extract `tower-shop-panel` as a load-bearing first cut.
+- docs(arch): new architecture note — 8 of 11 autoloads live under scripts/systems/ instead of scripts/autoload/, contradicting CLAUDE.md. Proposed low-risk ~1h refactor: move ComboTracker, MusicManager, SfxManager, AutoPlaytest, WaveSimulator, ProjectilePool, EnemyPool, EffectPlayer into scripts/autoload/ and update project.godot.
+
 ## 2026-06-12 (audit-polish — extract embedded tier visuals)
 
 - refactor(tower): extract `_hat_script()` + `_glow_script()` from base_tower.gd to real files `scripts/towers/visuals/tier_hat.gd` and `tier_glow.gd` — both now preload()'d, visible to validate.sh, and parseable by godot --check-only. base_tower.gd is ~58 lines shorter. Architecture note in ROADMAP updated with progress and remaining steps.
