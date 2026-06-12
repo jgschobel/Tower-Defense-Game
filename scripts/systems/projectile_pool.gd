@@ -52,13 +52,22 @@ func acquire() -> Node2D:
 	while not _free.is_empty():
 		var candidate = _free.pop_back()
 		if candidate != null and is_instance_valid(candidate):
-			# Guard against script-detached nodes. Null script = truly broken node.
-			# Identity mismatch (post-CACHE_MODE_IGNORE reload) is verified with
-			# a property-presence check before discarding — prevents depleting the
-			# pool when CACHE_MODE_IGNORE produces a new Script identity object.
+			# Guard against script-detached nodes.
+			# In Godot 4.6 headless, loading a scene that transitively
+			# preloads base_projectile.gd (via base_tower.gd) creates a new
+			# GDScript object, detaching existing instances from the old one.
+			# Recovery: reload the script and re-attach rather than destroy.
 			var candidate_script = candidate.get_script()
 			if candidate_script == null:
-				push_warning("[ProjectilePool] slot script-null, destroying: %s" % candidate.get_class())
+				var fresh := load(PROJECTILE_SCRIPT_PATH) as Script
+				if fresh != null:
+					candidate.set_script(fresh)
+					_expected_script = fresh  # keep in sync for future slots
+					if candidate.has_method("setup"):
+						candidate.set_meta("pooled", true)
+						_activate(candidate)
+						return candidate
+				push_warning("[ProjectilePool] slot script-null unrecoverable, destroying: %s" % candidate.get_class())
 				candidate.queue_free()
 				continue
 			if _expected_script != null and candidate_script != _expected_script:

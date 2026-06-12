@@ -656,18 +656,18 @@ func _attack() -> void:
 			var refreshed := projectile.get_script() as Script
 			if refreshed != null:
 				_projectile_script = refreshed
-			# Abort if null/freed OR if the script is genuinely detached
-			# (get_script()==null means Area2D with no script → setup() crash).
-			# We intentionally do NOT use _is_valid_projectile() here: GDScript VM
-			# pressure in headless CI at 8× time_scale can cause spurious
-			# has_method()/property-check failures on a perfectly valid node,
-			# which previously aborted every shot and produced kills=0 (#770).
-			# Checking get_script()==null is the only reliable discriminant between
-			# "valid node with script that looks broken under VM stress" (proceed)
-			# and "genuinely script-less Area2D that will crash on setup()" (abort).
-			if projectile == null or not is_instance_valid(projectile) \
-					or projectile.get_script() == null:
-				if projectile != null and is_instance_valid(projectile):
+			elif _projectile_script != null:
+				# Script null on fresh CACHE_MODE_IGNORE node — same GDScript
+				# recompilation race that depletes the pool. Re-attach the last
+				# known good script before checking validity.
+				projectile.set_script(_projectile_script)
+				refreshed = projectile.get_script() as Script
+			# Only abort if the node is truly unusable (freed or still no script)
+			if projectile == null or not is_instance_valid(projectile):
+				push_error("[tower] projectile node freed — aborting shot")
+				return
+			if projectile.get_script() == null:
+				if is_instance_valid(projectile):
 					projectile.queue_free()
 				push_error("[tower] projectile scene permanently broken — aborting shot")
 				return
