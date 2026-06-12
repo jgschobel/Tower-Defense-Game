@@ -59,6 +59,7 @@ func _ready() -> void:
 	_load_wave_data()
 	_apply_level_tint()
 	_soften_background()
+	_spawn_level_vignette()
 	_smooth_path_overlay()
 	_spawn_atmosphere_particles()
 	wave_manager.setup_waves(wave_definitions)
@@ -87,6 +88,38 @@ func _soften_background() -> void:
 		overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		overlay.z_index = -90
 		add_child(overlay)
+
+
+func _spawn_level_vignette() -> void:
+	# Cinematic radial vignette over the play field. Darkens the corners
+	# while keeping the path / tower area bright, giving the AI-generated
+	# map art the polish of a deliberately framed scene. Sits above the
+	# FloorWash (z=-90) but below all gameplay sprites.
+	var vignette := ColorRect.new()
+	vignette.name = "LevelVignette"
+	vignette.size = Vector2(1280, 720)
+	vignette.position = Vector2.ZERO
+	vignette.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vignette.z_index = -88
+	var mat := ShaderMaterial.new()
+	mat.shader = preload("res://assets/shaders/level_vignette.gdshader")
+	mat.set_shader_parameter("strength", 0.55)
+	mat.set_shader_parameter("inner_radius", 0.42)
+	mat.set_shader_parameter("outer_radius", 0.86)
+	# Per-level tint pull: cool levels (L2/L9) get a bluer vignette,
+	# warm levels (L3 bakery, L5 kasse) get a warmer one. Default is
+	# near-black for neutral levels.
+	var tint: Color = Color(0.03, 0.02, 0.0, 1.0)
+	match level_id:
+		2: tint = Color(0.02, 0.04, 0.08, 1.0)  # freezer cold
+		3: tint = Color(0.08, 0.04, 0.02, 1.0)  # bakery warm
+		5: tint = Color(0.10, 0.05, 0.01, 1.0)  # boss kasse gold
+		7: tint = Color(0.05, 0.02, 0.08, 1.0)  # rooftop dusk
+		9: tint = Color(0.03, 0.0, 0.06, 1.0)   # cumulus glitch
+		10: tint = Color(0.10, 0.02, 0.02, 1.0) # finale crimson
+	mat.set_shader_parameter("tint", tint)
+	vignette.material = mat
+	add_child(vignette)
 
 
 func _smooth_path_overlay() -> void:
