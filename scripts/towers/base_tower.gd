@@ -42,6 +42,11 @@ var effective_speed: float = 0.0
 @onready var detection_area: Area2D = $DetectionArea
 
 var _enemies_in_range: Array = []
+# UI selection state — drives a pulsing gold halo around the pedestal so the
+# player can tell which tower the tower-info panel currently refers to.
+var _is_selected: bool = false
+var _selection_pulse_t: float = 0.0
+var _selection_tween: Tween = null
 # Diagnostic counters — written to playtest summary to trace kills=0 root cause.
 var _diag_attack_count: int = 0   # total _attack() calls this session
 var _diag_detect_count: int = 0   # total frames where ≥1 enemy in range
@@ -1054,6 +1059,29 @@ func show_range(visible_flag: bool) -> void:
 		range_indicator.visible = visible_flag
 
 
+func set_selected(is_selected: bool) -> void:
+	# Pulsing gold halo around the pedestal — gives the player a clear
+	# visual link between the tower-info panel and the tower it refers
+	# to. Was silently impossible to tell which tower was "selected"
+	# when multiple were placed close together.
+	if _is_selected == is_selected:
+		return
+	_is_selected = is_selected
+	if _selection_tween and _selection_tween.is_valid():
+		_selection_tween.kill()
+		_selection_tween = null
+	if is_selected:
+		_selection_pulse_t = 0.0
+		_selection_tween = create_tween().set_loops()
+		_selection_tween.tween_method(_on_selection_pulse, 0.0, TAU, 1.4)
+	queue_redraw()
+
+
+func _on_selection_pulse(t: float) -> void:
+	_selection_pulse_t = t
+	queue_redraw()
+
+
 func _update_visual() -> void:
 	if not sprite:
 		return
@@ -1119,6 +1147,15 @@ func _update_visual() -> void:
 func _draw() -> void:
 	if not is_placed:
 		return
+	# Selection halo — pulsing gold ring slightly larger than the pedestal.
+	# Drawn FIRST so the pedestal renders on top of it.
+	if _is_selected:
+		var pulse: float = 0.5 + 0.5 * sin(_selection_pulse_t)
+		var halo_r: float = 38.0 + pulse * 4.0
+		var halo_a: float = 0.35 + pulse * 0.35
+		draw_circle(Vector2(0, 14.0), halo_r + 4.0, Color(1.0, 0.78, 0.20, halo_a * 0.40))
+		draw_arc(Vector2.ZERO, halo_r, 0.0, TAU, 64,
+			Color(1.0, 0.86, 0.30, halo_a), 2.5, true)
 	# Procedural pedestal — replaced 3 stacked draw_circle rings with a
 	# layered design: soft drop shadow + ground disc + bevel highlight
 	# arc + thin gold accent ring. Reads as "professional museum

@@ -46,6 +46,23 @@ func _ready() -> void:
 
 	_on_gold_changed(CurrencyManager.gold)
 	_on_lives_changed(GameManager.lives)
+
+	# Translucent dark backdrop on the TopBar so gold / wave / lives stay
+	# legible over bright map art (the bar was a transparent
+	# PanelContainer — text was hard to read on saturated levels).
+	var top_bar_panel: PanelContainer = $TopBar if has_node("TopBar") else null
+	if top_bar_panel:
+		var tb_sb := StyleBoxFlat.new()
+		tb_sb.bg_color = Color(0.04, 0.03, 0.02, 0.78)
+		tb_sb.border_color = DesignTokens.COL_STROKE_NORMAL
+		tb_sb.border_width_bottom = 2
+		tb_sb.corner_radius_bottom_left = DesignTokens.RADIUS_M
+		tb_sb.corner_radius_bottom_right = DesignTokens.RADIUS_M
+		tb_sb.content_margin_left = DesignTokens.SP_M
+		tb_sb.content_margin_right = DesignTokens.SP_M
+		tb_sb.content_margin_top = DesignTokens.SP_XS
+		tb_sb.content_margin_bottom = DesignTokens.SP_XS
+		top_bar_panel.add_theme_stylebox_override("panel", tb_sb)
 	# Top bar — design tokens, consistent with all panels.
 	# Lives + wave + enemy count: muted body color so the GOLD counter
 	# pops as the only highlight on the row (clean visual hierarchy).
@@ -1218,14 +1235,21 @@ func _show_wave_announcement(current: int, total: int) -> void:
 	container.offset_top = 68
 	container.offset_bottom = 100
 	container.modulate.a = 0.0
+	container.scale = Vector2(0.78, 0.78)
+	container.pivot_offset = Vector2(80, 16)  # center of the pill
 	add_child(container)
 
-	# Fade in, hold, fade out — stays at top, never crosses the play field
-	var tw := container.create_tween()
-	tw.tween_property(container, "modulate:a", 1.0, 0.15)
-	tw.tween_interval(0.9)
-	tw.tween_property(container, "modulate:a", 0.0, 0.35)
-	tw.tween_callback(container.queue_free)
+	# Fade-in + overshoot scale pop, hold, settle, fade out.
+	var tw := container.create_tween().set_parallel(true)
+	tw.tween_property(container, "modulate:a", 1.0, 0.14).set_trans(Tween.TRANS_SINE)
+	tw.tween_property(container, "scale", Vector2(1.10, 1.10), 0.18) \
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	var settle := container.create_tween()
+	settle.tween_interval(0.18)
+	settle.tween_property(container, "scale", Vector2.ONE, 0.12).set_trans(Tween.TRANS_SINE)
+	settle.tween_interval(0.78)
+	settle.tween_property(container, "modulate:a", 0.0, 0.35)
+	settle.tween_callback(container.queue_free)
 
 
 func show_next_wave_button(visible_flag: bool) -> void:
@@ -1450,8 +1474,12 @@ func show_tower_info(tower: BaseTower) -> void:
 	if _selected_tower and is_instance_valid(_selected_tower):
 		_selected_tower.modulate = Color.WHITE
 		_selected_tower.show_range(false)
+		if _selected_tower.has_method("set_selected"):
+			_selected_tower.set_selected(false)
 	_selected_tower = tower
 	tower.show_range(true)
+	if tower.has_method("set_selected"):
+		tower.set_selected(true)
 	# Wipe stale upgrade buttons from a prior selection — they'd otherwise
 	# linger with cached text from a different tower's data ("Lemurius"
 	# header + "Volleyball-Hagel" button bug from screenshots). They get
@@ -1525,6 +1553,8 @@ func hide_tower_info() -> void:
 	if _selected_tower and is_instance_valid(_selected_tower):
 		_selected_tower.show_range(false)
 		_selected_tower.modulate = Color.WHITE
+		if _selected_tower.has_method("set_selected"):
+			_selected_tower.set_selected(false)
 		_selected_tower = null
 	if tower_info:
 		tower_info.visible = false
