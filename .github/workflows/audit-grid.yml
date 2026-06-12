@@ -13,6 +13,11 @@ on:
     workflows: ["Autonomous Playtester"]
     types: [completed]
   workflow_dispatch:
+    inputs:
+      run_id:
+        description: 'Playtest run ID to pull screenshots from (optional)'
+        required: false
+        default: ''
 
 permissions:
   contents: write
@@ -32,6 +37,50 @@ jobs:
           fetch-depth: 0
       - name: Install Pillow
         run: python3 -m pip install pillow
+
+      - name: Pull fresh screenshots from playtest artifact
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_ID: ${{ github.event.workflow_run.id || github.event.inputs.run_id }}
+        run: |
+          # The playtester's push of key shots to main is blocked by the
+          # branch ruleset (required status checks reject direct bot
+          # pushes), so the copies in docs/observability/screenshots/
+          # froze at 2026-05-03 — every grid was a re-stitch of stale
+          # shots. Pull the triggering run's artifact instead; the grid
+          # then always reflects the playtest that just ran.
+          set -e
+          if [ -z "$RUN_ID" ]; then
+            echo "No run id (manual dispatch without input) — stitching repo copies."
+            exit 0
+          fi
+          gh run download "$RUN_ID" --repo "${{ github.repository }}" --dir /tmp/playtest_dl \
+            || { echo "::warning::artifact download failed — stitching repo copies"; exit 0; }
+          mkdir -p docs/observability/screenshots
+          copy_key_shot() {
+            local pattern="$1" dest="docs/observability/screenshots/$2" src
+            src=$(find /tmp/playtest_dl -name "${pattern}" 2>/dev/null | head -1)
+            if [ -n "$src" ]; then cp "$src" "$dest"; echo "  $dest"; fi
+          }
+          echo "== Copying key screenshots from artifact =="
+          copy_key_shot "*00_menu*.png"                "01_menu.png"
+          copy_key_shot "*ui_level_select*.png"        "02_level_select.png"
+          copy_key_shot "*ui_options*.png"             "03_options.png"
+          copy_key_shot "*ui_story*.png"               "04_story.png"
+          copy_key_shot "*L1_healthy_placed*.png"      "05_L1_placed.png"
+          copy_key_shot "*L1_healthy_final*.png"       "06_L1_final.png"
+          copy_key_shot "*L2_healthy_final*.png"       "07_L2_final.png"
+          copy_key_shot "*L3_healthy_final*.png"       "08_L3_final.png"
+          copy_key_shot "*L4_healthy_final*.png"       "09_L4_final.png"
+          copy_key_shot "*L5_healthy_final*.png"       "10_L5_final.png"
+          copy_key_shot "*upgrades_tier_A3*.png"       "11_upgrades_pathA.png"
+          copy_key_shot "*upgrades_tier_A3_B2*.png"    "12_upgrades_blend.png"
+          copy_key_shot "*new_towers_placed*.png"      "13_new_towers.png"
+          copy_key_shot "*new_towers_fight*.png"       "14_new_towers_fight.png"
+          copy_key_shot "*stress_spawned*.png"         "15_stress_spawned.png"
+          copy_key_shot "*stress_t03*.png"             "16_stress_mid.png"
+          copy_key_shot "*bughunt_after_cancel*.png"   "17_bughunt_clean.png"
+
       - name: Stitch grid
         run: python3 scripts/playtest_tools/stitch_audit_grid.py
       - name: Commit grid if changed
@@ -47,7 +96,9 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           BRANCH="audit-grid/$(date +%Y%m%d-%H%M%S)"
           git checkout -b "$BRANCH"
-          git add docs/playtest_shots/
+          # Include the refreshed key-shot copies — this PR path replaces
+          # the playtester's direct push to main (ruleset-blocked).
+          git add docs/playtest_shots/ docs/observability/screenshots/
           git commit -m "chore(audit): refresh playtest screenshot grid"
           git push -u origin "$BRANCH"
           gh pr create \
