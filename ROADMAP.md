@@ -348,6 +348,161 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
   ("Tag-Karte" variant brags about today's seed). The local-only
   leaderboard sidesteps the BFF complexity of online scores.
 
+### Added 2026-06-12 (ideate run)
+
+- [ ] **"Brot-Stab" — petrify-line active power** — top-bar 🥖 button.
+  Tap it, then drag a single stroke across the map. Every enemy whose
+  position crosses the stroke within the next 3 s becomes
+  "stein-Brot" (stone-bread) for 4 s: PathFollow2D `progress` frozen,
+  `take_damage(...)` receives a ×2 multiplier, sprite gets a crusty
+  ochre overlay + tiny wheat-ear particle. Cost **80 gold per cast**;
+  unlocks at **250 Cumulus** in the Forschig menu. Hard cap: 6 enemies
+  per stroke (`_petrified_this_stroke: Dictionary`) so it can't
+  trivialise dense waves.
+
+  **Impl:** new `scripts/ui/brot_stab_cursor.gd` overlay listening to
+  `InputEventScreenDrag`; samples segments, calls
+  `EnemyPool.get_active()`, tests
+  `global_position.distance_squared_to(stroke_point) < 50²` per
+  segment. Affected enemy: `set_meta("petrified_until", now + 4.0)` +
+  pause `PathFollow2D` movement. `BaseEnemy._physics_process` early-
+  returns when meta present; `BaseEnemy.take_damage()` reads meta and
+  multiplies. Visual: `_draw()` adds a tan crust polygon overlay when
+  meta is set. Cursor sprite swapped to existing `assets/icons/brot.svg`
+  if present; otherwise a procedural rounded brown polygon.
+
+  **Why it sticks:** BTD veterans expect freezes (Ice Monkey) but NOT
+  player-drawn petrify lines. Pairs with [[wagli-schub]] — Wagli
+  pushes, Brot-Stab freezes; together they're a tactile "two-finger
+  combo" the user already has in muscle memory. Theme-perfect: the
+  Migros bakery aisle as a tactical asset. Estimated ~280 LoC, no new
+  art needed (use existing brot icon or draw procedurally).
+
+- [ ] **"De Hauswart" — first dedicated support tower (Migros
+  janitor)** — new tower character cost **250 gold**, T0 deals
+  **zero damage on its own**. Passive AoE 200 px radius: every friend
+  tower inside that radius gets `attack_speed *= 1.10` (stackable up
+  to 3 Hauswarts → max ×1.30) AND every projectile fired by adjacent
+  towers has a 5 % chance to spawn a tiny "Bäse" (broom) AoE on hit
+  (radius 40 px, 8 damage). T1-A: bigger radius (250 px) + +15 %
+  speed. T1-B: broom-proc chance 5 % → 12 %. T3 unique: every 25 s
+  performs a "Bode-Wüsch" — sweeps the closest 60 px of path,
+  pushing enemies back 40 px and dropping a slow-tile (-20 % speed
+  for 2 s).
+
+  **Impl:** new `resources/tower_data/hauswart.tres` with
+  `damage = 0`, `range = 0` (no targeting), `attack_speed = 0`. New
+  `tower_id = "hauswart"`. `BaseTower._refresh_synergies()` extended:
+  Hauswarts register themselves in
+  `GameLevel.hauswart_emitters` (Array[Vector2 + multiplier]); every
+  other tower polls this list on placement / topology change. Sprite:
+  needs one stylised side-profile portrait of a short man with a
+  push-broom in green Migros apron — **escalate to image-to-image if
+  the user provides a friend photo, otherwise text-to-image
+  Stability** (acceptable here because Hauswart is generic, not a
+  named friend). Add to `_shop_tower_ids` in `hud.gd`. Synergy with
+  [[synergie-combo]]: explicit pair Hauswart + Lemurius = +1
+  projectile per shot.
+
+  **Why it sticks:** every Migros has a Hauswart; nobody notices
+  them but they make everything work. Mechanical novelty: first tower
+  that buffs *other* towers instead of attacking — closes the
+  "support" gap in the cast roster. Composes with every existing
+  tower; rewards tight clusters.
+
+- [ ] **"Selbschtskan-Schiff" — copycat punishment enemy (L8–L10)** —
+  mid-level enemy that visually copies the silhouette of the **last
+  friend tower placed in this run** (dark inverted sprite, magenta
+  outline). HP 1,400, speed 95 px/s, 50 gold drop. **Mechanic:**
+  immune to damage from that exact `tower_id` (the friend whose
+  shape it copies). Forces multi-tower compositions — a player who
+  only-Lemurius-spammed loses their L8 run unless they place a
+  second friend.
+
+  **Impl:** new `resources/enemy_data/selbschtskan_schiff.tres` with
+  `custom_damage_immune_to_tower_id: String` field. `GameLevel`
+  tracks `most_recent_tower_id`. On spawn, `WaveManager` reads it
+  and assigns to the enemy via `set_meta("immune_to", tower_id)`.
+  `BaseEnemy.take_damage(amount, type, attacker_id)` checks meta and
+  no-ops when attacker_id matches. Sprite: silhouette pulled from
+  `assets/textures/towers/<tower_id>.png` rendered black with a
+  modulate `Color(0.1, 0.0, 0.1, 0.9)` + magenta outline shader.
+  Debut: L8 wave 4 (intro: solo), L9 wave 7 (×3), L10 wave 6 (×5
+  mixed with normal waves). Falls back to a generic camo silhouette
+  if `most_recent_tower_id == ""`.
+
+  **Why it sticks:** every BTD player has a "spam Super Monkey" muscle
+  memory; this directly punishes that without being unfair. Players
+  who already build mixed comps don't notice. Theme: the self-scan
+  ghost-of-yourself, the shame of every Migros shopper who botched
+  a barcode scan. Names: "**De Selbschtskan-Schiff hät dich kopiert.**"
+  intro card via `hud.show_enemy_intro()`.
+
+- [ ] **"Coupon-Kombo" — spend-streak gold multiplier** — when the
+  player spends >1000 gold within any rolling 3 s window
+  (tower placements + upgrades pooled), fire a Migros-styled
+  "🎫 KOMBO!" toast and set `bonus_kill_gold_mul = 1.15` for the
+  next 10 s. Stacks multiplicatively with
+  [[migros-bon-active-power]] — a Bon-discounted spend still counts
+  toward the 1000-gold threshold AND the kombo bonus applies on top
+  of normal kill gold.
+
+  **Impl:** `CurrencyManager` adds `_spend_window: Array[Vector2]` of
+  `{timestamp, amount}` entries; `try_spend()` appends, evicts older
+  than 3 s, sums; if sum > 1000 emits `signal kombo_triggered`.
+  `WaveManager._on_enemy_killed` reads
+  `CurrencyManager.kill_gold_multiplier()` (returns 1.15 during the
+  10-s window, else 1.0). HUD adds a `KomboBadge` Control (gold pill
+  with countdown number) below the gold counter; tween in/out.
+  Cap: window auto-resets on trigger so the same spend can't fire
+  twice. Telemetry: `GameManager` increments
+  `lifetime_kombos_triggered` for [[migros-cumulus-meta]].
+
+  **Why it sticks:** turns the "I just got paid → I spend it all"
+  rhythm into a visible feedback loop. Currently gold accumulation is
+  silent — every 100 gold disappears into a tower with no
+  flourish. Kombo gives the spend itself a reward, the way Bloons TD
+  gives the *kill* a reward. ~120 LoC, zero new art.
+
+- [ ] **"Pausbeleg" — diegetic between-wave receipt overlay** — during
+  the 4 s breather between waves, slide up a Migros-style receipt
+  paper from the bottom-right corner (250×320 px). Contents in
+  monospace + dashed dividers:
+  ```
+  --- MIGROS AFFOLTERN ---
+  Wälle 4 abgschlosse
+  ------------------------
+  Tower-MVP:
+   1. JoJo        842 dmg
+   2. Lemurius    611 dmg
+   3. Kühne       402 dmg
+  Find ert:        18 Feind
+  Gwünne:         215 Gold
+  Cumulus:          1 ★
+  ------------------------
+  Läbe übrig:       18 ♥
+  Danke vil mal! 🇨🇭
+       ✂  ✂  ✂
+  ```
+  Auto-dismisses on `wave_started` signal; tap to dismiss early.
+
+  **Impl:** new `scripts/ui/hud/wave_receipt.gd` (~180 LoC) +
+  `scenes/ui/wave_receipt.tscn`. Wired into `WaveManager.wave_completed`
+  via signal. Needs per-tower kill+damage counters — extend
+  `BaseTower` with `lifetime_damage_dealt: float` and
+  `lifetime_kills: int`, reset between runs. `EnemyPool` already
+  tracks per-wave kills; expose `get_wave_kill_count()`. Font: use
+  existing Düridütsch monospace or `Theme.font_mono`.
+
+  **Why it sticks:** the user has flagged "dead air between waves"
+  as a P2 fix opportunity (DDT-Verwüschelig idea). Pausbeleg fills
+  that dead air with a non-blocking visual joke that also delivers
+  *useful* stats (which tower is carrying?). BTD has no diegetic
+  stat screen — uniquely Swiss. Composes with [[hei-karte-share-card]]:
+  the receipt can BE the share image if the user taps it. Estimated
+  ~200 LoC + 1 scene, no new art (uses procedural styled panel +
+  emoji).
+
 ---
 
 ## 🔎 Architecture Notes
@@ -430,6 +585,47 @@ Use as input for refactor sprints when the loop runs `self-improve`.
   Pair this refactor sequencing with the [[base-tower-god-object]]
   one — both files are the structural debt blocking faster
   feature work.
+
+  **2026-06-12 follow-up (drift confirmed):** `hud.gd` is now **2321
+  lines / 80 functions** — net **+120 lines and +5 functions in 7
+  days** since the 2026-06-05 note. The refactor proposal has sat
+  unstarted while the file keeps absorbing new HUD widgets (ability
+  button, kombo badge plumbing, etc.). Every audit-polish run that
+  touches the HUD adds another ~20 lines without extraction. **This
+  is the highest-leverage refactor in the project right now** —
+  next audit-polish run should pick item 1 of the extraction list
+  (tower-shop-panel) as a load-bearing first cut. Estimated 2 h
+  work, removes the largest merge-conflict surface in the repo.
+
+- **2026-06-12 — Autoload directory drift: 8 of 11 autoloads live
+  under `scripts/systems/`, not `scripts/autoload/`.** `project.godot`
+  registers 11 autoloads; only `GameManager`, `CurrencyManager`,
+  `AminosManager` actually live in `scripts/autoload/`. The other 8
+  (`ComboTracker`, `MusicManager`, `SfxManager`, `AutoPlaytest`,
+  `WaveSimulator`, `ProjectilePool`, `EnemyPool`, `EffectPlayer`)
+  are filed under `scripts/systems/` or `scripts/playtest/`,
+  contradicting both `CLAUDE.md` ("scripts/autoload/ → Singletons")
+  and any reasonable expectation a new contributor would form from
+  the directory name.
+
+  **Effects:**
+  1. `scripts/systems/` mixes true autoloads with non-autoload
+     classes (`game_level.gd`, `tower_placement.gd`,
+     `synergy_table.gd`, `level_data.gd`) — there's no way to tell
+     from the directory which scripts are global singletons.
+  2. Newcomer reading `scripts/autoload/` thinks the game has 3
+     autoloads and misses the other 8.
+  3. CLAUDE.md is technically lying — its "Autoloads (11, see
+     project.godot)" line is correct but the directory hint
+     misleads.
+
+  **Refactor proposal (low-risk, ~1 hr audit-polish):** move the 8
+  drifted autoloads into `scripts/autoload/` and update the paths in
+  `project.godot`. Run `grep -rE '(res://scripts/(systems|playtest)/(combo_tracker|music_manager|sfx_manager|auto_playtest|wave_simulator|projectile_pool|enemy_pool|effect_player))'`
+  to find any hard-coded `preload()`/path references and update them.
+  validate.sh catches stale paths. Single PR, one commit per file
+  move + the project.godot bump. No behavioural change. Pair this
+  with a CLAUDE.md doc fix.
 
 ---
 
