@@ -546,15 +546,29 @@ func _attack() -> void:
 	SfxManager.play_shoot(data.id, shoot_tier)
 
 	# Quick attack-pulse on the sprite — punches scale 1.0→1.10→1.0 over
-	# 0.12s. Makes the tower feel "alive" when shooting. Cheap, no allocs.
-	# Skipped during a tween chain to avoid stacking with upgrade/place anims.
+	# 0.12s plus a 4px recoil JOLT opposite the firing direction so the
+	# shot lands with weight. Cheap, no allocs. Skipped during a tween
+	# chain to avoid stacking with upgrade/place anims.
 	if sprite and not _is_attack_pulsing:
 		_is_attack_pulsing = true
 		var base_scale: Vector2 = _baseline_scale if _baseline_scale != Vector2.ZERO else sprite.scale
-		var pulse := sprite.create_tween()
+		# X-only recoil — the idle breathe tween owns sprite.position.y on a
+		# loop, so animating both would fight. Side-to-side bump in the
+		# opposite firing direction lands the same "weighted shot" feel
+		# without crashing the breathing animation.
+		var recoil_x: float = 0.0
+		if is_instance_valid(current_target):
+			var dx: float = current_target.global_position.x - global_position.x
+			recoil_x = -signf(dx) * 4.0
+		var base_x: float = sprite.position.x
+		var pulse := sprite.create_tween().set_parallel(true)
 		pulse.tween_property(sprite, "scale", base_scale * 1.10, 0.05).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-		pulse.tween_property(sprite, "scale", base_scale, 0.07).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-		pulse.tween_callback(func(): _is_attack_pulsing = false)
+		pulse.tween_property(sprite, "position:x", base_x + recoil_x, 0.05).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		var settle := sprite.create_tween().set_parallel(true)
+		settle.tween_interval(0.05)
+		settle.tween_property(sprite, "scale", base_scale, 0.07).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+		settle.tween_property(sprite, "position:x", base_x, 0.07).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+		settle.chain().tween_callback(func(): _is_attack_pulsing = false)
 
 	# Cordula cone burst (ROADMAP #38). Any enemy within data.cone_half_angle
 	# of the aim direction takes 60% damage instantly, in addition to the

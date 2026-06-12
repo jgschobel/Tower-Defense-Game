@@ -1047,6 +1047,30 @@ func _flash_moab_telegraph() -> void:
 func show_wave_clear_celebration() -> void:
 	# Brief big "WÄLLE GSCHAFFT!" text mid-screen at end of each wave.
 	# Cheap mid-game reward — keeps the player feeling progress.
+	# Wave-clear gold border-glow vignette — soft gold edge that pulses in
+	# then fades, framing the play field for the celebration label that
+	# follows. Reads as "you did it" even before the eye lands on text.
+	var wrap := Panel.new()
+	wrap.name = "WaveClearVignetteWrap"
+	wrap.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	wrap.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var ring := StyleBoxFlat.new()
+	ring.bg_color = Color(0, 0, 0, 0)
+	ring.border_color = Color(1.0, 0.85, 0.25, 0.0)
+	ring.border_width_left = 28
+	ring.border_width_right = 28
+	ring.border_width_top = 28
+	ring.border_width_bottom = 28
+	wrap.add_theme_stylebox_override("panel", ring)
+	add_child(wrap)
+	var ring_tw := wrap.create_tween()
+	ring_tw.tween_method(func(a: float):
+		ring.border_color = Color(1.0, 0.85, 0.25, a), 0.0, 0.55, 0.18).set_trans(Tween.TRANS_SINE)
+	ring_tw.tween_interval(0.5)
+	ring_tw.tween_method(func(a: float):
+		ring.border_color = Color(1.0, 0.85, 0.25, a), 0.55, 0.0, 0.35).set_trans(Tween.TRANS_SINE)
+	ring_tw.tween_callback(wrap.queue_free)
+
 	var lbl := Label.new()
 	lbl.name = "WaveClearCelebration"
 	lbl.text = "WÄLLE GSCHAFFT!"
