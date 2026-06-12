@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-12 (audit-polish — Swiss German consistency fixes)
+
+- fix(i18n): three English strings replaced with Züridütsch — main menu subtitle "Tower Defense Adventure" → "E Türm-Verteidigungs-Abentüür"; synergy bonus label "+%d Pierce" → "+%d Dureloch"; aminos upgrade title "Banane-Pierce" → "Banana-Dureloch". Also ticked MOAB boss (Selbschtbedienigs-Wage) ROADMAP item shipped in PR #855.
+
 ## 2026-06-12 (ideate — 5 spec'd ideas + 2 architecture-note updates)
 
 - docs(roadmap): 5 new spec'd ideas under "Ideas To Explore" — Brot-Stab petrify-line active power, De Hauswart janitor support tower, Selbschtskan-Schiff copycat punishment enemy, Coupon-Kombo spend-streak gold multiplier, Pausbeleg diegetic between-wave receipt overlay. Each entry includes mechanics, impl hints, costs, unlock costs, and "why it sticks" rationale.
