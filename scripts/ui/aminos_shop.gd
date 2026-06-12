@@ -20,7 +20,7 @@ const NODES: Array = [
 	{"id": "upgrade_disc_10", "cost": 60,  "svg": "lightning", "title": "Upgrade-Rabatt",     "desc": "Upgrades sind 10% billiger"},
 	{"id": "farm_plus_10",    "cost": 55,  "svg": "wheat",     "title": "Farm-Boost",         "desc": "+10 Gold/Wälle für Banani-Hof"},
 	{"id": "crit_plus_5",     "cost": 70,  "svg": "target",    "title": "Glücks-Hand",        "desc": "+5% Krit-Chance für alli Türm"},
-	{"id": "pierce_plus_1",   "cost": 75,  "svg": "banana",    "title": "Banane-Pierce",      "desc": "Lemurius Bananen durchstäche 1 Feind meh"},
+	{"id": "pierce_plus_1",   "cost": 75,  "svg": "banana",    "title": "Banana-Dureloch",    "desc": "Lemurius Bananen durchstäche 1 Feind meh"},
 	{"id": "aminos_x1_5",     "cost": 150, "svg": "sparkle",   "title": "Aminos-Multiplikator", "desc": "1.5× Aminos-Bonus (Endgame-Node)"},
 ]
 

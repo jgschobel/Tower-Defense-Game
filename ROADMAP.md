@@ -178,7 +178,7 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
 
 ### Added 2026-06-04 (ideate run)
 
-- [ ] **MOAB-class boss: "Selbschtbedienigs-Wage"** — self-checkout
+- [x] **MOAB-class boss: "Selbschtbedienigs-Wage"** — self-checkout
   shopping cart mega-boss that, when popped, splits into a payload of
   6 stacked enemies (3× fast `pasta_express`, 2× swarm `cherry_bomb`,
   1× camo `tofu_ninja`). HP 5,000, speed 40 px/s, 350 gold drop.
@@ -190,6 +190,7 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
   endless "Help required at self-checkout" gag every Swiss shopper
   knows. **Impl hint:** payload spawns with the parent's
   `path_progress`, fanned by `±h_offset` so they don't visually stack.
+  _Shipped 2026-06-12 via PR #855._
 
 - [ ] **Migros-Bon active power (50% off next 3 actions)** — top-bar
   "🎫 Bon" button (only visible when ≥1 charge). Tap → next 3 tower

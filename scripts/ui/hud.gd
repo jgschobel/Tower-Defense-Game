@@ -1843,7 +1843,7 @@ func _format_synergy_bonus(syn: Dictionary) -> String:
 	if slow_add > 0.005:
 		parts.append("+%.1fs Verlangsamig" % slow_add)
 	if pierce > 0:
-		parts.append("+%d Pierce" % pierce)
+		parts.append("+%d Dureloch" % pierce)
 	if parts.is_empty():
 		return ""
 	return "(%s)" % ", ".join(parts)

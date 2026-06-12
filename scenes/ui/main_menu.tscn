@@ -55,7 +55,7 @@ horizontal_alignment = 1
 
 [node name="Subtitle" type="Label" parent="HBox/MenuPanel/VBox" unique_id=858186724]
 layout_mode = 2
-text = "Tower Defense Adventure"
+text = "E Türm-Verteidigungs-Abentüür"
 horizontal_alignment = 1
 
 [node name="Spacer" type="Control" parent="HBox/MenuPanel/VBox" unique_id=771740786]
