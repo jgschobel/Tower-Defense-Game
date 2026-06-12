@@ -37,8 +37,15 @@ func show_victory(stars: int) -> void:
 	var fade := create_tween()
 	fade.tween_interval(2.0)
 	fade.tween_property(self, "modulate:a", 1.0, 0.5)
+	# Confetti burst that runs through the fade-in pause so the screen
+	# isn't a dead 2-second blank wait. CPUParticles2D layered behind
+	# the panel — colors picked from the gold/red/green/blue
+	# competition palette. Stars > 0 only (defeat path skips this).
+	if stars > 0:
+		_spawn_victory_confetti(stars)
 	if title_label:
 		title_label.text = "SIEG!"
+		_animate_title_pop()
 	if stars_label:
 		# Start with empty outlines — each earned star pops in sequentially
 		stars_label.text = "☆☆☆"
@@ -80,6 +87,55 @@ func _animate_star_reveal(stars: int) -> void:
 		tw.tween_property(stars_label, "scale", Vector2.ONE, 0.28).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 		if i < stars - 1:
 			tw.tween_interval(0.20)
+
+
+func _spawn_victory_confetti(stars: int) -> void:
+	# Layered CPUParticles2D bursts — three colors of confetti rain from
+	# the top of the screen, scaled by star count. Stars=1 gets a modest
+	# 30, stars=2 gets 60, stars=3 gets 100. Cleanup after 3.5s.
+	var burst_count: int = 30 if stars == 1 else (60 if stars == 2 else 100)
+	var colors: Array = [
+		Color(1.0, 0.85, 0.20, 0.92),  # gold
+		Color(0.95, 0.30, 0.25, 0.90), # red
+		Color(0.45, 0.85, 0.40, 0.90), # green
+		Color(0.45, 0.65, 1.0, 0.90),  # blue
+	]
+	for i in colors.size():
+		var p := CPUParticles2D.new()
+		p.name = "ConfettiLayer%d" % i
+		p.position = Vector2(640 + (i - 1.5) * 50.0, -30)
+		p.one_shot = true
+		p.explosiveness = 0.85
+		p.amount = burst_count
+		p.lifetime = 2.2
+		p.direction = Vector2(0, 1)
+		p.spread = 30.0
+		p.initial_velocity_min = 220.0
+		p.initial_velocity_max = 380.0
+		p.scale_amount_min = 2.5
+		p.scale_amount_max = 5.5
+		p.gravity = Vector2(0, 380)
+		p.angular_velocity_min = -250.0
+		p.angular_velocity_max = 250.0
+		p.color = colors[i]
+		add_child(p)
+		p.emitting = true
+		get_tree().create_timer(3.5).timeout.connect(p.queue_free)
+
+
+func _animate_title_pop() -> void:
+	# Scale-bounce on the title when victory shows. SIEG! lands with
+	# weight instead of just fading in like the rest of the panel.
+	if title_label == null:
+		return
+	title_label.scale = Vector2(0.35, 0.35)
+	title_label.pivot_offset = title_label.size * 0.5
+	var tw := create_tween()
+	tw.tween_interval(2.15)  # after the panel finishes fading in
+	tw.tween_property(title_label, "scale", Vector2(1.15, 1.15), 0.22) \
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(title_label, "scale", Vector2.ONE, 0.16) \
+		.set_trans(Tween.TRANS_SINE)
 
 
 func show_defeat() -> void:
