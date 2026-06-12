@@ -149,12 +149,20 @@ func _update_ghost_position(screen_pos: Vector2) -> void:
 		if not ghost_tower.visible:
 			ghost_tower.visible = true
 
+		var ring: Node2D = ghost_tower.get_node_or_null("RangeIndicator") if ghost_tower else null
 		if _can_place_at(world_pos):
 			ghost_tower.modulate = Color(0.5, 1.0, 0.5, 0.6)
+			# Make the placement range circle clearly green so the player
+			# sees the coverage they're about to buy. The tower's normal
+			# projectile-color tint is too subtle during placement.
+			if ring and ring.has_method("set_tint"):
+				ring.set_tint(Color(0.35, 1.0, 0.45, 1.0))
 			if _ghost_x_label:
 				_ghost_x_label.visible = false
 		else:
 			ghost_tower.modulate = Color(1.0, 0.3, 0.3, 0.6)
+			if ring and ring.has_method("set_tint"):
+				ring.set_tint(Color(1.0, 0.30, 0.25, 1.0))
 			if _ghost_x_label == null or not is_instance_valid(_ghost_x_label):
 				# SVG x icon — was unicode ✕ which depended on font fallback.
 				_ghost_x_label = IconLibrary.make_rect("x", 48, Color(1, 0.20, 0.20))
