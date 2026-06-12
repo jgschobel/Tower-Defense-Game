@@ -144,12 +144,12 @@ func _run_healthy_level(level_id: int) -> void:
 	await _capture_anim_clip("%s_wavestart" % _scenario_name)
 
 	# Extended loop: keep sampling until WON/LOST or budget expires.
-	# Budget: 14 ticks × 2.0s = 28s real = 224s game time at 8×. Each of
-	# L2/L3's 10 waves takes ~19s game time + 2s between = ~210s total —
-	# the old 8-tick (128s) cap cut off at wave 4 (issues #747, #745).
-	# WON/LOST early-exit keeps real time short in the happy path (~20s);
-	# the 32s ceiling is a safety net for slow or unbalanced levels.
-	# 3 levels × ≤32s + ~40s other scenarios ≈ ≤136s total; CI has headroom.
+	# Budget: 10 ticks × 2.0s = 20s real = 160s game time at 8×. Each of
+	# L2/L3's 10 waves takes ~16s game time + 2s between = ~180s worst-case.
+	# WON/LOST early-exit keeps real time short in the happy path (~10-15s).
+	# 20s ceiling chosen so 3 levels × ≤20s = ≤60s, leaving ~60s for the
+	# other 4 scenarios and scene loads within the 120s godot timeout.
+	# (Was 32s/14 shots — L3 routinely hit the 120s wall, #832 #827 #808.)
 	var sim_started := Time.get_ticks_msec()
 	var shot_idx := 0
 	var _diag_done := false
@@ -184,7 +184,7 @@ func _run_healthy_level(level_id: int) -> void:
 		or GameManager.current_state == GameManager.GameState.WON:
 			break
 		var elapsed := float(Time.get_ticks_msec() - sim_started) / 1000.0
-		if elapsed > 32.0 or shot_idx >= 14:
+		if elapsed > 20.0 or shot_idx >= 10:
 			break
 
 	Engine.time_scale = 1.0
