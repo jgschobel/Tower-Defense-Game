@@ -1018,7 +1018,7 @@ func _update_tier_hat(tier: int) -> void:
 	hat_node.set_meta("is_path_a", is_path_a)
 	hat_node.set_meta("col_a", col_a)
 	hat_node.set_meta("col_b", col_b)
-	hat_node.set_script(_hat_script())
+	hat_node.set_script(preload("res://scripts/towers/visuals/tier_hat.gd"))
 	add_child(hat_node)
 
 	# Pop-in animation — bounces into view on upgrade
@@ -1026,62 +1026,6 @@ func _update_tier_hat(tier: int) -> void:
 	var ht := create_tween()
 	ht.tween_property(hat_node, "scale", Vector2(1.25, 1.25), 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	ht.tween_property(hat_node, "scale", Vector2.ONE, 0.12).set_trans(Tween.TRANS_SINE)
-
-
-func _hat_script() -> Script:
-	# Inline script — crown for path A, badge/sash for path B.
-	# Tier 1 = small, tier 2 = medium, tier 3 = elaborate.
-	var src := """
-extends Node2D
-func _draw() -> void:
-	var tier: int = get_meta("tier", 1)
-	var is_a: bool = get_meta("is_path_a", true)
-	var col: Color = get_meta("col_a", Color(1,0.85,0.1)) if is_a else get_meta("col_b", Color(0.45,0.8,1))
-	var s: float = 0.62 + tier * 0.19
-	var dark := Color(col.r*0.35, col.g*0.35, col.b*0.35, 1.0)
-	if is_a:
-		_draw_crown(tier, col, dark, s)
-	else:
-		_draw_band(tier, col, dark, s)
-
-func _draw_crown(tier: int, col: Color, dark: Color, s: float) -> void:
-	var w := 20.0 * s
-	var bh := 5.0 * s
-	var sh := (8.0 + tier * 3.5) * s
-	var ns: int = tier + 2
-	var sp := w / ns
-	# Base bar with outline
-	draw_rect(Rect2(-w*0.5, -bh, w, bh), dark)
-	draw_rect(Rect2(-w*0.5+1.5, -bh+1.5, w-3.0, bh-1.5), col)
-	# Spikes
-	for i in ns:
-		var cx := -w*0.5 + sp*(i + 0.5)
-		var pts := PackedVector2Array([Vector2(cx - sp*0.36, -bh), Vector2(cx, -bh - sh), Vector2(cx + sp*0.36, -bh)])
-		draw_polygon(pts, PackedColorArray([col, col, col]))
-	# Gem on tallest spike (tier 2+)
-	if tier >= 2:
-		var gy := -bh - sh * 0.8
-		draw_circle(Vector2(0.0, gy), 3.2*s, Color(1.0, 0.2, 0.2, 0.95))
-		draw_arc(Vector2(0.0, gy), 3.2*s, 0.0, TAU, 16, Color(1,1,1,0.85), 1.2)
-
-func _draw_band(tier: int, col: Color, dark: Color, s: float) -> void:
-	var w := 22.0 * s
-	var h := 6.5 * s
-	# Outline then fill
-	draw_rect(Rect2(-w*0.5, -h*0.5, w, h), dark)
-	draw_rect(Rect2(-w*0.5+1.5, -h*0.5+1.5, w-3.0, h-3.0), col)
-	# Stars: 1 at tier 1, 2 at tier 2, 3 at tier 3
-	for i in tier:
-		var sx: float = 0.0
-		if tier > 1:
-			sx = (-0.5 + float(i + 1) / float(tier + 1)) * w * 1.1
-		draw_circle(Vector2(sx, 0.0), 3.8*s, Color(1, 1, 0.65, 0.95))
-		draw_circle(Vector2(sx, 0.0), 2.0*s, Color(1, 0.82, 0.1, 1.0))
-"""
-	var scr := GDScript.new()
-	scr.source_code = src
-	scr.reload()
-	return scr
 
 
 func _update_tier_glow(tier: int) -> void:
@@ -1109,33 +1053,13 @@ func _update_tier_glow(tier: int) -> void:
 	glow.set_meta("ring_color", ring_color)
 	glow.set_meta("radius", tier_radius)
 	glow.set_meta("alpha", tier_alpha)
-	glow.set_script(_glow_script())
+	glow.set_script(preload("res://scripts/towers/visuals/tier_glow.gd"))
 	add_child(glow)
 	# Pulse tween — stored in _glow_pulse_tween so it can be killed on
 	# the next tier change before the old glow node is freed.
 	_glow_pulse_tween = create_tween().set_loops()
 	_glow_pulse_tween.tween_method(func(v: float): glow.modulate.a = v, 0.55, 1.0, 1.0 / pulse_speed).set_trans(Tween.TRANS_SINE)
 	_glow_pulse_tween.tween_method(func(v: float): glow.modulate.a = v, 1.0, 0.55, 1.0 / pulse_speed).set_trans(Tween.TRANS_SINE)
-
-
-func _glow_script() -> Script:
-	# Tiny inline script so the glow Node2D draws its own ring without
-	# needing a dedicated .gd file — keeps the feature self-contained.
-	# Perf: 2 layers × 20 seg (was 5 × 48) — same soft-glow look, 83% fewer
-	# draw calls per frame. Tween still pulses modulate.a for the beat.
-	var src := """
-extends Node2D
-func _draw() -> void:
-	var r: float = get_meta(\"radius\", 40.0)
-	var c: Color = get_meta(\"ring_color\", Color.YELLOW)
-	var a: float = get_meta(\"alpha\", 0.4)
-	draw_arc(Vector2.ZERO, r * 0.88, 0.0, TAU, 20, Color(c.r, c.g, c.b, a * 0.72), 5.0, true)
-	draw_arc(Vector2.ZERO, r * 1.12, 0.0, TAU, 20, Color(c.r, c.g, c.b, a * 0.28), 3.5, true)
-"""
-	var s := GDScript.new()
-	s.source_code = src
-	s.reload()
-	return s
 
 
 func show_range(visible_flag: bool) -> void:
