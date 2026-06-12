@@ -369,10 +369,13 @@ Use as input for refactor sprints when the loop runs `self-improve`.
      animation, abilities, tier visuals) and is the #1 merge-conflict
      hotspot — 4 separate audit-polish branches modified it in May.
 
-  **Refactor proposal (1–2 audit-polish runs):**
-  - Extract `_hat_script()` → `scripts/towers/visuals/tier_hat.gd`
-    (true Script file, instantiated via `preload(...)`).
-  - Extract `_glow_script()` → `scripts/towers/visuals/tier_glow.gd`.
+  **Step 1 done 2026-06-12:** `_hat_script()` and `_glow_script()`
+  extracted to `scripts/towers/visuals/tier_hat.gd` and
+  `scripts/towers/visuals/tier_glow.gd` — both now preload()'d,
+  visible to validate.sh, and parseable by godot --check-only.
+  base_tower.gd: ~58 lines shorter.
+
+  **Remaining refactor proposal (next audit-polish run):**
   - Move `_apply_path_tint`, `_apply_tier_scale`, `_update_tier_hat`,
     `_update_tier_glow`, `_rebuild_pip_cache` to a sibling
     `TowerVisuals` node attached as a child in `base_tower.tscn`.
