@@ -67,6 +67,8 @@ var _is_attack_pulsing: bool = false
 # Tracked so we can kill it before freeing the glow node on tier changes,
 # preventing the lambda from accessing a freed Node2D.
 var _glow_pulse_tween: Tween = null
+# Secondary pulse tween for the B-path accent ring (dual-path visual).
+var _b_glow_pulse_tween: Tween = null
 # Fitted sprite scale from _update_visual — tweens use this as the idle
 # baseline instead of data.sprite_scale. Friend photos are ~1024px so the
 # fit scale is ~0.12, not 1.0; tweens returning to data.sprite_scale made
@@ -970,6 +972,37 @@ func _apply_path_tint() -> void:
 	var total: float = a_weight + b_weight
 	var blended: Color = effective_a_tint * (a_weight / total) + effective_b_tint * (b_weight / total)
 	sprite.modulate = Color(blended.r * brightness, blended.g * brightness, blended.b * brightness, blended.a)
+	_update_b_path_glow()
+
+
+func _update_b_path_glow() -> void:
+	# Kill existing secondary ring first.
+	if _b_glow_pulse_tween != null and _b_glow_pulse_tween.is_valid():
+		_b_glow_pulse_tween.kill()
+	_b_glow_pulse_tween = null
+	var b_glow: Node2D = get_node_or_null("PathBGlow")
+	if b_glow:
+		b_glow.queue_free()
+	# Only show when BOTH paths have investment — signals dual-path state clearly.
+	if path_b_tier == 0 or path_a_tier == 0 or data == null:
+		return
+	b_glow = Node2D.new()
+	b_glow.name = "PathBGlow"
+	b_glow.z_index = -1  # above primary glow (z=-2), below sprite
+	var b_color: Color = data.path_b_tint
+	var outer_r: float = 36.0 + max(path_a_tier, path_b_tier) * 14.0
+	var b_alpha: float = minf(0.18 + path_b_tier * 0.14, 0.60)
+	b_glow.set_meta("ring_color", b_color)
+	b_glow.set_meta("radius", outer_r)
+	b_glow.set_meta("alpha", b_alpha)
+	b_glow.set_script(preload("res://scripts/towers/visuals/tier_glow.gd"))
+	add_child(b_glow)
+	# Pulse offset: B ring pulses slightly out-of-phase with A ring for
+	# rhythmic interplay that reads even at small screen size.
+	_b_glow_pulse_tween = create_tween().set_loops()
+	_b_glow_pulse_tween.tween_interval(0.35)
+	_b_glow_pulse_tween.tween_method(func(v: float): if is_instance_valid(b_glow): b_glow.modulate.a = v, 0.45, 1.0, 0.75).set_trans(Tween.TRANS_SINE)
+	_b_glow_pulse_tween.tween_method(func(v: float): if is_instance_valid(b_glow): b_glow.modulate.a = v, 1.0, 0.45, 0.75).set_trans(Tween.TRANS_SINE)
 
 
 func _apply_tier_scale() -> void:
