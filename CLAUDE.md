@@ -142,11 +142,13 @@ A **landscape** (1280x720) tower defense game built in **Godot 4.6** using GDScr
 ## Project Structure
 ```
 scripts/
-  autoload/         → Singletons: GameManager, CurrencyManager
+  autoload/         → All 11 singletons: GameManager, CurrencyManager, AminosManager,
+                      ComboTracker, MusicManager, SfxManager, AutoPlaytest, WaveSimulator,
+                      ProjectilePool, EnemyPool, EffectPlayer
   enemies/          → BaseEnemy, EnemyData (Resource class)
   towers/           → BaseTower, TowerData (Resource class)
   projectiles/      → BaseProjectile
-  systems/          → WaveManager, TowerPlacement, GameLevel, LevelData
+  systems/          → WaveManager, TowerPlacement, GameLevel, LevelData (non-singleton systems)
   ui/               → MainMenu, LevelSelect, HUD, GameOver, PauseMenu, StoryScreen, OptionsMenu
 scenes/
   enemies/          → base_enemy.tscn
