@@ -679,6 +679,8 @@ func _spawn_children() -> void:
 	var curve_length: float = parent_path.curve.get_baked_length()
 	var base_progress: float = clampf(progress, 0.0, curve_length - 40.0)
 
+	var wm := get_tree().get_first_node_in_group("wave_manager")
+
 	# Multi-type payload overrides single-type spawns_on_death.
 	if data.spawn_payload.size() > 0:
 		for i in data.spawn_payload.size():
@@ -697,6 +699,8 @@ func _spawn_children() -> void:
 				parent_path.add_child(child)
 			child.add_to_group("enemies")
 			child.progress = max(0.0, base_progress - float(i + 1) * 20.0)
+			if wm and wm.has_method("register_spawned_enemy"):
+				wm.register_spawned_enemy(child)
 		return
 
 	# Single-type fallback (original behaviour).
@@ -717,6 +721,8 @@ func _spawn_children() -> void:
 			parent_path.add_child(child)
 		child.add_to_group("enemies")
 		child.progress = max(0.0, base_progress - float(i + 1) * 20.0)
+		if wm and wm.has_method("register_spawned_enemy"):
+			wm.register_spawned_enemy(child)
 
 
 func _celebrate_boss_death(killer: Node = null) -> void:

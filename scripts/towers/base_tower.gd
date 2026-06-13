@@ -890,6 +890,9 @@ func upgrade_path(path_letter: String) -> bool:
 	_maybe_swap_tier3_sprite(path_letter)
 	_recalculate_stats()
 	_update_range_collider()
+	# Capture current tint BEFORE _apply_path_tint() snaps it, so the
+	# upgrade flash can tween FROM the old appearance TO the new one.
+	var pre_tint := sprite.modulate if sprite else Color.WHITE
 	_apply_path_tint()
 	_apply_tier_scale()
 	_rebuild_pip_cache()
@@ -899,9 +902,8 @@ func upgrade_path(path_letter: String) -> bool:
 
 	if sprite:
 		var base_sc2: Vector2 = _baseline_scale
-		# Capture the tint _apply_path_tint() just set so the flash animation
-		# returns to it instead of resetting to WHITE (which erased the tint).
 		var target_modulate: Color = sprite.modulate
+		sprite.modulate = pre_tint  # restore old tint so tween starts from current look
 		var upg_tween := create_tween()
 		upg_tween.tween_property(sprite, "scale", base_sc2 * 1.2, 0.15)
 		upg_tween.tween_property(sprite, "scale", base_sc2, 0.2)
