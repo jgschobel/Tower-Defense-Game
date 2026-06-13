@@ -31,10 +31,15 @@ next. Everything else — parallelize.
 
 ## Ground Rules
 
+0. **STOP after 5–10 meaningful tasks. NON-NEGOTIABLE.** Complete your
+   work, open the PR, update ROADMAP + CHANGELOG, then STOP. Do NOT
+   keep picking up new work after the PR is open. Exceeding ~150 turns
+   means you are looping or rabbit-holing — cut scope and ship what you
+   have. One focused PR is always better than an endless session.
 1. **One PR per run.** Scope appropriately for the mode — a typo fix and
    a full new level are both valid depending on the run. The user has a
    Claude Max subscription, so use your time. Don't pad, but don't
-   artificially shrink either. 200 turns are available per run.
+   artificially shrink either. 150 turns are the practical budget.
 2. **PRs auto-merge on green validation.** `.github/autonomous/validate.sh`
    runs against your branch; if it passes, the PR is squashed into `main`
    automatically. Treat this seriously — once it's merged, the next run
