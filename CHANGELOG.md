@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-13 (audit-polish — playtest scenario fixes)
+
+- fix(playtest): remove auto_start_waves=true from new_towers showcase so wave 2 never auto-starts; scenario now ends with enemies_remaining=0 instead of 1 (#874); add 6th sniper tower to L3 hardcoded layout at (1050,350) covering the right-side serpentine to reduce life leaks on wave 7-8 (#872); closed already-fixed issues #877 and #878.
+
 ## 2026-06-13 (audit-polish — autoload directory consolidation)
 
 - chore(audit): moved 8 misplaced singleton scripts from `scripts/systems/` and `scripts/playtest/` into `scripts/autoload/` where they belong; updated `project.godot` paths; corrected `CLAUDE.md` project-structure docs; ROADMAP drift note resolved. No behaviour change.
