@@ -952,16 +952,14 @@ func _apply_path_tint() -> void:
 	var combined_tier: int = path_a_tier + path_b_tier
 	if path_a_tier > 0 and path_b_tier > 0 and combined_tier > max_tier:
 		brightness = minf(brightness + 0.08 * (combined_tier - max_tier), 0.95)
-	# Per-tier hue rotation: B-path shifts 45°/tier starting at B1, plus
-	# 20% saturation boost — makes B1/B2/B3 clearly distinct even at max A
-	# (was 30°/15%; B1 vs B2 were indistinguishable per #826).
-	# A-path shifts 22°/12% starting at A1 — was invisible at A1 and subtle
-	# at A2 because the previous logic skipped A1 entirely (#831).
+	# B-path: no hue rotation — warm/cool color stays in its family across all tiers.
+	# Previous 45°/tier rotation caused convergence with A-path greens at B2+ (issue #864).
+	# Saturation boost (+0.25/tier) makes each B tier visibly more vivid without drifting hue.
+	# A-path shifts 22°/12% per tier (unchanged — stays in its color family without convergence).
 	var effective_b_tint: Color = data.path_b_tint
 	if path_b_tier >= 1:
 		var extra: int = path_b_tier
-		var bh: float = fmod(data.path_b_tint.h + (45.0 / 360.0) * extra, 1.0)
-		effective_b_tint = Color.from_hsv(bh, minf(data.path_b_tint.s + 0.20 * extra, 1.0), data.path_b_tint.v)
+		effective_b_tint = Color.from_hsv(data.path_b_tint.h, minf(data.path_b_tint.s + 0.25 * extra, 1.0), data.path_b_tint.v)
 	var effective_a_tint: Color = data.path_a_tint
 	if path_a_tier >= 1:
 		var extra: int = path_a_tier

@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-13 (audit-polish — B-path upgrade tint convergence fix)
+
+- fix(tower): B-path upgrade tint no longer converges with A-path at high tiers — removed 45°/tier hue rotation from `_apply_path_tint()` (it caused red-orange B to drift to yellow-green by B2, identical to A-path green). B-path now stays in its characteristic color family, intensifying via saturation boost (+0.25/tier). Closes playtest-feedback #864.
+
 ## 2026-06-12 (audit-polish — Swiss German consistency fixes)
 
 - fix(i18n): three English strings replaced with Züridütsch — main menu subtitle "Tower Defense Adventure" → "E Türm-Verteidigungs-Abentüür"; synergy bonus label "+%d Pierce" → "+%d Dureloch"; aminos upgrade title "Banane-Pierce" → "Banana-Dureloch". Also ticked MOAB boss (Selbschtbedienigs-Wage) ROADMAP item shipped in PR #855.
