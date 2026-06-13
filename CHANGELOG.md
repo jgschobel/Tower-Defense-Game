@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-13 (audit-polish — autoload directory consolidation)
+
+- chore(audit): moved 8 misplaced singleton scripts from `scripts/systems/` and `scripts/playtest/` into `scripts/autoload/` where they belong; updated `project.godot` paths; corrected `CLAUDE.md` project-structure docs; ROADMAP drift note resolved. No behaviour change.
+
 ## 2026-06-13 (audit-polish — panel transition animations)
 
 - polish(hud): tower-info panel fades in over 0.12s on show (was instant snap); shop content fades in with the 0.22s slide tween when expanding (was popping visible before panel arrived); tween kill + modulate reset on dismiss prevents stale alpha state.

@@ -605,35 +605,11 @@ Use as input for refactor sprints when the loop runs `self-improve`.
   (tower-shop-panel) as a load-bearing first cut. Estimated 2 h
   work, removes the largest merge-conflict surface in the repo.
 
-- **2026-06-12 — Autoload directory drift: 8 of 11 autoloads live
-  under `scripts/systems/`, not `scripts/autoload/`.** `project.godot`
-  registers 11 autoloads; only `GameManager`, `CurrencyManager`,
-  `AminosManager` actually live in `scripts/autoload/`. The other 8
-  (`ComboTracker`, `MusicManager`, `SfxManager`, `AutoPlaytest`,
-  `WaveSimulator`, `ProjectilePool`, `EnemyPool`, `EffectPlayer`)
-  are filed under `scripts/systems/` or `scripts/playtest/`,
-  contradicting both `CLAUDE.md` ("scripts/autoload/ → Singletons")
-  and any reasonable expectation a new contributor would form from
-  the directory name.
-
-  **Effects:**
-  1. `scripts/systems/` mixes true autoloads with non-autoload
-     classes (`game_level.gd`, `tower_placement.gd`,
-     `synergy_table.gd`, `level_data.gd`) — there's no way to tell
-     from the directory which scripts are global singletons.
-  2. Newcomer reading `scripts/autoload/` thinks the game has 3
-     autoloads and misses the other 8.
-  3. CLAUDE.md is technically lying — its "Autoloads (11, see
-     project.godot)" line is correct but the directory hint
-     misleads.
-
-  **Refactor proposal (low-risk, ~1 hr audit-polish):** move the 8
-  drifted autoloads into `scripts/autoload/` and update the paths in
-  `project.godot`. Run `grep -rE '(res://scripts/(systems|playtest)/(combo_tracker|music_manager|sfx_manager|auto_playtest|wave_simulator|projectile_pool|enemy_pool|effect_player))'`
-  to find any hard-coded `preload()`/path references and update them.
-  validate.sh catches stale paths. Single PR, one commit per file
-  move + the project.godot bump. No behavioural change. Pair this
-  with a CLAUDE.md doc fix.
+- ~~**2026-06-12 — Autoload directory drift: 8 of 11 autoloads live
+  under `scripts/systems/`, not `scripts/autoload/`.**~~ **Fixed 2026-06-13:**
+  all 11 singletons now live in `scripts/autoload/`; `project.godot` updated;
+  `CLAUDE.md` project-structure section corrected. No preload() references
+  existed outside `project.godot` so the move was trivially clean.
 
 ---
 
