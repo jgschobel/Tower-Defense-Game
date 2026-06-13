@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-13 (audit-polish — playtest bughunt + L3 timeout)
+
+- fix(playtest): update bughunt bad_positions from mid-screen coords that lie OFF the L1 path to actual bezier control points (120,120)+(420,100)+(700,100)+(960,120)+(1200,200) that ARE on the path — previous positions were always accepted (#870); skip wavestart anim clip for L2/L3 healthy scenarios to save ~48 GPU readbacks and reclaim 10-15s of the 120s godot timeout so L3 _record_scenario always fires (#871)
+
 ## 2026-06-13 (audit-polish — playtest scenario fixes)
 
 - fix(playtest): remove auto_start_waves=true from new_towers showcase so wave 2 never auto-starts; scenario now ends with enemies_remaining=0 instead of 1 (#874); add 6th sniper tower to L3 hardcoded layout at (1050,350) covering the right-side serpentine to reduce life leaks on wave 7-8 (#872); closed already-fixed issues #877 and #878.

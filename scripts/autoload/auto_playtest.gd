@@ -141,7 +141,13 @@ func _run_healthy_level(level_id: int) -> void:
 	Engine.max_physics_steps_per_frame = 32
 	Engine.time_scale = 8.0
 
-	await _capture_anim_clip("%s_wavestart" % _scenario_name)
+	# Only capture wavestart anim clip for L1. L2/L3 skip it to save ~24 GPU
+	# readbacks per level — each get_viewport().get_texture().get_image() call
+	# can take 100-300ms on a slow CI runner, and 48 saved readbacks reclaim
+	# ~10-15s of the 120s global godot timeout, preventing L3 from being killed
+	# mid-run before _record_scenario fires (#871 root cause).
+	if level_id == 1:
+		await _capture_anim_clip("%s_wavestart" % _scenario_name)
 
 	# Extended loop: keep sampling until WON/LOST or budget expires.
 	# Budget: 10 ticks × 2.0s = 20s real = 160s game time at 8×. Each of
@@ -427,10 +433,19 @@ func _run_bug_hunt() -> void:
 		placement.start_placement(td)
 		await get_tree().create_timer(0.3).timeout
 		_snapshot("bughunt_placement_mode")
-		# Synthesize 5 rapid clicks at path-center points
+		# Synthesize 5 rapid clicks at path-center points.
+		# These are actual L1 bezier control points (points 1,3,5,7,9 of curve_1
+		# in level_1.tscn), all within viewport bounds — guaranteed to be within
+		# min_path_distance (45px) of the sampled curve and thus rejected with
+		# "Z'nöch am Wäg!". The previous positions (300,300)+(400,320)+…+(700,300)
+		# lay in the mid-screen region the L1 serpentine path never traverses,
+		# so they were ACCEPTED rather than rejected (#870).
 		var bad_positions := [
-			Vector2(300, 300), Vector2(400, 320), Vector2(500, 340),
-			Vector2(600, 320), Vector2(700, 300),
+			Vector2(120, 120),  # point_1: (120,120) — path peak NW
+			Vector2(420, 100),  # point_3: (420,100) — path peak north-center
+			Vector2(700, 100),  # point_5: (700,100) — path peak north-east
+			Vector2(960, 120),  # point_7: (960,120) — path peak east
+			Vector2(1200, 200), # point_9: (1200,200) — path descending to exit
 		]
 		for p in bad_positions:
 			if placement.has_method("_try_place"):
