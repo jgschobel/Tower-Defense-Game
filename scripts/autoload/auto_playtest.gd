@@ -267,9 +267,12 @@ func _run_new_towers_showcase() -> void:
 	_snapshot("new_towers_upgraded")
 
 	# Kick off a wave so we see them firing.
+	# auto_start_waves stays false (default) — showcase only needs wave 1's
+	# 6 enemies so the kill count matches cleanly. Setting it true caused
+	# wave 2 to auto-start and 1 enemy from wave 2 would still be alive when
+	# the snapshot fired, giving enemies_remaining=1 at scenario end (#874).
 	var wm := game_root.get_node_or_null("WaveManager") as Node
 	if wm and wm.has_method("start_next_wave"):
-		wm.set("auto_start_waves", true)
 		wm.call("start_next_wave")
 	Engine.time_scale = 3.0
 	for i in 5:
@@ -511,6 +514,10 @@ func _hardcoded_placements(level_id: int) -> Array:
 			{ "id": "sniper",  "pos": Vector2(880, 440) },
 			{ "id": "splash",  "pos": Vector2(500, 520) },
 			{ "id": "slow",    "pos": Vector2(740, 380) },
+			# 6th tower covers the right-side serpentine (950,150)→(1050,550)→(1180,200)
+			# that the existing 5 towers don't fully reach; prevents life leaks on
+			# wave 7's 20-basic spam + wave 8's healer+flying+fast combo (#872).
+			{ "id": "sniper",  "pos": Vector2(1050, 350) },
 		]
 		4: return [
 			{ "id": "basic",   "pos": Vector2(200, 300) },
