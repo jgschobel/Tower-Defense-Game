@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-13 (audit-polish — panel transition animations)
+
+- polish(hud): tower-info panel fades in over 0.12s on show (was instant snap); shop content fades in with the 0.22s slide tween when expanding (was popping visible before panel arrived); tween kill + modulate reset on dismiss prevents stale alpha state.
+
 ## 2026-06-13 (audit-polish — B-path upgrade tint convergence fix)
 
 - fix(tower): B-path upgrade tint no longer converges with A-path at high tiers — removed 45°/tier hue rotation from `_apply_path_tint()` (it caused red-orange B to drift to yellow-green by B2, identical to A-path green). B-path now stays in its characteristic color family, intensifying via saturation boost (+0.25/tier). Closes playtest-feedback #864.

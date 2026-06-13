@@ -36,6 +36,7 @@ var _shop_tower_ids: Array = ["basic", "sniper", "splash", "cordula", "slow", "f
 var shop_collapsed: bool = false
 var _shop_width: float = 152.0
 var _shop_collapse_tween: Tween = null
+var _tower_info_tween: Tween = null
 
 
 func _ready() -> void:
@@ -445,13 +446,16 @@ func _toggle_shop_collapse() -> void:
 	SfxManager.play_click()
 	# Hide the scroll contents entirely when collapsed — saves layout +
 	# render cost for the 5 rows that would otherwise sit behind a 32px
-	# strip with 0 visible width.
+	# strip with 0 visible width. When expanding, start transparent and
+	# fade in so content doesn't pop visible before the slide finishes.
 	if has_node("SideShop/SideShopVBox/ShopScroll"):
 		var scroll: Control = $SideShop/SideShopVBox/ShopScroll
 		scroll.visible = not shop_collapsed
+		scroll.modulate = Color(1.0, 1.0, 1.0, 0.0) if not shop_collapsed else Color.WHITE
 	if has_node("SideShop/SideShopVBox/ShopHeader"):
 		var header: Control = $SideShop/SideShopVBox/ShopHeader
 		header.visible = not shop_collapsed
+		header.modulate = Color(1.0, 1.0, 1.0, 0.0) if not shop_collapsed else Color.WHITE
 	# Kill any in-flight slide tween so rapid taps don't fight.
 	if _shop_collapse_tween and _shop_collapse_tween.is_valid():
 		_shop_collapse_tween.kill()
@@ -486,6 +490,13 @@ func _toggle_shop_collapse() -> void:
 		var toggle_left: float = target_left - 36.0
 		_shop_collapse_tween.tween_property(toggle, "offset_right", toggle_right, 0.22).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 		_shop_collapse_tween.tween_property(toggle, "offset_left", toggle_left, 0.22).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	# Fade shop content in alongside the slide when expanding — avoids
+	# the pop where content appeared fully opaque before the panel arrived.
+	if not shop_collapsed:
+		if has_node("SideShop/SideShopVBox/ShopScroll"):
+			_shop_collapse_tween.tween_property($SideShop/SideShopVBox/ShopScroll, "modulate", Color.WHITE, 0.22).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		if has_node("SideShop/SideShopVBox/ShopHeader"):
+			_shop_collapse_tween.tween_property($SideShop/SideShopVBox/ShopHeader, "modulate", Color.WHITE, 0.22).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 
 
 func _on_viewport_resized() -> void:
@@ -1528,7 +1539,12 @@ func show_tower_info(tower: BaseTower) -> void:
 	_glow_tween.tween_property(tower, "modulate", Color.WHITE, 0.55).set_trans(Tween.TRANS_SINE)
 	SfxManager.play_click()
 	if tower_info:
+		if _tower_info_tween and _tower_info_tween.is_valid():
+			_tower_info_tween.kill()
+		tower_info.modulate = Color(1.0, 1.0, 1.0, 0.0)
 		tower_info.visible = true
+		_tower_info_tween = create_tween()
+		_tower_info_tween.tween_property(tower_info, "modulate", Color.WHITE, 0.12).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 		_refresh_tower_info()
 		_clamp_tower_info_to_viewport()
 
@@ -1581,6 +1597,10 @@ func hide_tower_info() -> void:
 			_selected_tower.set_selected(false)
 		_selected_tower = null
 	if tower_info:
+		if _tower_info_tween and _tower_info_tween.is_valid():
+			_tower_info_tween.kill()
+			_tower_info_tween = null
+		tower_info.modulate = Color.WHITE
 		tower_info.visible = false
 
 
