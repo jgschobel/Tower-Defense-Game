@@ -149,6 +149,24 @@ func _populate_levels() -> void:
 		star_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		btn.add_child(star_lbl)
 
+		# Lock icon badge — top-right corner, 28×28, visible on locked levels.
+		if not unlocked:
+			var lock_tex := load("res://assets/icons/lock.svg") as Texture2D
+			if lock_tex:
+				var lock_icon := TextureRect.new()
+				lock_icon.texture = lock_tex
+				lock_icon.custom_minimum_size = Vector2(28, 28)
+				lock_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+				lock_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+				lock_icon.modulate = Color(0.85, 0.88, 1.0, 0.90)
+				lock_icon.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+				lock_icon.offset_left = -30
+				lock_icon.offset_top = 2
+				lock_icon.offset_right = -2
+				lock_icon.offset_bottom = 30
+				lock_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+				btn.add_child(lock_icon)
+
 		if unlocked:
 			btn.pressed.connect(_on_level_pressed.bind(i))
 			# Gentle idle brightness pulse so nodes look "alive" on the map
