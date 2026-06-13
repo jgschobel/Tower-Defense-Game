@@ -195,6 +195,17 @@ func _spawn_enemy(enemy_id: String) -> void:
 	enemies_remaining_changed.emit(enemies_alive)
 
 
+func register_spawned_enemy(enemy_instance: Node) -> void:
+	# Called when an enemy spawns children on death (e.g. tank → 2 basics).
+	# These bypass _spawn_enemy so we manually hook signals and bump the counter.
+	if not enemy_instance.enemy_died.is_connected(_on_enemy_died):
+		enemy_instance.enemy_died.connect(_on_enemy_died)
+	if not enemy_instance.enemy_reached_end.is_connected(_on_enemy_reached_end):
+		enemy_instance.enemy_reached_end.connect(_on_enemy_reached_end)
+	enemies_alive += 1
+	enemies_remaining_changed.emit(enemies_alive)
+
+
 func _on_enemy_died(_enemy: Node) -> void:
 	_decrement_enemies()
 

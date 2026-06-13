@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-13 (audit-polish — wave win fix + upgrade tween)
+
+- fix(wave_manager): WaveManager now tracks enemies spawned on parent death (tank→2 basic) via register_spawned_enemy() — closes premature WON when spawn-children are still on path (closes #888); polish(tower): upgrade_path captures pre_tint before _apply_path_tint() so the modulate flash tweens FROM old appearance TO new, fixing jarring instant snap at tier 0→A1 (closes #891)
+
 ## 2026-06-13 (audit-polish — playtest bughunt + L3 timeout)
 
 - fix(playtest): update bughunt bad_positions from mid-screen coords that lie OFF the L1 path to actual bezier control points (120,120)+(420,100)+(700,100)+(960,120)+(1200,200) that ARE on the path — previous positions were always accepted (#870); skip wavestart anim clip for L2/L3 healthy scenarios to save ~48 GPU readbacks and reclaim 10-15s of the 120s godot timeout so L3 _record_scenario always fires (#871)
