@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-14 (audit-polish — playtest stress + L3 exit-catcher)
+
+- fix(playtest): stress scenario now places 3 towers (basic/sniper/splash at T2-A) before spawning 80 enemies so projectile-pool and combat VFX are benchmarked under load — previously kills=0 and projectile FPS was unmeasured (#889); L3_healthy adds 7th slow tower at (1140,400) to catch 3 basic children the wave-10 boss spawns on death (boss.tres spawns_on_death="basic" spawn_count=3) (#890); closed stale issues #870 #871 #874 already fixed by PRs #887 #885.
+
 ## 2026-06-13 (audit-polish — wave win fix + upgrade tween)
 
 - fix(wave_manager): WaveManager now tracks enemies spawned on parent death (tank→2 basic) via register_spawned_enemy() — closes premature WON when spawn-children are still on path (closes #888); polish(tower): upgrade_path captures pre_tint before _apply_path_tint() so the modulate flash tweens FROM old appearance TO new, fixing jarring instant snap at tier 0→A1 (closes #891)
