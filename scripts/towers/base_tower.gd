@@ -954,21 +954,23 @@ func _apply_path_tint() -> void:
 	var combined_tier: int = path_a_tier + path_b_tier
 	if path_a_tier > 0 and path_b_tier > 0 and combined_tier > max_tier:
 		brightness = minf(brightness + 0.08 * (combined_tier - max_tier), 0.95)
-	# B-path: no hue rotation — warm/cool color stays in its family across all tiers.
-	# Previous 45°/tier rotation caused convergence with A-path greens at B2+ (issue #864).
-	# Saturation boost (+0.25/tier) makes each B tier visibly more vivid without drifting hue.
-	# A-path shifts 30°/22% per tier (was 22°/12% — too subtle for green tones, #902).
+	# B-path rotates hue -20°/tier (opposite A's +30°/tier) so dual-path states diverge
+	# visually rather than converge. Previous no-rotation + sat-only boost (issue #864 fix)
+	# was too subtle at A3+B1/B2 — shots looked identical (#909). Weight 3.5× (was 2.0×)
+	# makes B dominant at tier 2 even against a maxed A-path.
+	# A-path shifts +30°/22% per tier (was 22°/12% — too subtle for green tones, #902).
 	var effective_b_tint: Color = data.path_b_tint
 	if path_b_tier >= 1:
 		var extra: int = path_b_tier
-		effective_b_tint = Color.from_hsv(data.path_b_tint.h, minf(data.path_b_tint.s + 0.25 * extra, 1.0), data.path_b_tint.v)
+		var bh: float = fmod(data.path_b_tint.h - (20.0 / 360.0) * extra + 1.0, 1.0)
+		effective_b_tint = Color.from_hsv(bh, minf(data.path_b_tint.s + 0.25 * extra, 1.0), data.path_b_tint.v)
 	var effective_a_tint: Color = data.path_a_tint
 	if path_a_tier >= 1:
 		var extra: int = path_a_tier
 		var ah: float = fmod(data.path_a_tint.h + (30.0 / 360.0) * extra, 1.0)
 		effective_a_tint = Color.from_hsv(ah, minf(data.path_a_tint.s + 0.22 * extra, 1.0), data.path_a_tint.v)
 	var a_weight: float = float(path_a_tier)
-	var b_weight: float = float(path_b_tier) * 2.0
+	var b_weight: float = float(path_b_tier) * 3.5
 	var total: float = a_weight + b_weight
 	var blended: Color = effective_a_tint * (a_weight / total) + effective_b_tint * (b_weight / total)
 	sprite.modulate = Color(blended.r * brightness, blended.g * brightness, blended.b * brightness, blended.a)
@@ -990,8 +992,11 @@ func _update_b_path_glow() -> void:
 	b_glow.name = "PathBGlow"
 	b_glow.z_index = -1  # above primary glow (z=-2), below sprite
 	var b_color: Color = data.path_b_tint
+	if path_b_tier >= 1:
+		var bh: float = fmod(data.path_b_tint.h - (20.0 / 360.0) * path_b_tier + 1.0, 1.0)
+		b_color = Color.from_hsv(bh, minf(data.path_b_tint.s + 0.25 * path_b_tier, 1.0), data.path_b_tint.v)
 	var outer_r: float = 36.0 + max(path_a_tier, path_b_tier) * 14.0
-	var b_alpha: float = minf(0.18 + path_b_tier * 0.14, 0.60)
+	var b_alpha: float = minf(0.28 + path_b_tier * 0.18, 0.72)
 	b_glow.set_meta("ring_color", b_color)
 	b_glow.set_meta("radius", outer_r)
 	b_glow.set_meta("alpha", b_alpha)

@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-14 (audit-polish — B-path tint + level select brightness)
+
+- polish(tower): B-path tint now clearly visible at A3+B1/B2 — hue rotates -20°/tier (opposite A's +30°, so they diverge not converge), weight 3.5× (was 2.0×) makes B dominant at tier 2, glow alpha 0.28+0.18/tier (was 0.18+0.14); glow ring now shows shifted B hue matching sprite (closes #909); polish(ui): level select Dimmer alpha 0.45→0.25, GridBackdrop lighter (alpha 0.72→0.58), button normal state darkened 38%→20%, hover darkened 20%→5% so level nodes are clearly visible (closes #513)
+
 ## 2026-06-14 (audit-polish — playtest time budget + stress coverage)
 
 - fix(playtest): L2/L3 healthy scenarios now run at 12× time_scale (was 8×) so dense 10-wave levels cover 240s game time in the same 20s real budget — prevents PLAYING state at scenario end (#904 #896 #895 #901); stress scenario 3→5 towers at full L1 path coverage, expected kill rate ~65/80 (#903); kill-chain diagnostic guarded with enemy_count>0 to suppress false-positive for no-enemy upgrades scenario (#897)
