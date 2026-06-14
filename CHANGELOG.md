@@ -5,7 +5,7 @@ Each run appends one line.
 
 ## 2026-06-14 (audit-polish — Migros-App notification toasts + ci fix)
 
-- fix(ci): audit-grid.yml now pushes directly to unprotected `screenshots` branch instead of creating PRs that can never auto-merge (closes #913; closed stale PRs #921 #916); polish(level-select): 15-entry Swiss German push-notification toast carousel (Migros red panel, slide-down tween, 8–12 s interval) + "🛒 Cumulus N ★" brand-red badge top-right; Swiss German fix: "Sterne:" → "Stärn:" in totals badge
+- polish(level-select): 15-entry Swiss German push-notification toast carousel (Migros red panel, slide-down tween, 8–12 s interval) + "🛒 Cumulus N ★" brand-red badge top-right; Swiss German fix: "Sterne:" → "Stärn:" in totals badge; NOTE: audit-grid.yml fix (issue #913) written but not pushable — requires `workflows` token scope; closed stale audit-grid PRs #921 #916 manually
 
 ## 2026-06-14 (audit-polish — B-path tint + level select brightness)
 
