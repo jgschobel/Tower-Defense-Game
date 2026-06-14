@@ -15,8 +15,8 @@ func _ready() -> void:
 	var backdrop := get_node_or_null("MarginContainer/VBoxContainer/GridBackdrop") as PanelContainer
 	if backdrop:
 		var sb := StyleBoxFlat.new()
-		sb.bg_color = Color(0.04, 0.06, 0.12, 0.72)
-		sb.border_color = Color(0.30, 0.38, 0.55, 0.6)
+		sb.bg_color = Color(0.07, 0.11, 0.22, 0.58)
+		sb.border_color = Color(0.40, 0.50, 0.70, 0.7)
 		sb.set_border_width_all(1)
 		sb.set_corner_radius_all(8)
 		backdrop.add_theme_stylebox_override("panel", sb)
@@ -89,8 +89,8 @@ func _populate_levels() -> void:
 		btn.disabled = not unlocked
 
 		var sb_normal := StyleBoxFlat.new()
-		sb_normal.bg_color = accent.darkened(0.38)
-		sb_normal.border_color = accent.lightened(0.1)
+		sb_normal.bg_color = accent.darkened(0.20)
+		sb_normal.border_color = accent.lightened(0.25)
 		sb_normal.set_border_width_all(5)
 		sb_normal.shadow_color = Color(0.0, 0.0, 0.0, 0.6)
 		sb_normal.shadow_size = 6
@@ -98,8 +98,8 @@ func _populate_levels() -> void:
 		btn.add_theme_stylebox_override("normal", sb_normal)
 
 		var sb_hover := StyleBoxFlat.new()
-		sb_hover.bg_color = accent.darkened(0.20)
-		sb_hover.border_color = accent.lightened(0.35)
+		sb_hover.bg_color = accent.darkened(0.05)
+		sb_hover.border_color = accent.lightened(0.45)
 		sb_hover.set_border_width_all(6)
 		sb_hover.shadow_color = Color(0.0, 0.0, 0.0, 0.5)
 		sb_hover.shadow_size = 8
