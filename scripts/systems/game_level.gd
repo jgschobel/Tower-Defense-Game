@@ -347,7 +347,10 @@ func _pay_farm_towers() -> void:
 
 func _on_wave_completed(_wave_num: int) -> void:
 	GameManager.earn_cumulus(1)
-	if not wave_manager.all_done:
+	# Check current_wave < total_waves (not all_done) because all_done is set
+	# AFTER this signal fires — using all_done here would always be false on the
+	# final wave, showing the "next wave" button right before the victory screen.
+	if wave_manager.current_wave < wave_manager.total_waves:
 		hud.show_next_wave_button(true)
 		# Mid-game celebration — visible reward at every wave end (not just
 		# the level-end victory screen). Skip on the final wave since
