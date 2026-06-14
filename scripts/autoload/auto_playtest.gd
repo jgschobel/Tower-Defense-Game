@@ -348,6 +348,27 @@ func _run_stress_test() -> void:
 	await get_tree().create_timer(1.5).timeout
 
 	var game_root := get_tree().current_scene
+
+	# Place 3 towers so projectile-pool + combat VFX are exercised under stress (#889).
+	# Without towers, kills=0 and projectile FPS is never benchmarked.
+	var _stress_gold_saved := CurrencyManager.gold
+	for _stress_entry in [
+		{"id": "basic",  "pos": Vector2(320, 430)},
+		{"id": "sniper", "pos": Vector2(900, 430)},
+		{"id": "splash", "pos": Vector2(460, 520)},
+	]:
+		var _std = load("res://resources/tower_data/%s.tres" % _stress_entry.id)
+		if _std:
+			CurrencyManager.gold = 2000
+			var _st := _instantiate_tower(game_root, _std, _stress_entry.pos)
+			if _st and _st.has_method("upgrade_path"):
+				CurrencyManager.gold = 2000
+				_st.upgrade_path("a")
+				CurrencyManager.gold = 2000
+				_st.upgrade_path("a")
+		await get_tree().process_frame
+	CurrencyManager.gold = _stress_gold_saved
+
 	var wm := game_root.get_node_or_null("WaveManager") as Node
 	var path := game_root.get_node_or_null("EnemyPath") as Path2D
 	if wm and path:
@@ -533,6 +554,11 @@ func _hardcoded_placements(level_id: int) -> Array:
 			# that the existing 5 towers don't fully reach; prevents life leaks on
 			# wave 7's 20-basic spam + wave 8's healer+flying+fast combo (#872).
 			{ "id": "sniper",  "pos": Vector2(1050, 350) },
+			# 7th tower: exit-catcher for the 3 basic children the wave-10 boss spawns
+			# on death (boss.tres: spawns_on_death="basic", spawn_count=3). These
+			# children pop at boss death position and continue toward exit (1180,200).
+			# A slow tower here buys the sniper at (1050,350) time to pick them off (#890).
+			{ "id": "slow",    "pos": Vector2(1140, 400) },
 		]
 		4: return [
 			{ "id": "basic",   "pos": Vector2(200, 300) },
