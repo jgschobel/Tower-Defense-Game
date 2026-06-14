@@ -5,6 +5,30 @@ extends Control
 @onready var level_grid: GridContainer = $MarginContainer/VBoxContainer/GridBackdrop/GridPad/LevelGrid
 @onready var bg: TextureRect = $Background
 
+# Migros-App diegetic skin: push-notification toasts that drop in every 8–12 s
+# while the player browses levels. All text Swiss German. No toggle — subtle
+# enough to always be on without being intrusive.
+const _MIGROS_NOTIFICATIONS: Array = [
+	"🛒  Mami: Bring no Brot mit!",
+	"⭐  Cumulus-Aktion: Gratis Banani bi 5 Stärn",
+	"👹  De Tüüfel hät dir gleicht. Hilfe gsuecht.",
+	"🎾  JoJo: Wo bisch? Voll spannend hie.",
+	"🍌  Angebot: Banane 3 für 2 – hüt no!",
+	"💬  Lemurius: Wärsch bereit? Mir gömmer!",
+	"🏪  Migros Affoltern: Öffnigszyte 7–20 Uhr",
+	"💛  Cordula: Mir gönds guet, gell?",
+	"🧊  Amösius: Brrr! De Kühlschrank bruucht Nochfüllig.",
+	"🎯  Kühne: Alles under Kontrolle. Weiter so.",
+	"🌟  Nöis Rezept: Grüeni Smoothie vom Tüüfel?",
+	"🛒  Dini Cumulus-Charte isch bereit zum Isetze.",
+	"⚠️  Achtung: Fondue-Bombe in Breich 3 gmeldet!",
+	"🏆  Du bisch unser Kund vom Monet. Danke!",
+	"🎵  De Ladenradio spilt: \"Züri West – Scharlachrot\"",
+]
+
+var _notif_index: int = 0
+var _active_toast: Control = null
+
 
 func _ready() -> void:
 	# Try to load level select background
@@ -22,6 +46,76 @@ func _ready() -> void:
 		backdrop.add_theme_stylebox_override("panel", sb)
 	_populate_levels()
 	_show_totals()
+	_start_notification_loop()
+
+
+# ── Migros-App notification toasts ────────────────────────────────────────────
+
+func _start_notification_loop() -> void:
+	# Stagger first toast so the player has time to read the level grid.
+	get_tree().create_timer(6.0).timeout.connect(_fire_next_notification)
+
+
+func _fire_next_notification() -> void:
+	if not is_inside_tree():
+		return
+	var text: String = _MIGROS_NOTIFICATIONS[_notif_index % _MIGROS_NOTIFICATIONS.size()]
+	_notif_index += 1
+	_show_migros_toast(text)
+	# Schedule next notification 8–12 s after this one fades (≈4 s visible + tween).
+	var gap: float = 8.0 + randf() * 4.0
+	get_tree().create_timer(4.8 + gap).timeout.connect(_fire_next_notification)
+
+
+func _show_migros_toast(text: String) -> void:
+	# Remove any previous toast that's still lingering.
+	if _active_toast and is_instance_valid(_active_toast):
+		_active_toast.queue_free()
+
+	var panel := PanelContainer.new()
+	panel.name = "MigrosToast"
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.80, 0.08, 0.08, 0.92)      # Migros red
+	sb.border_color = Color(1.0, 1.0, 1.0, 0.55)
+	sb.set_border_width_all(1)
+	sb.set_corner_radius_all(10)
+	sb.content_margin_left = 14
+	sb.content_margin_right = 14
+	sb.content_margin_top = 8
+	sb.content_margin_bottom = 8
+	panel.add_theme_stylebox_override("panel", sb)
+
+	var lbl := Label.new()
+	lbl.text = text
+	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	lbl.add_theme_font_size_override("font_size", 16)
+	lbl.add_theme_color_override("font_color", Color.WHITE)
+	lbl.add_theme_color_override("font_outline_color", Color(0.4, 0.0, 0.0, 0.8))
+	lbl.add_theme_constant_override("outline_size", 2)
+	panel.add_child(lbl)
+
+	# Position: horizontally centered, top of screen (initially off-screen).
+	panel.anchor_left = 0.5
+	panel.anchor_right = 0.5
+	panel.anchor_top = 0.0
+	panel.anchor_bottom = 0.0
+	panel.offset_left = -260
+	panel.offset_right = 260
+	panel.offset_top = -56
+	panel.offset_bottom = -4
+	add_child(panel)
+	_active_toast = panel
+
+	# Animate: slide down into view over 0.3 s (both offsets in parallel).
+	var tw := panel.create_tween().set_parallel(true)
+	tw.tween_property(panel, "offset_top", 8.0, 0.30).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(panel, "offset_bottom", 60.0, 0.30).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	# Hold for 3.8 s, then fade out (sequential steps via chain()).
+	tw.chain().tween_interval(3.8)
+	tw.chain().tween_property(panel, "modulate:a", 0.0, 0.45)
+	tw.chain().tween_callback(panel.queue_free)
 
 
 func _show_totals() -> void:
@@ -33,7 +127,7 @@ func _show_totals() -> void:
 	lbl.name = "TotalsBadge"
 	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var max_stars: int = GameManager.MAX_LEVELS * 3
-	lbl.text = "Sterne: %d/%d  K.O.: %d" % [GameManager.total_stars, max_stars, GameManager.total_kills]
+	lbl.text = "Stärn: %d/%d  K.O.: %d" % [GameManager.total_stars, max_stars, GameManager.total_kills]
 	lbl.add_theme_font_size_override("font_size", 18)
 	lbl.add_theme_color_override("font_color", Color(1, 0.9, 0.4))
 	lbl.add_theme_color_override("font_outline_color", Color.BLACK)
@@ -44,9 +138,42 @@ func _show_totals() -> void:
 	lbl.offset_left = -260
 	lbl.offset_top = 20
 	lbl.offset_right = -20
-	lbl.offset_bottom = 50
+	lbl.offset_bottom = 44
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	add_child(lbl)
+
+	# Migros-App style Cumulus badge — shows loyalty points in brand red
+	# below the stars row, mimicking the Migros app's "Cumulus-Punkte" display.
+	if GameManager.cumulus_balance > 0 or GameManager.cumulus_waves_cleared > 0:
+		var cumulus_panel := PanelContainer.new()
+		cumulus_panel.name = "CumulusBadge"
+		cumulus_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		cumulus_panel.anchor_left = 1.0
+		cumulus_panel.anchor_right = 1.0
+		cumulus_panel.anchor_top = 0.0
+		cumulus_panel.anchor_bottom = 0.0
+		cumulus_panel.offset_left = -200
+		cumulus_panel.offset_right = -20
+		cumulus_panel.offset_top = 48
+		cumulus_panel.offset_bottom = 76
+		var csb := StyleBoxFlat.new()
+		csb.bg_color = Color(0.72, 0.06, 0.06, 0.88)
+		csb.border_color = Color(1.0, 0.75, 0.75, 0.45)
+		csb.set_border_width_all(1)
+		csb.set_corner_radius_all(8)
+		csb.content_margin_left = 10
+		csb.content_margin_right = 10
+		csb.content_margin_top = 4
+		csb.content_margin_bottom = 4
+		cumulus_panel.add_theme_stylebox_override("panel", csb)
+		var clbl := Label.new()
+		clbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		clbl.text = "🛒 Cumulus %d ★" % GameManager.cumulus_balance
+		clbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		clbl.add_theme_font_size_override("font_size", 14)
+		clbl.add_theme_color_override("font_color", Color(1.0, 0.90, 0.90))
+		cumulus_panel.add_child(clbl)
+		add_child(cumulus_panel)
 
 
 func _populate_levels() -> void:
