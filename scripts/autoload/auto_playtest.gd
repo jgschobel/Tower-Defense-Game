@@ -135,11 +135,13 @@ func _run_healthy_level(level_id: int) -> void:
 		wm.call("start_next_wave")
 
 	# Time-scale boost so we see active gameplay within the CI budget.
-	# Physics fix (issue #498): max_physics_steps_per_frame=32 lets physics
-	# keep up at 8× on ~18 FPS headless (32×18=576 ≥ required 480) so
-	# area_entered fires reliably and towers actually score kills.
-	Engine.max_physics_steps_per_frame = 32
-	Engine.time_scale = 8.0
+	# L1: 8× gives good anim frames. max_phys 32×18FPS=576 ≥ 8×60=480. ✓
+	# L2/L3: 12× so 10-wave dense levels complete in same 20s real budget.
+	#         max_phys 48×18FPS=864 ≥ 12×60=720. ✓  (#904 #895 #896 #901)
+	var _ts := 12.0 if level_id > 1 else 8.0
+	var _max_phys := 48 if level_id > 1 else 32
+	Engine.max_physics_steps_per_frame = _max_phys
+	Engine.time_scale = _ts
 
 	# Only capture wavestart anim clip for L1. L2/L3 skip it to save ~24 GPU
 	# readbacks per level — each get_viewport().get_texture().get_image() call
@@ -150,18 +152,18 @@ func _run_healthy_level(level_id: int) -> void:
 		await _capture_anim_clip("%s_wavestart" % _scenario_name)
 
 	# Extended loop: keep sampling until WON/LOST or budget expires.
-	# Budget: 10 ticks × 2.0s = 20s real = 160s game time at 8×. Each of
-	# L2/L3's 10 waves takes ~16s game time + 2s between = ~180s worst-case.
+	# L1 (8×):  10 ticks × 2.0s = 20s real = 160s game time — fine for 10 waves.
+	# L2/L3 (12×): 10 ticks × 2.0s = 20s real = 240s game time — dense 10-wave
+	#   levels with healers need ~170s game time; 240 provides buffer to WON.
 	# WON/LOST early-exit keeps real time short in the happy path (~10-15s).
-	# 20s ceiling chosen so 3 levels × ≤20s = ≤60s, leaving ~60s for the
-	# other 4 scenarios and scene loads within the 120s godot timeout.
-	# (Was 32s/14 shots — L3 routinely hit the 120s wall, #832 #827 #808.)
+	# 20s ceiling: 3 levels × ≤20s = ≤60s, leaving ~60s for the 4 priority
+	# scenarios and scene loads within the 120s Godot CI timeout.
 	var sim_started := Time.get_ticks_msec()
 	var shot_idx := 0
 	var _diag_done := false
 	while true:
 		# ignore_time_scale=true: each 2.0s wait is real-clock seconds,
-		# so the game runs 2.0 × 8 = 16 game-seconds between screenshots.
+		# so the game runs 2.0 × time_scale game-seconds between screenshots.
 		await get_tree().create_timer(2.0, true, false, true).timeout
 		_snapshot("%s_t%02d" % [_scenario_name, shot_idx])
 		# After first combat tick: emit a mid-combat diagnostic so kills=0
@@ -207,7 +209,7 @@ func _run_healthy_level(level_id: int) -> void:
 				break
 
 	Engine.time_scale = 1.0
-	Engine.max_physics_steps_per_frame = 8  # restore Godot default
+	Engine.max_physics_steps_per_frame = 8
 	_snapshot("%s_final" % _scenario_name)
 	_record_scenario(t0)
 	_cleanup_scene()
@@ -362,13 +364,16 @@ func _run_stress_test() -> void:
 
 	var game_root := get_tree().current_scene
 
-	# Place 3 towers so projectile-pool + combat VFX are exercised under stress (#889).
-	# Without towers, kills=0 and projectile FPS is never benchmarked.
+	# Place 5 towers spread across L1 path bends so the 80-enemy pile
+	# actually stresses attack/projectile systems with ~65% kill coverage
+	# (#903 — 3 towers only hit 28/80). Positions match L1 hardcoded set.
 	var _stress_gold_saved := CurrencyManager.gold
 	for _stress_entry in [
 		{"id": "basic",  "pos": Vector2(320, 430)},
+		{"id": "basic",  "pos": Vector2(620, 260)},
 		{"id": "sniper", "pos": Vector2(900, 430)},
 		{"id": "splash", "pos": Vector2(460, 520)},
+		{"id": "slow",   "pos": Vector2(750, 380)},
 	]:
 		var _std = load("res://resources/tower_data/%s.tres" % _stress_entry.id)
 		if _std:
@@ -706,7 +711,9 @@ func _record_scenario(start_ms: int) -> void:
 	# Diagnostic dump: print per-tower attack/detect counts to trace kills=0 root cause.
 	# Also stored in scenario dict so _write_summary() can include it in summary.md
 	# where the Claude analysis agent can read it (stdout-only data was invisible, #825).
-	if GameManager.level_kills == 0 and tower_count > 0:
+	# Guard: skip if no enemies were ever spawned (e.g. upgrades scenario) — kills=0
+	# in that case is expected and emitting a diagnostic is a false-positive (#897).
+	if GameManager.level_kills == 0 and tower_count > 0 and enemy_count > 0:
 		print("[playtest] DIAG tower breakdown:")
 		var diag_rows: Array = []
 		for t in get_tree().get_nodes_in_group("towers"):

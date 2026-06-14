@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-14 (audit-polish — playtest time budget + stress coverage)
+
+- fix(playtest): L2/L3 healthy scenarios now run at 12× time_scale (was 8×) so dense 10-wave levels cover 240s game time in the same 20s real budget — prevents PLAYING state at scenario end (#904 #896 #895 #901); stress scenario 3→5 towers at full L1 path coverage, expected kill rate ~65/80 (#903); kill-chain diagnostic guarded with enemy_count>0 to suppress false-positive for no-enemy upgrades scenario (#897)
+
 ## 2026-06-14 (audit-polish — upgrade tints + victory grace period)
 
 - polish(tower): A-path upgrade tints now clearly distinguishable per tier — brightness step 8%→12%, hue rotation 22°→30°/tier, saturation 12%→22%/tier; Lemurius A1=bright green, A2=teal-green, A3=dark cyan instead of three near-identical dark blobs (#902); fix final-wave button flicker by checking `current_wave < total_waves` instead of `not all_done` in `_on_wave_completed` so the "next wave" button never appears right before the victory screen; playtest grace period — if all waves sent but enemies still dying, wait up to 3 extra 2s ticks before logging state, prevents false PLAYING result when victory is about to fire (#900)
