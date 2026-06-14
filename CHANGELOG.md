@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-14 (audit-polish — upgrade tints + victory grace period)
+
+- polish(tower): A-path upgrade tints now clearly distinguishable per tier — brightness step 8%→12%, hue rotation 22°→30°/tier, saturation 12%→22%/tier; Lemurius A1=bright green, A2=teal-green, A3=dark cyan instead of three near-identical dark blobs (#902); fix final-wave button flicker by checking `current_wave < total_waves` instead of `not all_done` in `_on_wave_completed` so the "next wave" button never appears right before the victory screen; playtest grace period — if all waves sent but enemies still dying, wait up to 3 extra 2s ticks before logging state, prevents false PLAYING result when victory is about to fire (#900)
+
 ## 2026-06-14 (audit-polish — playtest stress + L3 exit-catcher)
 
 - fix(playtest): stress scenario now places 3 towers (basic/sniper/splash at T2-A) before spawning 80 enemies so projectile-pool and combat VFX are benchmarked under load — previously kills=0 and projectile FPS was unmeasured (#889); L3_healthy adds 7th slow tower at (1140,400) to catch 3 basic children the wave-10 boss spawns on death (boss.tres spawns_on_death="basic" spawn_count=3) (#890); closed stale issues #870 #871 #874 already fixed by PRs #887 #885.

@@ -943,9 +943,9 @@ func _apply_path_tint() -> void:
 		return
 	var max_tier: int = max(path_a_tier, path_b_tier)
 	# Brightness drops per tier so the hue tint reads clearly at distance.
-	# Each tier is 8% darker than the previous (was: 6% — too subtle per #831).
+	# 12% per tier (was 8%) so A1→A2 is clearly distinguishable (#902).
 	# Dual-path towers get brightness restored so investment reads as rewarded.
-	var brightness: float = 1.0 - (0.08 * max_tier)
+	var brightness: float = 1.0 - (0.12 * max_tier)
 	brightness = clampf(brightness, 0.60, 1.0)
 	# Give path-B tiers 2.0× blend weight so investing in B is clearly
 	# visible even when A is at max tier (was 1.5×, playtest-feedback #562 #777).
@@ -957,7 +957,7 @@ func _apply_path_tint() -> void:
 	# B-path: no hue rotation — warm/cool color stays in its family across all tiers.
 	# Previous 45°/tier rotation caused convergence with A-path greens at B2+ (issue #864).
 	# Saturation boost (+0.25/tier) makes each B tier visibly more vivid without drifting hue.
-	# A-path shifts 22°/12% per tier (unchanged — stays in its color family without convergence).
+	# A-path shifts 30°/22% per tier (was 22°/12% — too subtle for green tones, #902).
 	var effective_b_tint: Color = data.path_b_tint
 	if path_b_tier >= 1:
 		var extra: int = path_b_tier
@@ -965,8 +965,8 @@ func _apply_path_tint() -> void:
 	var effective_a_tint: Color = data.path_a_tint
 	if path_a_tier >= 1:
 		var extra: int = path_a_tier
-		var ah: float = fmod(data.path_a_tint.h + (22.0 / 360.0) * extra, 1.0)
-		effective_a_tint = Color.from_hsv(ah, minf(data.path_a_tint.s + 0.12 * extra, 1.0), data.path_a_tint.v)
+		var ah: float = fmod(data.path_a_tint.h + (30.0 / 360.0) * extra, 1.0)
+		effective_a_tint = Color.from_hsv(ah, minf(data.path_a_tint.s + 0.22 * extra, 1.0), data.path_a_tint.v)
 	var a_weight: float = float(path_a_tier)
 	var b_weight: float = float(path_b_tier) * 2.0
 	var total: float = a_weight + b_weight

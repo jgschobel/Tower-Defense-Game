@@ -193,6 +193,19 @@ func _run_healthy_level(level_id: int) -> void:
 		if elapsed > 20.0 or shot_idx >= 10:
 			break
 
+	# Grace-period: if all waves have been sent but the last few enemies
+	# haven't died yet (common on L1 wave 10 near the budget ceiling, #900),
+	# wait up to 3 extra real-clock ticks before giving up. This avoids
+	# logging state=PLAYING right before the victory screen fires.
+	var wm_node := get_tree().get_first_node_in_group("wave_manager")
+	if wm_node and wm_node.get("all_done") == true \
+	and GameManager.current_state == GameManager.GameState.PLAYING:
+		for _grace in 3:
+			await get_tree().create_timer(2.0, true, false, true).timeout
+			_snapshot("%s_grace" % _scenario_name)
+			if GameManager.current_state != GameManager.GameState.PLAYING:
+				break
+
 	Engine.time_scale = 1.0
 	Engine.max_physics_steps_per_frame = 8  # restore Godot default
 	_snapshot("%s_final" % _scenario_name)
