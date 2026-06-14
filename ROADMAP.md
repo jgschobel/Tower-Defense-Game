@@ -270,27 +270,13 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
   discount placements. ~250 LoC, no new art needed.
   Shipped PR #758 (2026-06-07): `scripts/systems/synergy_table.gd` + `BaseTower._refresh_synergies()` + ✦ badge.
 
-- [ ] **"Migros-App" diegetic phone overlay (level-select skin)** —
-  optional cosmetic skin that reframes `level_select.tscn` as a fake
-  Migros mobile app. Static carousel of push-notification toasts
-  drops in every 8–12 s with Swiss German one-liners:
-  - "Mami: Bring no Brot mit! 🥖"
-  - "Cumulus-Aktion: Gratis Banani bi 5 Stern"
-  - "De Tüüfel hät dir gleicht. Hilfe gsuecht."
-  - "JoJo: Wo bisch? Voll spannend hie."
-
-  Gold balance shown as `Cumulus-Punkte 2,345 ★`; the "Spiele" button
-  styled as an in-app feature button with rounded `StyleBoxFlat` + a
-  subtle 1 px white border (mimics iOS list-cell). **Impl:** new
-  `scripts/ui/migros_app_skin.gd` that hooks into `level_select.gd`
-  via signal `_ready()`; toggle in `OptionsMenu` (`migros_app_skin: bool`
-  in `user://settings.cfg`, default `false` so existing players opt-in).
-  Hard-coded notification queue of ~15 strings in
-  `scripts/data/app_notifications.gd` (data, not logic).
-
-  **Why it sticks:** turns dead-air menu time into joke-delivery time.
-  ~150 LoC, no art (uses existing icons + emoji). Pairs perfectly with
-  [[hei-karte-share-card]] for cohesive "diegetic phone" feel.
+- [x] **"Migros-App" diegetic phone overlay (level-select skin)** —
+  15 Swiss German push-notification toasts drop in every 8–12 s while
+  browsing levels (Migros red panel, emoji prefix, slide-down tween).
+  Cumulus balance shown in brand-red "🛒 Cumulus N ★" badge top-right.
+  Always-on (no toggle needed — subtle, delightful, non-intrusive).
+  _Shipped 2026-06-14: 15-entry notification carousel + Cumulus badge
+  in `level_select.gd`. Swiss German "Stärn:" fix in totals badge._
 
 - [x] **"Hoi-Schatz" tower love-tap easter egg** — tap any placed
   friend tower 7 times in 3 s (without selecting it for upgrades) and

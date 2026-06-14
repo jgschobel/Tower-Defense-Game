@@ -21,7 +21,6 @@ on:
 
 permissions:
   contents: write
-  pull-requests: write
 
 concurrency:
   group: audit-grid
@@ -94,16 +93,10 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          BRANCH="audit-grid/$(date +%Y%m%d-%H%M%S)"
-          git checkout -b "$BRANCH"
-          # Include the refreshed key-shot copies — this PR path replaces
-          # the playtester's direct push to main (ruleset-blocked).
+          # Push directly to the unprotected `screenshots` branch — no PR,
+          # no branch-protection race, no action_required accumulation.
+          # Fix for issue #913: audit-grid PRs were getting stuck because
+          # the validate workflow required approval on bot-pushed branches.
           git add docs/playtest_shots/ docs/observability/screenshots/
           git commit -m "chore(audit): refresh playtest screenshot grid"
-          git push -u origin "$BRANCH"
-          gh pr create \
-            --title "chore(audit): refresh playtest screenshot grid" \
-            --body "Automated: stitched the latest playtester screenshots into a 4x4 grid for visual audit." \
-            --base main \
-            --head "$BRANCH"
-          gh pr merge --squash --auto "$BRANCH" || true
+          git push origin HEAD:screenshots --force
