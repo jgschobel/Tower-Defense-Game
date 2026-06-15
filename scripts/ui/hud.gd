@@ -783,7 +783,7 @@ func show_enemy_intro(enemy_id: String, enemy_data: Resource) -> void:
 		"fondue_bomb":   "Käse-Chaos... KABUMM!",
 		"glace_golem":   "Kalt wie d'Tiefchüelabteilig!",
 		"berserker":     "Seitän-Chraft — ir chömet nöd mit!",
-		"cumulus_blob":  "Dini Cumulus-Pukt ghöret mir!",
+		"cumulus_blob":  "Dini Cumulus-Punkt ghöret mir!",
 		"linsen_golem":  "Linse mached mi unnütz stark!",
 		"smoothie_slime":"Grüen und grusig — das bini ich!",
 		"tofu_ninja":    "Du gsehsch mi nöd — ich bini überall!",
