@@ -8,6 +8,7 @@ var damage_per_tick: float = 4.0
 var tick_interval: float = 0.5
 var radius: float = 70.0
 var damage_type: int = 1  # magic
+var source_tower = null  # set by spawning projectile for kill attribution (#928)
 
 var _elapsed: float = 0.0
 var _tick_accum: float = 0.0
@@ -42,7 +43,15 @@ func _tick_damage() -> void:
 		if enemy_node.get("is_dead"):
 			continue
 		if global_position.distance_to(enemy_node.global_position) <= radius:
+			var was_alive: bool = not enemy_node.is_dead
 			enemy_node.take_damage(damage_per_tick, damage_type)
+			# Credit acid-pool kills to source tower so kill counters match
+			# GameManager.level_kills (fixes attribution gap, issue #928).
+			if was_alive and enemy_node.is_dead and source_tower != null and is_instance_valid(source_tower):
+				if "kill_count" in source_tower:
+					source_tower.kill_count += 1
+				if "wave_kill_count" in source_tower:
+					source_tower.wave_kill_count += 1
 
 
 func _draw() -> void:

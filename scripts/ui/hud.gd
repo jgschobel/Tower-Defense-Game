@@ -1251,7 +1251,7 @@ func _show_wave_announcement(current: int, total: int) -> void:
 
 	var lbl := Label.new()
 	lbl.text = announce_text
-	lbl.add_theme_font_size_override("font_size", 30 if (is_final or is_danger) else 26)
+	lbl.add_theme_font_size_override("font_size", 24 if (is_final or is_danger) else 20)
 	lbl.add_theme_color_override("font_color", txt_color)
 	lbl.add_theme_color_override("font_outline_color", Color(0.1, 0.04, 0))
 	lbl.add_theme_constant_override("outline_size", 4)
@@ -1260,18 +1260,20 @@ func _show_wave_announcement(current: int, total: int) -> void:
 	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	container.add_child(lbl)
 
-	# Pin to top-center, just below the wave progress bar (~y=65)
+	# Pin inside the TopBar band (y=0..65) so it never covers the play field.
+	# TopBar offset_bottom=65 — placing the pill at y=8..62 keeps it inside the
+	# HUD strip even during active combat (fixes playtest issue #935).
 	container.anchor_left = 0.5
 	container.anchor_right = 0.5
 	container.anchor_top = 0.0
 	container.anchor_bottom = 0.0
-	container.offset_left = -80
-	container.offset_right = 80
-	container.offset_top = 68
-	container.offset_bottom = 100
+	container.offset_left = -110
+	container.offset_right = 110
+	container.offset_top = 8
+	container.offset_bottom = 62
 	container.modulate.a = 0.0
 	container.scale = Vector2(0.78, 0.78)
-	container.pivot_offset = Vector2(80, 16)  # center of the pill
+	container.pivot_offset = Vector2(110, 27)  # center of the pill
 	add_child(container)
 
 	# Fade-in + overshoot scale pop, hold, settle, fade out.

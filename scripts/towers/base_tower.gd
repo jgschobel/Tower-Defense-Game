@@ -951,10 +951,10 @@ func _apply_path_tint() -> void:
 		return
 	var max_tier: int = max(path_a_tier, path_b_tier)
 	# Brightness drops per tier so the hue tint reads clearly at distance.
-	# 12% per tier (was 8%) so A1→A2 is clearly distinguishable (#902).
+	# 16% per tier (was 12%) so A1→A2 is clearly distinguishable (#927 #933).
 	# Dual-path towers get brightness restored so investment reads as rewarded.
-	var brightness: float = 1.0 - (0.12 * max_tier)
-	brightness = clampf(brightness, 0.60, 1.0)
+	var brightness: float = 1.0 - (0.16 * max_tier)
+	brightness = clampf(brightness, 0.50, 1.0)
 	# Give path-B tiers 2.0× blend weight so investing in B is clearly
 	# visible even when A is at max tier (was 1.5×, playtest-feedback #562 #777).
 	# Dual-path bonus: +0.08 per extra tier above max, capped at 0.95 to avoid
@@ -962,21 +962,19 @@ func _apply_path_tint() -> void:
 	var combined_tier: int = path_a_tier + path_b_tier
 	if path_a_tier > 0 and path_b_tier > 0 and combined_tier > max_tier:
 		brightness = minf(brightness + 0.08 * (combined_tier - max_tier), 0.95)
-	# B-path rotates hue -20°/tier (opposite A's +30°/tier) so dual-path states diverge
-	# visually rather than converge. Previous no-rotation + sat-only boost (issue #864 fix)
-	# was too subtle at A3+B1/B2 — shots looked identical (#909). Weight 3.5× (was 2.0×)
-	# makes B dominant at tier 2 even against a maxed A-path.
-	# A-path shifts +30°/22% per tier (was 22°/12% — too subtle for green tones, #902).
+	# B-path rotates hue -40°/tier (was -20° — too subtle, B1/B2 looked identical, #927).
+	# A-path shifts +50°/tier (was +30° — A1/A2 looked identical in the green range, #933).
+	# Larger steps push consecutive tiers into clearly different hue regions.
 	var effective_b_tint: Color = data.path_b_tint
 	if path_b_tier >= 1:
 		var extra: int = path_b_tier
-		var bh: float = fmod(data.path_b_tint.h - (20.0 / 360.0) * extra + 1.0, 1.0)
+		var bh: float = fmod(data.path_b_tint.h - (40.0 / 360.0) * extra + 2.0, 1.0)
 		effective_b_tint = Color.from_hsv(bh, minf(data.path_b_tint.s + 0.25 * extra, 1.0), data.path_b_tint.v)
 	var effective_a_tint: Color = data.path_a_tint
 	if path_a_tier >= 1:
 		var extra: int = path_a_tier
-		var ah: float = fmod(data.path_a_tint.h + (30.0 / 360.0) * extra, 1.0)
-		effective_a_tint = Color.from_hsv(ah, minf(data.path_a_tint.s + 0.22 * extra, 1.0), data.path_a_tint.v)
+		var ah: float = fmod(data.path_a_tint.h + (50.0 / 360.0) * extra, 1.0)
+		effective_a_tint = Color.from_hsv(ah, minf(data.path_a_tint.s + 0.25 * extra, 1.0), data.path_a_tint.v)
 	var a_weight: float = float(path_a_tier)
 	var b_weight: float = float(path_b_tier) * 3.5
 	var total: float = a_weight + b_weight

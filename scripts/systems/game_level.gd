@@ -388,7 +388,8 @@ func _show_wave_receipt(wave_num: int) -> void:
 
 func _dismiss_wave_receipt() -> void:
 	if _wave_receipt != null and is_instance_valid(_wave_receipt):
-		_wave_receipt.dismiss()
+		# Immediate removal — wave is starting, no dismiss animation overlap (#934).
+		_wave_receipt.dismiss(true)
 	_wave_receipt = null
 
 
