@@ -307,6 +307,8 @@ func _hit() -> void:
 				# BUG #2 (JoJo's kill total was artificially low).
 				if splash_was_alive and enemy.is_dead and src_tower != null and is_instance_valid(src_tower) and "kill_count" in src_tower:
 					src_tower.kill_count += 1
+					if "wave_kill_count" in src_tower:
+						src_tower.wave_kill_count += 1
 
 	# Spawn a lingering acid pool for JoJo-style projectiles — continues
 	# damaging enemies that walk over it for `pool_duration` seconds.
@@ -342,6 +344,9 @@ func _spawn_acid_pool() -> void:
 	pool.damage_per_tick = pool_dmg_per_tick
 	pool.radius = pool_radius
 	pool.damage_type = damage_type
+	# Forward source tower so acid-pool kills are attributed correctly (#928).
+	if has_meta("source_tower"):
+		pool.source_tower = get_meta("source_tower")
 	host.add_child(pool)
 
 

@@ -140,10 +140,13 @@ func _start_slide_in() -> void:
 	tween.tween_property(self, "position:y", target_y, 0.45)
 
 
-func dismiss() -> void:
+func dismiss(immediate: bool = false) -> void:
 	if _is_dismissed:
 		return
 	_is_dismissed = true
+	if immediate:
+		queue_free()
+		return
 	var vp_size := get_viewport_rect().size
 	var off_y := vp_size.y + RECEIPT_H + 20.0
 	var tween := create_tween().set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_IN)

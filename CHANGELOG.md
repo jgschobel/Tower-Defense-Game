@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-15 (audit-polish — 4 playtest-feedback fixes)
+
+- fix(hud): wave-announce pill moved from y=68 (play field) → y=8–62 (inside TopBar band); Pausbeleg dismissed immediately on wave start (no 0.22s overlap during combat); upgrade tints A1/A2/A3 now visually distinct via 50°/tier hue step (was 30°) + 40°/tier for B path (was 20°) + 16% brightness/tier (was 12%); acid pool kills attributed to JoJo's kill_count — closes #927 #928 #933 #934 #935; closed stuck audit-grid PR #938 per issue #913
+
 ## 2026-06-15 (audit-polish — Pausbeleg receipt UX fix + Swiss German polish)
 
 - polish(ux): wave receipt moves bottom-right → bottom-left, above the 76px bottom panel, so it never overlaps the right-anchored SideShop or the NextWaveButton; Swiss German fixes: "Tower-MVP" → "Turm-Helden", "Findet" → "K.O.s", "dmg" → "Schade", "Noi Turm" → "Kei Turm"; MVP list now shows kills alongside damage ("🥇 JoJo — 842 Schade / 12 K.O."); fix "Cumulus-Pukt" typo → "Cumulus-Punkt" in cumulus_blob enemy intro taunt
