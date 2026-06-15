@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-15 (audit-polish — Pausbeleg wave receipt overlay)
+
+- feat(ux): "Pausbeleg" — Migros-style receipt slides up from bottom-right after each wave; shows Tower-MVP top-3 by damage, enemies defeated, gold earned, cumulus, lives remaining; tap to dismiss; wired via BaseTower.wave_damage_dealt/wave_kill_count + CurrencyManager.wave_gold_earned (all reset on wave_started)
+
 ## 2026-06-14 (audit-polish — Migros-App notification toasts + ci fix)
 
 - polish(level-select): 15-entry Swiss German push-notification toast carousel (Migros red panel, slide-down tween, 8–12 s interval) + "🛒 Cumulus N ★" brand-red badge top-right; Swiss German fix: "Sterne:" → "Stärn:" in totals badge; NOTE: audit-grid.yml fix (issue #913) written but not pushable — requires `workflows` token scope; closed stale audit-grid PRs #921 #916 manually

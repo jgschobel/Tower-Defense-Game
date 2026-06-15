@@ -458,7 +458,7 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
   flourish. Kombo gives the spend itself a reward, the way Bloons TD
   gives the *kill* a reward. ~120 LoC, zero new art.
 
-- [ ] **"Pausbeleg" — diegetic between-wave receipt overlay** — during
+- [x] **"Pausbeleg" — diegetic between-wave receipt overlay** — during
   the 4 s breather between waves, slide up a Migros-style receipt
   paper from the bottom-right corner (250×320 px). Contents in
   monospace + dashed dividers:
@@ -496,6 +496,11 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
   the receipt can BE the share image if the user taps it. Estimated
   ~200 LoC + 1 scene, no new art (uses procedural styled panel +
   emoji).
+  _Shipped 2026-06-15: `scripts/ui/wave_receipt.gd` — WaveReceipt Control
+  slides up from bottom-right after each non-final wave. BaseTower gains
+  `wave_kill_count` + `wave_damage_dealt` (reset on wave_started).
+  CurrencyManager gains `wave_gold_earned` + `reset_wave_gold()`.
+  Shows MVP towers (top 3 by dmg), kills, gold, cumulus, lives. Tap to dismiss._
 
 ---
 

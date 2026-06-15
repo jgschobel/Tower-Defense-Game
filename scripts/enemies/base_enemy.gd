@@ -159,6 +159,8 @@ func take_damage(amount: float, damage_type: int = 0, source_tower: Node = null)
 		effective_armor = 0.0
 
 	var actual_damage := maxf(1.0, pre_armor - effective_armor)
+	if source_tower != null and is_instance_valid(source_tower) and "wave_damage_dealt" in source_tower:
+		source_tower.wave_damage_dealt += actual_damage
 	health -= actual_damage
 	# User directive: no HP bars + no damage numbers — replaced by
 	# enemy appearance changing as health drops (BTD MOAB-style).

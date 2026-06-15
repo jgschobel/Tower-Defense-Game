@@ -6,6 +6,7 @@ signal gold_changed(new_amount: int)
 
 var gold: int = 0
 var total_gold_earned: int = 0
+var wave_gold_earned: int = 0
 
 
 func reset_for_level(_level_id: int) -> void:
@@ -20,7 +21,12 @@ func reset_for_level(_level_id: int) -> void:
 func add_gold(amount: int) -> void:
 	gold += amount
 	total_gold_earned += amount
+	wave_gold_earned += amount
 	gold_changed.emit(gold)
+
+
+func reset_wave_gold() -> void:
+	wave_gold_earned = 0
 
 
 func spend_gold(amount: int) -> bool:

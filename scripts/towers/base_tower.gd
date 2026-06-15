@@ -14,7 +14,9 @@ var path_b_tier: int = 0            # branching, 0-3
 var current_target: BaseEnemy = null
 var attack_timer: float = 0.0
 var is_placed: bool = false
-var kill_count: int = 0             # enemies killed by this tower
+var kill_count: int = 0             # enemies killed by this tower (lifetime)
+var wave_kill_count: int = 0         # kills this wave — reset on wave_started
+var wave_damage_dealt: float = 0.0   # damage dealt this wave — reset on wave_started
 # Per-tower targeting mode override (BTD5-style). -1 = use data.target_mode
 # default; 0-3 = override with FIRST/LAST/CLOSEST/STRONGEST. Player cycles
 # this via the tower-info panel; persists with the tower instance.
@@ -596,6 +598,7 @@ func _attack() -> void:
 				enemy.show_hit_reaction()
 				if cone_was_alive and enemy.is_dead:
 					kill_count += 1
+					wave_kill_count += 1
 	# Muzzle flash — colored burst in the direction of the target
 	if EffectPlayer and is_instance_valid(current_target):
 		var flash_dir := (current_target.global_position - origin_pos).normalized()
@@ -807,6 +810,11 @@ func play_place_animation() -> void:
 	# Gold sparkle particles at the tower base — "deployed" feedback.
 	if EffectPlayer and EffectPlayer.has_method("spawn_place_sparkles"):
 		EffectPlayer.spawn_place_sparkles(global_position)
+
+
+func reset_wave_stats() -> void:
+	wave_kill_count = 0
+	wave_damage_dealt = 0.0
 
 
 func sell() -> void:
