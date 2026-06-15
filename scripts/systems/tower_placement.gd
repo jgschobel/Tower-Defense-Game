@@ -91,6 +91,7 @@ func start_placement(tower_data: TowerData) -> void:
 
 func cancel_placement() -> void:
 	if ghost_tower:
+		ghost_tower.visible = false  # immediate hide before queue_free so no stale frame shows
 		ghost_tower.queue_free()
 		ghost_tower = null
 	_ghost_x_label = null

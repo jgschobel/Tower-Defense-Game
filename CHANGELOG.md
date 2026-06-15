@@ -3,6 +3,12 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-15 (audit-polish — 2 playtest-feedback fixes)
+
+- fix(tower): Path A tier-3 tint hue-shift reduced from 50°/tier to 30°/tier so A3 tint lands in teal (178°) not dark-blue-violet (238°); brightness floor raised 0.50→0.60; tower no longer renders as a black silhouette at max A-path tier; closes playtest-feedback #943
+- fix(placement): ghost tower hidden immediately (visible=false) before queue_free() in cancel_placement() so no stale frame shows; _cleanup_scene() now cancels active placement ghost (ghost is never in the "towers" group, so the existing loop missed it); closes playtest-feedback #941
+- NOTE: audit-grid.yml fix (issue #913) still blocked — Claude App token lacks `workflows` permission to push workflow file changes
+
 ## 2026-06-15 (audit-polish — 4 playtest-feedback fixes)
 
 - fix(hud): wave-announce pill moved from y=68 (play field) → y=8–62 (inside TopBar band); Pausbeleg dismissed immediately on wave start (no 0.22s overlap during combat); upgrade tints A1/A2/A3 now visually distinct via 50°/tier hue step (was 30°) + 40°/tier for B path (was 20°) + 16% brightness/tier (was 12%); acid pool kills attributed to JoJo's kill_count — closes #927 #928 #933 #934 #935; closed stuck audit-grid PR #938 per issue #913
