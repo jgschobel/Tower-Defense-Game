@@ -954,7 +954,8 @@ func _apply_path_tint() -> void:
 	# 16% per tier (was 12%) so A1→A2 is clearly distinguishable (#927 #933).
 	# Dual-path towers get brightness restored so investment reads as rewarded.
 	var brightness: float = 1.0 - (0.16 * max_tier)
-	brightness = clampf(brightness, 0.50, 1.0)
+	# Floor raised to 0.60 so even max-tier A-only towers stay visibly lit (#943).
+	brightness = clampf(brightness, 0.60, 1.0)
 	# Give path-B tiers 2.0× blend weight so investing in B is clearly
 	# visible even when A is at max tier (was 1.5×, playtest-feedback #562 #777).
 	# Dual-path bonus: +0.08 per extra tier above max, capped at 0.95 to avoid
@@ -973,7 +974,11 @@ func _apply_path_tint() -> void:
 	var effective_a_tint: Color = data.path_a_tint
 	if path_a_tier >= 1:
 		var extra: int = path_a_tier
-		var ah: float = fmod(data.path_a_tint.h + (50.0 / 360.0) * extra, 1.0)
+		# 30°/tier (was 50°/tier) — at A3 that's only 90° of hue rotation, keeping
+		# the tint in readable cyan/teal territory instead of dark blue-violet.
+		# 50°/tier pushed Lemurius's green (88°) to blue-violet (238°) at A3,
+		# which rendered as a near-black silhouette on warm sprite pixels (#943).
+		var ah: float = fmod(data.path_a_tint.h + (30.0 / 360.0) * extra, 1.0)
 		effective_a_tint = Color.from_hsv(ah, minf(data.path_a_tint.s + 0.25 * extra, 1.0), data.path_a_tint.v)
 	var a_weight: float = float(path_a_tier)
 	var b_weight: float = float(path_b_tier) * 3.5

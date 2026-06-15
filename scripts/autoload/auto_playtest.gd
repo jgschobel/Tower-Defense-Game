@@ -651,6 +651,13 @@ func _snapshot(tag: String) -> void:
 
 
 func _cleanup_scene() -> void:
+	# Cancel any active placement ghost — ghost is NOT in the "towers" group
+	# so the loop below misses it, leaving a stale sprite on screen (#941).
+	var scene_root := get_tree().current_scene
+	if scene_root:
+		var placement := scene_root.get_node_or_null("TowerPlacement")
+		if placement and placement.has_method("cancel_placement") and placement.get("is_placing"):
+			placement.cancel_placement()
 	# Release enemies via pool so pool slots are reclaimed for the next
 	# scenario (queue_free bypasses release, depleting EnemyPool after stress).
 	# Mark is_dead=true before release so that if a parked enemy stays in the
