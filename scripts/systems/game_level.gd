@@ -14,6 +14,7 @@ extends Node2D
 
 var wave_definitions: Array = []
 var _adjacency_viz: Node2D = null
+var _wave_receipt: WaveReceipt = null
 
 
 func _ready() -> void:
@@ -318,6 +319,11 @@ func _on_wave_started(wave_num: int, total: int) -> void:
 	hud.update_wave_info(wave_num, total)
 	hud.show_next_wave_button(false)
 	SfxManager.play_wave_start()
+	_dismiss_wave_receipt()
+	CurrencyManager.reset_wave_gold()
+	for tower in get_tree().get_nodes_in_group("towers"):
+		if tower.has_method("reset_wave_stats"):
+			tower.reset_wave_stats()
 	_pay_farm_towers()
 
 
@@ -345,7 +351,7 @@ func _pay_farm_towers() -> void:
 				tower.flash_earn(yield_amount)
 
 
-func _on_wave_completed(_wave_num: int) -> void:
+func _on_wave_completed(wave_num: int) -> void:
 	GameManager.earn_cumulus(1)
 	# Check current_wave < total_waves (not all_done) because all_done is set
 	# AFTER this signal fires — using all_done here would always be false on the
@@ -357,6 +363,33 @@ func _on_wave_completed(_wave_num: int) -> void:
 		# show_victory() already plays.
 		if hud.has_method("show_wave_clear_celebration"):
 			hud.show_wave_clear_celebration()
+		_show_wave_receipt(wave_num)
+
+
+func _show_wave_receipt(wave_num: int) -> void:
+	_dismiss_wave_receipt()
+	var enemies_defeated: int = 0
+	var towers: Array = get_tree().get_nodes_in_group("towers")
+	for tower in towers:
+		if "wave_kill_count" in tower:
+			enemies_defeated += tower.wave_kill_count
+	var receipt := WaveReceipt.new()
+	receipt.configure(
+		wave_num,
+		towers,
+		CurrencyManager.wave_gold_earned,
+		1,
+		GameManager.lives,
+		enemies_defeated
+	)
+	_wave_receipt = receipt
+	hud.add_child(receipt)
+
+
+func _dismiss_wave_receipt() -> void:
+	if _wave_receipt != null and is_instance_valid(_wave_receipt):
+		_wave_receipt.dismiss()
+	_wave_receipt = null
 
 
 func _on_all_waves_completed() -> void:

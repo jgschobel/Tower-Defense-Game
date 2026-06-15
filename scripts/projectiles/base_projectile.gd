@@ -273,6 +273,8 @@ func _hit() -> void:
 			var src = get_meta("source_tower")
 			if src != null and is_instance_valid(src) and "kill_count" in src:
 				src.kill_count += 1
+				if "wave_kill_count" in src:
+					src.wave_kill_count += 1
 
 	# Pierce (ROADMAP #38): if budget remains, pick a nearby unhit enemy
 	# and keep flying instead of releasing.
