@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-15 (audit-polish — Pausbeleg receipt UX fix + Swiss German polish)
+
+- polish(ux): wave receipt moves bottom-right → bottom-left, above the 76px bottom panel, so it never overlaps the right-anchored SideShop or the NextWaveButton; Swiss German fixes: "Tower-MVP" → "Turm-Helden", "Findet" → "K.O.s", "dmg" → "Schade", "Noi Turm" → "Kei Turm"; MVP list now shows kills alongside damage ("🥇 JoJo — 842 Schade / 12 K.O."); fix "Cumulus-Pukt" typo → "Cumulus-Punkt" in cumulus_blob enemy intro taunt
+
 ## 2026-06-15 (audit-polish — Pausbeleg wave receipt overlay)
 
 - feat(ux): "Pausbeleg" — Migros-style receipt slides up from bottom-right after each wave; shows Tower-MVP top-3 by damage, enemies defeated, gold earned, cumulus, lives remaining; tap to dismiss; wired via BaseTower.wave_damage_dealt/wave_kill_count + CurrencyManager.wave_gold_earned (all reset on wave_started)

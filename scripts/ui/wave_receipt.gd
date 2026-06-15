@@ -2,11 +2,15 @@ class_name WaveReceipt
 extends Control
 
 ## Migros-style receipt overlay shown between waves.
-## Slides up from the bottom-right corner; tap or wave_started to dismiss.
+## Slides up from the bottom-left corner (above the bottom panel, clear of the
+## right-anchored SideShop). Tap or wave_started to dismiss.
 
 const RECEIPT_W: float = 268.0
 const RECEIPT_H: float = 336.0
 const MARGIN: float = 14.0
+# Height of the bottom HUD panel — receipt slides to just above it so it never
+# covers the NextWaveButton and doesn't compete with the right-anchored shop.
+const BOTTOM_PANEL_H: float = 76.0
 
 var _is_dismissed: bool = false
 
@@ -48,7 +52,9 @@ func _ready() -> void:
 	custom_minimum_size = Vector2(RECEIPT_W, RECEIPT_H)
 	size = Vector2(RECEIPT_W, RECEIPT_H)
 	var vp_size := get_viewport_rect().size
-	position = Vector2(vp_size.x - RECEIPT_W - MARGIN, vp_size.y)
+	# Bottom-left corner: keeps clear of the right-anchored SideShop so the
+	# player can still see and tap shop buttons while reading the receipt.
+	position = Vector2(MARGIN, vp_size.y)
 	_build_panel()
 	_start_slide_in()
 
@@ -102,19 +108,21 @@ func _build_text() -> String:
 			active_towers.append(ts)
 
 	if active_towers.size() > 0:
-		t += "\n[b]Tower-MVP:[/b]\n"
+		t += "\n[b]Turm-Helden:[/b]\n"
 		var medals: Array = ["🥇", "🥈", "🥉"]
 		for i in mini(3, active_towers.size()):
 			var ts: Dictionary = active_towers[i]
 			var medal: String = medals[i] if i < medals.size() else " "
 			var nm: String = ts["name"]
 			var dmg_val: int = int(ts["dmg"] as float)
-			t += "%s %s — %d dmg\n" % [medal, nm, dmg_val]
+			var kills_val: int = int(ts["kills"])
+			var kills_str: String = " / %d K.O." % kills_val if kills_val > 0 else ""
+			t += "%s %s — %d Schade%s\n" % [medal, nm, dmg_val, kills_str]
 	else:
-		t += "\n[i](Noi Turm het gschossen)[/i]\n"
+		t += "\n[i](Kei Turm het gschossen)[/i]\n"
 
 	t += "\n[center]%s[/center]\n" % div
-	t += "Findet:      [b]%d[/b] Feind\n" % _enemies
+	t += "K.O.s:       [b]%d[/b] Feinde\n" % _enemies
 	t += "Gwünne:   [b]%d[/b] Gold\n" % _gold
 	t += "Cumulus:   [b]%d ★[/b]\n" % _cumulus
 	t += "[center]%s[/center]\n" % div
@@ -126,7 +134,8 @@ func _build_text() -> String:
 
 func _start_slide_in() -> void:
 	var vp_size := get_viewport_rect().size
-	var target_y := vp_size.y - RECEIPT_H - MARGIN
+	# Park above the bottom panel so the NextWaveButton stays reachable.
+	var target_y := vp_size.y - BOTTOM_PANEL_H - RECEIPT_H - MARGIN
 	var tween := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween.tween_property(self, "position:y", target_y, 0.45)
 
