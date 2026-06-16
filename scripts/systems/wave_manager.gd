@@ -151,6 +151,11 @@ func _process(delta: float) -> void:
 			_spawn_timer = _spawn_queue[0].delay
 		else:
 			is_spawning = false
+			# If all enemies died during spawning (fast enemies at high time_scale),
+			# enemies_alive is already 0 but the check in _decrement_enemies was
+			# skipped because is_spawning was true. Re-check now that spawning ended.
+			if enemies_alive <= 0:
+				_check_wave_complete()
 
 
 func _spawn_enemy(enemy_id: String) -> void:
@@ -222,12 +227,18 @@ func _decrement_enemies() -> void:
 		wave_progress_changed.emit(clampf(float(_wave_defeated_enemies) / float(_wave_total_enemies), 0.0, 1.0))
 
 	if enemies_alive <= 0 and not is_spawning:
-		wave_in_progress = false
-		wave_completed.emit(current_wave)
+		_check_wave_complete()
 
-		if current_wave >= total_waves:
-			all_done = true
-			all_waves_completed.emit()
-		elif auto_start_waves:
-			var timer := get_tree().create_timer(time_between_waves)
-			timer.timeout.connect(start_next_wave)
+
+func _check_wave_complete() -> void:
+	if not wave_in_progress:
+		return
+	wave_in_progress = false
+	wave_completed.emit(current_wave)
+
+	if current_wave >= total_waves:
+		all_done = true
+		all_waves_completed.emit()
+	elif auto_start_waves:
+		var timer := get_tree().create_timer(time_between_waves)
+		timer.timeout.connect(start_next_wave)
