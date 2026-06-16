@@ -3,6 +3,11 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-16 (audit-polish — WON state race condition fix)
+
+- fix(wave): extracted `_check_wave_complete()` from `_decrement_enemies()`; added call in `_process()` when `is_spawning` goes false + `enemies_alive <= 0` — fixes race condition where fast enemies dying during wave spawning prevented `all_waves_completed` from ever firing (#917 #944 #945); closes playtest-feedback issues #917 #944 #945
+- fix(playtest): grace-period now activates when `current_wave >= total_waves` (not only when `all_done == true`), giving stragglers 6 real seconds to die before reporting PLAYING (#945)
+
 ## 2026-06-15 (audit-polish — 2 playtest-feedback fixes)
 
 - fix(tower): Path A tier-3 tint hue-shift reduced from 50°/tier to 30°/tier so A3 tint lands in teal (178°) not dark-blue-violet (238°); brightness floor raised 0.50→0.60; tower no longer renders as a black silhouette at max A-path tier; closes playtest-feedback #943
