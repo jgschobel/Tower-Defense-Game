@@ -402,6 +402,9 @@ func _on_all_waves_completed() -> void:
 	GameManager.complete_level()
 	hud.hide_tower_info()
 	var stars: int = GameManager.level_stars.get(level_id, 1)
+	# 0.5 s grace so dying-animation enemies finish before the victory screen
+	# overlaps them (#955: WON fires with 1 enemy still visually alive).
+	await get_tree().create_timer(0.5).timeout
 	game_over_screen.show_victory(stars)
 
 

@@ -3,6 +3,11 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-16 (audit-polish — path-B sprite blend + WON grace timer)
+
+- fix(tower): Path B upgrade tints now readable over dark A3 bases (#965) — B hue blended additively into sprite.modulate (22%/44%/66% per tier) so A3+B1/B2/B3 are visually distinct without relying only on the glow ring; brightness floor raised 0.60→0.68 so A3 portraits are lighter; B glow ring moved to z=1 (in front) with pulse floor 0.45→0.65 so ring never dips below 65% opacity
+- fix(wave): 0.5s grace timer before show_victory() so dying-animation enemies finish before victory screen overlaps them (#955)
+
 ## 2026-06-16 (audit-polish — B-path tint readability)
 
 - polish(tower): decouple A-path and B-path tints — A tint now applied exclusively to sprite.modulate; B-path lives on its own pulsing glow ring (PathBGlow) that shows whenever path_b_tier > 0 (was: only when both paths invested). Ring opacity raised from 0.28+0.18n to 0.55+0.18n so B1/B2/B3 are clearly readable even at A3 darkness. Closes playtest-feedback #957.
