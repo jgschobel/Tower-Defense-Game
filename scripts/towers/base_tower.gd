@@ -948,73 +948,50 @@ func _apply_path_tint() -> void:
 		return
 	if path_a_tier == 0 and path_b_tier == 0:
 		sprite.modulate = Color.WHITE
+		_update_b_path_glow()
 		return
-	var max_tier: int = max(path_a_tier, path_b_tier)
-	# Brightness drops per tier so the hue tint reads clearly at distance.
-	# 16% per tier (was 12%) so A1→A2 is clearly distinguishable (#927 #933).
-	# Dual-path towers get brightness restored so investment reads as rewarded.
-	var brightness: float = 1.0 - (0.16 * max_tier)
-	# Floor raised to 0.60 so even max-tier A-only towers stay visibly lit (#943).
-	brightness = clampf(brightness, 0.60, 1.0)
-	# Give path-B tiers 2.0× blend weight so investing in B is clearly
-	# visible even when A is at max tier (was 1.5×, playtest-feedback #562 #777).
-	# Dual-path bonus: +0.08 per extra tier above max, capped at 0.95 to avoid
-	# washing out the tint.
-	var combined_tier: int = path_a_tier + path_b_tier
-	if path_a_tier > 0 and path_b_tier > 0 and combined_tier > max_tier:
-		brightness = minf(brightness + 0.08 * (combined_tier - max_tier), 0.95)
-	# B-path rotates hue -40°/tier (was -20° — too subtle, B1/B2 looked identical, #927).
-	# A-path shifts +50°/tier (was +30° — A1/A2 looked identical in the green range, #933).
-	# Larger steps push consecutive tiers into clearly different hue regions.
-	var effective_b_tint: Color = data.path_b_tint
-	if path_b_tier >= 1:
-		var extra: int = path_b_tier
-		var bh: float = fmod(data.path_b_tint.h - (40.0 / 360.0) * extra + 2.0, 1.0)
-		effective_b_tint = Color.from_hsv(bh, minf(data.path_b_tint.s + 0.25 * extra, 1.0), data.path_b_tint.v)
-	var effective_a_tint: Color = data.path_a_tint
-	if path_a_tier >= 1:
-		var extra: int = path_a_tier
-		# 30°/tier (was 50°/tier) — at A3 that's only 90° of hue rotation, keeping
-		# the tint in readable cyan/teal territory instead of dark blue-violet.
-		# 50°/tier pushed Lemurius's green (88°) to blue-violet (238°) at A3,
-		# which rendered as a near-black silhouette on warm sprite pixels (#943).
-		var ah: float = fmod(data.path_a_tint.h + (30.0 / 360.0) * extra, 1.0)
-		effective_a_tint = Color.from_hsv(ah, minf(data.path_a_tint.s + 0.25 * extra, 1.0), data.path_a_tint.v)
-	var a_weight: float = float(path_a_tier)
-	var b_weight: float = float(path_b_tier) * 3.5
-	var total: float = a_weight + b_weight
-	var blended: Color = effective_a_tint * (a_weight / total) + effective_b_tint * (b_weight / total)
-	sprite.modulate = Color(blended.r * brightness, blended.g * brightness, blended.b * brightness, blended.a)
+	# A-path tint goes on the sprite body. B-path lives on its own glow ring
+	# (_update_b_path_glow), so A's darkness can never swamp the B colour signal.
+	if path_a_tier == 0:
+		sprite.modulate = Color.WHITE
+	else:
+		# Brightness drops 16% per A-tier (floor 0.60) — same curve as before
+		# but no longer dragged down by max(A,B) when B is the bigger tier.
+		var brightness: float = clampf(1.0 - (0.16 * path_a_tier), 0.60, 1.0)
+		# 30°/tier hue rotation keeps A3 in readable cyan/teal territory.
+		var ah: float = fmod(data.path_a_tint.h + (30.0 / 360.0) * path_a_tier, 1.0)
+		var a_tint: Color = Color.from_hsv(ah, minf(data.path_a_tint.s + 0.25 * path_a_tier, 1.0), data.path_a_tint.v)
+		sprite.modulate = Color(a_tint.r * brightness, a_tint.g * brightness, a_tint.b * brightness, 1.0)
 	_update_b_path_glow()
 
 
 func _update_b_path_glow() -> void:
-	# Kill existing secondary ring first.
 	if _b_glow_pulse_tween != null and _b_glow_pulse_tween.is_valid():
 		_b_glow_pulse_tween.kill()
 	_b_glow_pulse_tween = null
 	var b_glow: Node2D = get_node_or_null("PathBGlow")
 	if b_glow:
 		b_glow.queue_free()
-	# Only show when BOTH paths have investment — signals dual-path state clearly.
-	if path_b_tier == 0 or path_a_tier == 0 or data == null:
+	# Show whenever B has any investment — no A-path requirement.
+	# B ring is now the primary B-path colour indicator, independent of A tint.
+	if path_b_tier == 0 or data == null:
 		return
 	b_glow = Node2D.new()
 	b_glow.name = "PathBGlow"
 	b_glow.z_index = -1  # above primary glow (z=-2), below sprite
-	var b_color: Color = data.path_b_tint
-	if path_b_tier >= 1:
-		var bh: float = fmod(data.path_b_tint.h - (20.0 / 360.0) * path_b_tier + 1.0, 1.0)
-		b_color = Color.from_hsv(bh, minf(data.path_b_tint.s + 0.25 * path_b_tier, 1.0), data.path_b_tint.v)
-	var outer_r: float = 36.0 + max(path_a_tier, path_b_tier) * 14.0
-	var b_alpha: float = minf(0.28 + path_b_tier * 0.18, 0.72)
+	# B hue shifts -40°/tier so B1/B2/B3 land in clearly different hue regions.
+	var bh: float = fmod(data.path_b_tint.h - (40.0 / 360.0) * path_b_tier + 2.0, 1.0)
+	var b_color: Color = Color.from_hsv(bh, minf(data.path_b_tint.s + 0.25 * path_b_tier, 1.0), data.path_b_tint.v)
+	# Radius grows with both tiers; cross-pathed towers have a visibly wider aura.
+	var outer_r: float = 32.0 + path_a_tier * 8.0 + path_b_tier * 10.0
+	# B1: 0.55, B2: 0.73, B3: 0.90 — bright enough to read at mobile scale.
+	var b_alpha: float = minf(0.55 + path_b_tier * 0.18, 0.90)
 	b_glow.set_meta("ring_color", b_color)
 	b_glow.set_meta("radius", outer_r)
 	b_glow.set_meta("alpha", b_alpha)
 	b_glow.set_script(preload("res://scripts/towers/visuals/tier_glow.gd"))
 	add_child(b_glow)
-	# Pulse offset: B ring pulses slightly out-of-phase with A ring for
-	# rhythmic interplay that reads even at small screen size.
+	# Pulse slightly out-of-phase with A ring for rhythmic interplay.
 	_b_glow_pulse_tween = create_tween().set_loops()
 	_b_glow_pulse_tween.tween_interval(0.35)
 	_b_glow_pulse_tween.tween_method(func(v: float): if is_instance_valid(b_glow): b_glow.modulate.a = v, 0.45, 1.0, 0.75).set_trans(Tween.TRANS_SINE)

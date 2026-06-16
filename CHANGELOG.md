@@ -3,6 +3,11 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-16 (audit-polish — B-path tint readability)
+
+- polish(tower): decouple A-path and B-path tints — A tint now applied exclusively to sprite.modulate; B-path lives on its own pulsing glow ring (PathBGlow) that shows whenever path_b_tier > 0 (was: only when both paths invested). Ring opacity raised from 0.28+0.18n to 0.55+0.18n so B1/B2/B3 are clearly readable even at A3 darkness. Closes playtest-feedback #957.
+- chore: closed 5 stale audit-grid PRs (#950 #954 #958 #960 #961) blocked by action_required validation gate; #913 remains open tracking the workflow fix.
+
 ## 2026-06-16 (build-content — Selbschtskan-Schiff copycat enemy)
 
 - feat(enemy): new "Selbschtskan-Schiff" copycat punishment enemy — wears the silhouette of the most-recently-placed friend tower (dark inverted sprite + magenta self-modulate) and is immune to damage from that exact `tower_id`. Hits from the matching tower fizzle with a 30%-chance "NÖD!" magenta pop and no HP loss. Forces multi-tower compositions at L8+. Stats: 1400 HP / 95 px·s⁻¹ / 50g drop. Wired into L8 wave 4 (×1 solo intro), L9 wave 7 (×3), L10 wave 6 (×5). New `is_copycat` flag on EnemyData; GameLevel tracks `most_recent_tower_id` + `most_recent_tower_texture`; WaveManager skins copycats at spawn via `BaseEnemy.apply_copycat_silhouette()`. Closes ROADMAP item.
