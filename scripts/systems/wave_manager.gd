@@ -191,6 +191,20 @@ func _spawn_enemy(enemy_id: String) -> void:
 	if not enemy_instance.enemy_reached_end.is_connected(_on_enemy_reached_end):
 		enemy_instance.enemy_reached_end.connect(_on_enemy_reached_end)
 
+	# Selbschtskan-Schiff: skin copycat enemies with the silhouette of
+	# the most-recently-placed tower (tracked by GameLevel). Falls back
+	# to a generic dark silhouette if no tower has been placed yet.
+	if enemy_data and "is_copycat" in enemy_data and enemy_data.is_copycat:
+		var level: Node = get_tree().current_scene
+		var src_id: String = ""
+		var src_tex: Texture2D = null
+		if level and "most_recent_tower_id" in level:
+			src_id = String(level.most_recent_tower_id)
+		if level and "most_recent_tower_texture" in level:
+			src_tex = level.most_recent_tower_texture
+		if enemy_instance.has_method("apply_copycat_silhouette"):
+			enemy_instance.apply_copycat_silhouette(src_id, src_tex)
+
 	# First-appearance: fire signal for HUD to show a big intro
 	if enemy_id not in _seen_enemy_ids:
 		_seen_enemy_ids.append(enemy_id)

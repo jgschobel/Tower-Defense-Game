@@ -787,6 +787,7 @@ func show_enemy_intro(enemy_id: String, enemy_data: Resource) -> void:
 		"linsen_golem":  "Linse mached mi unnütz stark!",
 		"smoothie_slime":"Grüen und grusig — das bini ich!",
 		"tofu_ninja":    "Du gsehsch mi nöd — ich bini überall!",
+		"selbschtskan_schiff": "Ich bini DU — und du chasch mi nöd usschalte!",
 		"boss":          "Jetzt isch alles vegan — für immer!!",
 		"moab_migros":   "Vier Tanks inne — explodier ich... und guet Nacht!",
 		"bfb_cumulus":   "Flüge und unsichtbar — kein Turm stoppt mich!",

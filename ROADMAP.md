@@ -404,7 +404,7 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
   "support" gap in the cast roster. Composes with every existing
   tower; rewards tight clusters.
 
-- [ ] **"Selbschtskan-Schiff" — copycat punishment enemy (L8–L10)** —
+- [x] **"Selbschtskan-Schiff" — copycat punishment enemy (L8–L10)** —
   mid-level enemy that visually copies the silhouette of the **last
   friend tower placed in this run** (dark inverted sprite, magenta
   outline). HP 1,400, speed 95 px/s, 50 gold drop. **Mechanic:**

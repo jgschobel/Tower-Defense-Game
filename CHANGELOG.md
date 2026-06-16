@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-16 (build-content — Selbschtskan-Schiff copycat enemy)
+
+- feat(enemy): new "Selbschtskan-Schiff" copycat punishment enemy — wears the silhouette of the most-recently-placed friend tower (dark inverted sprite + magenta self-modulate) and is immune to damage from that exact `tower_id`. Hits from the matching tower fizzle with a 30%-chance "NÖD!" magenta pop and no HP loss. Forces multi-tower compositions at L8+. Stats: 1400 HP / 95 px·s⁻¹ / 50g drop. Wired into L8 wave 4 (×1 solo intro), L9 wave 7 (×3), L10 wave 6 (×5). New `is_copycat` flag on EnemyData; GameLevel tracks `most_recent_tower_id` + `most_recent_tower_texture`; WaveManager skins copycats at spawn via `BaseEnemy.apply_copycat_silhouette()`. Closes ROADMAP item.
+
 ## 2026-06-16 (audit-polish — WON state race condition fix)
 
 - fix(wave): extracted `_check_wave_complete()` from `_decrement_enemies()`; added call in `_process()` when `is_spawning` goes false + `enemies_alive <= 0` — fixes race condition where fast enemies dying during wave spawning prevented `all_waves_completed` from ever firing (#917 #944 #945); closes playtest-feedback issues #917 #944 #945

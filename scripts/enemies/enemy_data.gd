@@ -50,3 +50,10 @@ extends Resource
 # health. Feels like the ceramic-bloon annoyance of BTD.
 @export var splash_on_death_radius: float = 0.0
 @export var splash_on_death_heal_pct: float = 0.0
+
+# Selbschtskan-Schiff (ROADMAP P1). When true, the enemy copies the
+# silhouette of the most-recently-placed friend tower and is immune
+# to damage from that tower_id. Forces multi-tower compositions —
+# spam a single friend and you can't kill it. The actual immune
+# tower_id is set per-spawn via meta("immune_to") by WaveManager.
+@export var is_copycat: bool = false
