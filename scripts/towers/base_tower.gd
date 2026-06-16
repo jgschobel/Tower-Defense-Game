@@ -950,18 +950,31 @@ func _apply_path_tint() -> void:
 		sprite.modulate = Color.WHITE
 		_update_b_path_glow()
 		return
-	# A-path tint goes on the sprite body. B-path lives on its own glow ring
-	# (_update_b_path_glow), so A's darkness can never swamp the B colour signal.
+	# A-path tint goes on the sprite body.
 	if path_a_tier == 0:
 		sprite.modulate = Color.WHITE
 	else:
-		# Brightness drops 16% per A-tier (floor 0.60) — same curve as before
-		# but no longer dragged down by max(A,B) when B is the bigger tier.
-		var brightness: float = clampf(1.0 - (0.16 * path_a_tier), 0.60, 1.0)
+		# Brightness drops 16% per A-tier (floor 0.68 — brighter than old 0.60
+		# so portraits stay readable at tier 3).
+		var brightness: float = clampf(1.0 - (0.11 * path_a_tier), 0.68, 1.0)
 		# 30°/tier hue rotation keeps A3 in readable cyan/teal territory.
 		var ah: float = fmod(data.path_a_tint.h + (30.0 / 360.0) * path_a_tier, 1.0)
 		var a_tint: Color = Color.from_hsv(ah, minf(data.path_a_tint.s + 0.25 * path_a_tier, 1.0), data.path_a_tint.v)
 		sprite.modulate = Color(a_tint.r * brightness, a_tint.g * brightness, a_tint.b * brightness, 1.0)
+	# Blend a fraction of the B-path hue into the sprite (#965): A3+B1 and A3+B2
+	# must look distinct at a glance even when A3's base colour is dark.
+	# 22% / 44% / 66% additive colour contribution per B-tier.
+	if path_b_tier > 0:
+		var bh: float = fmod(data.path_b_tint.h - (40.0 / 360.0) * path_b_tier + 2.0, 1.0)
+		var b_col: Color = Color.from_hsv(bh, minf(data.path_b_tint.s + 0.2 * path_b_tier, 1.0), data.path_b_tint.v)
+		var b_weight: float = 0.22 * path_b_tier
+		var cur: Color = sprite.modulate
+		sprite.modulate = Color(
+			clampf(cur.r + b_col.r * b_weight, 0.0, 1.5),
+			clampf(cur.g + b_col.g * b_weight, 0.0, 1.5),
+			clampf(cur.b + b_col.b * b_weight, 0.0, 1.5),
+			1.0
+		)
 	_update_b_path_glow()
 
 
@@ -978,7 +991,7 @@ func _update_b_path_glow() -> void:
 		return
 	b_glow = Node2D.new()
 	b_glow.name = "PathBGlow"
-	b_glow.z_index = -1  # above primary glow (z=-2), below sprite
+	b_glow.z_index = 1  # in front of sprite so the ring is always readable
 	# B hue shifts -40°/tier so B1/B2/B3 land in clearly different hue regions.
 	var bh: float = fmod(data.path_b_tint.h - (40.0 / 360.0) * path_b_tier + 2.0, 1.0)
 	var b_color: Color = Color.from_hsv(bh, minf(data.path_b_tint.s + 0.25 * path_b_tier, 1.0), data.path_b_tint.v)
@@ -991,11 +1004,12 @@ func _update_b_path_glow() -> void:
 	b_glow.set_meta("alpha", b_alpha)
 	b_glow.set_script(preload("res://scripts/towers/visuals/tier_glow.gd"))
 	add_child(b_glow)
-	# Pulse slightly out-of-phase with A ring for rhythmic interplay.
+	# Pulse slightly out-of-phase with A ring. Floor raised to 0.65 so the ring
+	# is always readable even at the tween's low point (#965).
 	_b_glow_pulse_tween = create_tween().set_loops()
 	_b_glow_pulse_tween.tween_interval(0.35)
-	_b_glow_pulse_tween.tween_method(func(v: float): if is_instance_valid(b_glow): b_glow.modulate.a = v, 0.45, 1.0, 0.75).set_trans(Tween.TRANS_SINE)
-	_b_glow_pulse_tween.tween_method(func(v: float): if is_instance_valid(b_glow): b_glow.modulate.a = v, 1.0, 0.45, 0.75).set_trans(Tween.TRANS_SINE)
+	_b_glow_pulse_tween.tween_method(func(v: float): if is_instance_valid(b_glow): b_glow.modulate.a = v, 0.65, 1.0, 0.75).set_trans(Tween.TRANS_SINE)
+	_b_glow_pulse_tween.tween_method(func(v: float): if is_instance_valid(b_glow): b_glow.modulate.a = v, 1.0, 0.65, 0.75).set_trans(Tween.TRANS_SINE)
 
 
 func _apply_tier_scale() -> void:
