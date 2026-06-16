@@ -15,6 +15,11 @@ extends Node2D
 var wave_definitions: Array = []
 var _adjacency_viz: Node2D = null
 var _wave_receipt: WaveReceipt = null
+# Selbschtskan-Schiff copycat tracking. WaveManager reads these via
+# get_meta to skin newly spawned copycat enemies. "" means no tower
+# placed yet — copycat falls back to a generic dark silhouette.
+var most_recent_tower_id: String = ""
+var most_recent_tower_texture: Texture2D = null
 
 
 func _ready() -> void:
@@ -417,6 +422,14 @@ func _on_placement_cancelled() -> void:
 
 func _on_tower_placed(_tower: Node2D) -> void:
 	hud.set_placing(false)
+	# Selbschtskan-Schiff: remember the last tower placed so copycat
+	# enemies (L8+) can be skinned with its silhouette and become
+	# immune to its damage.
+	if _tower and "data" in _tower and _tower.data != null:
+		most_recent_tower_id = String(_tower.data.id)
+		var sprite_node: Node = _tower.get_node_or_null("Sprite2D")
+		if sprite_node and sprite_node is Sprite2D and (sprite_node as Sprite2D).texture:
+			most_recent_tower_texture = (sprite_node as Sprite2D).texture
 	_ensure_adjacency_viz()
 	if _adjacency_viz:
 		_adjacency_viz.refresh()

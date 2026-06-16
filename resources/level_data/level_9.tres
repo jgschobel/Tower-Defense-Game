@@ -16,7 +16,7 @@ waves = [
 	{"groups": [{"enemy_id": "healer", "count": 10, "spawn_delay": 0.4}, {"enemy_id": "fast", "count": 24, "spawn_delay": 0.2}]},
 	{"groups": [{"enemy_id": "lead", "count": 12, "spawn_delay": 0.55}, {"enemy_id": "flying", "count": 20, "spawn_delay": 0.22}]},
 	{"groups": [{"enemy_id": "selbschtbedienigs_wage", "count": 1, "spawn_delay": 12.0}, {"enemy_id": "boss", "count": 2, "spawn_delay": 3.0}, {"enemy_id": "camo", "count": 14, "spawn_delay": 0.3}, {"enemy_id": "fast", "count": 20, "spawn_delay": 0.2}]},
-	{"groups": [{"enemy_id": "tank", "count": 14, "spawn_delay": 0.5}, {"enemy_id": "healer", "count": 12, "spawn_delay": 0.4}, {"enemy_id": "regrow", "count": 12, "spawn_delay": 0.35}]},
+	{"groups": [{"enemy_id": "selbschtskan_schiff", "count": 3, "spawn_delay": 6.0}, {"enemy_id": "tank", "count": 14, "spawn_delay": 0.5}, {"enemy_id": "healer", "count": 12, "spawn_delay": 0.4}, {"enemy_id": "regrow", "count": 12, "spawn_delay": 0.35}]},
 	{"groups": [{"enemy_id": "boss", "count": 3, "spawn_delay": 3.8}, {"enemy_id": "lead", "count": 12, "spawn_delay": 0.5}, {"enemy_id": "flying", "count": 25, "spawn_delay": 0.2}]},
 	{"groups": [{"enemy_id": "camo", "count": 20, "spawn_delay": 0.25}, {"enemy_id": "regrow", "count": 18, "spawn_delay": 0.3}, {"enemy_id": "lead", "count": 10, "spawn_delay": 0.5}, {"enemy_id": "healer", "count": 10, "spawn_delay": 0.4}]},
 	{"groups": [{"enemy_id": "boss", "count": 4, "spawn_delay": 4.0}, {"enemy_id": "tank", "count": 14, "spawn_delay": 0.48}, {"enemy_id": "lead", "count": 12, "spawn_delay": 0.5}, {"enemy_id": "camo", "count": 20, "spawn_delay": 0.25}, {"enemy_id": "swarm", "count": 45, "spawn_delay": 0.13}]}

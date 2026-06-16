@@ -139,6 +139,16 @@ func take_damage(amount: float, damage_type: int = 0, source_tower: Node = null)
 	if is_dead:
 		return
 
+	# Copycat (Selbschtskan-Schiff): no-op if the attacker's tower_id
+	# matches the silhouette this enemy is wearing. Forces players who
+	# spam one friend to diversify before L8+. Meta is set per-spawn by
+	# WaveManager from GameLevel.most_recent_tower_id.
+	if has_meta("immune_to") and source_tower != null and is_instance_valid(source_tower):
+		if "data" in source_tower and source_tower.data != null:
+			if str(get_meta("immune_to")) == String(source_tower.data.id):
+				_flash_immunity()
+				return
+
 	# Damage-type enum (mirrors TowerData.DamageType):
 	# 0 = PHYSICAL — full armor reduction
 	# 1 = MAGIC    — 70% armor bypass (30% applied)
@@ -193,6 +203,55 @@ func take_damage(amount: float, damage_type: int = 0, source_tower: Node = null)
 			return
 		_last_killer = source_tower
 		die()
+
+
+func _flash_immunity() -> void:
+	# Visual confirmation that a copycat just shrugged off a hit from its
+	# silhouette source. Magenta pop + small "✕" label tells the player
+	# why their tower's damage vanished. ~30% chance so heavy spam doesn't
+	# flood the screen — every hit shouldn't tutorialize the mechanic.
+	if randf() > 0.3:
+		return
+	if sprite:
+		var base_mod: Color = sprite.modulate
+		var tw := create_tween()
+		tw.tween_property(sprite, "modulate", Color(1.4, 0.35, 1.0, 1), 0.08)
+		tw.tween_property(sprite, "modulate", base_mod, 0.22)
+	var lbl := Label.new()
+	lbl.text = "NÖD!"
+	lbl.add_theme_font_size_override("font_size", 18)
+	lbl.add_theme_color_override("font_color", Color(1.0, 0.35, 1.0))
+	lbl.add_theme_color_override("font_outline_color", Color(0.25, 0.05, 0.25))
+	lbl.add_theme_constant_override("outline_size", 3)
+	lbl.position = Vector2(-18, -52)
+	lbl.z_index = 11
+	add_child(lbl)
+	var lt := create_tween().set_parallel(true)
+	lt.tween_property(lbl, "position:y", -88.0, 0.6)
+	lt.tween_property(lbl, "modulate:a", 0.0, 0.6)
+	lt.chain().tween_callback(lbl.queue_free)
+
+
+func apply_copycat_silhouette(tower_id: String, source_texture: Texture2D) -> void:
+	# Called by WaveManager after spawn when this enemy is a copycat.
+	# Stores the immunity tower_id in meta + skins the sprite with the
+	# silhouette of `source_texture`. Falls back to the generic camo-
+	# style tint if no texture is provided (e.g. no tower placed yet).
+	set_meta("immune_to", tower_id)
+	if sprite == null:
+		return
+	if source_texture != null:
+		sprite.texture = source_texture
+		var max_dim: float = maxf(source_texture.get_width(), source_texture.get_height())
+		var target_size: float = 50.0 * (data.scale_factor if data else 1.0)
+		if max_dim > 0:
+			var s: float = target_size / max_dim
+			sprite.scale = Vector2(s, s)
+		sprite.visible = true
+	# Dark inverted silhouette with magenta outline tint — reads as
+	# "ghost of yourself" without needing a custom shader pass.
+	sprite.modulate = Color(0.18, 0.05, 0.20, 0.92)
+	sprite.self_modulate = Color(0.4, 0.05, 0.5, 1.0)
 
 
 func _play_regrow_effect() -> void:
@@ -399,8 +458,13 @@ func reset_for_pool() -> void:
 	_has_regrown = false
 	_last_killer = null
 	_damage_state = 0
+	# Copycat immunity must NOT survive pool reuse — clearing here means
+	# a copycat-respawned-as-basic doesn't keep its previous immune_to.
+	if has_meta("immune_to"):
+		remove_meta("immune_to")
 	if sprite:
 		sprite.modulate = Color.WHITE
+		sprite.self_modulate = Color.WHITE
 	progress = 0.0
 	progress_ratio = 0.0
 	slow_factor = 1.0
@@ -608,6 +672,11 @@ func _apply_damage_state_visual() -> void:
 	# 3=dying (<10%). Texture-swap (hurt / injured / dying PNGs) plus a
 	# light residual tint so the shift reads even on bright enemies.
 	if sprite == null or max_health <= 0:
+		return
+	# Copycats wear a fixed dark+magenta silhouette — don't let the
+	# damage-state tint clobber it (otherwise the "ghost of yourself"
+	# read disappears as soon as another tower lands a hit).
+	if has_meta("immune_to"):
 		return
 	var pct: float = clampf(health / max_health, 0.0, 1.0)
 	var state: int = 0
