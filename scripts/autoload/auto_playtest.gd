@@ -136,11 +136,16 @@ func _run_healthy_level(level_id: int) -> void:
 
 	# Time-scale boost so we see active gameplay within the CI budget.
 	# All levels at 12×: 10 ticks × 2.0s real = 240s game time, enough for
-	# 10 dense waves with healers and boss deaths. max_phys 48×18FPS=864 ≥
-	# 12×60=720. ✓  L1 was at 8× (160s game time) which ran out at wave 9/10;
-	# uniform 12× fixes that AND saves ~10s real so L3 fits in the 120s budget.
+	# 10 dense waves with healers and boss deaths.
+	# max_phys = 12 (matches time_scale): at 60fps that's exactly 12 physics
+	# ticks/frame = 12×60=720hz — physically accurate. Previous value of 48
+	# allowed catch-up spirals: if a frame stalled (wave boundary UI burst),
+	# Godot queued up to 48 physics steps, making the NEXT frame even slower
+	# and causing the 2.0 FPS min-spike seen in issues #975 #982. Capping at
+	# 12 means a stalled frame simply loses physics accuracy (time slows), not
+	# CPU throughput — a safe trade for a CI metric run.
 	var _ts := 12.0
-	var _max_phys := 48
+	var _max_phys := 12
 	Engine.max_physics_steps_per_frame = _max_phys
 	Engine.time_scale = _ts
 

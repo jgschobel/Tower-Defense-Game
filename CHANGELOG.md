@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-17 (audit-polish — wave-boundary FPS fix + enemy data caching)
+
+- perf(wave): enemy data cache in WaveManager — _spawn_enemy() now does a dict lookup instead of ResourceLoader.exists()+load() on every spawn; preload is now synchronous (was call_deferred, risked race with wave-1 start); spawn_payload children also pre-cached so _spawn_children() hits warm Godot ResourceCache not disk (#975 #982). perf(playtest): max_physics_steps_per_frame 48→12 (matches 12× time_scale — prevents physics catch-up spiral that caused 2.0 FPS min-spike at wave boundaries). fix(game_level): wave receipt creation deferred one frame via call_deferred so UI layout doesn't pile onto wave-end signal burst.
+
 ## 2026-06-17 (audit-polish — Lemurius A1 humanoid identity preserved)
 
 - fix(tower): A-path tint at tier 1 no longer crushes sprite into a saturated blob (#966 #977) — replaced flat `path_a_tint * 0.89` with a per-tier blend with white (A1 = 32% colour @ 0.97 brightness, A2 = 62% @ 0.88, A3 = 90% @ 0.78). Lemurius (and the other 4 towers without a tier-1 sprite swap) now retain humanoid identity after the first A-upgrade while the path-A green hue still telegraphs clearly. A3 stays strong because the t3 sprite swap usually backs it up. Cordula/Sniper (full tier-sprite matrix) get gentler tinting too — the swapped sprite carries the visual delta.

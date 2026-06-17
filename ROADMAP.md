@@ -63,8 +63,13 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
   L1+L3 hitches, 80-enemy stress.
   _Partial fix 2026-05-04: EffectPlayer concurrent caps (MAX_FLASH 8, MAX_DUST 6,
   MAX_MISC 10) + ~30% particle count reductions; glow ring 5×48→2×20 arcs;
-  range_circle _process disabled when hidden. Next step: profile with Godot
-  headless --rendering.profiler once the headless FPS number stabilises._
+  range_circle _process disabled when hidden._
+  _Partial fix 2026-06-17: WaveManager enemy data cache (dict lookup instead of
+  ResourceLoader.exists()+load() per spawn); preload now synchronous; spawn_payload
+  children pre-cached. max_physics_steps_per_frame 48→12 prevents physics catch-up
+  spiral at 12× time_scale. Wave receipt creation deferred one frame at wave boundary.
+  Next step: profile with Godot headless --rendering.profiler once the headless FPS
+  number stabilises._
 
 ### Tier-art completion
 - [ ] **D1/D2 portraits for remaining 3 towers** — Cordula and Kühne
