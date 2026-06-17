@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-17 (audit-polish — Lemurius A1 humanoid identity preserved)
+
+- fix(tower): A-path tint at tier 1 no longer crushes sprite into a saturated blob (#966 #977) — replaced flat `path_a_tint * 0.89` with a per-tier blend with white (A1 = 32% colour @ 0.97 brightness, A2 = 62% @ 0.88, A3 = 90% @ 0.78). Lemurius (and the other 4 towers without a tier-1 sprite swap) now retain humanoid identity after the first A-upgrade while the path-A green hue still telegraphs clearly. A3 stays strong because the t3 sprite swap usually backs it up. Cordula/Sniper (full tier-sprite matrix) get gentler tinting too — the swapped sprite carries the visual delta.
+
 ## 2026-06-17 (audit-polish — defeat screen animation + Swiss German fixes)
 
 - polish(game-over): "VERLORE!" title now slams in from 2× scale with TRANS_BOUNCE then shakes left-right (rotation ±0.08 rad), matching the production quality of "SIEG!" pop; red border vignette pulses behind the panel for defeat atmosphere (contrasts gold vignette in victory). "BOSS" → "DE BOSS!" in NextWavePreview (Swiss German, hud.gd two occurrences). "LETSCHT WÄLLE!" → "LETSCHTI WÄLLE!" (adjective declension fix).
