@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-17 (audit-polish — tower A3 tint + audit-grid workflow fix)
+
+- fix(tower): tower A-path tint at A3 no longer destroys sprite identity (#988) — reduced blend/brightness (A1: 0.25/0.98, A2: 0.52/0.92, A3: 0.70/0.87 vs previous 0.32/0.97, 0.62/0.88, 0.90/0.78); hue rotation cut from 30°/tier → 12°/tier and saturation boost from 0.25 → 0.12/tier; Lemurius at A3 now reads as tinted-humanoid not green blob; closed 3 accumulated audit-grid stuck PRs (#984 #986 #991)
+
 ## 2026-06-17 (audit-polish — wave-boundary FPS fix + enemy data caching)
 
 - perf(wave): enemy data cache in WaveManager — _spawn_enemy() now does a dict lookup instead of ResourceLoader.exists()+load() on every spawn; preload is now synchronous (was call_deferred, risked race with wave-1 start); spawn_payload children also pre-cached so _spawn_children() hits warm Godot ResourceCache not disk (#975 #982). perf(playtest): max_physics_steps_per_frame 48→12 (matches 12× time_scale — prevents physics catch-up spiral that caused 2.0 FPS min-spike at wave boundaries). fix(game_level): wave receipt creation deferred one frame via call_deferred so UI layout doesn't pile onto wave-end signal burst.
