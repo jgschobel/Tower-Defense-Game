@@ -954,13 +954,31 @@ func _apply_path_tint() -> void:
 	if path_a_tier == 0:
 		sprite.modulate = Color.WHITE
 	else:
-		# Brightness drops 16% per A-tier (floor 0.68 — brighter than old 0.60
-		# so portraits stay readable at tier 3).
-		var brightness: float = clampf(1.0 - (0.11 * path_a_tier), 0.68, 1.0)
+		# Per-tier blend with white so A1 stays recognisably the humanoid
+		# (#966 #977 — fully saturated tint at A1 was crushing skin/clothes
+		# colours into a green blob, losing tower identity after one upgrade).
+		# A3 stays strong because the t3 sprite swap usually backs it up.
+		var blend: float
+		var brightness: float
+		match path_a_tier:
+			1:
+				blend = 0.32
+				brightness = 0.97
+			2:
+				blend = 0.62
+				brightness = 0.88
+			_:
+				blend = 0.90
+				brightness = 0.78
 		# 30°/tier hue rotation keeps A3 in readable cyan/teal territory.
 		var ah: float = fmod(data.path_a_tint.h + (30.0 / 360.0) * path_a_tier, 1.0)
 		var a_tint: Color = Color.from_hsv(ah, minf(data.path_a_tint.s + 0.25 * path_a_tier, 1.0), data.path_a_tint.v)
-		sprite.modulate = Color(a_tint.r * brightness, a_tint.g * brightness, a_tint.b * brightness, 1.0)
+		sprite.modulate = Color(
+			lerpf(1.0, a_tint.r, blend) * brightness,
+			lerpf(1.0, a_tint.g, blend) * brightness,
+			lerpf(1.0, a_tint.b, blend) * brightness,
+			1.0
+		)
 	# Blend a fraction of the B-path hue into the sprite (#965): A3+B1 and A3+B2
 	# must look distinct at a glance even when A3's base colour is dark.
 	# 22% / 44% / 66% additive colour contribution per B-tier.
