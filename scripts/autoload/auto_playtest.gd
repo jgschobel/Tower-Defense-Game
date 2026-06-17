@@ -135,11 +135,12 @@ func _run_healthy_level(level_id: int) -> void:
 		wm.call("start_next_wave")
 
 	# Time-scale boost so we see active gameplay within the CI budget.
-	# L1: 8× gives good anim frames. max_phys 32×18FPS=576 ≥ 8×60=480. ✓
-	# L2/L3: 12× so 10-wave dense levels complete in same 20s real budget.
-	#         max_phys 48×18FPS=864 ≥ 12×60=720. ✓  (#904 #895 #896 #901)
-	var _ts := 12.0 if level_id > 1 else 8.0
-	var _max_phys := 48 if level_id > 1 else 32
+	# All levels at 12×: 10 ticks × 2.0s real = 240s game time, enough for
+	# 10 dense waves with healers and boss deaths. max_phys 48×18FPS=864 ≥
+	# 12×60=720. ✓  L1 was at 8× (160s game time) which ran out at wave 9/10;
+	# uniform 12× fixes that AND saves ~10s real so L3 fits in the 120s budget.
+	var _ts := 12.0
+	var _max_phys := 48
 	Engine.max_physics_steps_per_frame = _max_phys
 	Engine.time_scale = _ts
 
@@ -152,12 +153,10 @@ func _run_healthy_level(level_id: int) -> void:
 		await _capture_anim_clip("%s_wavestart" % _scenario_name)
 
 	# Extended loop: keep sampling until WON/LOST or budget expires.
-	# L1 (8×):  10 ticks × 2.0s = 20s real = 160s game time — fine for 10 waves.
-	# L2/L3 (12×): 10 ticks × 2.0s = 20s real = 240s game time — dense 10-wave
-	#   levels with healers need ~170s game time; 240 provides buffer to WON.
-	# WON/LOST early-exit keeps real time short in the happy path (~10-15s).
-	# 20s ceiling: 3 levels × ≤20s = ≤60s, leaving ~60s for the 4 priority
-	# scenarios and scene loads within the 120s Godot CI timeout.
+	# 12× across all levels: 10 ticks × 2.0s = 240s game time — enough for any
+	# 10-wave level. WON/LOST early-exit keeps real time short (~10-15s typical).
+	# 20s ceiling: 3 levels × ≤20s = ≤60s, plus ~36s priority scenarios,
+	# leaving ~24s buffer inside the 120s Godot CI timeout for L3 to land.
 	var sim_started := Time.get_ticks_msec()
 	var shot_idx := 0
 	var _diag_done := false
