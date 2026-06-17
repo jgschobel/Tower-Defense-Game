@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-17 (audit-polish — defeat screen animation + Swiss German fixes)
+
+- polish(game-over): "VERLORE!" title now slams in from 2× scale with TRANS_BOUNCE then shakes left-right (rotation ±0.08 rad), matching the production quality of "SIEG!" pop; red border vignette pulses behind the panel for defeat atmosphere (contrasts gold vignette in victory). "BOSS" → "DE BOSS!" in NextWavePreview (Swiss German, hud.gd two occurrences). "LETSCHT WÄLLE!" → "LETSCHTI WÄLLE!" (adjective declension fix).
+
 ## 2026-06-16 (audit-polish — path-B sprite blend + WON grace timer)
 
 - fix(tower): Path B upgrade tints now readable over dark A3 bases (#965) — B hue blended additively into sprite.modulate (22%/44%/66% per tier) so A3+B1/B2/B3 are visually distinct without relying only on the glow ring; brightness floor raised 0.60→0.68 so A3 portraits are lighter; B glow ring moved to z=1 (in front) with pulse floor 0.45→0.65 so ring never dips below 65% opacity

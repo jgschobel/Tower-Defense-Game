@@ -182,7 +182,7 @@ func _refresh_threat_badges() -> void:
 			"boss":
 				boss_refs.append(e)
 	_set_threat_badge("HealerBadge", has_healer, "+ HEILE", Color(0.4, 1.0, 0.5))
-	_set_threat_badge("BossBadge", not boss_refs.is_empty(), "BOSS", Color(1.0, 0.35, 0.25))  # was "⚠ BOSS"
+	_set_threat_badge("BossBadge", not boss_refs.is_empty(), "DE BOSS!", Color(1.0, 0.35, 0.25))
 	_refresh_boss_hpbar(boss_refs)
 
 
@@ -1233,7 +1233,7 @@ func _show_wave_announcement(current: int, total: int) -> void:
 	var announce_text: String
 	if is_final:
 		txt_color = Color(1, 0.75, 0.1)  # gold for finale
-		announce_text = "LETSCHT WÄLLE!"
+		announce_text = "LETSCHTI WÄLLE!"
 	elif is_danger:
 		txt_color = Color(1, 0.3, 0.2)
 		announce_text = "WÄLLE %d" % current
@@ -1378,7 +1378,7 @@ func _refresh_next_wave_preview(visible_flag: bool) -> void:
 			has_boss = true; break
 	if has_boss:
 		var warn := Label.new()
-		warn.text = "BOSS"  # was "⚠ BOSS"
+		warn.text = "DE BOSS!"
 		warn.add_theme_font_size_override("font_size", 17)
 		warn.add_theme_color_override("font_color", Color(1.0, 0.3, 0.2))
 		warn.add_theme_color_override("font_outline_color", Color(0.25, 0.05, 0))
