@@ -368,7 +368,11 @@ func _on_wave_completed(wave_num: int) -> void:
 		# show_victory() already plays.
 		if hud.has_method("show_wave_clear_celebration"):
 			hud.show_wave_clear_celebration()
-		_show_wave_receipt(wave_num)
+		# Defer receipt creation by one frame so the wave-end signal burst
+		# (enemy deaths, tweens, pool releases) settles before UI layout runs.
+		# The receipt shows imperceptibly later but avoids the physics catch-up
+		# spiral that caused min-FPS 2.0 spikes at wave boundaries (#975 #982).
+		call_deferred("_show_wave_receipt", wave_num)
 
 
 func _show_wave_receipt(wave_num: int) -> void:

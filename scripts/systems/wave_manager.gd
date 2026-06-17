@@ -31,6 +31,7 @@ var _wave_total_enemies: int = 0
 var _wave_defeated_enemies: int = 0
 var _spawn_timer: float = 0.0
 var _base_enemy_scene: PackedScene
+var _enemy_data_cache: Dictionary = {}  # enemy_id → EnemyData resource (avoids load() in hot spawn path)
 
 
 func _ready() -> void:
@@ -43,7 +44,10 @@ func setup_waves(waves: Array) -> void:
 	_wave_data = waves
 	total_waves = waves.size()
 	current_wave = 0
-	call_deferred("_preload_enemy_resources", waves)
+	# Synchronous preload: level is setting up, no active rendering yet.
+	# Previously deferred (call_deferred) but that allowed wave-1 spawn to
+	# race the preload and hit cold load() calls mid-frame (#975 #982).
+	_preload_enemy_resources(waves)
 
 
 func get_next_wave_preview() -> Array:
@@ -65,11 +69,13 @@ func get_next_wave_preview() -> Array:
 
 
 func _preload_enemy_resources(waves: Array) -> void:
-	# Warm the ResourceLoader cache for every enemy type before any wave
-	# starts. Without this, the first `load()` call per enemy type in
-	# _spawn_enemy() hits the disk mid-frame and causes a visible hitch
-	# (reported as 1 FPS spike on L1 wave-1 start, issue #73 / #78).
+	# Load every enemy type used in these waves into _enemy_data_cache so
+	# _spawn_enemy() can do a fast dictionary lookup instead of calling
+	# ResourceLoader.exists() + load() on every spawn. Also warms the GPU
+	# texture cache. Previously this used call_deferred; now it's synchronous
+	# so the cache is populated before wave-1 can spawn (fixes #975 #982).
 	var seen: Dictionary = {}
+	_enemy_data_cache.clear()
 	for wave in waves:
 		var wave_dict: Dictionary = wave
 		for group in wave_dict.get("groups", []):
@@ -81,6 +87,7 @@ func _preload_enemy_resources(waves: Array) -> void:
 			var data_path := "res://resources/enemy_data/%s.tres" % enemy_id
 			if ResourceLoader.exists(data_path):
 				var enemy_data = ResourceLoader.load(data_path)
+				_enemy_data_cache[enemy_id] = enemy_data
 				# Touch the custom_texture + spawns_on_death chain so their
 				# pngs + linked resources are also cached. Without this,
 				# the first spawn of an enemy with a new texture still
@@ -92,7 +99,18 @@ func _preload_enemy_resources(waves: Array) -> void:
 					var child_path := "res://resources/enemy_data/%s.tres" % enemy_data.spawns_on_death
 					if ResourceLoader.exists(child_path) and not (enemy_data.spawns_on_death in seen):
 						seen[enemy_data.spawns_on_death] = true
-						ResourceLoader.load(child_path)
+						var child_data = ResourceLoader.load(child_path)
+						_enemy_data_cache[enemy_data.spawns_on_death] = child_data
+				# spawn_payload (multi-type): also cache each entry
+				if enemy_data and "spawn_payload" in enemy_data:
+					for pid in enemy_data.spawn_payload:
+						var pid_str: String = str(pid)
+						if pid_str in seen:
+							continue
+						seen[pid_str] = true
+						var pid_path := "res://resources/enemy_data/%s.tres" % pid_str
+						if ResourceLoader.exists(pid_path):
+							_enemy_data_cache[pid_str] = ResourceLoader.load(pid_path)
 
 
 func start_next_wave() -> void:
@@ -163,15 +181,23 @@ func _spawn_enemy(enemy_id: String) -> void:
 		push_error("WaveManager: No enemy_path assigned!")
 		return
 
-	var data_path := "res://resources/enemy_data/%s.tres" % enemy_id
-	var enemy_data = null
-	if ResourceLoader.exists(data_path):
-		enemy_data = load(data_path)
-	else:
-		push_warning("WaveManager: Enemy data '%s' not found, using basic" % enemy_id)
-		var fallback := "res://resources/enemy_data/basic.tres"
-		if ResourceLoader.exists(fallback):
-			enemy_data = load(fallback)
+	# Fast path: use pre-cached resource from _preload_enemy_resources.
+	# Avoids ResourceLoader.exists() + load() on every spawn (hot path at 12× time_scale).
+	var enemy_data = _enemy_data_cache.get(enemy_id)
+	if enemy_data == null:
+		var data_path := "res://resources/enemy_data/%s.tres" % enemy_id
+		if ResourceLoader.exists(data_path):
+			enemy_data = load(data_path)
+			_enemy_data_cache[enemy_id] = enemy_data  # warm cache for next time
+		else:
+			push_warning("WaveManager: Enemy data '%s' not found, using basic" % enemy_id)
+			var fallback_data = _enemy_data_cache.get("basic")
+			if fallback_data == null:
+				var fallback := "res://resources/enemy_data/basic.tres"
+				if ResourceLoader.exists(fallback):
+					fallback_data = load(fallback)
+					_enemy_data_cache["basic"] = fallback_data
+			enemy_data = fallback_data
 
 	# Prefer the pool to avoid instantiate/queue_free churn at scale.
 	# Falls back to instantiate if pool loads late.
