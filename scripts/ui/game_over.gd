@@ -141,10 +141,12 @@ func _animate_title_pop() -> void:
 func show_defeat() -> void:
 	visible = true
 	modulate = Color(1, 1, 1, 0)
+	_spawn_defeat_vignette()
 	var fade := create_tween()
 	fade.tween_property(self, "modulate:a", 1.0, 0.4)
 	if title_label:
 		title_label.text = "VERLORE!"
+		_animate_title_defeat()
 	if stars_label:
 		stars_label.text = ""
 	if message_label:
@@ -159,6 +161,48 @@ func show_defeat() -> void:
 		retry_button.text = "Nomal"
 	if menu_button:
 		menu_button.text = "Menü"
+
+
+func _animate_title_defeat() -> void:
+	if title_label == null:
+		return
+	title_label.pivot_offset = title_label.size * 0.5
+	title_label.scale = Vector2(2.0, 2.0)
+	title_label.rotation = 0.0
+	var tw := create_tween()
+	tw.tween_property(title_label, "scale", Vector2.ONE, 0.30) \
+		.set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
+	tw.tween_interval(0.06)
+	tw.tween_property(title_label, "rotation",  0.08, 0.05)
+	tw.tween_property(title_label, "rotation", -0.08, 0.05)
+	tw.tween_property(title_label, "rotation",  0.05, 0.04)
+	tw.tween_property(title_label, "rotation", -0.04, 0.04)
+	tw.tween_property(title_label, "rotation",  0.0,  0.07).set_trans(Tween.TRANS_SINE)
+
+
+func _spawn_defeat_vignette() -> void:
+	var wrap := Panel.new()
+	wrap.name = "DefeatVignette"
+	wrap.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	wrap.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var ring := StyleBoxFlat.new()
+	ring.bg_color = Color(0, 0, 0, 0)
+	ring.border_color = Color(0.85, 0.05, 0.05, 0.0)
+	ring.border_width_left = 46
+	ring.border_width_right = 46
+	ring.border_width_top = 46
+	ring.border_width_bottom = 46
+	wrap.add_theme_stylebox_override("panel", ring)
+	add_child(wrap)
+	move_child(wrap, 1)  # behind Panel (Dimmer→Vignette→Panel)
+	var tw := wrap.create_tween()
+	tw.tween_method(func(a: float): ring.border_color = Color(0.85, 0.05, 0.05, a),
+		0.0, 0.70, 0.40).set_trans(Tween.TRANS_SINE)
+	tw.tween_interval(0.20)
+	tw.tween_method(func(a: float): ring.border_color = Color(0.85, 0.05, 0.05, a),
+		0.70, 0.38, 0.45).set_trans(Tween.TRANS_SINE)
+	tw.tween_method(func(a: float): ring.border_color = Color(0.85, 0.05, 0.05, a),
+		0.38, 0.55, 0.90).set_trans(Tween.TRANS_SINE)
 
 
 func _on_retry_button_pressed() -> void:
