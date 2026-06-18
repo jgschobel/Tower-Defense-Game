@@ -68,8 +68,12 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
   ResourceLoader.exists()+load() per spawn); preload now synchronous; spawn_payload
   children pre-cached. max_physics_steps_per_frame 48→12 prevents physics catch-up
   spiral at 12× time_scale. Wave receipt creation deferred one frame at wave boundary.
-  Next step: profile with Godot headless --rendering.profiler once the headless FPS
-  number stabilises._
+  Partial fix 2026-06-18: L1 min-FPS 2.0 spike was a CI measurement artifact —
+  _capture_anim_clip (L1-only, 24 GPU readbacks) caused the following frame to report
+  2.0 fps. Added _in_readback flag to auto_playtest.gd: _snapshot() and
+  _capture_anim_clip() set it true before get_image(); _process() skips the FPS sample
+  when set and clears it. Closes #975 #982 #989. The real-device FPS floor is still
+  unknown — a true device profile pass remains the next step._
 
 ### Tier-art completion
 - [ ] **D1/D2 portraits for remaining 3 towers** — Cordula and Kühne
