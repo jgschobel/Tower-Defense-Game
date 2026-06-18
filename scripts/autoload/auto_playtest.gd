@@ -509,6 +509,10 @@ func _run_bug_hunt() -> void:
 	# Also: cancel placement, should return cleanly
 	if placement and placement.has_method("cancel_placement"):
 		placement.cancel_placement()
+		# Two process frames let Godot flush the scene tree removal before the
+		# GPU readback — queue_free alone keeps the node alive until frame-end.
+		await get_tree().process_frame
+		await get_tree().process_frame
 		await get_tree().create_timer(0.2).timeout
 	_snapshot("bughunt_after_cancel")
 

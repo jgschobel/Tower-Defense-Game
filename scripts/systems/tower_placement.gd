@@ -91,7 +91,11 @@ func start_placement(tower_data: TowerData) -> void:
 
 func cancel_placement() -> void:
 	if ghost_tower:
-		ghost_tower.visible = false  # immediate hide before queue_free so no stale frame shows
+		# remove_child ejects the node from the scene tree immediately so no
+		# subsequent render frame can show it, even if queue_free hasn't run yet.
+		var gp := ghost_tower.get_parent()
+		if gp:
+			gp.remove_child(ghost_tower)
 		ghost_tower.queue_free()
 		ghost_tower = null
 	_ghost_x_label = null
@@ -174,6 +178,8 @@ func _update_ghost_position(screen_pos: Vector2) -> void:
 
 
 func _try_place(screen_pos: Vector2) -> void:
+	if not is_placing:
+		return
 	var world_pos := get_canvas_transform().affine_inverse() * screen_pos
 
 	var error := _get_placement_error(world_pos)
