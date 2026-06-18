@@ -1370,15 +1370,25 @@ func _refresh_next_wave_preview(visible_flag: bool) -> void:
 	prefix.add_theme_font_size_override("font_size", 16)
 	prefix.add_theme_color_override("font_color", Color(1, 0.85, 0.3))
 	hbox.add_child(prefix)
-	# Boss warning — if any group in this wave is a boss, prepend a red
-	# "⚠ BOSS" tag so the player is forewarned. Pulses to draw attention.
-	var has_boss: bool = false
+	# Boss warning — if any group in this wave is a boss-tier enemy, prepend a
+	# red tag so the player is forewarned. Pulses to draw attention. Covers
+	# the original "boss" id AND all MOAB-class threats added in L7–L10.
+	var _boss_warn_map: Dictionary = {
+		"boss": "DE BOSS!",
+		"selbschtbedienigs_wage": "MEGA-WÄGE!",
+		"moab_migros": "MEGA-TANK!",
+		"bfb_cumulus": "CUMULUS-ALARM!",
+		"ddt_schwarz": "SCHATTE-BOSS!",
+	}
+	var boss_warn_text: String = ""
 	for g in preview:
-		if g.get("enemy_id", "") == "boss":
-			has_boss = true; break
-	if has_boss:
+		var eid: String = g.get("enemy_id", "")
+		if eid in _boss_warn_map:
+			boss_warn_text = _boss_warn_map[eid]
+			break
+	if boss_warn_text != "":
 		var warn := Label.new()
-		warn.text = "DE BOSS!"
+		warn.text = boss_warn_text
 		warn.add_theme_font_size_override("font_size", 17)
 		warn.add_theme_color_override("font_color", Color(1.0, 0.3, 0.2))
 		warn.add_theme_color_override("font_outline_color", Color(0.25, 0.05, 0))
@@ -1442,7 +1452,14 @@ func _enemy_preview_color(enemy_id: String) -> Color:
 		"cumulus_blob":   return Color(0.4, 0.5, 0.85)
 		"linsen_golem":   return Color(0.5, 0.55, 0.25)
 		"smoothie_slime": return Color(0.25, 0.8, 0.3)
-		"tofu_ninja":     return Color(0.92, 0.92, 0.82)
+		"tofu_ninja":            return Color(0.92, 0.92, 0.82)
+		"pasta_express":         return Color(0.92, 0.82, 0.55)
+		"cherry_bomb":           return Color(0.85, 0.15, 0.25)
+		"selbschtbedienigs_wage": return Color(0.75, 0.1, 0.1)
+		"selbschtskan_schiff":   return Color(0.55, 0.55, 0.65)
+		"moab_migros":           return Color(0.8, 0.25, 0.05)
+		"bfb_cumulus":           return Color(0.3, 0.3, 0.9)
+		"ddt_schwarz":           return Color(0.1, 0.08, 0.15)
 		_: return Color(0.6, 0.6, 0.7)
 
 
@@ -1465,8 +1482,15 @@ func _short_name_for_enemy(enemy_id: String) -> String:
 		"cumulus_blob":   return "Cumulus"
 		"linsen_golem":   return "Linsen"
 		"smoothie_slime": return "Smoothie"
-		"tofu_ninja":     return "Ninja"
-		"boss":           return "M-TÜÜFEL"
+		"tofu_ninja":            return "Ninja"
+		"boss":                  return "M-TÜÜFEL"
+		"pasta_express":         return "Pasta"
+		"cherry_bomb":           return "Kirschbombe"
+		"selbschtbedienigs_wage": return "SB-Wage"
+		"selbschtskan_schiff":   return "Kopierer"
+		"moab_migros":           return "Mega-Tank"
+		"bfb_cumulus":           return "Cumulus-D."
+		"ddt_schwarz":           return "Schwarz-Iir."
 		_: return enemy_id.capitalize()
 
 
