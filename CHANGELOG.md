@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-18 (audit-polish — wave preview boss-sort + copycat warning)
+
+- polish(hud): wave preview now warns on selbschtskan_schiff (KOPIERER-ALARM!); boss-tier enemies bubble to front of preview list; row capped at 6 groups with "+N meh…" overflow; boss-tier entries rendered in orange to distinguish from regular enemies — closes the L8/L9/L10 warning gap
+
 ## 2026-06-18 (audit-polish — ghost tower + placement robustness)
 
 - fix(placement): ghost tower sprite no longer persists after cancel — `cancel_placement()` now calls `remove_child()` before `queue_free()` so the node is ejected from the scene tree immediately, not just scheduled for deletion; `_try_place()` guards early-return on `not is_placing` to prevent spurious calls after cancel; bughunt scenario awaits 2 process frames before after-cancel snapshot for reliable GPU readback. Closes #996. Tint fix (#995) shipped in PR #1002 (blend 0.40/0.52/0.70).
