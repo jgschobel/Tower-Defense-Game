@@ -511,6 +511,178 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
   CurrencyManager gains `wave_gold_earned` + `reset_wave_gold()`.
   Shows MVP towers (top 3 by dmg), kills, gold, cumulus, lives. Tap to dismiss._
 
+### Added 2026-06-18 (ideate run)
+
+- [ ] **"Banani-Lawine" — named-combo milestone bubbles** — when
+  `ComboTracker.combo_count` crosses certain thresholds (10, 25, 50,
+  75, 100, 150), spawn a giant Swiss-German named-combo bubble in the
+  center of the play field for ~1.4 s, then fade. Tier-locked so it
+  fires once per threshold per run (no spam, no overlap with
+  Pausbeleg). Names are chunked into a `Dictionary` const so they're
+  stealable for future modes:
+  ```
+  10  → "Banani-Schwarm!"
+  25  → "Migros-Massaker!"
+  50  → "Cumulus-Combo!"
+  75  → "Aff-oltere-Apoteke!"
+  100 → "Bani-Apokalypse!"
+  150 → "DE TÜÜFEL CHUNT!"
+  ```
+
+  **Impl:** new `scripts/ui/combo_milestone_bubble.gd` (~120 LoC) +
+  `scenes/ui/combo_milestone_bubble.tscn`. Hooks
+  `ComboTracker.combo_changed`; reads
+  `_fired_thresholds: Dictionary` and skips already-spawned tiers
+  (cleared on `level_started`). Bubble is a `Label` centered at
+  Viewport center with a `StyleBoxFlat` rounded-pill bg
+  (`design_tokens.gold` for ≤50, `design_tokens.red` for >50),
+  scale-pop tween 1.0 → 1.18 → 1.0 in 0.18 s, then 0.6 s hold, then
+  fade-modulate 1.0 → 0.0 over 0.6 s. Sound: reuse existing
+  `SfxManager.play_combo_milestone()` (pitch-ramped by tier).
+
+  **Why it sticks:** the current combo badge is a tiny corner number —
+  the spectacle the 5-year-old wants is *the moment the screen says
+  AFF-OLTERE-APOTEKE*. Composes with [[hei-karte-share-card]]: the
+  milestone bubble is a perfect snapshot trigger ("share when the
+  bubble fires"). Zero new art; uses existing design-tokens palette.
+  Pairs naturally with [[coupon-kombo]] (kombo gives gold, milestone
+  gives glory).
+
+- [ ] **"Hut-Lade" — tier-3 hat customization unlocks** — after a
+  friend is tier-3'd at least once across runs, that friend unlocks
+  a hat slot persisted to `user://hut_lade.json`. Long-press a placed
+  tier-3 tower (~600 ms) to open a 6-hat picker overlay; tap a hat to
+  swap. Initial hat roster (procedural, drawn in
+  `scripts/towers/visuals/tier_hat.gd` — no new art assets):
+  ```
+  schwingerhut    — straw cone, Swiss wrestling
+  sbb-mütze       — blue cap, white SBB logo
+  alpenhorn-bow   — tiny alphorn arc bowed on head
+  yodel-spike     — mountain-peak triangle
+  cumulus-stern   — red Migros star, 5-pointed
+  ein-kreuz       — Swiss flag white cross on red disc
+  ```
+
+  **Impl:** extend `TierHat` (already extracted to
+  `scripts/towers/visuals/tier_hat.gd`) with a
+  `style_id: StringName` exported var that switches `_draw()` between
+  6 procedural variants. `GameManager.unlock_hat(tower_id, hat_id)`
+  marks the unlock; `assign_hat(tower_id, hat_id)` writes the active
+  choice; both persist via existing `save_game()` plumbing. UI: new
+  `scripts/ui/hat_lade_overlay.gd` (~180 LoC) + scene; modal Control
+  with 6 thumbnail buttons (drawn the same procedural way as the
+  hats, at 64×64). Tap-outside or back-button dismisses.
+
+  **Why it sticks:** flex. Pure cosmetic, but every Swiss-themed hat
+  is a tiny in-joke and a screenshot vector. Closes the gap between
+  "I love these characters" and "I want to dress them up". Pairs
+  with [[hei-karte-share-card]] — hats appear on the share card.
+  Crucially: the rendering is *procedural*, so no Stability/Gemini
+  art request needed — Claude ships it directly per the
+  "Claude-native design" user directive.
+
+- [ ] **"Kassiererin Rosa" — diegetic level-select narrator NPC** —
+  bottom-left corner of the level-select screen, a small (96×128 px)
+  Migros cashier character idle-animates and pops contextual
+  comic-book speech bubbles at quiet moments. Reactions are pulled
+  from a small state machine on `GameManager` flags:
+  ```
+  first_level_won           → "Aaaah, du bisch eis vo de gueti Kunde!"
+  5_in_a_row_lost           → "Wottsch e Schoggi näh? Gratis, gäll."
+  1000_cumulus_crossed      → "Cumulus-Stamm-Kund — bravo!"
+  daily_mission_done        → "Hesch das gnueg im Bonus-Päckli."
+  returns_after_>3_days     → "Bisch lang nümme cho! Was nei?"
+  hat_unlocked              → "De Huet stoht dir guet."
+  L10_won_first_time        → "De Tüüfel hät verlore. Mier au, gell?"
+  level_select_idle_45s     → "Wottsch öppis zum bschtellen? :-)"
+  ```
+
+  **Impl:** new autoload-adjacent `scripts/systems/rosa_narrator.gd`
+  (~150 LoC, not a true autoload — lives on level_select.tscn only).
+  Speech bubble = `RichTextLabel` with a `StyleBoxFlat` rounded-corner
+  bg, 9-slice tail polygon pointing at Rosa's face. Auto-dismisses
+  after 4.5 s OR on player tap. Cooldown per-line so the same line
+  doesn't repeat within a session. Sprite: ONE
+  text-to-image Stability call (Rosa is a generic NPC, NOT a friend
+  character — friend rule doesn't apply); fallback to a procedural
+  silhouette + apron if generation hasn't run yet. Output:
+  `assets/textures/ui/kassiererin_rosa.png` (96×128).
+
+  **Why it sticks:** the level-select is currently a dead grid of
+  buttons. Rosa makes it a *place*. She's the persistent diegetic
+  voice the game lacks — every Migros has a Rosa. Composes with
+  [[tag-der-affoltern]] (she announces the daily mission with a
+  golden bubble). Lazy-player engagement: even with no input, Rosa
+  reacts to your run history.
+
+- [ ] **"De Chef-Modus" — wave editor + 5-letter share codes** — a
+  sandbox-adjacent mode unlocked at L5 cleared. Player composes a
+  custom 8-wave run by dragging enemies from a side-shop into a
+  per-wave grid (e.g. wave 3: 8 banani, 2 tofu_ninja, 1 boss). A
+  one-line "Spiele!" button runs the custom wave-set on the L5 map.
+  Each composition gets a deterministic 5-letter
+  base32-from-hash code (e.g. `JHWBP`) shown at the top; player
+  shares the code with friends, friends type it into "Code igäh"
+  field to play the same gauntlet.
+
+  **Impl:** new `scripts/systems/chef_mode.gd` autoload (~250 LoC) +
+  `scenes/ui/chef_editor.tscn`. Wave-set serialized as
+  `{seed_letters: "JHWBP", waves: [[{id, count}, ...], ...]}` JSON.
+  Code = first 5 letters of `base32(sha1(json_str))` so dups collide
+  to same code; collision-safe enough for friend-share scale. Game
+  runs reusing existing `WaveManager.start_waves(custom_definitions)`
+  path; no new gameplay code. UI: small grid (8 columns × variable
+  rows) with drag-from-shop tap-to-add. Hard cap: 50 enemies per
+  wave to keep things sane.
+
+  **Why it sticks:** [BTD has sandbox; doesn't have shareable].
+  Player creativity → shared content → replay value. Pairs with
+  [[hei-karte-share-card]] (the code IS a tiny share card). Also
+  closes a gap with [[daily-mission-tag-der-affoltern]]: Chef-Modus
+  codes can BE the daily seed source — every day a procedurally
+  picked community-shared code is "today's mission". Estimated 2–3
+  audit-polish runs; ship the editor first, share-codes second.
+
+- [ ] **"Räge & Sunne" — between-wave weather flavor layer** —
+  subtle but persistent atmospheric mood: every level has a hidden
+  `weather_pool: Array[StringName]` (rain, sun, fog, abendrot, snow)
+  that ticks between waves. A new `WeatherOverlay` Control sits
+  above the play field with very low alpha (0.18 max) particles +
+  CanvasModulate shift. During the 4 s between-wave breather, a tiny
+  Swiss weather forecast card slides in from top-left:
+  ```
+  ▒ Räge-Räge — Wälle 5 chunt mit Wasser    ☂
+  ☀ Sunne — Wälle 6 chunt heiss             🥵
+  ❄ Schnee — Cumulus z'verdoppelt           ★
+  ```
+
+  **Mechanical hook (optional but easy):** weather has a tiny
+  multiplier baked in (rain → enemies +2 % slow on path tiles; sun
+  → tower attack-speed +3 %; fog → +50 % camo enemy chance; snow →
+  Cumulus drop doubled). Single-tap dismiss. Hidden until L4 (first
+  4 levels stay weather-clear so the player learns base mechanics).
+
+  **Impl:** new `scripts/ui/weather_overlay.gd` (~200 LoC) +
+  `scenes/ui/weather_overlay.tscn`. Procedural particles drawn via
+  `CPUParticles2D` (already in the project); CanvasModulate via
+  existing `LevelData.canvas_modulate` field with a per-weather
+  delta. Weather rolls once per level on first wave via
+  `RandomNumberGenerator.randi_range(0, weather_pool.size() - 1)`
+  using the level seed (deterministic per run). The forecast card
+  reuses the Pausbeleg styling for diegetic consistency.
+
+  **Why it sticks:** dead air between waves keeps creeping back as
+  user-perceived "nothing's happening" (cf. Pausbeleg + DDT-
+  Verwüschelig). Weather is the cheapest possible mood layer that
+  also has tactical depth (fog → bring camo detection). Composes
+  with every existing system; orthogonal to the tower/enemy roster.
+  Zero new raster art (procedural particles + CanvasModulate +
+  forecast emoji); minimal LoC. Theme-perfect: Switzerland literally
+  has six weather types per afternoon. Pairs with
+  [[ddt-verwüschelig]] (smoke bombs land harder during fog) and
+  [[migros-bon-active-power]] (Bon discount could be "wether-
+  themed": "Räge-Bon" = 50 % off slow towers).
+
 ---
 
 ## 🔎 Architecture Notes
@@ -610,6 +782,40 @@ Use as input for refactor sprints when the loop runs `self-improve`.
   all 11 singletons now live in `scripts/autoload/`; `project.godot` updated;
   `CLAUDE.md` project-structure section corrected. No preload() references
   existed outside `project.godot` so the move was trivially clean.
+
+- **2026-06-18 — God-object drift is accelerating, not slowing.**
+  Re-measured both flagged hotspots vs. their prior notes:
+  - `scripts/towers/base_tower.gd`: **1487 lines / 53 functions** —
+    vs. 2026-06-04 baseline of **1188 / 39**. Net **+299 lines and
+    +14 functions in 14 days**, despite the 2026-06-12 visuals
+    extraction (TierHat/TierGlow) that cut ~58 lines. The file is
+    absorbing new code faster than it sheds it.
+  - `scripts/ui/hud.gd`: **2398 lines / 80 functions** — vs.
+    2026-06-12 follow-up of **2321 / 80**. Net **+77 lines in 6
+    days, same function count** — meaning existing functions are
+    growing in place (longer methods, fewer extracted helpers). This
+    is the worst drift signature: monotonic growth without
+    decomposition.
+
+  `scripts/ui/hud/` subdir still doesn't exist; the
+  tower_shop_panel / threat_indicator / combo_overlay extraction
+  list from 2026-06-05 is **0/6 done**. The total god-object
+  surface in the repo now stands at **3885 lines across 2 files**,
+  driving ~80 % of merge conflicts on audit-polish branches.
+
+  **Concrete forcing-function proposal (don't read another note,
+  pick this):** the next audit-polish run that touches HUD MUST
+  extract `_populate_tower_shop` + `_style_shop_button` +
+  `_refresh_side_shop_layout` + `_build_shop_collapse_handle` +
+  `_toggle_shop_collapse` to `scripts/ui/hud/tower_shop_panel.gd`
+  as a `PanelContainer` subclass. Wire it into `hud.tscn` as a
+  sibling, signal-bridged to the existing hud.gd. Estimated removal:
+  **~400 lines from hud.gd** in a single PR. Validate.sh runs the
+  extraction headless; risk is low because shop logic is signal-
+  driven (CurrencyManager + GameManager.tower_selected) with zero
+  cross-coupling to threat / combo / boss-hpbar code. **If this
+  refactor doesn't ship in the next 7 days, the loop should
+  auto-force it on the following ideate or audit-polish run.**
 
 ---
 
