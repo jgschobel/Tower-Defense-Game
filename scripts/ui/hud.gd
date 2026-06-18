@@ -1379,7 +1379,17 @@ func _refresh_next_wave_preview(visible_flag: bool) -> void:
 		"moab_migros": "MEGA-TANK!",
 		"bfb_cumulus": "CUMULUS-ALARM!",
 		"ddt_schwarz": "SCHATTE-BOSS!",
+		"selbschtskan_schiff": "KOPIERER-ALARM!",
 	}
+	# Sort: boss-tier enemies float to the front so the player sees the threat
+	# immediately even when many groups are present (e.g. L10 wave 10 = 11 groups).
+	preview.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		var a_boss: bool = a.get("enemy_id", "") in _boss_warn_map
+		var b_boss: bool = b.get("enemy_id", "") in _boss_warn_map
+		if a_boss == b_boss:
+			return false
+		return a_boss
+	)
 	var boss_warn_text: String = ""
 	for g in preview:
 		var eid: String = g.get("enemy_id", "")
@@ -1397,7 +1407,12 @@ func _refresh_next_wave_preview(visible_flag: bool) -> void:
 		var warn_pulse := warn.create_tween().set_loops()
 		warn_pulse.tween_property(warn, "modulate:a", 0.5, 0.5)
 		warn_pulse.tween_property(warn, "modulate:a", 1.0, 0.5)
-	for group in preview:
+	# Cap display at 6 groups — L10 final wave has 11 groups and the row overflows.
+	# Show "+N meh" at the end so the player knows more is hidden.
+	const MAX_WAVE_PREVIEW_GROUPS: int = 6
+	var hidden_count: int = maxi(0, preview.size() - MAX_WAVE_PREVIEW_GROUPS)
+	var visible_preview: Array = preview.slice(0, MAX_WAVE_PREVIEW_GROUPS)
+	for group in visible_preview:
 		var enemy_id: String = group.get("enemy_id", "")
 		var icon_tex: Texture2D = _enemy_icon_texture(enemy_id)
 		if icon_tex:
@@ -1418,8 +1433,15 @@ func _refresh_next_wave_preview(visible_flag: bool) -> void:
 		var display_name: String = _short_name_for_enemy(enemy_id)
 		entry.text = "%d× %s" % [group.get("count", 0), display_name]
 		entry.add_theme_font_size_override("font_size", 16)
-		entry.add_theme_color_override("font_color", Color(1, 0.95, 0.8))
+		var entry_color: Color = Color(1.0, 0.55, 0.25) if enemy_id in _boss_warn_map else Color(1, 0.95, 0.8)
+		entry.add_theme_color_override("font_color", entry_color)
 		hbox.add_child(entry)
+	if hidden_count > 0:
+		var more_lbl := Label.new()
+		more_lbl.text = "+%d meh…" % hidden_count
+		more_lbl.add_theme_font_size_override("font_size", 14)
+		more_lbl.add_theme_color_override("font_color", Color(0.7, 0.75, 0.7, 0.85))
+		hbox.add_child(more_lbl)
 	panel.add_child(hbox)
 	add_child(panel)
 
