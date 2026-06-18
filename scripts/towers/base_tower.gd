@@ -962,8 +962,8 @@ func _apply_path_tint() -> void:
 		var brightness: float
 		match path_a_tier:
 			1:
-				blend = 0.25
-				brightness = 0.98
+				blend = 0.40
+				brightness = 0.97
 			2:
 				blend = 0.52
 				brightness = 0.92
