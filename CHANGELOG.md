@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-18 (ideate — 5 new P2 specs + god-object drift note)
+
+- docs(roadmap): appended 5 fully-spec'd P2 ideas — **Banani-Lawine** named-combo milestone bubbles (10/25/50/75/100/150 thresholds, fires once per run, zero new art); **Hut-Lade** tier-3 hat customization unlocks (6 procedural Swiss hats drawn in tier_hat.gd, persisted in user://hut_lade.json, screenshot magnet); **Kassiererin Rosa** diegetic level-select narrator NPC with 8 context-triggered Swiss-German speech bubbles; **De Chef-Modus** wave editor with 5-letter base32-from-sha1 share codes (unlocks L5, can feed daily-mission seed pool); **Räge & Sunne** between-wave weather flavor layer (rain/sun/fog/snow with subtle tactical multipliers, hidden until L4). Refreshed architecture note: `base_tower.gd` drifted **+299 lines in 14 days** (1188→1487), `hud.gd` drifted **+77 lines / same 80 funcs in 6 days** (2321→2398) — god-object surface up to 3885 lines, none of the 2026-06-05 HUD subdir extractions started; proposed forcing-function: tower_shop_panel.gd extraction in the next audit-polish run (~400 line removal, signal-isolated, low risk).
+
 ## 2026-06-18 (audit-polish — playtest FPS measurement fix)
 
 - fix(playtest): L1 min-FPS 2.0 spike was a CI measurement artifact, not a real gameplay freeze — `_capture_anim_clip` (L1-only, 24 GPU readbacks) caused the post-readback frame to report ~2 fps via `Engine.get_frames_per_second()`; added `_in_readback` bool that `_snapshot()` and `_capture_anim_clip()` set before each `get_image()` call; `_process()` skips that one poisoned FPS sample and clears the flag; now the FPS log reflects actual gameplay performance not CI GPU stall cost. Closes #975 #982 #989.
