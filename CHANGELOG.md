@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-18 (audit-polish — ghost tower + placement robustness)
+
+- fix(placement): ghost tower sprite no longer persists after cancel — `cancel_placement()` now calls `remove_child()` before `queue_free()` so the node is ejected from the scene tree immediately, not just scheduled for deletion; `_try_place()` guards early-return on `not is_placing` to prevent spurious calls after cancel; bughunt scenario awaits 2 process frames before after-cancel snapshot for reliable GPU readback. Closes #996. Tint fix (#995) shipped in PR #1002 (blend 0.40/0.52/0.70).
+
 ## 2026-06-18 (audit-polish — wave-preview MOAB coverage)
 
 - polish(hud): wave-preview panel now shows correct Swiss German short names and thematic color swatches for all 7 MOAB-class / newer enemies; boss warning now fires for all 5 boss-tier IDs with distinct Swiss German labels (MEGA-WÄGE! / MEGA-TANK! / CUMULUS-ALARM! / SCHATTE-BOSS!) — PR #1004
