@@ -788,6 +788,7 @@ func show_enemy_intro(enemy_id: String, enemy_data: Resource) -> void:
 		"smoothie_slime":"Grüen und grusig — das bini ich!",
 		"tofu_ninja":    "Du gsehsch mi nöd — ich bini überall!",
 		"selbschtskan_schiff": "Ich bini DU — und du chasch mi nöd usschalte!",
+		"roeschti_bombe": "Heiss, heisser, KABUMM — eui Türm chöched ab!",
 		"boss":          "Jetzt isch alles vegan — für immer!!",
 		"moab_migros":   "Vier Tanks inne — explodier ich... und guet Nacht!",
 		"bfb_cumulus":   "Flüge und unsichtbar — kein Turm stoppt mich!",
@@ -1380,6 +1381,7 @@ func _refresh_next_wave_preview(visible_flag: bool) -> void:
 		"bfb_cumulus": "CUMULUS-ALARM!",
 		"ddt_schwarz": "SCHATTE-BOSS!",
 		"selbschtskan_schiff": "KOPIERER-ALARM!",
+		"roeschti_bombe": "RÖSCHTI-ALARM!",
 	}
 	# Sort: boss-tier enemies float to the front so the player sees the threat
 	# immediately even when many groups are present (e.g. L10 wave 10 = 11 groups).
@@ -1482,6 +1484,7 @@ func _enemy_preview_color(enemy_id: String) -> Color:
 		"moab_migros":           return Color(0.8, 0.25, 0.05)
 		"bfb_cumulus":           return Color(0.3, 0.3, 0.9)
 		"ddt_schwarz":           return Color(0.1, 0.08, 0.15)
+		"roeschti_bombe":        return Color(0.85, 0.55, 0.18)
 		_: return Color(0.6, 0.6, 0.7)
 
 
@@ -1513,6 +1516,7 @@ func _short_name_for_enemy(enemy_id: String) -> String:
 		"moab_migros":           return "Mega-Tank"
 		"bfb_cumulus":           return "Cumulus-D."
 		"ddt_schwarz":           return "Schwarz-Iir."
+		"roeschti_bombe":        return "Röschti-B."
 		_: return enemy_id.capitalize()
 
 

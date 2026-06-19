@@ -38,6 +38,13 @@ var effective_damage: float = 0.0
 var effective_range: float = 0.0
 var effective_speed: float = 0.0
 
+# Russ-cloud debuff (Röschti-Bombe enemy, 2026-06-19). Defaults 1.0
+# (no debuff); RussCloud instances multiply this in/out as towers
+# enter/leave. Applied in the attack-period calculation below so the
+# tower's attack rate slows without touching effective_speed (which
+# would taint upgrade math). Persists across upgrades.
+var debuff_speed_mult: float = 1.0
+
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var range_indicator: Node2D = $RangeIndicator
 @onready var attack_origin: Marker2D = $AttackOrigin
@@ -416,7 +423,10 @@ func _process(delta: float) -> void:
 	# When ability_triple_fire_remaining > 0, fire 3× as fast (Banana-Storm
 	# active ability for Lemurius t3+; future towers can use the same hook).
 	var fire_speed_mul: float = 3.0 if ability_triple_fire_remaining > 0.0 else 1.0
-	var _atk_period: float = 1.0 / (effective_speed * fire_speed_mul)
+	# Russ-cloud debuff multiplies attack period (lower mult = slower
+	# fire) without polluting effective_speed.
+	var debuff_div: float = maxf(debuff_speed_mult, 0.05)
+	var _atk_period: float = 1.0 / (effective_speed * fire_speed_mul * debuff_div)
 	# Use while + += so multiple attacks fire correctly in a single large-delta
 	# frame (required at high time_scale where delta > 1/attack_speed).
 	# Using += instead of = prevents discarding timer overshoot, which caused

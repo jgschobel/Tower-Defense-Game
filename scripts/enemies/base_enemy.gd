@@ -124,7 +124,10 @@ func _process(delta: float) -> void:
 	# Per-enemy jitter (via instance_id) staggers redraws across the 4
 	# bucket phases so L5-L7 waves with 10+ healers don't all repaint
 	# on the same frame. ROADMAP PERF #8.
-	if data and data.heals_nearby:
+	# Röschti-Bombe rides the same throttle for its smoke + fuse ember
+	# animation; sprite uses procedural _draw (no custom_texture) so the
+	# whole body redraws each phase.
+	if data and (data.heals_nearby or data.id == "roeschti_bombe"):
 		var phase: int = (Engine.get_frames_drawn() + int(get_instance_id())) & 3
 		if phase == 0:
 			queue_redraw()
@@ -388,6 +391,11 @@ func die() -> void:
 	if data and data.splash_on_death_radius > 0.0 and data.splash_on_death_heal_pct > 0.0:
 		_splash_heal_nearby()
 
+	# Röschti-Bombe (build-content 2026-06-19): on death, spawn a Russ
+	# cloud that slows nearby towers' fire rate for explosion_duration.
+	if data and data.explodes_on_death and data.explosion_radius > 0.0:
+		_spawn_russ_cloud()
+
 	enemy_died.emit(self)
 
 	# Spawn a one-shot poof at the enemy's position so we can immediately
@@ -406,6 +414,31 @@ func die() -> void:
 	_death_tween.chain().tween_callback(func():
 		visible = false
 		_return_to_pool_or_free())
+
+
+func _spawn_russ_cloud() -> void:
+	# Add to the current scene so the cloud outlives the enemy returning
+	# to the pool. Using current_scene (not the Path2D parent) is
+	# important — the enemy's pool-release reparents the enemy itself
+	# but mustn't take the cloud with it.
+	var scene := get_tree().current_scene
+	if scene == null:
+		return
+	var cloud_script: Script = load("res://scripts/systems/russ_cloud.gd")
+	if cloud_script == null:
+		return
+	var cloud := Node2D.new()
+	cloud.set_script(cloud_script)
+	cloud.radius = data.explosion_radius
+	cloud.duration = data.explosion_duration
+	cloud.debuff_mult = clampf(data.tower_attack_debuff_mult, 0.05, 1.0)
+	scene.add_child(cloud)
+	cloud.global_position = global_position
+	# Audible cue — reuse the death SFX at a thumpy pitch so the player
+	# associates the bomb sound with the cloud appearing. SfxManager
+	# already varies pitch by hp, so a chunky bomb sounds heavy.
+	if SfxManager and SfxManager.has_method("play_death"):
+		SfxManager.play_death(maxf(data.max_health * 1.5, 600.0))
 
 
 func _splash_heal_nearby() -> void:
@@ -657,6 +690,41 @@ func _draw() -> void:
 			draw_circle(Vector2(8, -8) * s, 4.0, Color(1, 1, 0))
 			draw_circle(Vector2(-8, -8) * s, 2.0, Color.RED)
 			draw_circle(Vector2(8, -8) * s, 2.0, Color.RED)
+		"roeschti_bombe":
+			# Röschti-Bombe — overheated Swiss potato hash with a smoking
+			# fuse. Charred golden disc, oily highlights, dark crispy
+			# edges, plume of soot rising off the top.
+			var smoke_t: float = float(Time.get_ticks_msec()) * 0.0025
+			var smoke_phase: float = smoke_t + float(get_instance_id() & 0xFFFF) * 0.001
+			# Soot plume — three offset puffs rising from the top
+			for i in 3:
+				var puff_t: float = fmod(smoke_phase + i * 0.33, 1.0)
+				var rise: float = -18.0 - puff_t * 22.0
+				var spread: float = puff_t * 8.0
+				var puff_alpha: float = (1.0 - puff_t) * 0.65
+				draw_circle(Vector2(spread - 4.0, rise) * s, (5.0 + puff_t * 4.0) * s, Color(0.15, 0.13, 0.12, puff_alpha))
+			# Charred crispy outer rim
+			draw_circle(Vector2.ZERO, 18.0 * s, Color(0.32, 0.20, 0.10))
+			# Golden-brown body (rösti)
+			draw_circle(Vector2.ZERO, 15.0 * s, c)
+			# Oil-shine highlight — diagonal bright streak
+			draw_circle(Vector2(-4, -5) * s, 4.0 * s, Color(1.0, 0.88, 0.45, 0.55))
+			# Char spots (overcooked crusty bits)
+			draw_circle(Vector2(7, 4) * s, 2.2 * s, Color(0.22, 0.14, 0.08))
+			draw_circle(Vector2(-6, 6) * s, 1.6 * s, Color(0.22, 0.14, 0.08))
+			draw_circle(Vector2(3, -8) * s, 1.4 * s, Color(0.22, 0.14, 0.08))
+			# Lit fuse on top — small brown stick with glowing ember
+			draw_line(Vector2(0, -15) * s, Vector2(2, -22) * s, Color(0.4, 0.25, 0.15), 1.8)
+			var ember_pulse: float = 0.7 + 0.3 * sin(smoke_t * 8.0)
+			draw_circle(Vector2(2, -22) * s, (1.8 + ember_pulse * 0.6) * s, Color(1.0, 0.55, 0.15, 0.95))
+			draw_circle(Vector2(2, -22) * s, 1.0 * s, Color(1.0, 0.95, 0.5, ember_pulse))
+			# Worried face — knows it's about to blow
+			draw_circle(Vector2(-5, -2) * s, 2.6, Color.WHITE)
+			draw_circle(Vector2(5, -2) * s, 2.6, Color.WHITE)
+			draw_circle(Vector2(-5, -1) * s, 1.3, Color.BLACK)
+			draw_circle(Vector2(5, -1) * s, 1.3, Color.BLACK)
+			# Mouth — small "o" of panic
+			draw_arc(Vector2(0, 5) * s, 3.0, 0.0, TAU, 12, Color(0.25, 0.1, 0.05), 1.5)
 		_:
 			# Unknown enemy - generic colored circle
 			draw_circle(Vector2.ZERO, 15.0 * s, c)

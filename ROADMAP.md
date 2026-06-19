@@ -511,6 +511,23 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
   CurrencyManager gains `wave_gold_earned` + `reset_wave_gold()`.
   Shows MVP towers (top 3 by dmg), kills, gold, cumulus, lives. Tap to dismiss._
 
+### Added 2026-06-19 (build-content run)
+
+- [x] **"Röschti-Bombe" — debuff-cloud enemy (L6–L10)** — golden-brown
+  rösti hash with a smoking fuse. On death, drops a 110 px-radius Russ
+  (soot) cloud that lingers 3.2 s and multiplies any tower-in-radius
+  attack speed by 0.55 (≈45 % slower fire rate). HP 1200, speed 80 px/s,
+  60 gold drop, armor 6. Forces players to consider tower placement
+  *clearance from the path* in late-game waves — clustering all 5
+  towers on one elbow becomes a trap. Wired into L6 wave 6+7
+  (1+2 spawn), L7 wave 6 (×2), L8 wave 6 (×2), L9 wave 7 (×3),
+  L10 wave 8 (×3). Multiple overlapping clouds compose
+  multiplicatively (two Röschti-Bombe popping at the same chokepoint
+  = ~0.30 mult ≈ one-third fire rate). Sprite is procedural (no new
+  raster art per Claude-native directive). Wave-preview HUD shows
+  "RÖSCHTI-ALARM!" red pulse and intro card taunt "Heiss, heisser,
+  KABUMM — eui Türm chöched ab!" on first appearance. _Shipped 2026-06-19._
+
 ### Added 2026-06-18 (ideate run)
 
 - [ ] **"Banani-Lawine" — named-combo milestone bubbles** — when
