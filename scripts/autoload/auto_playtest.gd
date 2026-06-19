@@ -26,10 +26,11 @@ var _scenario_summaries: Array[Dictionary] = []
 var _start_ms: int = 0
 # GPU readback flag: get_viewport().get_texture().get_image() stalls the main
 # thread 100–300ms. The following frame reports ~2 fps from Engine.get_frames_per_second()
-# even though gameplay was smooth. Setting this true before any readback causes
-# _process to skip the one poisoned sample, fixing the false min-fps spike on L1
-# (issues #975 #982 #989 — L1 uniquely runs _capture_anim_clip with 24 readbacks).
-var _in_readback: bool = false
+# even though gameplay was smooth. A single-frame bool suppressed only the first
+# poisoned sample, but a 300ms stall at 60fps poisons 18 frames — subsequent
+# low-FPS readings slipped through (#1017). Using a countdown (3 frames grace)
+# ensures all post-readback slow samples are excluded.
+var _readback_cooldown: int = 0
 
 
 func _ready() -> void:
@@ -43,9 +44,10 @@ func _ready() -> void:
 
 
 func _process(_delta: float) -> void:
-	if _active and not _in_readback:
+	if _active and _readback_cooldown <= 0:
 		_fps_samples.append(Engine.get_frames_per_second())
-	_in_readback = false  # clear flag — set true by _snapshot/_capture_anim_clip for one frame
+	if _readback_cooldown > 0:
+		_readback_cooldown -= 1
 
 
 func _run_all() -> void:
@@ -647,7 +649,7 @@ func _instantiate_tower(parent: Node, tower_data: Resource, pos: Vector2) -> Bas
 
 func _capture_anim_clip(tag: String) -> void:
 	for i in ANIM_FRAMES:
-		_in_readback = true  # suppress the post-readback slow-frame FPS sample
+		_readback_cooldown = 3  # suppress post-readback slow samples for 3 frames
 		var img: Image = get_viewport().get_texture().get_image()
 		if img:
 			var filename := "%sanim_%s_%03d.png" % [SHOT_DIR, tag, i]
@@ -657,7 +659,7 @@ func _capture_anim_clip(tag: String) -> void:
 
 
 func _snapshot(tag: String) -> void:
-	_in_readback = true  # suppress the post-readback slow-frame FPS sample
+	_readback_cooldown = 3  # suppress post-readback slow samples for 3 frames
 	var img: Image = get_viewport().get_texture().get_image()
 	if img == null:
 		return

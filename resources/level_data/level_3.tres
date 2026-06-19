@@ -8,7 +8,7 @@ level_id = 3
 level_name = "D'Bäckerei vom Gruse"
 description = "D'Migros-Bäckerei isch zur Festig worde. Gipfeli mached Sturzflüg."
 starting_gold = 140
-starting_lives = 22
+starting_lives = 25
 waves = [
 	{"groups": [{"enemy_id": "healer", "count": 3, "spawn_delay": 1.0}, {"enemy_id": "basic", "count": 8, "spawn_delay": 0.8}]},
 	{"groups": [{"enemy_id": "flying", "count": 6, "spawn_delay": 0.6}]},

@@ -994,18 +994,23 @@ func _apply_path_tint() -> void:
 			lerpf(1.0, a_tint.b, blend) * brightness,
 			1.0
 		)
-	# Blend a fraction of the B-path hue into the sprite (#965): A3+B1 and A3+B2
-	# must look distinct at a glance even when A3's base colour is dark.
-	# 22% / 44% / 66% additive colour contribution per B-tier.
+	# Lerp the B-path hue into the sprite so it reads clearly even when A3 has
+	# already saturated the tint channels. Additive blending (#1022) was invisible
+	# at A3 because saturated channels leave no headroom. Lerp at 38/55/70% ensures
+	# a distinct colour shift regardless of the A-path tint strength.
 	if path_b_tier > 0:
 		var bh: float = fmod(data.path_b_tint.h - (40.0 / 360.0) * path_b_tier + 2.0, 1.0)
 		var b_col: Color = Color.from_hsv(bh, minf(data.path_b_tint.s + 0.2 * path_b_tier, 1.0), data.path_b_tint.v)
-		var b_weight: float = 0.22 * path_b_tier
+		var b_weight: float
+		match path_b_tier:
+			1: b_weight = 0.38
+			2: b_weight = 0.55
+			_: b_weight = 0.70
 		var cur: Color = sprite.modulate
 		sprite.modulate = Color(
-			clampf(cur.r + b_col.r * b_weight, 0.0, 1.5),
-			clampf(cur.g + b_col.g * b_weight, 0.0, 1.5),
-			clampf(cur.b + b_col.b * b_weight, 0.0, 1.5),
+			lerpf(cur.r, b_col.r, b_weight),
+			lerpf(cur.g, b_col.g, b_weight),
+			lerpf(cur.b, b_col.b, b_weight),
 			1.0
 		)
 	_update_b_path_glow()
