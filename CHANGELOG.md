@@ -3,6 +3,11 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-19 (audit-polish — receipt persistence + A1 tint visibility)
+
+- fix(game-level): wave receipt no longer lingers into next scenario — `_dismiss_wave_receipt()` now called in `_on_all_waves_completed()`, `_on_game_over()`, and `_exit_tree()`; `_show_wave_receipt()` guards on `wave_manager.all_done` to block the deferred-after-win race; closes #1009
+- fix(tower): path-A tier-1 upgrade now produces a clearly visible tint — blend raised 0.40→0.58 (brightness 0.97→0.95); A2 raised 0.52→0.68 (0.92→0.89); A3 raised 0.70→0.76 (0.87→0.84); monotonic tier scaling preserved; closes #1010
+
 ## 2026-06-18 (audit-polish — wave preview boss-sort + copycat warning)
 
 - polish(hud): wave preview now warns on selbschtskan_schiff (KOPIERER-ALARM!); boss-tier enemies bubble to front of preview list; row capped at 6 groups with "+N meh…" overflow; boss-tier entries rendered in orange to distinguish from regular enemies — closes the L8/L9/L10 warning gap

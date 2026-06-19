@@ -962,14 +962,18 @@ func _apply_path_tint() -> void:
 		var brightness: float
 		match path_a_tier:
 			1:
-				blend = 0.40
-				brightness = 0.97
+				# 0.58 gives a clearly visible green shift without blobbing the
+				# sprite — previous 0.40 was imperceptible in CI screenshots
+				# (#1010). A2/A3 raised proportionally to preserve monotonic
+				# step-up across the three tiers.
+				blend = 0.58
+				brightness = 0.95
 			2:
-				blend = 0.52
-				brightness = 0.92
+				blend = 0.68
+				brightness = 0.89
 			_:
-				blend = 0.70
-				brightness = 0.87
+				blend = 0.76
+				brightness = 0.84
 		# 12°/tier hue rotation — enough to distinguish tiers without a
 		# 90° full-colour shift that destroys the base palette at A3.
 		var ah: float = fmod(data.path_a_tint.h + (12.0 / 360.0) * path_a_tier, 1.0)
