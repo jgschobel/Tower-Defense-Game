@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-19 (audit-polish — Banani-Lawine combo milestone bubbles)
+
+- feat(combo): "Banani-Lawine" — ComboMilestoneBubble Control hooks ComboTracker.combo_changed; shows centered pill overlay at 10/25/50/75/100/150 kills with Swiss German names, scale-pop tween (TRANS_BACK 0.18s), 0.6s hold, fade-out; gold border ≤50 combo, red >50; SfxManager.play_combo_milestone(tier) pitch-ramped rising sweep
+
 ## 2026-06-19 (audit-polish — Path B tint, L3 lives, FPS metric fix)
 
 - fix(tower): Path B upgrade tint now visible at A3 — switched B-path sprite blend from additive (0.22/0.44/0.66×, invisible against saturated A3) to lerp (0.38/0.55/0.70) so B1/B2/B3 produce distinct colour shifts regardless of A-path saturation; closes #1022

@@ -15,6 +15,7 @@ extends Node2D
 var wave_definitions: Array = []
 var _adjacency_viz: Node2D = null
 var _wave_receipt: WaveReceipt = null
+var _combo_bubble: ComboMilestoneBubble = null
 # Selbschtskan-Schiff copycat tracking. WaveManager reads these via
 # get_meta to skin newly spawned copycat enemies. "" means no tower
 # placed yet — copycat falls back to a generic dark silhouette.
@@ -72,6 +73,8 @@ func _ready() -> void:
 	hud.show_next_wave_button(true)
 	hud.update_wave_info(0, wave_manager.total_waves)
 	_spawn_path_direction_arrows()
+	_combo_bubble = ComboMilestoneBubble.new()
+	hud.add_child(_combo_bubble)
 
 
 func _soften_background() -> void:
