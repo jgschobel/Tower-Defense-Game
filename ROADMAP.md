@@ -530,7 +530,7 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
 
 ### Added 2026-06-18 (ideate run)
 
-- [ ] **"Banani-Lawine" — named-combo milestone bubbles** — when
+- [x] **"Banani-Lawine" — named-combo milestone bubbles** — when
   `ComboTracker.combo_count` crosses certain thresholds (10, 25, 50,
   75, 100, 150), spawn a giant Swiss-German named-combo bubble in the
   center of the play field for ~1.4 s, then fade. Tier-locked so it
@@ -564,6 +564,11 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
   bubble fires"). Zero new art; uses existing design-tokens palette.
   Pairs naturally with [[coupon-kombo]] (kombo gives gold, milestone
   gives glory).
+  _Shipped 2026-06-19: `scripts/ui/combo_milestone_bubble.gd` — ComboMilestoneBubble
+  Control added to HUD CanvasLayer by game_level._ready(). Hooks ComboTracker.combo_changed;
+  tracks fired thresholds per-run; 0.18s scale-pop (TRANS_BACK) + 0.6s hold + 0.6s fade.
+  Gold border ≤50, red border >50. `SfxManager.play_combo_milestone(tier)` — pitch-ramped
+  rising sweep (330→630 Hz), overtone chord for tier ≥3._
 
 - [ ] **"Hut-Lade" — tier-3 hat customization unlocks** — after a
   friend is tier-3'd at least once across runs, that friend unlocks

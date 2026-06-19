@@ -218,6 +218,18 @@ func _play_soft_pluck() -> void:
 	player.finished.connect(player.queue_free)
 
 
+func play_combo_milestone(tier: int) -> void:
+	# Pitch-ramped celebration sweep. tier 0 = threshold 10, tier 5 = threshold 150.
+	# Higher tier → higher base pitch + longer sustain.
+	var base: float = 330.0 + float(tier) * 60.0  # 330 Hz → 630 Hz
+	var top: float = base * 1.5                    # perfect fifth
+	var dur: float = 0.20 + float(tier) * 0.04    # 0.20 s → 0.40 s
+	_play_sweep(base, top, dur, 0.36)
+	if tier >= 3:
+		# Big milestones (≥75) layer a resonant overtone above the sweep.
+		_play_tone(top * 1.25, dur * 0.8, 0.28)
+
+
 func play_sell() -> void:
 	# Coin-drop — descending warm tone, not the previous chirpy 660Hz.
 	if _try_play_baked("sell"):
