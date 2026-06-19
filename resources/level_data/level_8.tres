@@ -15,7 +15,7 @@ waves = [
 	{"groups": [{"enemy_id": "camo", "count": 6, "spawn_delay": 0.45}, {"enemy_id": "fast", "count": 14, "spawn_delay": 0.2}]},
 	{"groups": [{"enemy_id": "selbschtskan_schiff", "count": 1, "spawn_delay": 8.0}, {"enemy_id": "tank", "count": 10, "spawn_delay": 0.55}, {"enemy_id": "swarm", "count": 18, "spawn_delay": 0.15}]},
 	{"groups": [{"enemy_id": "healer", "count": 6, "spawn_delay": 0.5}, {"enemy_id": "camo", "count": 10, "spawn_delay": 0.4}, {"enemy_id": "fast", "count": 16, "spawn_delay": 0.2}]},
-	{"groups": [{"enemy_id": "regrow", "count": 8, "spawn_delay": 0.4}, {"enemy_id": "tank", "count": 8, "spawn_delay": 0.6}]},
+	{"groups": [{"enemy_id": "regrow", "count": 8, "spawn_delay": 0.4}, {"enemy_id": "tank", "count": 8, "spawn_delay": 0.6}, {"enemy_id": "roeschti_bombe", "count": 2, "spawn_delay": 3.5}]},
 	{"groups": [{"enemy_id": "boss", "count": 2, "spawn_delay": 3.2}, {"enemy_id": "camo", "count": 12, "spawn_delay": 0.35}, {"enemy_id": "fast", "count": 16, "spawn_delay": 0.2}]},
 	{"groups": [{"enemy_id": "lead", "count": 6, "spawn_delay": 0.7}, {"enemy_id": "tank", "count": 12, "spawn_delay": 0.5}, {"enemy_id": "healer", "count": 8, "spawn_delay": 0.45}]},
 	{"groups": [{"enemy_id": "regrow", "count": 12, "spawn_delay": 0.35}, {"enemy_id": "flying", "count": 20, "spawn_delay": 0.22}, {"enemy_id": "healer", "count": 10, "spawn_delay": 0.42}]},

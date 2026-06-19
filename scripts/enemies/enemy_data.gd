@@ -57,3 +57,17 @@ extends Resource
 # spam a single friend and you can't kill it. The actual immune
 # tower_id is set per-spawn via meta("immune_to") by WaveManager.
 @export var is_copycat: bool = false
+
+# Röschti-Bombe (build-content 2026-06-19). On death, spawn a "Russ"
+# (soot) cloud at the corpse position that lingers for explosion_duration
+# seconds. Any BaseTower whose global_position falls inside
+# explosion_radius gets its attack_speed multiplied by
+# tower_attack_debuff_mult (range 0.0–1.0; smaller = harsher slow)
+# while inside. Forces the player to place towers further from the path
+# in late-game L6–L9 waves, or risk attack-rate collapse during clutch
+# windows. The cloud is a sibling node (NOT a child of the enemy) so it
+# survives die() returning the enemy to the pool.
+@export var explodes_on_death: bool = false
+@export var explosion_radius: float = 100.0
+@export var explosion_duration: float = 3.0
+@export var tower_attack_debuff_mult: float = 0.55
