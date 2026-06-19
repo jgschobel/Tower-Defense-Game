@@ -376,6 +376,14 @@ func _on_wave_completed(wave_num: int) -> void:
 
 
 func _show_wave_receipt(wave_num: int) -> void:
+	# Guard against a call_deferred arriving after the level has already ended
+	# (e.g. wave_completed fires → call_deferred queued → all_waves_completed
+	# fires in the same logic step → _dismiss_wave_receipt called → deferred
+	# runs next frame adding a new receipt with no dismisser).
+	if wave_manager == null or not is_instance_valid(wave_manager):
+		return
+	if wave_manager.all_done:
+		return
 	_dismiss_wave_receipt()
 	var enemies_defeated: int = 0
 	var towers: Array = get_tree().get_nodes_in_group("towers")
@@ -403,6 +411,11 @@ func _dismiss_wave_receipt() -> void:
 
 
 func _on_all_waves_completed() -> void:
+	# Dismiss any visible wave receipt immediately — without this, a receipt
+	# created via call_deferred in _on_wave_completed (which runs before
+	# wave_started fires for the same frame) can remain on screen through the
+	# victory sequence and into the next scenario (#1009).
+	_dismiss_wave_receipt()
 	GameManager.complete_level()
 	hud.hide_tower_info()
 	var stars: int = GameManager.level_stars.get(level_id, 1)
@@ -412,7 +425,14 @@ func _on_all_waves_completed() -> void:
 	game_over_screen.show_victory(stars)
 
 
+func _exit_tree() -> void:
+	# Defensive cleanup on scene unload — ensures no receipt node lingers if
+	# the scene is replaced before the normal dismiss path fires (#1009).
+	_dismiss_wave_receipt()
+
+
 func _on_game_over(won: bool) -> void:
+	_dismiss_wave_receipt()
 	hud.hide_tower_info()
 	if not won:
 		game_over_screen.show_defeat()
