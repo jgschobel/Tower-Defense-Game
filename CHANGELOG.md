@@ -3,6 +3,12 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-19 (audit-polish — Path B tint, L3 lives, FPS metric fix)
+
+- fix(tower): Path B upgrade tint now visible at A3 — switched B-path sprite blend from additive (0.22/0.44/0.66×, invisible against saturated A3) to lerp (0.38/0.55/0.70) so B1/B2/B3 produce distinct colour shifts regardless of A-path saturation; closes #1022
+- fix(level): L3 starting_lives corrected 22→25 to match L1/L2; closes #1018
+- fix(playtest): FPS metric false-minimum fixed — `_in_readback` bool replaced by `_readback_cooldown` int countdown (3 frames grace); a 300ms GPU readback stall poisons up to 18 frames at 60fps, single-frame suppression was insufficient; closes #1017
+
 ## 2026-06-19 (build-content — Röschti-Bombe debuff-cloud enemy)
 
 - feat(enemy): new "Röschti-Bombe" enemy (L6–L10) — golden-brown rösti hash with a lit fuse that, on death, leaves a 110 px-radius Russ (soot) cloud for 3.2 s. Towers caught inside the cloud have `effective_speed` multiplied by 0.55 (≈45 % slower fire rate) without polluting upgrade-stat math; the multiplier composes multiplicatively across overlapping clouds and snaps back to 1.0 when the tower leaves. HP 1200 / speed 80 / 60 gold / armor 6. New `explodes_on_death` / `explosion_radius` / `explosion_duration` / `tower_attack_debuff_mult` exports on `EnemyData`; new `scripts/systems/russ_cloud.gd` (`RussCloud` Node2D with 12 Hz tower scan, fade-in/out, animated soot puffs + dashed warning ring); new `debuff_speed_mult` on `BaseTower` consumed in the attack-period calc. Sprite is procedural (Claude-native directive — no Stability/Gemini call) with smoking plume + fuse ember + worried face. Wired into L6 w6+w7, L7 w6, L8 w6, L9 w7, L10 w8 in light counts so it forces placement-clearance discipline without flipping the difficulty curve. HUD wave-preview shows red pulsing "RÖSCHTI-ALARM!" and the first-spawn intro card delivers the Swiss German taunt "Heiss, heisser, KABUMM — eui Türm chöched ab!"
