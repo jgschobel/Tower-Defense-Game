@@ -57,18 +57,21 @@ func _run_all() -> void:
 	# UI tour: capture the menu surfaces before any gameplay.
 	await _run_ui_tour()
 
-	# Priority scenarios run BEFORE healthy loops so they always complete
-	# even if the CI runner runs tight on time. Total budget: ~30s.
+	# upgrade_flow + new_towers: quick scenarios (~5s each), run first.
 	await _run_upgrade_flow()
 	await _run_new_towers_showcase()
-	await _run_stress_test()
-	await _run_bug_hunt()
 
-	# Healthy runs for L1-L3. Each caps at 20s real / 8 shots (see
-	# _run_healthy_level). L4-L7 pushed past CI timeout (issue #499);
-	# re-enable once per-scenario budget is measured and reduced.
+	# Healthy runs for L1-L3 run BEFORE stress/bughunt so they always get budget.
+	# L1 takes ~25s (includes anim clip), L2/L3 ~18s each = ~61s total for three
+	# levels. Running them after stress+bughunt ate ~95s leaving only 2s for L3
+	# (#1038). Each caps at 20s real / 10 shots (see _run_healthy_level).
+	# L4-L7 pushed past CI timeout (issue #499); re-enable once budgets are known.
 	for level_id in range(1, 4):
 		await _run_healthy_level(level_id)
+
+	# Stress and bug-hunt run last — they're diagnostic, not critical to summary.
+	await _run_stress_test()
+	await _run_bug_hunt()
 
 	_write_summary()
 	print("[playtest v3] done — %d snapshots, %d anim frames in %.1fs" % [

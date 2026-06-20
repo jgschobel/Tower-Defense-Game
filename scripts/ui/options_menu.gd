@@ -23,6 +23,26 @@ func _ready() -> void:
 
 
 func _apply_theme() -> void:
+	# Gradient overlay on top of the solid Dimmer: lighter navy at top fading
+	# to transparent at bottom. Gives the "settings screen" visual depth instead
+	# of a flat void, whether loaded standalone (playtest) or as an overlay (#1042).
+	if not has_node("GradOverlay"):
+		var gt := GradientTexture2D.new()
+		var g := Gradient.new()
+		g.set_color(0, Color(0.12, 0.20, 0.45, 0.55))
+		g.set_color(1, Color(0.02, 0.05, 0.12, 0.0))
+		gt.gradient = g
+		gt.fill_from = Vector2(0.5, 0.0)
+		gt.fill_to = Vector2(0.5, 1.0)
+		gt.fill = GradientTexture2D.FILL_LINEAR
+		var grad := TextureRect.new()
+		grad.name = "GradOverlay"
+		grad.texture = gt
+		grad.set_anchors_preset(Control.PRESET_FULL_RECT)
+		grad.expand_mode = TextureRect.EXPAND_FILL_STRETCH
+		grad.stretch_mode = TextureRect.STRETCH_SCALE
+		add_child(grad)
+		move_child(grad, 1)  # After Dimmer (0), before Panel (2)
 	# Give the panel a proper game-style background so it doesn't vanish
 	# against the full-screen dimmer (fixes playtest issue #153).
 	var panel := $Panel as PanelContainer
