@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-20 (audit-polish — L3_healthy scenario fix)
+
+- fix(playtest): L3_healthy now reaches WON — replaced mid-path slow tower (740,380) with splash in L3 hardcoded placements; splash area-hits healer+tank clusters in wave 9 (6 tanks + 4 healers + 15 basics) where slow contributed 0 DPS; also extended grace period to trigger on penultimate wave (wave 9/10) not just the final wave, giving 6s extra buffer; closes #1052; indirectly restores stress+bughunt budget (#1051)
+
 ## 2026-06-20 (audit-polish — B1 tint, options gradient bg, L3 ordering)
 
 - fix(tower): B1 tint now clearly warm at A3+B1 — b_weight 0.42→0.58 + b_brightness 1.0→0.93 gives two independent cues (hue shift + luminance drop); old 0.42 left 58% A3-green, still read green; closes #1043
