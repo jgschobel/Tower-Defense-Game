@@ -824,10 +824,17 @@ func play_place_animation() -> void:
 	# scale should always be 1.0; only sprite.scale carries the size
 	# fitting. So tween self.scale from ZERO → ONE for the pop, sprite
 	# already has the correct size.
-	scale = Vector2.ZERO
-	var tw := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tw.tween_property(self, "scale", Vector2(1.15, 1.15), 0.18)
-	tw.tween_property(self, "scale", Vector2.ONE, 0.12).set_trans(Tween.TRANS_SINE)
+	# Elastic-out place pop (drag-place research #3): starts a touch
+	# smaller (0.55 vs 0.0) to skip the ugly "from invisible" frame and
+	# uses ELASTIC easing for the overshoot — gives the placed tower a
+	# bouncy settle that reads like a Hades / Vampire Survivors land
+	# rather than a stiff back-ease.
+	scale = Vector2(0.55, 0.55)
+	var tw := create_tween()
+	tw.tween_property(self, "scale", Vector2(1.18, 1.18), 0.18) \
+		.set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+	tw.tween_property(self, "scale", Vector2.ONE, 0.14) \
+		.set_trans(Tween.TRANS_SINE)
 	# Gold sparkle particles at the tower base — "deployed" feedback.
 	if EffectPlayer and EffectPlayer.has_method("spawn_place_sparkles"):
 		EffectPlayer.spawn_place_sparkles(global_position)
