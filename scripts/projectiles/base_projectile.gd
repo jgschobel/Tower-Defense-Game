@@ -302,7 +302,9 @@ func _hit() -> void:
 
 	if is_splash and splash_radius > 0.0:
 		var src_tower = get_meta("source_tower") if has_meta("source_tower") else null
-		var enemies := get_tree().get_nodes_in_group("enemies")
+		# EnemyRegistry.alive replaces get_tree().get_nodes_in_group —
+		# no SceneTree walk, no per-call Array allocation.
+		var enemies: Array = EnemyRegistry.alive
 		for enemy_node in enemies:
 			var enemy = enemy_node
 			if not is_instance_valid(enemy) or enemy == target or enemy.get("is_dead"):
@@ -366,7 +368,7 @@ func _spawn_acid_pool() -> void:
 func _find_pierce_target() -> Node2D:
 	var best: Node2D = null
 	var best_dist: float = 220.0  # cap how far pierce-chains reach
-	for enemy_node in get_tree().get_nodes_in_group("enemies"):
+	for enemy_node in EnemyRegistry.alive:
 		var enemy: Node2D = enemy_node as Node2D
 		if enemy == null or enemy.get("is_dead") or enemy in _pierced_enemies:
 			continue

@@ -32,6 +32,7 @@ AutoPlaytest="*res://scripts/autoload/auto_playtest.gd"
 WaveSimulator="*res://scripts/autoload/wave_simulator.gd"
 ProjectilePool="*res://scripts/autoload/projectile_pool.gd"
 EnemyPool="*res://scripts/autoload/enemy_pool.gd"
+EnemyRegistry="*res://scripts/autoload/enemy_registry.gd"
 EffectPlayer="*res://scripts/autoload/effect_player.gd"
 
 [display]
