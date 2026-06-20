@@ -3,6 +3,11 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-20 (audit-polish — grace period + tint contrast)
+
+- fix(playtest): extend L1/L2 grace period from 3×2s to 5×2s with early-exit when enemies=0 — slow/tanky final-wave enemies now drain before runner gives up; closes #1092
+- fix(tower): A-path hue rotation 12°/tier→20°/tier + A2 brightness 0.92→1.0 makes tier-1 vs tier-2 upgrade clearly distinct on Lemurius; closes #1095
+
 ## 2026-06-20 (audit-polish — L3_healthy scenario fix)
 
 - fix(playtest): L3_healthy now reaches WON — replaced mid-path slow tower (740,380) with splash in L3 hardcoded placements; splash area-hits healer+tank clusters in wave 9 (6 tanks + 4 healers + 15 basics) where slow contributed 0 DPS; also extended grace period to trigger on penultimate wave (wave 9/10) not just the final wave, giving 6s extra buffer; closes #1052; indirectly restores stress+bughunt budget (#1051)
