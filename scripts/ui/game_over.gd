@@ -29,6 +29,17 @@ var _defeat_messages := [
 ]
 
 
+func _cumulus_perk_hint() -> String:
+	var bal: int = GameManager.cumulus_balance if GameManager else 0
+	if bal >= 300:
+		return "  (✓ Alli Cumulus-Perks aktiv!)"
+	if bal >= 200:
+		return "  (✓ +50 Gold + +1 Läbe aktiv · noch %d bis +25 Gold)" % (300 - bal)
+	if bal >= 100:
+		return "  (✓ +50 Gold aktiv · noch %d bis +1 Läbe)" % (200 - bal)
+	return "  (noch %d bis +50 Start-Gold)" % (100 - bal)
+
+
 func show_victory(stars: int) -> void:
 	visible = true
 	# Juice: 2s hold before the panel fades in — lets the final pop
@@ -59,8 +70,7 @@ func show_victory(stars: int) -> void:
 			flavor = _victory_messages_1[randi() % _victory_messages_1.size()]
 		message_label.text = "%s\n\nK.O.s dä Rundi: %d  •  Total: %d\nCumulus-Punkte: %d%s" % [
 				flavor, GameManager.level_kills, GameManager.total_kills,
-				GameManager.cumulus_balance,
-				"  (✓ +50 Gold nächschti Runde!)" if GameManager.cumulus_balance >= 100 else ""]
+				GameManager.cumulus_balance, _cumulus_perk_hint()]
 	if next_button:
 		next_button.visible = GameManager.current_level < GameManager.MAX_LEVELS
 	if retry_button:
@@ -153,8 +163,7 @@ func show_defeat() -> void:
 		var flavor: String = _defeat_messages[randi() % _defeat_messages.size()]
 		message_label.text = "%s\n\nK.O.s dä Rundi: %d  •  Total: %d\nCumulus-Punkte: %d%s" % [
 				flavor, GameManager.level_kills, GameManager.total_kills,
-				GameManager.cumulus_balance,
-				"  (✓ +50 Gold nächschti Runde!)" if GameManager.cumulus_balance >= 100 else ""]
+				GameManager.cumulus_balance, _cumulus_perk_hint()]
 	if next_button:
 		next_button.visible = false
 	if retry_button:
