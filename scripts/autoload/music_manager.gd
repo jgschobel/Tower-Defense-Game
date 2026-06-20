@@ -97,14 +97,18 @@ func _ready() -> void:
 
 	_player = AudioStreamPlayer.new()
 	_player.stream = stream
-	_player.bus = "Master"
+	# Route to the Music bus so SfxManager's sidechain compressor can
+	# duck the soundtrack under big hits / boss roars automatically.
+	# Falls back to Master if SfxManager hasn't set up the bus yet
+	# (autoload init order is alphabetical: MusicManager < SfxManager).
+	_player.bus = "Music" if AudioServer.get_bus_index("Music") >= 0 else "Master"
 	add_child(_player)
 	_apply_user_volume()
 
 	# Secondary player for baked (AI-generated) level music tracks.
 	# Procedural player stays alive as fallback.
 	_baked_player = AudioStreamPlayer.new()
-	_baked_player.bus = "Master"
+	_baked_player.bus = "Music" if AudioServer.get_bus_index("Music") >= 0 else "Master"
 	add_child(_baked_player)
 
 	if ResourceLoader.exists(AUDIO_CONFIG_PATH):

@@ -39,7 +39,39 @@ func _can_play(id: String) -> bool:
 
 
 func _ready() -> void:
+	_ensure_buses()
 	_load_config()
+
+
+## Set up the Master ← {Music, SFX, Voice, UI} bus hierarchy so we can
+## (a) volume-control each channel independently, (b) sidechain-duck
+## Music under SFX, (c) compress the Master output. The "SFX" bus check
+## scattered through this file becomes a no-op fallback after this runs.
+## Idempotent — adding a bus that exists is skipped.
+func _ensure_buses() -> void:
+	for bus_name in ["Music", "SFX", "Voice", "UI"]:
+		if AudioServer.get_bus_index(bus_name) >= 0:
+			continue
+		AudioServer.add_bus()
+		var idx := AudioServer.bus_count - 1
+		AudioServer.set_bus_name(idx, bus_name)
+		AudioServer.set_bus_send(idx, "Master")
+	# Sidechain-compress Music under SFX so big hits / boss roars
+	# automatically duck the soundtrack by ~6 dB without per-call tweens.
+	# Vlambeer audio research's recommended pattern for premium feel.
+	var music_idx := AudioServer.get_bus_index("Music")
+	if music_idx >= 0 and AudioServer.get_bus_effect_count(music_idx) == 0:
+		var comp := AudioEffectCompressor.new()
+		comp.threshold = -18.0
+		comp.ratio = 6.0
+		comp.attack_us = 20.0
+		comp.release_ms = 250.0
+		comp.sidechain = "SFX"
+		AudioServer.add_bus_effect(music_idx, comp)
+	# Master limiter prevents peak clipping when 4-5 sounds layer.
+	var master_idx := AudioServer.get_bus_index("Master")
+	if master_idx >= 0 and AudioServer.get_bus_effect_count(master_idx) == 0:
+		AudioServer.add_bus_effect(master_idx, AudioEffectLimiter.new())
 
 
 func _load_config() -> void:
@@ -65,6 +97,7 @@ func _try_play_baked(id: String, volume_db: float = -6.0) -> bool:
 	var player := AudioStreamPlayer.new()
 	player.stream = stream
 	player.volume_db = _db_with_user_volume(volume_db)
+	player.pitch_scale = _jittered_pitch()
 	add_child(player)
 	player.play()
 	player.finished.connect(player.queue_free)
@@ -213,6 +246,7 @@ func _play_soft_pluck() -> void:
 	player.stream = audio
 	# Lower base from -12 to -18 dB on top of the 16-bit cleanup.
 	player.volume_db = _db_with_user_volume(-18.0)
+	player.pitch_scale = _jittered_pitch()
 	add_child(player)
 	player.play()
 	player.finished.connect(player.queue_free)
@@ -314,9 +348,21 @@ func _play_tone(freq: float, duration: float, volume: float, noise: bool = false
 	player.stream = audio
 	player.bus = "SFX" if AudioServer.get_bus_index("SFX") >= 0 else "Master"
 	player.volume_db = _db_with_user_volume(-10.0)
+	player.pitch_scale = _jittered_pitch()
 	add_child(player)
 	player.play()
 	player.finished.connect(player.queue_free)
+
+
+## Pitch-jitter range. ±12% is the perceptual sweet spot per Vlambeer
+## "Art of Screenshake" and GMTK "Secrets of Game Feel". Kills the
+## machine-gun fatigue that comes from playing identical samples 1000×.
+const _PITCH_JITTER_LOW: float = 0.88
+const _PITCH_JITTER_HIGH: float = 1.12
+
+
+func _jittered_pitch() -> float:
+	return randf_range(_PITCH_JITTER_LOW, _PITCH_JITTER_HIGH)
 
 
 func _db_with_user_volume(base_db: float) -> float:
@@ -374,6 +420,7 @@ func _play_sweep(freq_start: float, freq_end: float, duration: float, volume: fl
 	player.stream = audio
 	player.bus = "SFX" if AudioServer.get_bus_index("SFX") >= 0 else "Master"
 	player.volume_db = _db_with_user_volume(-10.0)
+	player.pitch_scale = _jittered_pitch()
 	add_child(player)
 	player.play()
 	player.finished.connect(player.queue_free)
