@@ -50,11 +50,20 @@ func configure(wave_num: int, towers: Array, gold: int, cumulus: int, lives: int
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	custom_minimum_size = Vector2(RECEIPT_W, RECEIPT_H)
-	size = Vector2(RECEIPT_W, RECEIPT_H)
+	# Set layout via offsets rather than `size`+`position` so the
+	# CanvasLayer's layout pass cannot reset offset_left back to 0 —
+	# which was causing the receipt to clip against the left screen edge.
+	# With all anchors at 0: position.x = offset_left, position.y = offset_top.
+	anchor_left = 0.0
+	anchor_right = 0.0
+	anchor_top = 0.0
+	anchor_bottom = 0.0
 	var vp_size := get_viewport_rect().size
-	# Bottom-left corner: keeps clear of the right-anchored SideShop so the
-	# player can still see and tap shop buttons while reading the receipt.
-	position = Vector2(MARGIN, vp_size.y)
+	offset_left = MARGIN
+	offset_right = MARGIN + RECEIPT_W
+	# Start below the screen; slide-in tweens position:y upward.
+	offset_top = vp_size.y
+	offset_bottom = vp_size.y + RECEIPT_H
 	_build_panel()
 	_start_slide_in()
 
