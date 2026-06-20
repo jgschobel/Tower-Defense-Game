@@ -34,6 +34,13 @@ var _just_placed: bool = false
 # Track whether the current touch interaction has seen any motion, so a
 # quick stationary tap counts as place-at-finger rather than cancel.
 var _had_motion: bool = false
+# Premium-feel tracking (drag-place research 2026-06-20): remember last
+# validity so we can fire a haptic+audio "tick" exactly at the boundary
+# transition — the BTD6 stickiness feel without changing the math.
+var _was_valid_last_frame: bool = true
+# Mobile touch needs the ghost rendered ABOVE the finger so the thumb
+# doesn't occlude the tower being placed. Single biggest mobile TD tell.
+const _MOBILE_THUMB_OFFSET_PX: float = 56.0
 
 
 func _ready() -> void:
@@ -147,34 +154,51 @@ func _get_event_position(event: InputEvent) -> Vector2:
 
 
 func _update_ghost_position(screen_pos: Vector2) -> void:
-	if ghost_tower:
-		var world_pos := get_canvas_transform().affine_inverse() * screen_pos
-		ghost_tower.global_position = world_pos
-		# First input — reveal the ghost (was hidden offscreen at start_placement)
-		if not ghost_tower.visible:
-			ghost_tower.visible = true
+	if not ghost_tower:
+		return
+	# Mobile finger-occlusion offset (drag-place research #1): render the
+	# ghost 56px above the touch point so the thumb doesn't cover the
+	# tower the player is placing. THE single biggest mobile TD tell.
+	# Non-mobile platforms keep cursor-centered placement.
+	var adjusted_screen: Vector2 = screen_pos
+	if OS.has_feature("mobile") or OS.has_feature("web_android") \
+			or OS.has_feature("web_ios"):
+		adjusted_screen.y -= _MOBILE_THUMB_OFFSET_PX
+	var world_pos := get_canvas_transform().affine_inverse() * adjusted_screen
+	ghost_tower.global_position = world_pos
+	# First input — reveal the ghost (was hidden offscreen at start_placement)
+	if not ghost_tower.visible:
+		ghost_tower.visible = true
 
-		var ring: Node2D = ghost_tower.get_node_or_null("RangeIndicator") if ghost_tower else null
-		if _can_place_at(world_pos):
-			ghost_tower.modulate = Color(0.5, 1.0, 0.5, 0.6)
-			# Make the placement range circle clearly green so the player
-			# sees the coverage they're about to buy. The tower's normal
-			# projectile-color tint is too subtle during placement.
-			if ring and ring.has_method("set_tint"):
-				ring.set_tint(Color(0.35, 1.0, 0.45, 1.0))
-			if _ghost_x_label:
-				_ghost_x_label.visible = false
-		else:
-			ghost_tower.modulate = Color(1.0, 0.3, 0.3, 0.6)
-			if ring and ring.has_method("set_tint"):
-				ring.set_tint(Color(1.0, 0.30, 0.25, 1.0))
-			if _ghost_x_label == null or not is_instance_valid(_ghost_x_label):
-				# SVG x icon — was unicode ✕ which depended on font fallback.
-				_ghost_x_label = IconLibrary.make_rect("x", 48, Color(1, 0.20, 0.20))
-				_ghost_x_label.position = Vector2(-24, -56)
-				_ghost_x_label.z_index = 15
-				ghost_tower.add_child(_ghost_x_label)
-			_ghost_x_label.visible = true
+	var ring: Node2D = ghost_tower.get_node_or_null("RangeIndicator") if ghost_tower else null
+	var is_valid: bool = _can_place_at(world_pos)
+	# Validity-boundary tick (drag-place research #2): on the FRAME the
+	# state changes, fire haptic + soft audio click. Gives the BTD6
+	# "stickiness" feel — the player feels when the ghost crosses into
+	# legal territory without staring at the modulate flip.
+	if is_valid != _was_valid_last_frame:
+		if Input.has_method("vibrate_handheld"):
+			Input.vibrate_handheld(15)
+		if SfxManager and SfxManager.has_method("play_soft_pluck"):
+			SfxManager.play_soft_pluck()
+		_was_valid_last_frame = is_valid
+	if is_valid:
+		ghost_tower.modulate = Color(0.5, 1.0, 0.5, 0.6)
+		if ring and ring.has_method("set_tint"):
+			ring.set_tint(Color(0.35, 1.0, 0.45, 1.0))
+		if _ghost_x_label:
+			_ghost_x_label.visible = false
+	else:
+		ghost_tower.modulate = Color(1.0, 0.3, 0.3, 0.6)
+		if ring and ring.has_method("set_tint"):
+			ring.set_tint(Color(1.0, 0.30, 0.25, 1.0))
+		if _ghost_x_label == null or not is_instance_valid(_ghost_x_label):
+			# SVG x icon — was unicode ✕ which depended on font fallback.
+			_ghost_x_label = IconLibrary.make_rect("x", 48, Color(1, 0.20, 0.20))
+			_ghost_x_label.position = Vector2(-24, -56)
+			_ghost_x_label.z_index = 15
+			ghost_tower.add_child(_ghost_x_label)
+		_ghost_x_label.visible = true
 
 
 func _try_place(screen_pos: Vector2) -> void:
@@ -219,16 +243,34 @@ func _try_place(screen_pos: Vector2) -> void:
 
 
 func _spawn_place_ring(pos: Vector2) -> void:
-	# D29: pop animation on the placed tower — green check mark drifts up
-	# and fades. Uses SVG check icon (was unicode ✓ which font-fallback'd).
-	var flash := IconLibrary.make_rect("check", 40, Color(0.45, 1.0, 0.55, 1.0))
-	flash.z_index = 20
-	get_parent().add_child(flash)
-	flash.global_position = pos + Vector2(-20, -72)
-	var tw := flash.create_tween().set_parallel(true)
-	tw.tween_property(flash, "position:y", flash.position.y - 30.0, 0.4)
-	tw.tween_property(flash, "modulate:a", 0.0, 0.4).set_delay(0.15)
-	tw.chain().tween_callback(flash.queue_free)
+	# Premium place burst (drag-place research #3): expanding shockwave
+	# ring instead of the floaty check icon. The check icon read as
+	# "I'm a placeholder" — pro TDs use a radial shockwave to confirm
+	# "you placed it" with kinetic weight. Pure procedural, no asset.
+	var shock := Node2D.new()
+	shock.name = "PlaceShockwave"
+	shock.z_index = 18
+	get_parent().add_child(shock)
+	shock.global_position = pos
+	# Render via tween + queue_redraw — draw an expanding arc on the node.
+	var _draw_state := {"radius": 6.0, "alpha": 0.92}
+	shock.set_meta("ds", _draw_state)
+	shock.draw.connect(func():
+		var st: Dictionary = shock.get_meta("ds")
+		shock.draw_arc(Vector2.ZERO, st.radius, 0.0, TAU, 48,
+			Color(0.40, 1.0, 0.55, st.alpha), 3.0, true)
+		shock.draw_arc(Vector2.ZERO, st.radius * 0.65, 0.0, TAU, 36,
+			Color(0.55, 1.0, 0.70, st.alpha * 0.55), 2.0, true))
+	var tw := shock.create_tween().set_parallel(true)
+	tw.tween_method(func(r: float):
+		_draw_state.radius = r
+		shock.queue_redraw(), 6.0, 70.0, 0.45) \
+		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tw.tween_method(func(a: float):
+		_draw_state.alpha = a
+		shock.queue_redraw(), 0.92, 0.0, 0.45) \
+		.set_trans(Tween.TRANS_SINE)
+	tw.chain().tween_callback(shock.queue_free)
 
 
 func _refresh_adjacency() -> void:
