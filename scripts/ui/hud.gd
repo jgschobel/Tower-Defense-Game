@@ -101,6 +101,15 @@ func _ready() -> void:
 
 	if tower_info:
 		tower_info.visible = false
+		# Perf agent #5: hidden panels still run _process / _physics_process
+		# unless explicitly disabled. PROCESS_MODE_DISABLED on the panel
+		# AND its subtree skips a chunk of per-frame work that's invisible
+		# to the player anyway. Re-enabled in show_tower_info() / disabled
+		# again in hide_tower_info().
+		tower_info.process_mode = Node.PROCESS_MODE_DISABLED
+		tower_info.visibility_changed.connect(func():
+			tower_info.process_mode = Node.PROCESS_MODE_INHERIT \
+				if tower_info.visible else Node.PROCESS_MODE_DISABLED)
 		# Style the panel — was using default theme transparency that
 		# let the playfield show through and made stats hard to read.
 		var ti_sb := StyleBoxFlat.new()
