@@ -1080,6 +1080,9 @@ func _flash_boss_telegraph() -> void:
 func _flash_moab_telegraph() -> void:
 	# Orange flash for MOAB-tier enemies (moab_migros / bfb_cumulus / ddt_schwarz).
 	# Softer than the boss red flash — communicates "danger, but different".
+	# Layered sequence per wave-research #3: orange screen flash + screen
+	# shake + deep bass rumble. Music auto-ducks via the SFX sidechain bus
+	# (audio overhaul #1069) so the rumble lands clean over the soundtrack.
 	var flash := ColorRect.new()
 	flash.color = Color(0.95, 0.55, 0.1, 0.0)
 	flash.anchors_preset = Control.PRESET_FULL_RECT
@@ -1089,9 +1092,44 @@ func _flash_moab_telegraph() -> void:
 	flash.z_index = -1
 	add_child(flash)
 	var tw := flash.create_tween()
-	tw.tween_property(flash, "color:a", 0.28, 0.10)
-	tw.tween_property(flash, "color:a", 0.0, 0.40)
+	tw.tween_property(flash, "color:a", 0.32, 0.10) \
+		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tw.tween_property(flash, "color:a", 0.0, 0.55) \
+		.set_trans(Tween.TRANS_SINE)
 	tw.tween_callback(flash.queue_free)
+	# Screen shake — meaningful but less than boss (4.5 px vs boss 7.5)
+	if EffectPlayer and EffectPlayer.has_method("screen_shake"):
+		EffectPlayer.screen_shake(4.5, 0.30)
+	# Deep bass roar — reuse the boss-roar synth but at lower amplitude.
+	# Falls back to play_death(800) as a chunky thump if no MOAB roar.
+	if SfxManager and SfxManager.has_method("play_boss_roar"):
+		SfxManager.play_boss_roar()
+	elif SfxManager and SfxManager.has_method("play_death"):
+		SfxManager.play_death(800.0)
+	# Orange-tinted edge vignette pulse — visible at the play-field
+	# corners as "something heavy is coming" peripheral cue. Sits at
+	# z = -1 so the intro overlay reads on top.
+	var ring := Panel.new()
+	ring.name = "MoabSpawnVignette"
+	ring.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	ring.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ring.z_index = -1
+	var ring_sb := StyleBoxFlat.new()
+	ring_sb.bg_color = Color(0, 0, 0, 0)
+	ring_sb.border_color = Color(1.0, 0.55, 0.10, 0.0)
+	ring_sb.border_width_left = 36
+	ring_sb.border_width_right = 36
+	ring_sb.border_width_top = 36
+	ring_sb.border_width_bottom = 36
+	ring.add_theme_stylebox_override("panel", ring_sb)
+	add_child(ring)
+	var rtw := ring.create_tween()
+	rtw.tween_method(func(a: float):
+		ring_sb.border_color = Color(1.0, 0.55, 0.10, a), 0.0, 0.60, 0.18)
+	rtw.tween_interval(0.35)
+	rtw.tween_method(func(a: float):
+		ring_sb.border_color = Color(1.0, 0.55, 0.10, a), 0.60, 0.0, 0.40)
+	rtw.tween_callback(ring.queue_free)
 
 
 ## BTD6-style cash arc reward (research agent #4): spawn N coin sprites
