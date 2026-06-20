@@ -3,6 +3,12 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-20 (audit-polish — B2 tint/receipt/options fixes)
+
+- fix(tower): B-path tier-2 tint now clearly distinct from B1 — b_weight 0.38/0.55/0.70 → 0.42/0.75/0.88 (B1→B2 delta tripled) plus b_brightness 1.0/0.85/0.78 multiplier adds luminance contrast on top of hue shift; PathBGlow ring B2 radius jumps from +20px to +32px (vs B1 +14px) and alpha 0.73→0.90 for a two-cue (size+brightness) tier signal; closes #1035 #1022
+- fix(hud): WaveReceipt wave-stats panel no longer clips left edge — _ready() now sets explicit offset_left/right/top/bottom instead of size+position compound setters which were susceptible to CanvasLayer layout-pass reset; closes #1037
+- fix(options): options menu no longer shows pure black void background — Dimmer alpha reduced 0.72→0.55 and color changed from pure black to deep navy so the main menu scene remains 45% visible underneath; closes #1036
+
 ## 2026-06-20 (audit-polish — A1 tint distinguishability + path-aligned glow)
 
 - fix(tower): A1 tint still barely visible after 0.58 fix — blend raised 0.58→0.66 + brightness 0.95→1.0 (no dimming at A1, tinted sprite now brighter than base); A2 0.68→0.74/0.89→0.92; A3 0.76→0.80/0.84→0.85; TierGlow ring colour switched from projectile_color (yellow) to path_a_tint (green) when branching tower has A-path investment, aligning both visual signals to same hue; upgrade flash now tints toward destination modulate (hot version) instead of generic gold so flash itself communicates the path colour; closes #1031

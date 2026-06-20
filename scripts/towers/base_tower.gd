@@ -1002,21 +1002,28 @@ func _apply_path_tint() -> void:
 		)
 	# Lerp the B-path hue into the sprite so it reads clearly even when A3 has
 	# already saturated the tint channels. Additive blending (#1022) was invisible
-	# at A3 because saturated channels leave no headroom. Lerp at 38/55/70% ensures
-	# a distinct colour shift regardless of the A-path tint strength.
+	# at A3 because saturated channels leave no headroom. B1=0.42/B2=0.75/B3=0.88
+	# weights + brightness darkening make each tier clearly distinct (#1022 #1035).
 	if path_b_tier > 0:
 		var bh: float = fmod(data.path_b_tint.h - (40.0 / 360.0) * path_b_tier + 2.0, 1.0)
 		var b_col: Color = Color.from_hsv(bh, minf(data.path_b_tint.s + 0.2 * path_b_tier, 1.0), data.path_b_tint.v)
 		var b_weight: float
+		var b_brightness: float
 		match path_b_tier:
-			1: b_weight = 0.38
-			2: b_weight = 0.55
-			_: b_weight = 0.70
+			1:
+				b_weight = 0.42
+				b_brightness = 1.0
+			2:
+				b_weight = 0.75
+				b_brightness = 0.85
+			_:
+				b_weight = 0.88
+				b_brightness = 0.78
 		var cur: Color = sprite.modulate
 		sprite.modulate = Color(
-			lerpf(cur.r, b_col.r, b_weight),
-			lerpf(cur.g, b_col.g, b_weight),
-			lerpf(cur.b, b_col.b, b_weight),
+			lerpf(cur.r, b_col.r, b_weight) * b_brightness,
+			lerpf(cur.g, b_col.g, b_weight) * b_brightness,
+			lerpf(cur.b, b_col.b, b_weight) * b_brightness,
 			1.0
 		)
 	_update_b_path_glow()
@@ -1039,10 +1046,20 @@ func _update_b_path_glow() -> void:
 	# B hue shifts -40°/tier so B1/B2/B3 land in clearly different hue regions.
 	var bh: float = fmod(data.path_b_tint.h - (40.0 / 360.0) * path_b_tier + 2.0, 1.0)
 	var b_color: Color = Color.from_hsv(bh, minf(data.path_b_tint.s + 0.25 * path_b_tier, 1.0), data.path_b_tint.v)
-	# Radius grows with both tiers; cross-pathed towers have a visibly wider aura.
-	var outer_r: float = 32.0 + path_a_tier * 8.0 + path_b_tier * 10.0
-	# B1: 0.55, B2: 0.73, B3: 0.90 — bright enough to read at mobile scale.
-	var b_alpha: float = minf(0.55 + path_b_tier * 0.18, 0.90)
+	# Radius bonus grows non-linearly: B2 ring is clearly larger than B1 so
+	# the tier change is readable at mobile scale even without seeing the sprite (#1035).
+	var b_radius_bonus: float
+	match path_b_tier:
+		1: b_radius_bonus = 14.0
+		2: b_radius_bonus = 32.0
+		_: b_radius_bonus = 52.0
+	var outer_r: float = 32.0 + path_a_tier * 8.0 + b_radius_bonus
+	# Alpha also jumps at B2 for a two-cue distinction (size + brightness).
+	var b_alpha: float
+	match path_b_tier:
+		1: b_alpha = 0.62
+		2: b_alpha = 0.90
+		_: b_alpha = 0.95
 	b_glow.set_meta("ring_color", b_color)
 	b_glow.set_meta("radius", outer_r)
 	b_glow.set_meta("alpha", b_alpha)
