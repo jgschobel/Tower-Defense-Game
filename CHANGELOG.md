@@ -3,6 +3,12 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-20 (audit-polish — B1 tint, options gradient bg, L3 ordering)
+
+- fix(tower): B1 tint now clearly warm at A3+B1 — b_weight 0.42→0.58 + b_brightness 1.0→0.93 gives two independent cues (hue shift + luminance drop); old 0.42 left 58% A3-green, still read green; closes #1043
+- fix(options): options menu has gradient background instead of void — Dimmer solid navy (alpha 1.0), GradientTexture2D overlay (lighter navy top → transparent bottom) added via _apply_theme(); fixes standalone-loaded playtest screenshot and in-game overlay both; closes #1042
+- fix(playtest): L3_healthy scenario completes — moved healthy level runs (L1/L2/L3) before stress_test and bug_hunt in _run_all(); L3 was starting at ~95s of a 120s budget and being killed mid-run; closes #1038
+
 ## 2026-06-20 (audit-polish — B2 tint/receipt/options fixes)
 
 - fix(tower): B-path tier-2 tint now clearly distinct from B1 — b_weight 0.38/0.55/0.70 → 0.42/0.75/0.88 (B1→B2 delta tripled) plus b_brightness 1.0/0.85/0.78 multiplier adds luminance contrast on top of hue shift; PathBGlow ring B2 radius jumps from +20px to +32px (vs B1 +14px) and alpha 0.73→0.90 for a two-cue (size+brightness) tier signal; closes #1035 #1022
