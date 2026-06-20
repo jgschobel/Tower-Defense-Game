@@ -212,10 +212,14 @@ func _run_healthy_level(level_id: int) -> void:
 			break
 
 	# Grace-period: if we are on the penultimate or final wave with stragglers
-	# still alive, wait up to 3 extra real-clock ticks before giving up.
+	# still alive, poll every 2s until enemies drain or state changes.
+	# 5 ticks × 2s = 10 real-seconds (40 game-seconds at 4× time_scale).
 	# Covers: (a) all_done=true but WON not yet propagated; (b) last wave sent
 	# but enemies still alive (#945); (c) L3 times out on wave 9 with 16 enemies
 	# remaining — tanks slowed by healers need the extra window (#1052).
+	# (d) L1/L2 slow enemies still on path after 20s main window (#1092).
+	# Early-exits the moment enemies_remaining reaches 0 to avoid burning the
+	# full 10s budget on healthy fast-clearing scenarios.
 	# "last two waves" = current_wave >= total_waves - 1 (e.g. wave 9 of 10).
 	var wm_node := get_tree().get_first_node_in_group("wave_manager")
 	var _wm_last_wave_started: bool = wm_node != null and \
@@ -223,10 +227,19 @@ func _run_healthy_level(level_id: int) -> void:
 		wm_node.get("total_waves") > 0
 	if wm_node and (wm_node.get("all_done") == true or _wm_last_wave_started) \
 	and GameManager.current_state == GameManager.GameState.PLAYING:
-		for _grace in 3:
+		var _grace_tick := 0
+		while _grace_tick < 5:
 			await get_tree().create_timer(2.0, true, false, true).timeout
 			_snapshot("%s_grace" % _scenario_name)
+			_grace_tick += 1
 			if GameManager.current_state != GameManager.GameState.PLAYING:
+				break
+			var _alive := 0
+			for _ge in get_tree().get_nodes_in_group("enemies"):
+				if not _ge.get("is_dead"):
+					_alive += 1
+			if _alive == 0:
+				await get_tree().process_frame
 				break
 
 	Engine.time_scale = 1.0

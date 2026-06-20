@@ -1040,14 +1040,17 @@ func _apply_path_tint() -> void:
 				blend = 0.66
 				brightness = 1.0
 			2:
-				blend = 0.74
-				brightness = 0.92
+				# Keep brightness=1.0 (was 0.92) so A2 reads as BRIGHTER than A1
+				# rather than subtly darker — the extra contrast makes the tier
+				# visually pop in CI screenshots (#1095).
+				blend = 0.76
+				brightness = 1.0
 			_:
-				blend = 0.80
-				brightness = 0.85
-		# 12°/tier hue rotation — enough to distinguish tiers without a
-		# 90° full-colour shift that destroys the base palette at A3.
-		var ah: float = fmod(data.path_a_tint.h + (12.0 / 360.0) * path_a_tier, 1.0)
+				blend = 0.82
+				brightness = 0.88
+		# 20°/tier hue rotation — raised from 12°/tier which left A1→A2 nearly
+		# identical in the green band where Lemurius sits (#1095).
+		var ah: float = fmod(data.path_a_tint.h + (20.0 / 360.0) * path_a_tier, 1.0)
 		var a_tint: Color = Color.from_hsv(ah, minf(data.path_a_tint.s + 0.12 * path_a_tier, 1.0), data.path_a_tint.v)
 		sprite.modulate = Color(
 			lerpf(1.0, a_tint.r, blend) * brightness,
