@@ -48,22 +48,31 @@ func _ready() -> void:
 	_on_gold_changed(CurrencyManager.gold)
 	_on_lives_changed(GameManager.lives)
 
-	# Translucent dark backdrop on the TopBar so gold / wave / lives stay
-	# legible over bright map art (the bar was a transparent
-	# PanelContainer — text was hard to read on saturated levels).
+	# Carved "wooden plank" TopBar — BTD6/KR pattern. The bar is a single
+	# physical object with embedded icon chips, not floating labels over
+	# bright art. Triple-layer stylebox: dark warm interior, gold stroke
+	# (the carved trim), thick rounded bottom corners so it visually
+	# hangs from the screen edge like a real HUD plate.
 	var top_bar_panel: PanelContainer = $TopBar if has_node("TopBar") else null
 	if top_bar_panel:
 		var tb_sb := StyleBoxFlat.new()
-		tb_sb.bg_color = Color(0.04, 0.03, 0.02, 0.78)
-		tb_sb.border_color = DesignTokens.COL_STROKE_NORMAL
-		tb_sb.border_width_bottom = 2
-		tb_sb.corner_radius_bottom_left = DesignTokens.RADIUS_M
-		tb_sb.corner_radius_bottom_right = DesignTokens.RADIUS_M
-		tb_sb.content_margin_left = DesignTokens.SP_M
-		tb_sb.content_margin_right = DesignTokens.SP_M
-		tb_sb.content_margin_top = DesignTokens.SP_XS
-		tb_sb.content_margin_bottom = DesignTokens.SP_XS
+		tb_sb.bg_color = Color(0.05, 0.035, 0.025, 0.92)  # opaque enough to read
+		tb_sb.border_color = DesignTokens.COL_STROKE_STRONG
+		tb_sb.border_width_bottom = 3
+		tb_sb.border_width_left = 0
+		tb_sb.border_width_right = 0
+		tb_sb.corner_radius_bottom_left = DesignTokens.RADIUS_L
+		tb_sb.corner_radius_bottom_right = DesignTokens.RADIUS_L
+		tb_sb.content_margin_left = DesignTokens.SP_L
+		tb_sb.content_margin_right = DesignTokens.SP_S
+		tb_sb.content_margin_top = DesignTokens.SP_S
+		tb_sb.content_margin_bottom = DesignTokens.SP_S
+		# Subtle inner shadow at the top edge — fakes a carved bevel.
+		tb_sb.shadow_color = Color(0, 0, 0, 0.55)
+		tb_sb.shadow_size = 6
+		tb_sb.shadow_offset = Vector2(0, 3)
 		top_bar_panel.add_theme_stylebox_override("panel", tb_sb)
+		_inject_topbar_icon_chips()
 	# Top bar — design tokens, consistent with all panels.
 	# Lives + wave + enemy count: muted body color so the GOLD counter
 	# pops as the only highlight on the row (clean visual hierarchy).
@@ -73,6 +82,10 @@ func _ready() -> void:
 	if gold_label:
 		DesignTokens.style_label(gold_label, DesignTokens.FONT_LABEL_LG)
 		gold_label.add_theme_color_override("font_color", DesignTokens.COL_GOLD)
+		# Stronger weight/outline on the gold number — the row's only
+		# highlight per visual hierarchy rule.
+		gold_label.add_theme_constant_override("outline_size", DesignTokens.OUTLINE_HEADING)
+		gold_label.add_theme_font_size_override("font_size", DesignTokens.FONT_LABEL_LG + 2)
 	# Shop section header — minimalist label, no emoji prefix
 	var shop_header: Label = get_node_or_null("SideShop/SideShopVBox/ShopHeader")
 	if shop_header:
@@ -2103,6 +2116,60 @@ func _on_path_b_button_pressed() -> void:
 var _last_gold: int = -1
 var _last_lives: int = -1
 var _next_wave_pulse_tween: Tween = null
+
+
+func _inject_topbar_icon_chips() -> void:
+	# Injects icon chips into the TopBar at runtime so we don't need to
+	# edit hud.tscn: places a heart icon BEFORE LivesLabel and a sword
+	# icon BEFORE WaveLabel. Plus thin gold vertical separators between
+	# the gold/lives/wave chips so each piece of info reads as a
+	# discrete "embedded chip" inside the wooden plank, not floating text.
+	# Pattern from BTD6/KR HUD analysis.
+	var hbox := get_node_or_null("TopBar/HBox") as HBoxContainer
+	if hbox == null or hbox.has_meta("topbar_chips_injected"):
+		return
+	hbox.set_meta("topbar_chips_injected", true)
+	hbox.add_theme_constant_override("separation", 6)
+	# Gold separator: thin gold vertical line between gold and lives.
+	var sep_after_gold := _make_topbar_separator()
+	hbox.add_child(sep_after_gold)
+	hbox.move_child(sep_after_gold, _index_of_node(hbox, gold_label) + 1)
+	# Heart icon before LivesLabel
+	if lives_label and lives_label.get_parent() == hbox:
+		var heart_icon := IconLibrary.make_rect("heart", 22, Color(1.0, 0.42, 0.42))
+		heart_icon.name = "LivesIcon"
+		hbox.add_child(heart_icon)
+		hbox.move_child(heart_icon, _index_of_node(hbox, lives_label))
+	# Separator: lives → wave
+	var sep_after_lives := _make_topbar_separator()
+	hbox.add_child(sep_after_lives)
+	hbox.move_child(sep_after_lives, _index_of_node(hbox, wave_label))
+	# Wave icon (warning glyph reads as "incoming") before WaveLabel
+	if wave_label and wave_label.get_parent() == hbox:
+		var wave_icon := IconLibrary.make_rect("warning", 22, Color(1.0, 0.78, 0.30))
+		wave_icon.name = "WaveIcon"
+		hbox.add_child(wave_icon)
+		hbox.move_child(wave_icon, _index_of_node(hbox, wave_label))
+	# Separator before the buttons
+	if speed_button and speed_button.get_parent() == hbox:
+		var sep_before_btns := _make_topbar_separator()
+		hbox.add_child(sep_before_btns)
+		hbox.move_child(sep_before_btns, _index_of_node(hbox, speed_button))
+
+
+func _make_topbar_separator() -> ColorRect:
+	var sep := ColorRect.new()
+	sep.color = Color(0.55, 0.42, 0.18, 0.55)
+	sep.custom_minimum_size = Vector2(1, 22)
+	sep.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	sep.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return sep
+
+
+func _index_of_node(parent: Node, child: Node) -> int:
+	if child == null or child.get_parent() != parent:
+		return parent.get_child_count()
+	return child.get_index()
 
 
 func _on_gold_changed(amount: int) -> void:
