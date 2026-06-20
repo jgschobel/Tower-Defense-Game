@@ -1060,6 +1060,14 @@ func _flash_moab_telegraph() -> void:
 func show_wave_clear_celebration() -> void:
 	# Brief big "WÄLLE GSCHAFFT!" text mid-screen at end of each wave.
 	# Cheap mid-game reward — keeps the player feeling progress.
+	# Kill stale instances so rapid wave-clears (e.g. 12× playtest speed)
+	# don't stack duplicate labels and vignettes on screen.
+	var stale_wrap := get_node_or_null("WaveClearVignetteWrap")
+	if stale_wrap:
+		stale_wrap.queue_free()
+	var stale_lbl := get_node_or_null("WaveClearCelebration")
+	if stale_lbl:
+		stale_lbl.queue_free()
 	# Wave-clear gold border-glow vignette — soft gold edge that pulses in
 	# then fades, framing the play field for the celebration label that
 	# follows. Reads as "you did it" even before the eye lands on text.
@@ -1228,6 +1236,11 @@ func _update_wave_progress_bar(current: int, total: int) -> void:
 func _show_wave_announcement(current: int, total: int) -> void:
 	# Anchored to top-center so it never covers the battlefield (fixes #289).
 	# A small pill-shaped toast instead of the previous 700×80 center banner.
+	# Dedup: kill any stale pill before creating a new one (12× playtest speed
+	# can fire wave_started before the prior pill's 1.47 s lifetime expires).
+	var stale := get_node_or_null("WaveAnnounce")
+	if stale:
+		stale.queue_free()
 	var is_final: bool = total > 0 and current == total
 	var is_danger: bool = current >= 7
 	var txt_color: Color
