@@ -15,14 +15,61 @@ var _active_flash: int = 0
 var _active_dust: int  = 0
 var _active_misc: int  = 0
 
+# Per-kind CPUParticles2D pool (perf agent #5 bonus): even capped node
+# instancing has a cost — we were allocating + parenting + freeing nodes
+# every hit. Pool reuses prewarmed nodes; spawn = reposition + restart().
+# Keys: "flash", "spark", "poof", "place", "dust". Each list grows up to
+# its corresponding MAX_* cap (above) then loops oldest-first.
+var _particle_pool: Dictionary = {}    # kind -> Array[CPUParticles2D]
+var _particle_pool_next: Dictionary = {}  # kind -> int round-robin idx
+
+
+func _acquire_particle(kind: String, cap: int) -> CPUParticles2D:
+	# Get-or-create one CPUParticles2D for this kind. The pool grows up to
+	# `cap` instances then round-robins, overwriting the oldest emitter
+	# (in practice old ones have finished by then because lifetime < 0.6s).
+	var pool: Array = _particle_pool.get(kind, [])
+	# Try to find a non-emitting slot first
+	for p in pool:
+		if is_instance_valid(p) and not p.emitting:
+			return p
+	# All emitting — if pool is at cap, recycle oldest via round-robin
+	if pool.size() >= cap:
+		var idx: int = _particle_pool_next.get(kind, 0)
+		var node: CPUParticles2D = pool[idx]
+		_particle_pool_next[kind] = (idx + 1) % cap
+		# Ensure it's parented to the current level scene (level switches
+		# detach pool nodes; reparent on demand).
+		if not is_instance_valid(node):
+			node = CPUParticles2D.new()
+			pool[idx] = node
+		return node
+	# Pool not full — allocate a new one
+	var fresh := CPUParticles2D.new()
+	pool.append(fresh)
+	_particle_pool[kind] = pool
+	return fresh
+
+
+func _reparent_to_host(p: CPUParticles2D, host: Node) -> void:
+	# Reparent a pooled node to the current level scene if it isn't already.
+	# Pool nodes outlive scene swaps (this is an autoload), so they detach
+	# when the level scene frees. Cheap idempotent reparent.
+	if p.get_parent() == host:
+		return
+	if p.get_parent() != null:
+		p.get_parent().remove_child(p)
+	host.add_child(p)
+
 
 func spawn_muzzle_flash(pos: Vector2, dir: Vector2, flash_color: Color, projectile_style: String = "") -> void:
-	if _active_flash >= MAX_FLASH:
-		return
 	var host := _get_host()
 	if not host:
 		return
-	var p := CPUParticles2D.new()
+	# Pooled — no allocation per shot. The pool caps at MAX_FLASH and
+	# round-robins when full, so worst-case heavy fire still costs O(1).
+	var p := _acquire_particle("flash", MAX_FLASH)
+	_reparent_to_host(p, host)
 	p.global_position = pos
 	p.one_shot = true
 	p.explosiveness = 0.92
@@ -54,21 +101,15 @@ func spawn_muzzle_flash(pos: Vector2, dir: Vector2, flash_color: Color, projecti
 			p.lifetime = 0.22; p.amount = 6; p.spread = 38.0
 			p.initial_velocity_min = 70.0; p.initial_velocity_max = 130.0
 			p.scale_amount_min = 3.0; p.scale_amount_max = 7.0
-	host.add_child(p)
-	p.emitting = true
-	_active_flash += 1
-	get_tree().create_timer(0.5).timeout.connect(func():
-		_active_flash -= 1
-		p.queue_free())
+	p.restart()
 
 
 func spawn_impact_sparks(pos: Vector2, spark_color: Color) -> void:
-	if _active_misc >= MAX_MISC:
-		return
 	var host := _get_host()
 	if not host:
 		return
-	var p := CPUParticles2D.new()
+	var p := _acquire_particle("spark", MAX_MISC)
+	_reparent_to_host(p, host)
 	p.global_position = pos
 	p.one_shot = true
 	p.explosiveness = 1.0
@@ -82,22 +123,16 @@ func spawn_impact_sparks(pos: Vector2, spark_color: Color) -> void:
 	p.scale_amount_max = 8.0
 	p.color = spark_color
 	p.gravity = Vector2(0.0, 320.0)
-	host.add_child(p)
-	p.emitting = true
-	_active_misc += 1
-	get_tree().create_timer(0.55).timeout.connect(func():
-		_active_misc -= 1
-		p.queue_free())
+	p.restart()
 
 
 ## Bursty death effect — radial burst with tint + white flash ring.
 func spawn_death_poof(pos: Vector2, tint: Color) -> void:
-	if _active_misc >= MAX_MISC:
-		return
 	var host := _get_host()
 	if not host:
 		return
-	var p := CPUParticles2D.new()
+	var p := _acquire_particle("poof", MAX_MISC)
+	_reparent_to_host(p, host)
 	p.global_position = pos
 	p.one_shot = true
 	p.explosiveness = 1.0
@@ -111,12 +146,7 @@ func spawn_death_poof(pos: Vector2, tint: Color) -> void:
 	p.scale_amount_max = 6.5
 	p.color = Color(tint.r, tint.g, tint.b, 0.85)
 	p.gravity = Vector2(0.0, 220.0)
-	host.add_child(p)
-	p.emitting = true
-	_active_misc += 1
-	get_tree().create_timer(0.65).timeout.connect(func():
-		_active_misc -= 1
-		p.queue_free())
+	p.restart()
 	# White flash ring
 	var flash := ColorRect.new()
 	flash.color = Color(1, 1, 1, 0.7)
@@ -135,7 +165,9 @@ func spawn_place_sparkles(pos: Vector2) -> void:
 	var host := _get_host()
 	if not host:
 		return
-	var p := CPUParticles2D.new()
+	# Pool cap of 6 — placement fires at most once per tap, never bursts.
+	var p := _acquire_particle("place", 6)
+	_reparent_to_host(p, host)
 	p.global_position = pos
 	p.one_shot = true
 	p.explosiveness = 1.0
@@ -149,20 +181,17 @@ func spawn_place_sparkles(pos: Vector2) -> void:
 	p.scale_amount_max = 6.5
 	p.color = Color(1.0, 0.92, 0.35, 0.9)
 	p.gravity = Vector2(0.0, 280.0)
-	host.add_child(p)
-	p.emitting = true
-	get_tree().create_timer(0.9).timeout.connect(p.queue_free)
+	p.restart()
 
 
 ## Tiny dust puff at enemy feet on each step-down (ROADMAP #13).
 ## Capped at MAX_DUST concurrent — heavy waves skip excess puffs silently.
 func spawn_step_dust(pos: Vector2) -> void:
-	if _active_dust >= MAX_DUST:
-		return
 	var host := _get_host()
 	if not host:
 		return
-	var p := CPUParticles2D.new()
+	var p := _acquire_particle("dust", MAX_DUST)
+	_reparent_to_host(p, host)
 	p.global_position = pos
 	p.one_shot = true
 	p.explosiveness = 0.85
@@ -176,12 +205,7 @@ func spawn_step_dust(pos: Vector2) -> void:
 	p.scale_amount_max = 4.5
 	p.color = Color(0.72, 0.65, 0.5, 0.6)
 	p.gravity = Vector2(0.0, 80.0)
-	host.add_child(p)
-	p.emitting = true
-	_active_dust += 1
-	get_tree().create_timer(0.35).timeout.connect(func():
-		_active_dust -= 1
-		p.queue_free())
+	p.restart()
 
 
 ## Hit-pause: briefly slow time on impact so the brain reads weight.
