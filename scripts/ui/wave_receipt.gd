@@ -6,7 +6,7 @@ extends Control
 ## right-anchored SideShop). Tap or wave_started to dismiss.
 
 const RECEIPT_W: float = 268.0
-const RECEIPT_H: float = 336.0
+const RECEIPT_H: float = 380.0
 const MARGIN: float = 14.0
 # Height of the bottom HUD panel — receipt slides to just above it so it never
 # covers the NextWaveButton and doesn't compete with the right-anchored shop.
@@ -21,9 +21,10 @@ var _gold: int = 0
 var _cumulus: int = 0
 var _lives: int = 0
 var _enemies: int = 0
+var _next_wave_preview: Array = []  # [{enemy_id, count}] from wave_manager.get_next_wave_preview()
 
 
-func configure(wave_num: int, towers: Array, gold: int, cumulus: int, lives: int, enemies: int) -> void:
+func configure(wave_num: int, towers: Array, gold: int, cumulus: int, lives: int, enemies: int, next_preview: Array = []) -> void:
 	_wave_num = wave_num
 	_tower_stats = []
 	for t in towers:
@@ -45,6 +46,7 @@ func configure(wave_num: int, towers: Array, gold: int, cumulus: int, lives: int
 	_cumulus = cumulus
 	_lives = lives
 	_enemies = enemies
+	_next_wave_preview = next_preview
 
 
 func _ready() -> void:
@@ -129,6 +131,13 @@ func _build_text() -> String:
 			t += "%s %s — %d Schade%s\n" % [medal, nm, dmg_val, kills_str]
 	else:
 		t += "\n[i](Kei Turm het gschossen)[/i]\n"
+
+	if _next_wave_preview.size() > 0:
+		t += "\n[b]Nächsti Wälle:[/b]\n"
+		for entry in _next_wave_preview:
+			var dname: String = str(entry.get("display_name", "?"))
+			var cnt: int = int(entry.get("count", 1))
+			t += "  %d× %s\n" % [cnt, dname]
 
 	t += "\n[center]%s[/center]\n" % div
 	t += "K.O.s:       [b]%d[/b] Feinde\n" % _enemies

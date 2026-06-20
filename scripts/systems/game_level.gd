@@ -393,6 +393,17 @@ func _show_wave_receipt(wave_num: int) -> void:
 	for tower in towers:
 		if "wave_kill_count" in tower:
 			enemies_defeated += tower.wave_kill_count
+	var raw_preview: Array = wave_manager.get_next_wave_preview() if wave_manager else []
+	var next_preview: Array = []
+	for entry in raw_preview:
+		var eid: String = str(entry.get("enemy_id", ""))
+		var cnt: int = int(entry.get("count", 1))
+		var dname: String = eid.replace("_", " ").capitalize()
+		if wave_manager._enemy_data_cache.has(eid):
+			var edata = wave_manager._enemy_data_cache[eid]
+			if edata and "display_name" in edata and edata.display_name != "":
+				dname = edata.display_name
+		next_preview.append({"display_name": dname, "count": cnt})
 	var receipt := WaveReceipt.new()
 	receipt.configure(
 		wave_num,
@@ -400,7 +411,8 @@ func _show_wave_receipt(wave_num: int) -> void:
 		CurrencyManager.wave_gold_earned,
 		1,
 		GameManager.lives,
-		enemies_defeated
+		enemies_defeated,
+		next_preview
 	)
 	_wave_receipt = receipt
 	hud.add_child(receipt)
