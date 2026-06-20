@@ -173,7 +173,7 @@ func _run_healthy_level(level_id: int) -> void:
 	# 12× across all levels: 10 ticks × 2.0s = 240s game time — enough for any
 	# 10-wave level. WON/LOST early-exit keeps real time short (~10-15s typical).
 	# 20s ceiling: 3 levels × ≤20s = ≤60s, plus ~36s priority scenarios,
-	# leaving ~24s buffer inside the 120s Godot CI timeout for L3 to land.
+	# leaving ~24s buffer inside the 120s Godot CI timeout for stress+bughunt.
 	var sim_started := Time.get_ticks_msec()
 	var shot_idx := 0
 	var _diag_done := false
@@ -211,13 +211,15 @@ func _run_healthy_level(level_id: int) -> void:
 		if elapsed > 20.0 or shot_idx >= 10:
 			break
 
-	# Grace-period: if the last wave has been started but stragglers are still
-	# moving on the path, wait up to 3 extra real-clock ticks before giving up.
-	# Covers two cases: (a) all_done=true but WON not yet propagated, and
-	# (b) last wave sent but enemies still alive (common on L1 wave 10, #945).
+	# Grace-period: if we are on the penultimate or final wave with stragglers
+	# still alive, wait up to 3 extra real-clock ticks before giving up.
+	# Covers: (a) all_done=true but WON not yet propagated; (b) last wave sent
+	# but enemies still alive (#945); (c) L3 times out on wave 9 with 16 enemies
+	# remaining — tanks slowed by healers need the extra window (#1052).
+	# "last two waves" = current_wave >= total_waves - 1 (e.g. wave 9 of 10).
 	var wm_node := get_tree().get_first_node_in_group("wave_manager")
 	var _wm_last_wave_started: bool = wm_node != null and \
-		wm_node.get("current_wave") >= wm_node.get("total_waves") and \
+		wm_node.get("current_wave") >= wm_node.get("total_waves") - 1 and \
 		wm_node.get("total_waves") > 0
 	if wm_node and (wm_node.get("all_done") == true or _wm_last_wave_started) \
 	and GameManager.current_state == GameManager.GameState.PLAYING:
@@ -590,7 +592,10 @@ func _hardcoded_placements(level_id: int) -> Array:
 			{ "id": "cordula", "pos": Vector2(580, 280) },
 			{ "id": "sniper",  "pos": Vector2(880, 440) },
 			{ "id": "splash",  "pos": Vector2(500, 520) },
-			{ "id": "slow",    "pos": Vector2(740, 380) },
+			# splash replaces slow here: wave 9 has 6 tanks + 4 healers + 15 basics.
+			# Healers near tanks extend TTK significantly — splash area hits healer+tank
+			# clusters simultaneously, cutting healer uptime. Slow contributed 0 DPS (#1052).
+			{ "id": "splash",  "pos": Vector2(740, 380) },
 			# 6th tower covers the right-side serpentine (950,150)→(1050,550)→(1180,200)
 			# that the existing 5 towers don't fully reach; prevents life leaks on
 			# wave 7's 20-basic spam + wave 8's healer+flying+fast combo (#872).
