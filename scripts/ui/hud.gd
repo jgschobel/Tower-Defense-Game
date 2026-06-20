@@ -1442,28 +1442,8 @@ func _refresh_next_wave_preview(visible_flag: bool) -> void:
 	var visible_preview: Array = preview.slice(0, MAX_WAVE_PREVIEW_GROUPS)
 	for group in visible_preview:
 		var enemy_id: String = group.get("enemy_id", "")
-		var icon_tex: Texture2D = _enemy_icon_texture(enemy_id)
-		if icon_tex:
-			var icon := TextureRect.new()
-			icon.texture = icon_tex
-			icon.custom_minimum_size = Vector2(22, 22)
-			icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-			icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
-			icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-			hbox.add_child(icon)
-		else:
-			var swatch := ColorRect.new()
-			swatch.custom_minimum_size = Vector2(14, 14)
-			swatch.color = _enemy_preview_color(enemy_id)
-			swatch.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-			hbox.add_child(swatch)
-		var entry := Label.new()
-		var display_name: String = _short_name_for_enemy(enemy_id)
-		entry.text = "%d× %s" % [group.get("count", 0), display_name]
-		entry.add_theme_font_size_override("font_size", 16)
-		var entry_color: Color = Color(1.0, 0.55, 0.25) if enemy_id in _boss_warn_map else Color(1, 0.95, 0.8)
-		entry.add_theme_color_override("font_color", entry_color)
-		hbox.add_child(entry)
+		var count: int = group.get("count", 0)
+		hbox.add_child(_build_wave_preview_chip(enemy_id, count, enemy_id in _boss_warn_map))
 	if hidden_count > 0:
 		var more_lbl := Label.new()
 		more_lbl.text = "+%d meh…" % hidden_count
@@ -1512,6 +1492,107 @@ func _enemy_preview_color(enemy_id: String) -> Color:
 		"ddt_schwarz":           return Color(0.1, 0.08, 0.15)
 		"roeschti_bombe":        return Color(0.85, 0.55, 0.18)
 		_: return Color(0.6, 0.6, 0.7)
+
+
+## Threat-tier color border per enemy. Drives the wave-preview chip
+## frame, the in-world health-bar outline (future), and any other place
+## the game needs to convey "how bad is this thing". 1=trivial 5=boss.
+## BTD-style green→yellow→orange→red→black ramp.
+const _THREAT_RAMP: Array = [
+	Color(0.45, 0.85, 0.40, 1.0),  # 1 — trivial (grunt)
+	Color(1.00, 0.85, 0.20, 1.0),  # 2 — moderate
+	Color(1.00, 0.55, 0.18, 1.0),  # 3 — dangerous (camo / lead / fast)
+	Color(0.95, 0.25, 0.20, 1.0),  # 4 — severe (boss / berserker)
+	Color(0.18, 0.12, 0.18, 1.0),  # 5 — MOAB-class (dark)
+]
+
+
+func _enemy_threat_tier(enemy_id: String) -> int:
+	match enemy_id:
+		"moab_migros", "bfb_cumulus", "ddt_schwarz", \
+		"selbschtbedienigs_wage", "selbschtskan_schiff":
+			return 5
+		"boss", "berserker", "linsen_golem", "glace_golem", \
+		"roeschti_bombe", "cherry_bomb":
+			return 4
+		"camo", "lead", "regrow", "fondue_bomb", "tofu_ninja", \
+		"cumulus_blob", "pasta_express":
+			return 3
+		"fast", "tank", "healer", "flying", "smoothie_slime":
+			return 2
+		_:
+			return 1
+
+
+## Build a BTD6-style wave preview chip: square 36-px portrait with
+## tier-color border + a small count badge in the corner. No inline
+## text — the icon + color do the talking, freeing the preview row to
+## fit 6+ enemies without overflowing. Boss-tier chips pulse subtly
+## to draw attention.
+func _build_wave_preview_chip(enemy_id: String, count: int, is_boss: bool) -> Control:
+	var tier: int = _enemy_threat_tier(enemy_id)
+	var tier_color: Color = _THREAT_RAMP[clampi(tier - 1, 0, _THREAT_RAMP.size() - 1)]
+	# Frame panel
+	var chip := PanelContainer.new()
+	chip.custom_minimum_size = Vector2(40, 40)
+	chip.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.06, 0.05, 0.05, 0.88)
+	sb.border_color = tier_color
+	sb.border_width_left = 2
+	sb.border_width_right = 2
+	sb.border_width_top = 2
+	sb.border_width_bottom = 2
+	sb.corner_radius_top_left = 6
+	sb.corner_radius_top_right = 6
+	sb.corner_radius_bottom_left = 6
+	sb.corner_radius_bottom_right = 6
+	sb.content_margin_left = 3
+	sb.content_margin_right = 3
+	sb.content_margin_top = 3
+	sb.content_margin_bottom = 3
+	chip.add_theme_stylebox_override("panel", sb)
+	# Icon — fallback to colored swatch if no texture
+	var icon_tex: Texture2D = _enemy_icon_texture(enemy_id)
+	if icon_tex:
+		var tex := TextureRect.new()
+		tex.texture = icon_tex
+		tex.custom_minimum_size = Vector2(30, 30)
+		tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		tex.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+		tex.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		chip.add_child(tex)
+	else:
+		var swatch := ColorRect.new()
+		swatch.custom_minimum_size = Vector2(28, 28)
+		swatch.color = _enemy_preview_color(enemy_id)
+		chip.add_child(swatch)
+	# Count badge — small bottom-right pill with "×N"
+	var badge := Label.new()
+	badge.text = "×%d" % count
+	badge.add_theme_font_size_override("font_size", 11)
+	badge.add_theme_color_override("font_color", Color(1, 0.95, 0.85))
+	badge.add_theme_color_override("font_outline_color", Color(0.05, 0.03, 0.02))
+	badge.add_theme_constant_override("outline_size", 2)
+	badge.anchors_preset = Control.PRESET_BOTTOM_RIGHT
+	badge.anchor_left = 1.0
+	badge.anchor_top = 1.0
+	badge.anchor_right = 1.0
+	badge.anchor_bottom = 1.0
+	badge.offset_left = -22
+	badge.offset_top = -14
+	badge.offset_right = -2
+	badge.offset_bottom = -1
+	badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	chip.add_child(badge)
+	# Boss chip pulses to draw attention
+	if is_boss:
+		var pulse := chip.create_tween().set_loops()
+		pulse.tween_property(chip, "modulate", Color(1.25, 1.10, 1.10, 1.0), 0.55) \
+			.set_trans(Tween.TRANS_SINE)
+		pulse.tween_property(chip, "modulate", Color(1.0, 1.0, 1.0, 1.0), 0.55) \
+			.set_trans(Tween.TRANS_SINE)
+	return chip
 
 
 func _short_name_for_enemy(enemy_id: String) -> String:
