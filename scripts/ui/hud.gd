@@ -2190,29 +2190,94 @@ func _format_synergy_bonus(syn: Dictionary) -> String:
 
 
 func _ensure_targeting_button() -> void:
+	# BTD6-style targeting selector: 4 small buttons in a row, current
+	# mode highlighted. Replaced the single-button cycler which required
+	# 3 taps to reach STRONGEST from FIRST.
 	if not _selected_tower or not tower_info:
 		return
 	var vbox: VBoxContainer = tower_info.get_node_or_null("VBox")
 	if vbox == null:
 		return
-	var btn: Button = vbox.get_node_or_null("TargetingButton")
-	if btn == null:
-		btn = Button.new()
-		btn.name = "TargetingButton"
-		btn.custom_minimum_size = Vector2(0, 32)
-		btn.tooltip_text = "Zieliere: Erschti / Letschti / Nöchschti / Stärchsti"
-		_apply_tower_info_button_style(btn, Color(0.45, 0.65, 0.85))
+	var row: HBoxContainer = vbox.get_node_or_null("TargetingRow") as HBoxContainer
+	if row == null:
+		row = HBoxContainer.new()
+		row.name = "TargetingRow"
+		row.alignment = BoxContainer.ALIGNMENT_CENTER
+		row.add_theme_constant_override("separation", 4)
+		row.custom_minimum_size = Vector2(0, 36)
 		# Insert just above the HBox (before upgrade/sell row)
-		var hbox: HBoxContainer = vbox.get_node_or_null("HBox") as HBoxContainer
-		vbox.add_child(btn)
-		if hbox:
-			vbox.move_child(btn, hbox.get_index())
-		btn.pressed.connect(_on_targeting_pressed)
-	# Refresh label every redraw so cycling updates immediately
-	btn.text = "Zieliere: %s" % _selected_tower.get_target_mode_label()
+		var existing_hbox: HBoxContainer = vbox.get_node_or_null("HBox") as HBoxContainer
+		vbox.add_child(row)
+		if existing_hbox:
+			vbox.move_child(row, existing_hbox.get_index())
+		# Build 4 mode buttons (BTD6 ordering: First / Last / Close / Strong)
+		var labels: Array = ["Erscht", "Letscht", "Nöch", "Stärch"]
+		var tips: Array = [
+			"Erschti — am wiitschtä uf em Wäg (Standard)",
+			"Letschti — am wenigschtä wiit",
+			"Nöchschti — am nöchschtä am Turm",
+			"Stärchsti — höchschti HP zerscht",
+		]
+		for i in 4:
+			var b := Button.new()
+			b.name = "TargetMode%d" % i
+			b.text = labels[i]
+			b.tooltip_text = tips[i]
+			b.custom_minimum_size = Vector2(0, 32)
+			b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			b.set_meta("mode", i)
+			b.pressed.connect(_on_target_mode_chip_pressed.bind(i))
+			row.add_child(b)
+	# Re-style every refresh so the highlighted chip matches current mode
+	var active_mode: int = _selected_tower.get_target_mode()
+	for child in row.get_children():
+		if child is Button:
+			var mode: int = int(child.get_meta("mode", -1))
+			var is_active: bool = mode == active_mode
+			_paint_target_chip(child, is_active)
+
+
+func _paint_target_chip(btn: Button, is_active: bool) -> void:
+	# Gold-rim active state, muted inactive — matches the rest of the UI.
+	var accent: Color = DesignTokens.COL_STROKE_STRONG if is_active else DesignTokens.COL_STROKE_FAINT
+	var base := StyleBoxFlat.new()
+	base.bg_color = Color(0.20, 0.16, 0.08, 1.0) if is_active else Color(0.10, 0.09, 0.08, 1.0)
+	base.border_color = accent
+	base.border_width_left = 2 if is_active else 1
+	base.border_width_right = 2 if is_active else 1
+	base.border_width_top = 2 if is_active else 1
+	base.border_width_bottom = 2 if is_active else 1
+	base.corner_radius_top_left = 5
+	base.corner_radius_top_right = 5
+	base.corner_radius_bottom_left = 5
+	base.corner_radius_bottom_right = 5
+	base.content_margin_left = 4
+	base.content_margin_right = 4
+	base.content_margin_top = 4
+	base.content_margin_bottom = 4
+	var hover := base.duplicate() as StyleBoxFlat
+	hover.bg_color = Color(0.26, 0.20, 0.10, 1.0)
+	hover.border_color = DesignTokens.COL_STROKE_HOVER
+	btn.add_theme_stylebox_override("normal", base)
+	btn.add_theme_stylebox_override("hover", hover)
+	btn.add_theme_stylebox_override("pressed", hover)
+	btn.add_theme_color_override("font_color",
+		DesignTokens.COL_TEXT_HEADING if is_active else DesignTokens.COL_TEXT_MUTED)
+	btn.add_theme_font_size_override("font_size", DesignTokens.FONT_LABEL_SM)
+	btn.add_theme_constant_override("outline_size",
+		DesignTokens.OUTLINE_LABEL if is_active else DesignTokens.OUTLINE_NONE)
+
+
+func _on_target_mode_chip_pressed(mode: int) -> void:
+	if _selected_tower and is_instance_valid(_selected_tower) \
+			and _selected_tower.has_method("set_target_mode"):
+		_selected_tower.set_target_mode(mode)
+		_refresh_tower_info()
 
 
 func _on_targeting_pressed() -> void:
+	# Legacy hook kept for any signal that still references it. Forwards
+	# to the cycler so behavior is unchanged for any third caller.
 	if _selected_tower and is_instance_valid(_selected_tower):
 		_selected_tower.cycle_target_mode()
 		_refresh_tower_info()
