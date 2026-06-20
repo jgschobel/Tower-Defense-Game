@@ -173,23 +173,21 @@ func _start_idle_animation() -> void:
 
 
 func _start_taunt_loop() -> void:
-	# Idempotency guard (agent-audit #5) — matches the pattern used by
-	# HUD's ThreatTimer. Prevents stacked timers if _ready were to run
-	# twice for any reason.
-	if has_node("TauntTimer"):
-		return
-	var t := Timer.new()
-	t.name = "TauntTimer"
-	t.wait_time = randf_range(6.0, 12.0)
-	t.one_shot = false
-	t.autostart = true
-	add_child(t)
-	t.timeout.connect(_maybe_taunt.bind(t))
+	# Per-tower Timer node REMOVED per perf-agent audit 2026-06-20.
+	# 20 towers = 20 always-running Timers was real overhead. The global
+	# TauntScheduler autoload now picks one random tower per 3-7s tick
+	# and calls _maybe_taunt_from_scheduler() on it. Net: 20 Timers → 1.
+	#
+	# Kept this function as a stub so existing _ready() call doesn't
+	# need to change — and any future per-tower-trigger logic (e.g.
+	# 'taunt on placement') can land here without touching call sites.
+	pass
 
 
-func _maybe_taunt(t: Timer) -> void:
-	# Re-randomize interval so taunts don't line up
-	t.wait_time = randf_range(6.0, 12.0)
+func _maybe_taunt_from_scheduler() -> void:
+	# Called by TauntScheduler at a random interval, ~3-7s. Same
+	# suppression + pool logic as the old per-tower _maybe_taunt(),
+	# minus the Timer.wait_time fiddling (handled by the scheduler).
 	if not is_placed or not data:
 		return
 	# Skip during active spawning — taunt labels allocate a Label + tween
@@ -201,7 +199,8 @@ func _maybe_taunt(t: Timer) -> void:
 	var lines: Array = TAUNTS.get(data.id, [])
 	if lines.is_empty():
 		return
-	# 60% chance to actually fire, so it feels spontaneous
+	# 60% chance to actually fire — makes it feel spontaneous and means
+	# any given tower talks roughly every 5-12s instead of every 3-7s.
 	if randf() > 0.6:
 		return
 	# Refill the per-instance shuffled pool when exhausted so same-type
