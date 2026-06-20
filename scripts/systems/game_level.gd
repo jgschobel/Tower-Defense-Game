@@ -393,6 +393,14 @@ func _pay_farm_towers() -> void:
 
 func _on_wave_completed(wave_num: int) -> void:
 	GameManager.earn_cumulus(1)
+	# BTD6 cash-arc reward (wave-research agent 2026-06-20 #4): grant
+	# 100 + wave_num gold + arc N coins to the wallet HUD with a per-
+	# coin ding. Biggest "perceived reward" multiplier per the research
+	# — wave completion goes from silent counter-tick to celebratory.
+	var bonus: int = 100 + wave_num
+	CurrencyManager.add_gold(bonus)
+	if hud.has_method("show_cash_arc_reward"):
+		hud.show_cash_arc_reward(bonus, wave_num)
 	# Check current_wave < total_waves (not all_done) because all_done is set
 	# AFTER this signal fires — using all_done here would always be false on the
 	# final wave, showing the "next wave" button right before the victory screen.

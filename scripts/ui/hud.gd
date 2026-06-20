@@ -1070,6 +1070,73 @@ func _flash_moab_telegraph() -> void:
 	tw.tween_callback(flash.queue_free)
 
 
+## BTD6-style cash arc reward (research agent #4): spawn N coin sprites
+## around the kill-center of the screen and arc them to the wallet HUD
+## position with staggered timing + per-coin ding. A floater "+CHF N"
+## above the wallet caps it off. The biggest perceived-reward win per
+## the wave research because it replaces silent counter-tick with
+## kinetic, audible feedback that EVERY wave matters.
+func show_cash_arc_reward(amount: int, wave_num: int) -> void:
+	var coin_count: int = clampi(int(round(8.0 + log(maxf(wave_num, 1.0)) * 2.0)), 6, 14)
+	var target_node: Control = gold_label if gold_label else gold_icon
+	if target_node == null:
+		return
+	var target_screen: Vector2 = target_node.global_position + target_node.size * 0.5
+	var origin_screen: Vector2 = get_viewport().get_visible_rect().size * 0.5
+	for i in coin_count:
+		var coin := IconLibrary.make_rect("coin", 20, Color(1.0, 0.85, 0.20))
+		if coin == null:
+			continue
+		coin.z_index = 30
+		coin.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		add_child(coin)
+		var jitter := Vector2(randf_range(-180, 180), randf_range(-90, 90))
+		coin.global_position = origin_screen + jitter - coin.size * 0.5
+		# Two-stage tween: initial bounce-out away from origin, then arc-in
+		# to the wallet with overshoot. Staggered start so coins land
+		# sequentially producing a "kachink-kachink" cascade rather than
+		# a single thump.
+		var delay: float = i * 0.05
+		var apex_offset := Vector2(randf_range(-80, 80), -randf_range(40, 100))
+		var apex_pos: Vector2 = coin.global_position + apex_offset
+		var tw := coin.create_tween()
+		tw.tween_interval(delay)
+		tw.tween_property(coin, "global_position", apex_pos, 0.22) \
+			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		tw.tween_property(coin, "global_position", target_screen - coin.size * 0.5, 0.32) \
+			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+		tw.tween_callback(func():
+			if SfxManager and SfxManager.has_method("play_click"):
+				SfxManager.play_click())
+		tw.tween_property(coin, "modulate:a", 0.0, 0.12)
+		tw.tween_callback(coin.queue_free)
+	# Wallet pulse + floater
+	var pulse := target_node.create_tween()
+	pulse.tween_interval(0.55)
+	pulse.tween_property(target_node, "scale", Vector2(1.25, 1.25), 0.10) \
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	pulse.tween_property(target_node, "scale", Vector2.ONE, 0.18) \
+		.set_trans(Tween.TRANS_SINE)
+	# "+CHF N" floater just above the wallet
+	var floater := Label.new()
+	floater.text = "+%d CHF" % amount
+	floater.add_theme_font_size_override("font_size", 22)
+	floater.add_theme_color_override("font_color", Color(1.0, 0.92, 0.30))
+	floater.add_theme_color_override("font_outline_color", Color(0.20, 0.10, 0.0))
+	floater.add_theme_constant_override("outline_size", 4)
+	floater.z_index = 32
+	floater.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(floater)
+	floater.global_position = target_screen + Vector2(-40, 18)
+	floater.modulate.a = 0.0
+	var ft := floater.create_tween()
+	ft.tween_interval(0.45)
+	ft.tween_property(floater, "modulate:a", 1.0, 0.12)
+	ft.tween_property(floater, "global_position:y", floater.global_position.y + 28.0, 0.7)
+	ft.tween_property(floater, "modulate:a", 0.0, 0.45)
+	ft.tween_callback(floater.queue_free)
+
+
 func show_wave_clear_celebration() -> void:
 	# Brief big "WÄLLE GSCHAFFT!" text mid-screen at end of each wave.
 	# Cheap mid-game reward — keeps the player feeling progress.
