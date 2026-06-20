@@ -130,25 +130,45 @@ func _ready() -> void:
 
 
 func _start_idle_animation() -> void:
-	# Breathing + bob loop on the Sprite2D. Kept subtle (~3% scale,
-	# 1.5px bob) so it reads as "alive" without being distracting.
-	# Uses a local baseline captured AFTER _apply_data applies its own
-	# scale, so tower-specific sizing (data.sprite_scale) is preserved.
+	# Per-tower idle "signature" — Ironhide signature pattern per game-feel
+	# research (Kingdom Rush: archers visibly take turns, artillery rocks
+	# during reload, mages sway). Distinct motion per character so a
+	# screen with 5 towers reads as "5 different people doing 5 things"
+	# instead of "5 figures bobbing identically".
+	#
+	# IMPORTANT: only touch position.y (X is owned by attack-recoil tween,
+	# scale is owned by attack/upgrade tweens). A previous attempt to
+	# scale or rotate here caused runaway compounding (#43).
 	if sprite == null:
 		return
 	var base_y: float = sprite.position.y
-	# Per-tower phase offset so the herd doesn't sync up
 	var phase: float = randf() * PI * 2.0
-	# Stagger cycle length a touch for variety
-	var cycle: float = randf_range(1.8, 2.4)
-	# Idle animation only bobs position — NEVER touches sprite.scale.
-	# The attack/upgrade/sell tweens all animate sprite.scale, and running
-	# a looping scale tween here caused runaway compounding (tower filled
-	# the screen when shooting). Position-only bob is enough "alive".
+	# Per-tower-id cycle + amplitude. Read tower id, fall back to defaults
+	# for unknown tower types. cycle in seconds, amp in px.
+	var cycle: float = 2.1
+	var amp: float = 1.5
+	var tower_id: String = data.id if data and "id" in data else ""
+	match tower_id:
+		"basic":          # Lemurius — easy-going breathe
+			cycle = randf_range(2.0, 2.4); amp = 1.8
+		"sniper":         # Kühne — focused, almost still
+			cycle = randf_range(2.6, 3.2); amp = 1.0
+		"splash":         # JoJo — energetic, shorter cycle
+			cycle = randf_range(1.4, 1.8); amp = 2.2
+		"cordula":        # Cordula — confident, slow heavy bob
+			cycle = randf_range(2.2, 2.8); amp = 2.0
+		"slow":           # Amösius — sluggish long swing
+			cycle = randf_range(3.0, 3.6); amp = 2.4
+		"farm":           # Banani-Bauer — small fidgety bob
+			cycle = randf_range(1.6, 2.0); amp = 1.2
+		"support":        # Quartier-Chef — steady leader
+			cycle = randf_range(2.3, 2.7); amp = 1.6
+		_:
+			cycle = randf_range(1.8, 2.4); amp = 1.5
 	var bob := create_tween().set_loops()
 	bob.set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
 	bob.tween_interval((phase + PI * 0.5) / (PI * 2.0) * cycle)
-	bob.tween_property(sprite, "position:y", base_y - 1.5, cycle * 0.5)
+	bob.tween_property(sprite, "position:y", base_y - amp, cycle * 0.5)
 	bob.tween_property(sprite, "position:y", base_y, cycle * 0.5)
 
 
