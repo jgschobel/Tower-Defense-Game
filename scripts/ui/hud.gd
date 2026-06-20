@@ -867,6 +867,21 @@ func show_enemy_intro(enemy_id: String, enemy_data: Resource) -> void:
 	name_lbl.add_theme_constant_override("outline_size", 5)
 	vbox.add_child(name_lbl)
 
+	# Strategic counter hint — per BTD6's first-encounter Game Hint card.
+	# Tells the player IN ONE LINE which tower / damage type they need.
+	# Solves the "what counters this?" panic on first appearance.
+	var hint_text: String = _enemy_counter_hint(enemy_id)
+	if hint_text != "":
+		var hint_lbl := Label.new()
+		hint_lbl.text = hint_text
+		hint_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		hint_lbl.add_theme_font_size_override("font_size", 15)
+		hint_lbl.add_theme_color_override("font_color", Color(0.78, 1.0, 0.85, 0.95))
+		hint_lbl.add_theme_color_override("font_outline_color", Color(0.05, 0.15, 0.05))
+		hint_lbl.add_theme_constant_override("outline_size", 3)
+		hint_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		vbox.add_child(hint_lbl)
+
 	# Swiss German taunt line — enemy-specific flavour text.
 	var taunt_text: String = _taunts.get(enemy_id, "")
 	if taunt_text:
@@ -1572,6 +1587,37 @@ const _THREAT_RAMP: Array = [
 	Color(0.95, 0.25, 0.20, 1.0),  # 4 — severe (boss / berserker)
 	Color(0.18, 0.12, 0.18, 1.0),  # 5 — MOAB-class (dark)
 ]
+
+
+## One-line strategic counter hint per enemy type — shown on first-
+## appearance reveal so the player knows what to build against it.
+## Pattern from BTD6 Game Hints, Swiss-German for our game.
+## Empty string = no special counter required (grunt enemies).
+func _enemy_counter_hint(enemy_id: String) -> String:
+	match enemy_id:
+		"camo":           return "→ Bruch Sicht-Türm (Kühne T2+) zum gseh"
+		"lead":           return "→ Bruch Magie / Pure Schade (Pollen, Volley)"
+		"regrow":         return "→ Bruch Pure Schade (sunscht wachsed sii)"
+		"flying":         return "→ Bruch en Turm wo flügend trifft (JoJo)"
+		"healer":         return "→ Killed de Healer zerscht (priorisier en)"
+		"fast":           return "→ Bruch schnälli Wäffe (Lemurius / JoJo)"
+		"swarm":          return "→ Bruch Flächeschade (JoJo splash / Cordula)"
+		"tank":           return "→ Bruch schweri Schade (Kühne T3, Cordula)"
+		"berserker":      return "→ Hoche Schade vor er d'Mitti erreicht!"
+		"fondue_bomb":    return "→ Sprängt z'rugg sini Nochbere (Abstand!)"
+		"glace_golem":    return "→ Schmilzt zu chleinerem Cumulus-Blob"
+		"cumulus_blob":   return "→ Stilet dini Cumulus — schnäll wäg!"
+		"linsen_golem":   return "→ Linsen-Pansring: Magie / Pure Schade"
+		"smoothie_slime": return "→ Spaltet uf — bring Splash-Türm"
+		"tofu_ninja":     return "→ Camo + schnäll — Kühne mit Sichtweiti"
+		"boss":           return "→ ALL Türm zäme — tier-3 unbedingt!"
+		"moab_migros":    return "→ MOAB-Klasse: schweri Pure Schade nöötig"
+		"bfb_cumulus":    return "→ Flüged + camo — Kühne T3 + Sicht-Aura"
+		"ddt_schwarz":    return "→ Schnäll, camo, bly — JEDI Konter-Türm"
+		"selbschtskan_schiff": return "→ Wechslet sini Hülle: diversifizier dini Türm"
+		"roeschti_bombe": return "→ Sprängt nach ~3s — kill schnäll und zer Sicht"
+		"cherry_bomb":    return "→ Massivi Spräng-Schade — chli Pause halte"
+		_:                return ""
 
 
 func _enemy_threat_tier(enemy_id: String) -> int:
