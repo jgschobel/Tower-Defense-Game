@@ -925,7 +925,13 @@ func upgrade_path(path_letter: String) -> bool:
 		var upg_tween := create_tween()
 		upg_tween.tween_property(sprite, "scale", base_sc2 * 1.2, 0.15)
 		upg_tween.tween_property(sprite, "scale", base_sc2, 0.2)
-		upg_tween.parallel().tween_property(sprite, "modulate", Color(1.45, 1.3, 0.6), 0.15)
+		# Flash toward a "hot" version of the destination tint so the brief
+		# white-out communicates the path colour rather than generic gold (#1031).
+		var flash := Color(
+			minf(target_modulate.r * 1.45, 1.5),
+			minf(target_modulate.g * 1.45, 1.5),
+			minf(target_modulate.b * 1.45, 1.5), 1.0)
+		upg_tween.parallel().tween_property(sprite, "modulate", flash, 0.15)
 		upg_tween.tween_property(sprite, "modulate", target_modulate, 0.2)
 	if EffectPlayer and EffectPlayer.has_method("spawn_place_sparkles"):
 		EffectPlayer.spawn_place_sparkles(global_position)
@@ -972,18 +978,18 @@ func _apply_path_tint() -> void:
 		var brightness: float
 		match path_a_tier:
 			1:
-				# 0.58 gives a clearly visible green shift without blobbing the
-				# sprite — previous 0.40 was imperceptible in CI screenshots
-				# (#1010). A2/A3 raised proportionally to preserve monotonic
-				# step-up across the three tiers.
-				blend = 0.58
-				brightness = 0.95
+				# 0.66 + 1.0 brightness: raised from 0.58/0.95 which was still
+				# barely distinguishable from tier-0 in CI screenshots (#1031).
+				# No brightness penalty at A1 so the tinted sprite is visually
+				# brighter than the base, not dimmer.
+				blend = 0.66
+				brightness = 1.0
 			2:
-				blend = 0.68
-				brightness = 0.89
+				blend = 0.74
+				brightness = 0.92
 			_:
-				blend = 0.76
-				brightness = 0.84
+				blend = 0.80
+				brightness = 0.85
 		# 12°/tier hue rotation — enough to distinguish tiers without a
 		# 90° full-colour shift that destroys the base palette at A3.
 		var ah: float = fmod(data.path_a_tint.h + (12.0 / 360.0) * path_a_tier, 1.0)
@@ -1129,7 +1135,14 @@ func _update_tier_glow(tier: int) -> void:
 	glow = Node2D.new()
 	glow.name = "TierGlow"
 	glow.z_index = -2  # below sprite
-	var ring_color: Color = data.projectile_color
+	# Use path_a_tint for the halo when the tower has branching upgrades and
+	# A-path is invested — this aligns the ring colour with the sprite modulate
+	# so both signals read "green = A-path" (#1031).
+	var ring_color: Color
+	if data.has_branching_upgrades() and path_a_tier > 0:
+		ring_color = data.path_a_tint
+	else:
+		ring_color = data.projectile_color
 	ring_color.a = 0.0  # alpha driven by _draw
 	var tier_radius: float = 30.0 + tier * 14.0
 	var tier_alpha: float = 0.25 + tier * 0.15

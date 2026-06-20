@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-20 (audit-polish — A1 tint distinguishability + path-aligned glow)
+
+- fix(tower): A1 tint still barely visible after 0.58 fix — blend raised 0.58→0.66 + brightness 0.95→1.0 (no dimming at A1, tinted sprite now brighter than base); A2 0.68→0.74/0.89→0.92; A3 0.76→0.80/0.84→0.85; TierGlow ring colour switched from projectile_color (yellow) to path_a_tint (green) when branching tower has A-path investment, aligning both visual signals to same hue; upgrade flash now tints toward destination modulate (hot version) instead of generic gold so flash itself communicates the path colour; closes #1031
+
 ## 2026-06-19 (audit-polish — Banani-Lawine combo milestone bubbles)
 
 - feat(combo): "Banani-Lawine" — ComboMilestoneBubble Control hooks ComboTracker.combo_changed; shows centered pill overlay at 10/25/50/75/100/150 kills with Swiss German names, scale-pop tween (TRANS_BACK 0.18s), 0.6s hold, fade-out; gold border ≤50 combo, red >50; SfxManager.play_combo_milestone(tier) pitch-ramped rising sweep
