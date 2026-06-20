@@ -1455,13 +1455,22 @@ func _maybe_swap_tier3_sprite(path_letter: String) -> void:
 
 func cycle_target_mode() -> void:
 	# Cycle through FIRST → LAST → CLOSEST → STRONGEST → back to FIRST.
-	# Called from the tower-info panel's targeting button.
+	# Kept for backward compat; new UI uses set_target_mode(mode_int)
+	# directly via the icon row.
 	var current: int = target_mode_override if target_mode_override >= 0 else int(data.target_mode)
-	target_mode_override = (current + 1) % 4
-	# Force immediate retarget so the new mode applies on next tick
+	set_target_mode((current + 1) % 4)
+
+
+func set_target_mode(mode: int) -> void:
+	# Direct setter used by the BTD6-style 4-icon target row.
+	target_mode_override = clampi(mode, 0, 3)
 	current_target = null
 	if SfxManager:
 		SfxManager.play_click()
+
+
+func get_target_mode() -> int:
+	return target_mode_override if target_mode_override >= 0 else int(data.target_mode)
 
 
 func get_target_mode_label() -> String:
