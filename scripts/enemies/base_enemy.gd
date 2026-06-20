@@ -36,6 +36,13 @@ var heal_timer_node: Timer = null
 
 
 func _ready() -> void:
+	# Register with the autoload list — towers iterate this instead of
+	# calling get_tree().get_nodes_in_group() per frame. Re-registering
+	# is a no-op so pool reuse is safe.
+	if Engine.has_singleton("EnemyRegistry") or "EnemyRegistry" in Engine.get_main_loop().root:
+		pass  # autoload presence — handled below
+	EnemyRegistry.register(self)
+	tree_exiting.connect(func(): EnemyRegistry.unregister(self))
 	if has_node("HealTimer"):
 		heal_timer_node = $HealTimer
 	if data:
@@ -362,6 +369,11 @@ func die() -> void:
 	if is_dead:
 		return
 	is_dead = true
+	# Unregister immediately so towers stop iterating to a corpse during
+	# the 0.18s death-tween window (was a perf + cosmetic bug — towers
+	# would queue a redundant shot at the dying enemy because
+	# get_nodes_in_group still saw it).
+	EnemyRegistry.unregister(self)
 	# Stop heal timer immediately — previously ran through the 0.35s
 	# death animation, wasting cycles (audit #14)
 	if heal_timer_node:
@@ -478,6 +490,9 @@ func reset_for_pool() -> void:
 	# Resets all transient runtime state so the next spawn is clean.
 	# Kill the death tween first — if still running it would fade out
 	# the reused enemy or leave sprite.modulate at 0 (F1/F2 fix).
+	# Re-register with EnemyRegistry — pool reuse skips _ready so we'd
+	# otherwise leave the previous death's unregister sticky.
+	EnemyRegistry.register(self)
 	if _death_tween and _death_tween.is_valid():
 		_death_tween.kill()
 	_death_tween = null
