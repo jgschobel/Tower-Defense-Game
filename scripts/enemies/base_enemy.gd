@@ -527,38 +527,55 @@ func _update_visual() -> void:
 	if not sprite:
 		return
 
+	# Enemy silhouette discipline (BTD6/KR/TF2 readability rule): every
+	# enemy gets a dark outline + drop shadow + ~1.8× scale so it stands
+	# off a busy painted background. Without this, 32-px enemies vanish
+	# into the map art. Applied via shader so we don't allocate per
+	# enemy. ROADMAP polish-overhaul 2026-06-20.
+	const ENEMY_VISIBLE_TARGET_SIZE := 90.0   # was 50.0 — too tiny vs 1280×720 maps
+	const ENEMY_PHOTO_TARGET_SIZE   := 88.0   # photo enemies match the silhouette enemies
+
 	# Try to load friend photo
 	if data and data.friend_character_id != "":
 		var photo := GameManager.get_friend_photo(data.friend_character_id)
 		if photo:
 			sprite.texture = photo
-			# Normalize to the same on-screen size as custom-texture
-			# enemies. The old `scale_factor * 0.5` ignored texture
-			# dimensions, so a 1024px photo rendered ~10× too big —
-			# giant raw faces floating over the map.
 			var photo_max := maxf(photo.get_width(), photo.get_height())
-			var photo_target := 50.0 * data.scale_factor
+			var photo_target := ENEMY_PHOTO_TARGET_SIZE * data.scale_factor
 			if photo_max > 0:
 				sprite.scale = Vector2.ONE * (photo_target / photo_max)
 			else:
 				sprite.scale = Vector2.ONE * (photo_target / 512.0)
-			# Same circular clip the towers use — photo reads as a face
-			# token, not a pasted rectangle.
+			# Outline + circle-clip shader so photo enemies pop off the
+			# painted backgrounds.
 			if sprite.material == null:
-				var clip := ShaderMaterial.new()
-				clip.shader = preload("res://assets/shaders/circle_clip.gdshader")
-				sprite.material = clip
+				var outline := ShaderMaterial.new()
+				outline.shader = preload("res://assets/shaders/enemy_outline.gdshader")
+				outline.set_shader_parameter("outline_color", Color(0.05, 0.03, 0.02, 1.0))
+				outline.set_shader_parameter("outline_radius", 0.010)
+				outline.set_shader_parameter("circle_clip", true)
+				sprite.material = outline
 			return
 
 	# Use custom texture if set
 	if data and data.custom_texture:
 		sprite.texture = data.custom_texture
 		sprite.visible = true
-		# Auto-scale based on enemy size
 		var max_dim := maxf(data.custom_texture.get_width(), data.custom_texture.get_height())
-		var target_size := 50.0 * data.scale_factor
+		var target_size := ENEMY_VISIBLE_TARGET_SIZE * data.scale_factor
 		var s := target_size / max_dim
 		sprite.scale = Vector2(s, s)
+		# Same outline shader without circle-clip — most custom enemy
+		# textures already have transparent backgrounds with their own
+		# shapes (Brötli, Cervelat, etc) so the outline tracks the
+		# silhouette, not a circular crop.
+		if sprite.material == null:
+			var outline2 := ShaderMaterial.new()
+			outline2.shader = preload("res://assets/shaders/enemy_outline.gdshader")
+			outline2.set_shader_parameter("outline_color", Color(0.05, 0.03, 0.02, 1.0))
+			outline2.set_shader_parameter("outline_radius", 0.008)
+			outline2.set_shader_parameter("circle_clip", false)
+			sprite.material = outline2
 		return
 
 	# Hide the default icon sprite — we draw food shapes instead

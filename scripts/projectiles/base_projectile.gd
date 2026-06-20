@@ -254,6 +254,7 @@ func _hit() -> void:
 		# Capture is_dead BEFORE damage so we can credit the source tower
 		# if this hit was the killing blow.
 		var was_alive: bool = not target.is_dead
+		var pre_hit_max: float = target.max_health if "max_health" in target else 0.0
 		var _src: Node = get_meta("source_tower") as Node if has_meta("source_tower") else null
 		target.take_damage(damage, damage_type, _src)
 		target.show_hit_reaction()
@@ -275,6 +276,18 @@ func _hit() -> void:
 				src.kill_count += 1
 				if "wave_kill_count" in src:
 					src.wave_kill_count += 1
+
+		# Hit-pause on chunky hits — Vlambeer/GMTK's #1 amateur→pro lever.
+		# Only fires when the hit either kills a non-trivial enemy or
+		# delivers >= 60% of an enemy's max HP in one shot. Quiet hits
+		# from basic darts stay snappy; tier-3 / boss / kill blows freeze
+		# the world for ~80ms so the impact lands.
+		if EffectPlayer and EffectPlayer.has_method("hit_pause"):
+			var is_chunky_kill: bool = was_alive and target.is_dead and pre_hit_max >= 50.0
+			var is_chunky_hit: bool = pre_hit_max > 0.0 and damage >= pre_hit_max * 0.60
+			if is_chunky_kill or is_chunky_hit:
+				var strength: float = 1.0 if is_chunky_kill else 0.5
+				EffectPlayer.hit_pause(strength)
 
 	# Pierce (ROADMAP #38): if budget remains, pick a nearby unhit enemy
 	# and keep flying instead of releasing.
