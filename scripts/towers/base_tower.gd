@@ -1011,8 +1011,12 @@ func _apply_path_tint() -> void:
 		var b_brightness: float
 		match path_b_tier:
 			1:
-				b_weight = 0.42
-				b_brightness = 1.0
+				# Raised from 0.42/1.0: old weight left 58% A3-green showing
+				# through, reading green not warm. 0.58 + brightness 0.93
+				# gives two independent cues (hue shift + dimmer) so B1 reads
+				# distinctly warm vs A3's bright green (#1043).
+				b_weight = 0.58
+				b_brightness = 0.93
 			2:
 				b_weight = 0.75
 				b_brightness = 0.85
