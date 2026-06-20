@@ -122,7 +122,7 @@ var total_kills: int = 0
 var level_kills: int = 0
 
 # Cumulus meta-progression: 1 point per wave cleared, persists across sessions.
-# At 100 Cumulus the first perk unlocks (start_gold_50: +50 starting gold).
+# Perk thresholds: 100 → +50 start gold, 200 → +1 start life, 300 → +25 more gold.
 # Displayed on game-over screen and main menu to drive "one more run".
 var cumulus_balance: int = 0
 var cumulus_waves_cleared: int = 0
@@ -205,11 +205,15 @@ func start_level(level_id: int, difficulty: int = -1) -> void:
 		Difficulty.HARD:   max_lives = maxi(10, max_lives - 3)
 		_:                 pass
 	lives = max_lives
-	# Cumulus perk: start_gold_50 unlocks at 100 Cumulus-Punkte.
-	var bonus := cumulus_start_gold_bonus()
-	if bonus > 0:
-		CurrencyManager.gold += bonus
+	# Cumulus perks apply at level start (thresholds: 100/200/300).
+	var gold_bonus := cumulus_start_gold_bonus()
+	if gold_bonus > 0:
+		CurrencyManager.gold += gold_bonus
 		CurrencyManager.gold_changed.emit(CurrencyManager.gold)
+	var lives_bonus := cumulus_start_lives_bonus()
+	if lives_bonus > 0:
+		max_lives += lives_bonus
+		lives += lives_bonus
 	level_kills = 0
 	set_state(GameState.PLAYING)
 
@@ -226,7 +230,16 @@ func earn_cumulus(amount: int) -> void:
 
 
 func cumulus_start_gold_bonus() -> int:
-	return 50 if cumulus_balance >= 100 else 0
+	var bonus: int = 0
+	if cumulus_balance >= 100:
+		bonus += 50
+	if cumulus_balance >= 300:
+		bonus += 25
+	return bonus
+
+
+func cumulus_start_lives_bonus() -> int:
+	return 1 if cumulus_balance >= 200 else 0
 
 
 func set_state(new_state: int) -> void:

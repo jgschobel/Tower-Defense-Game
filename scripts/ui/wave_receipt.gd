@@ -143,10 +143,16 @@ func _build_text() -> String:
 	t += "K.O.s:       [b]%d[/b] Feinde\n" % _enemies
 	t += "Gwünne:   [b]%d[/b] Gold\n" % _gold
 	var cumulus_total: int = GameManager.cumulus_balance if GameManager else _cumulus
-	var next_milestone: int = 100
-	while next_milestone <= cumulus_total:
-		next_milestone += 100
-	t += "Cumulus:   [b]+%d ★[/b]  (total %d/%d)\n" % [_cumulus, cumulus_total, next_milestone]
+	const _PERK_THRESHOLDS: Array = [100, 200, 300]
+	var next_milestone: int = 0
+	for thresh in _PERK_THRESHOLDS:
+		if cumulus_total < thresh:
+			next_milestone = thresh
+			break
+	if next_milestone == 0:
+		t += "Cumulus:   [b]+%d ★[/b]  (total %d ✓)\n" % [_cumulus, cumulus_total]
+	else:
+		t += "Cumulus:   [b]+%d ★[/b]  (total %d/%d)\n" % [_cumulus, cumulus_total, next_milestone]
 	t += "[center]%s[/center]\n" % div
 	t += "Läbe übrig: [b]%d ♥[/b]\n" % _lives
 	t += "\n[center][i]Danke vil mal! 🇨🇭[/i][/center]\n"
