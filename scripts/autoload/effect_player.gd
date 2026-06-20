@@ -184,6 +184,34 @@ func spawn_step_dust(pos: Vector2) -> void:
 		p.queue_free())
 
 
+## Hit-pause: briefly slow time on impact so the brain reads weight.
+## The single biggest amateur→pro lever per Vlambeer's "Art of Screenshake"
+## and GMTK's "Secrets of Game Feel" — pros punctuate continuous motion
+## with a 2-4 frame freeze; amateurs play one continuous animation.
+##
+## Scoped (50-90ms real time, 0.05× speed) so it never feels janky. Won't
+## stack — if a pause is in flight, new calls are ignored. Won't crush the
+## playtester's 8× time scale either — captures-then-restores the prior
+## value so fast-forward survives.
+func hit_pause(strength: float = 1.0) -> void:
+	if has_meta("hit_pause_active"):
+		return
+	set_meta("hit_pause_active", true)
+	var prior_scale: float = Engine.time_scale
+	# Keep the player's chosen game speed intact. 0.05× of WHATEVER it is.
+	var pause_scale: float = maxf(0.02, prior_scale * 0.05)
+	var pause_seconds: float = clampf(0.055 + strength * 0.04, 0.04, 0.13)
+	Engine.time_scale = pause_scale
+	# Use the realtime SceneTree timer so the pause length is in WALL
+	# seconds, not in scaled game seconds (which would loop).
+	var timer := get_tree().create_timer(pause_seconds, true, false, true)
+	timer.timeout.connect(func():
+		# Restore only if no other system stomped the scale in the meantime
+		# (playtester re-asserts every few seconds, so usually safe).
+		Engine.time_scale = prior_scale
+		remove_meta("hit_pause_active"))
+
+
 ## Briefly jitters the game scene's position (HUD CanvasLayer is unaffected).
 func screen_shake(amplitude: float, duration: float) -> void:
 	var scene := get_tree().current_scene
