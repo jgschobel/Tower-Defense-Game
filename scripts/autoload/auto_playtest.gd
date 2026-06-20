@@ -711,7 +711,13 @@ func _record_scenario(start_ms: int) -> void:
 	for v in _fps_samples:
 		if v > 0.0 and v < min_fps:
 			min_fps = v
-	var enemy_count: int = get_tree().get_nodes_in_group("enemies").size()
+	# Count only enemies that are actually still alive (is_dead=false).
+	# queue_free() enemies linger in the group until the next frame's cleanup,
+	# inflating the count and creating false "enemies still in transit" reports.
+	var enemy_count: int = 0
+	for _e in get_tree().get_nodes_in_group("enemies"):
+		if not _e.get("is_dead"):
+			enemy_count += 1
 	var tower_count: int = get_tree().get_nodes_in_group("towers").size()
 	# Secondary kill counter: sum per-tower kill_count to cross-check GameManager.level_kills.
 	# If tower_kills > 0 but level_kills = 0, the kill event fires but record_kill() is broken.
