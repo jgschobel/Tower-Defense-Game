@@ -132,50 +132,82 @@ func _spawn_level_vignette() -> void:
 
 
 func _smooth_path_overlay() -> void:
-	# The per-level PathBorder/PathDraw Line2D nodes were authored with
-	# the curve's raw CONTROL POINTS as straight segments — a hard-angled
-	# zigzag that doesn't even match where enemies actually walk (the
-	# Path2D curve has bezier in/out handles). Replace both with the
-	# curve's baked points so the drawn walkway is smooth and hugs the
-	# true route on every level, then restyle as a subtle trodden-floor
-	# band instead of a loud solid stripe.
+	# Multi-layer "painted-into-the-ground" path replacing the old debug-
+	# polyline look. Stacks 4 Line2D layers (outer shadow, dark rim,
+	# warm dirt fill, lighter trodden centre) on top of the curve's
+	# baked points. The single-Line2D overlay was the #1 amateur tell
+	# per Kingdom Rush / BTD6 benchmarking — those games BAKE the path
+	# into the map art. We can't regenerate map art in code, but a
+	# layered painted band approximates the look closely.
 	if not enemy_path or not enemy_path.curve:
 		return
 	var baked: PackedVector2Array = enemy_path.curve.get_baked_points()
 	if baked.size() < 2:
 		return
-	# Per-level contrast tuning. On dark levels (L2 freezer shelves, L8
-	# coop blue-tile, L9 cumulus neon, L10 finale dark) the warm trodden
-	# overlay disappears into the floor pattern — players had to guess
-	# where enemies walk. Bright levels (L1 crates, L3 bakery) keep the
-	# subtle trodden look so the painted floor reads. Dark levels get a
-	# warm gold line that pops against cool/dark backgrounds.
+	# Per-level palette: dark levels get warm gold dirt, bright levels
+	# get earth-brown dirt — both rim-shadowed so the path reads as
+	# carved/painted into the floor rather than overlaid.
 	var dark_level_ids: Array = [2, 4, 8, 9, 10]
 	var is_dark: bool = level_id in dark_level_ids
-	var border_color: Color
-	var draw_color: Color
+	var dirt_color: Color
+	var trodden_color: Color
 	if is_dark:
-		border_color = Color(0.05, 0.03, 0.0, 0.55)
-		draw_color = Color(1.0, 0.82, 0.40, 0.34)
+		dirt_color = Color(0.45, 0.32, 0.18, 0.78)     # warm earth, mid-opacity
+		trodden_color = Color(0.85, 0.68, 0.32, 0.55)  # gold trodden stripe
 	else:
-		border_color = Color(0.12, 0.08, 0.05, 0.35)
-		draw_color = Color(0.88, 0.80, 0.55, 0.22)
+		dirt_color = Color(0.38, 0.28, 0.18, 0.65)     # dark earth
+		trodden_color = Color(0.72, 0.60, 0.42, 0.45)  # tan trodden stripe
+	# Layer 1: outer SHADOW — wider, very transparent, sits under the
+	# whole band to fake ambient occlusion at the path edges.
+	var shadow := _ensure_path_line("PathShadowLayer")
+	shadow.points = baked
+	shadow.width = 64.0 if is_dark else 60.0
+	shadow.default_color = Color(0, 0, 0, 0.40)
+	shadow.joint_mode = Line2D.LINE_JOINT_ROUND
+	shadow.begin_cap_mode = Line2D.LINE_CAP_ROUND
+	shadow.end_cap_mode = Line2D.LINE_CAP_ROUND
+	shadow.z_index = -2
+	# Layer 2: dark RIM (carved edge)
 	var border := get_node_or_null("PathBorder")
 	if border is Line2D:
 		border.points = baked
-		border.width = 54.0 if is_dark else 52.0
-		border.default_color = border_color
+		border.width = 56.0 if is_dark else 52.0
+		border.default_color = Color(0.10, 0.06, 0.03, 0.85)
 		border.joint_mode = Line2D.LINE_JOINT_ROUND
 		border.begin_cap_mode = Line2D.LINE_CAP_ROUND
 		border.end_cap_mode = Line2D.LINE_CAP_ROUND
+		border.z_index = -1
+	# Layer 3: DIRT fill (the body of the path)
 	var draw := get_node_or_null("PathDraw")
 	if draw is Line2D:
 		draw.points = baked
-		draw.width = 42.0 if is_dark else 38.0
-		draw.default_color = draw_color
+		draw.width = 48.0 if is_dark else 44.0
+		draw.default_color = dirt_color
 		draw.joint_mode = Line2D.LINE_JOINT_ROUND
 		draw.begin_cap_mode = Line2D.LINE_CAP_ROUND
 		draw.end_cap_mode = Line2D.LINE_CAP_ROUND
+		draw.z_index = -1
+	# Layer 4: TRODDEN centre — narrower, lighter — sells "feet walked here"
+	var center := _ensure_path_line("PathTroddenCenter")
+	center.points = baked
+	center.width = 24.0
+	center.default_color = trodden_color
+	center.joint_mode = Line2D.LINE_JOINT_ROUND
+	center.begin_cap_mode = Line2D.LINE_CAP_ROUND
+	center.end_cap_mode = Line2D.LINE_CAP_ROUND
+	center.z_index = -1
+
+
+func _ensure_path_line(node_name: String) -> Line2D:
+	# Get-or-create helper for runtime-injected path layers so we don't
+	# have to edit every level_N.tscn to add the new shadow / centre lines.
+	var existing := get_node_or_null(node_name)
+	if existing is Line2D:
+		return existing
+	var line := Line2D.new()
+	line.name = node_name
+	add_child(line)
+	return line
 
 
 func _apply_level_tint() -> void:
