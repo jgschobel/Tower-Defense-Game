@@ -999,8 +999,11 @@ func _ensure_combo_badge() -> Label:
 	lbl.anchor_bottom = 0.0
 	lbl.offset_left = -180
 	lbl.offset_right = 180
-	lbl.offset_top = 78  # below the wave progress bar at y=46-60
-	lbl.offset_bottom = 110
+	# Anchored within the TopBar height (0–65 px) so it doesn't float
+	# over the play field. Was at y=78–110 which is below the HUD bar
+	# and covered active combat (#1118).
+	lbl.offset_top = _inset_top + 14
+	lbl.offset_bottom = _inset_top + 56
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	lbl.add_theme_font_size_override("font_size", 24)
 	lbl.add_theme_color_override("font_color", Color(1, 0.95, 0.4))
@@ -2753,7 +2756,7 @@ func _on_kombo_triggered() -> void:
 	_kombo_badge.visible = true
 	var lbl: Label = _kombo_badge.get_node_or_null("Lbl")
 	if lbl:
-		lbl.text = "🎫 KOMBO! +15%%  10s"
+		lbl.text = "🎫 KOMBO! +15%  10s"
 	var t := _kombo_badge.create_tween()
 	t.tween_property(_kombo_badge, "modulate", Color.WHITE, 0.18)
 	t.tween_property(_kombo_badge, "modulate", Color(1.4, 1.2, 0.6), 0.12)
@@ -2772,15 +2775,18 @@ func _build_kombo_badge() -> Control:
 	var wrap := PanelContainer.new()
 	wrap.name = "KomboBadge"
 	wrap.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	# Position below the TopBar, left-aligned near the gold counter
-	wrap.anchor_left = 0.0
+	# Right-aligned within TopBar (0–65 px) so it doesn't float over the
+	# play field. MOUSE_FILTER_IGNORE lets touches reach the buttons below.
+	# Was left-anchored at y=inset+46–72 which bled 7 px below the HUD bar
+	# and covered active combat (#1118).
+	wrap.anchor_left = 1.0
 	wrap.anchor_top = 0.0
-	wrap.anchor_right = 0.0
+	wrap.anchor_right = 1.0
 	wrap.anchor_bottom = 0.0
-	wrap.offset_left = 6.0
-	wrap.offset_top = _inset_top + 46.0
-	wrap.offset_right = 210.0
-	wrap.offset_bottom = _inset_top + 72.0
+	wrap.offset_left = -210.0 - _inset_right
+	wrap.offset_top = _inset_top + 10.0
+	wrap.offset_right = -6.0 - _inset_right
+	wrap.offset_bottom = _inset_top + 56.0
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = Color(0.12, 0.09, 0.02, 0.92)
 	sb.border_width_top = 2
