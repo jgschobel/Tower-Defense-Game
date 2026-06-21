@@ -82,6 +82,7 @@ custom_minimum_size = Vector2(240, 50)
 min_value = 0.0
 max_value = 1.0
 step = 0.05
+value = 0.7
 
 [node name="MusicPct" type="Label" parent="Panel/VBox/MusicRow"]
 layout_mode = 2
@@ -107,6 +108,7 @@ custom_minimum_size = Vector2(240, 50)
 min_value = 0.0
 max_value = 1.0
 step = 0.05
+value = 0.8
 
 [node name="SfxPct" type="Label" parent="Panel/VBox/SfxRow"]
 layout_mode = 2
