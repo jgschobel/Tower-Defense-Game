@@ -36,6 +36,9 @@ var heal_timer_node: Timer = null
 
 
 func _ready() -> void:
+	# Render above path overlays (z=2–5), direction arrows (z=9), and
+	# synergy lines (z=8). Towers are at z=20 so they draw over enemies.
+	z_index = 15
 	# Register with the autoload list — towers iterate this instead of
 	# calling get_tree().get_nodes_in_group() per frame. Re-registering
 	# is a no-op so pool reuse is safe.

@@ -109,6 +109,9 @@ const TAUNTS: Dictionary = {
 
 
 func _ready() -> void:
+	# Render above path overlays (z=2–5), arrows (z=9), enemies (z=15).
+	# Keeps portrait-towers visually "in front of" the path and enemies.
+	z_index = 20
 	_projectile_scene = preload("res://scenes/projectiles/base_projectile.tscn")
 	_projectile_script = preload("res://scripts/projectiles/base_projectile.gd")
 	if data:

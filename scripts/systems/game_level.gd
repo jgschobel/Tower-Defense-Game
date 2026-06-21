@@ -95,7 +95,7 @@ func _soften_background() -> void:
 		overlay.size = Vector2(1280, 720)
 		overlay.position = Vector2.ZERO
 		overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		overlay.z_index = -90
+		overlay.z_index = 1  # above background (z=0), tints the map art
 		add_child(overlay)
 
 
@@ -109,7 +109,7 @@ func _spawn_level_vignette() -> void:
 	vignette.size = Vector2(1280, 720)
 	vignette.position = Vector2.ZERO
 	vignette.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	vignette.z_index = -88
+	vignette.z_index = 30  # above all gameplay sprites; frames the play field
 	var mat := ShaderMaterial.new()
 	mat.shader = preload("res://assets/shaders/level_vignette.gdshader")
 	mat.set_shader_parameter("strength", 0.55)
@@ -166,7 +166,7 @@ func _smooth_path_overlay() -> void:
 	shadow.joint_mode = Line2D.LINE_JOINT_ROUND
 	shadow.begin_cap_mode = Line2D.LINE_CAP_ROUND
 	shadow.end_cap_mode = Line2D.LINE_CAP_ROUND
-	shadow.z_index = -2
+	shadow.z_index = 2  # above background (z=0) + FloorWash (z=1)
 	# Layer 2: dark RIM (carved edge)
 	var border := get_node_or_null("PathBorder")
 	if border is Line2D:
@@ -176,7 +176,7 @@ func _smooth_path_overlay() -> void:
 		border.joint_mode = Line2D.LINE_JOINT_ROUND
 		border.begin_cap_mode = Line2D.LINE_CAP_ROUND
 		border.end_cap_mode = Line2D.LINE_CAP_ROUND
-		border.z_index = -1
+		border.z_index = 3  # above shadow layer (z=2)
 	# Layer 3: DIRT fill (the body of the path)
 	var draw := get_node_or_null("PathDraw")
 	if draw is Line2D:
@@ -186,7 +186,7 @@ func _smooth_path_overlay() -> void:
 		draw.joint_mode = Line2D.LINE_JOINT_ROUND
 		draw.begin_cap_mode = Line2D.LINE_CAP_ROUND
 		draw.end_cap_mode = Line2D.LINE_CAP_ROUND
-		draw.z_index = -1
+		draw.z_index = 4  # above border (z=3)
 	# Layer 4: TRODDEN centre — narrower, lighter — sells "feet walked here"
 	var center := _ensure_path_line("PathTroddenCenter")
 	center.points = baked
@@ -195,7 +195,7 @@ func _smooth_path_overlay() -> void:
 	center.joint_mode = Line2D.LINE_JOINT_ROUND
 	center.begin_cap_mode = Line2D.LINE_CAP_ROUND
 	center.end_cap_mode = Line2D.LINE_CAP_ROUND
-	center.z_index = -1
+	center.z_index = 5  # above fill layer (z=4), topped by trodden centre
 
 
 func _ensure_path_line(node_name: String) -> Line2D:
@@ -258,7 +258,7 @@ func _spawn_path_direction_arrows() -> void:
 		return
 	var arrows_container := Node2D.new()
 	arrows_container.name = "DirectionArrows"
-	arrows_container.z_index = -1  # sit below enemies but above path
+	arrows_container.z_index = 9  # above path layers (z=2–5), below enemies (z=15)
 	enemy_path.add_child(arrows_container)
 	var curve := enemy_path.curve
 	var length: float = curve.get_baked_length()
