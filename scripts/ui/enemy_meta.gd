@@ -146,4 +146,6 @@ static func counter_hint(enemy_id: String) -> String:
 		"selbschtskan_schiff": return "→ Wechslet sini Hülle: diversifizier dini Türm"
 		"roeschti_bombe": return "→ Sprängt nach ~3s — kill schnäll und zer Sicht"
 		"cherry_bomb":    return "→ Massivi Spräng-Schade — chli Pause halte"
+		"selbschtbedienigs_wage": return "→ MOAB-Klasse! Tötet schnäll — spawnt 6 Feind bim Tod"
+		"pasta_express":  return "→ Schnäll wie SBB-Express — Lemurius / JoJo kontered"
 		_:                return ""

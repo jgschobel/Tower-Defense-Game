@@ -788,7 +788,7 @@ func show_enemy_intro(enemy_id: String, enemy_data: Resource) -> void:
 	# can read the text. MOAB-tier enemies get a softer orange flash.
 	if enemy_id == "boss":
 		_flash_boss_telegraph()
-	elif enemy_id in ["moab_migros", "bfb_cumulus", "ddt_schwarz"]:
+	elif enemy_id in ["moab_migros", "bfb_cumulus", "ddt_schwarz", "selbschtbedienigs_wage", "selbschtskan_schiff"]:
 		_flash_moab_telegraph()
 
 	# Per-enemy Swiss German taunts — one line per enemy type.
@@ -809,7 +809,10 @@ func show_enemy_intro(enemy_id: String, enemy_data: Resource) -> void:
 		"linsen_golem":  "Linse mached mi unnütz stark!",
 		"smoothie_slime":"Grüen und grusig — das bini ich!",
 		"tofu_ninja":    "Du gsehsch mi nöd — ich bini überall!",
+		"selbschtbedienigs_wage": "Ich bini dr Selbschtzahler — und bezahle... NIE!",
 		"selbschtskan_schiff": "Ich bini DU — und du chasch mi nöd usschalte!",
+		"pasta_express":   "Express-Express — niemert isch schnäller als ich!",
+		"cherry_bomb":     "Chugelrundig, chugelgfährlich — BOOM!",
 		"roeschti_bombe": "Heiss, heisser, KABUMM — eui Türm chöched ab!",
 		"boss":          "Jetzt isch alles vegan — für immer!!",
 		"moab_migros":   "Vier Tanks inne — explodier ich... und guet Nacht!",
@@ -841,7 +844,7 @@ func show_enemy_intro(enemy_id: String, enemy_data: Resource) -> void:
 	vbox.add_theme_constant_override("separation", 8)
 
 	var warning := Label.new()
-	var _moab_tier_ids: Array = ["moab_migros", "bfb_cumulus", "ddt_schwarz"]
+	var _moab_tier_ids: Array = ["moab_migros", "bfb_cumulus", "ddt_schwarz", "selbschtbedienigs_wage", "selbschtskan_schiff"]
 	if enemy_id == "boss":
 		warning.text = "ENDGEGNER!!"
 	elif enemy_id in _moab_tier_ids:
@@ -1078,7 +1081,7 @@ func _flash_boss_telegraph() -> void:
 
 
 func _flash_moab_telegraph() -> void:
-	# Orange flash for MOAB-tier enemies (moab_migros / bfb_cumulus / ddt_schwarz).
+	# Orange flash for MOAB-tier enemies (moab_migros, bfb_cumulus, ddt_schwarz, selbschtbedienigs_wage, selbschtskan_schiff).
 	# Softer than the boss red flash — communicates "danger, but different".
 	# Layered sequence per wave-research #3: orange screen flash + screen
 	# shake + deep bass rumble. Music auto-ducks via the SFX sidechain bus
@@ -2651,7 +2654,7 @@ func _ensure_ability_button() -> void:
 		btn.name = "AbilityButton"
 		# ≥52px for mobile touch targets (was 36px).
 		btn.custom_minimum_size = Vector2(0, 52)
-		btn.tooltip_text = "Aktive Fähigkeit (Tier 3+) — klick zum aalöse"
+		btn.tooltip_text = "Aktive Fähigkeit (Tier 3+) — tipp zum aalöse"
 		_apply_tower_info_button_style(btn, Color(0.95, 0.45, 0.18))
 		vbox.add_child(btn)
 		# Place ability button just above the targeting button

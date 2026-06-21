@@ -3,6 +3,13 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-21 (audit-polish — MOAB-class enemy intro completeness)
+
+- polish(enemy-intro): selbschtbedienigs_wage + selbschtskan_schiff now correctly get the orange MOAB telegraph flash + "MEGA-GFAHR!!" header on first appearance; they were tier-5 in EnemyMeta.threat_tier but missing from the _moab_tier_ids list in show_enemy_intro
+- feat(enemy-intro): payload enemies (pasta_express, cherry_bomb) now trigger first-appearance HUD reveal via register_spawned_enemy; they bypassed _spawn_enemy so were invisible to the intro system
+- content(taunt): added Swiss German taunts for selbschtbedienigs_wage, pasta_express, cherry_bomb (previously showed no taunt on first encounter)
+- content(counter-hint): added strategic counter hints for selbschtbedienigs_wage ("MOAB-Klasse! Tötet schnäll — spawnt 6 Feind bim Tod") and pasta_express ("Schnäll wie SBB-Express — Lemurius / JoJo kontered")
+
 ## 2026-06-20 (audit-polish — grace period + tint contrast)
 
 - fix(playtest): extend L1/L2 grace period from 3×2s to 5×2s with early-exit when enemies=0 — slow/tanky final-wave enemies now drain before runner gives up; closes #1092
