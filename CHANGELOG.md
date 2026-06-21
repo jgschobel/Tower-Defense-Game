@@ -3,6 +3,12 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-21 (audit-polish — z-index hierarchy fix)
+
+- fix(visuals): all path overlays (FloorWash, vignette, PathShadowLayer, PathBorder, PathDraw, PathTroddenCenter, direction arrows) were at negative z_index (down to −90), rendering behind the background sprite — dark overlay shapes bled through transparent areas of the L3 PNG causing the reported "large dark blob"; fixed by establishing a proper hierarchy: overlays z=1–5, arrows z=9, enemies z=15, towers z=20, vignette z=30; closes #1124
+- fix(visuals): adjacency synergy lines (AdjacencyVisualizer) raised from z=−1 to z=8 — now correctly visible between towers
+- fix(visuals): BaseEnemy z_index=15 and BaseTower z_index=20 now explicitly set in _ready() — guarantees enemies/towers render above path regardless of scene tree order
+
 ## 2026-06-21 (audit-polish — badge positioning + path-B tint floor)
 
 - polish(hud): RUUSCH! combo badge moved into TopBar height (y=14–56 vs old y=78–110); Coupon-Kombo badge right-aligned within TopBar; neither badge now floats over the play field during active combat (closes #1118)

@@ -12,7 +12,7 @@ const LINE_GAP_PX: float = 4.0
 
 
 func _ready() -> void:
-	z_index = -1  # below towers, above background
+	z_index = 8  # above path layers (z=2–5), below enemies (z=15) + towers (z=20)
 
 
 func refresh() -> void:
