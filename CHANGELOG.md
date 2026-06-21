@@ -3,6 +3,12 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-21 (audit-polish — badge positioning + path-B tint floor)
+
+- polish(hud): RUUSCH! combo badge moved into TopBar height (y=14–56 vs old y=78–110); Coupon-Kombo badge right-aligned within TopBar; neither badge now floats over the play field during active combat (closes #1118)
+- fix(tower): luminance floor MIN_LUM=0.35 in `_apply_path_tint()` — A3+B2/B3 combinations were crushing towers to near-black blobs; uniform channel boost preserves hue while restoring readable silhouette (closes #1116)
+- fix(hud): Kombo badge initial text had literal `%%` instead of `%` (one-frame glitch on trigger)
+
 ## 2026-06-21 (audit-polish — playtest CI budget + Coupon-Kombo)
 
 - fix(playtest): ANIM_FRAMES 24→8 (saves ~2s real clock), grace period 5→3 ticks (saves up to 12s worst-case), L2 hardcoded placements slow→cordula (+6th sniper) so wave DPS clears faster; stress+bughunt scenarios should now reliably fit in the 120s Godot CI timeout; closes #1101 #1102 #1106
