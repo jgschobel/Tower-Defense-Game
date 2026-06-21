@@ -448,7 +448,7 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
   a barcode scan. Names: "**De Selbschtskan-Schiff hät dich kopiert.**"
   intro card via `hud.show_enemy_intro()`.
 
-- [ ] **"Coupon-Kombo" — spend-streak gold multiplier** — when the
+- [x] **"Coupon-Kombo" — spend-streak gold multiplier** — when the
   player spends >1000 gold within any rolling 3 s window
   (tower placements + upgrades pooled), fire a Migros-styled
   "🎫 KOMBO!" toast and set `bonus_kill_gold_mul = 1.15` for the
@@ -456,17 +456,9 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
   [[migros-bon-active-power]] — a Bon-discounted spend still counts
   toward the 1000-gold threshold AND the kombo bonus applies on top
   of normal kill gold.
-
-  **Impl:** `CurrencyManager` adds `_spend_window: Array[Vector2]` of
-  `{timestamp, amount}` entries; `try_spend()` appends, evicts older
-  than 3 s, sums; if sum > 1000 emits `signal kombo_triggered`.
-  `WaveManager._on_enemy_killed` reads
-  `CurrencyManager.kill_gold_multiplier()` (returns 1.15 during the
-  10-s window, else 1.0). HUD adds a `KomboBadge` Control (gold pill
-  with countdown number) below the gold counter; tween in/out.
-  Cap: window auto-resets on trigger so the same spend can't fire
-  twice. Telemetry: `GameManager` increments
-  `lifetime_kombos_triggered` for [[migros-cumulus-meta]].
+  _Shipped 2026-06-21: `CurrencyManager._track_spend()` + `kombo_triggered` signal +
+  `kill_gold_multiplier()` method; HUD `KomboBadge` pill with real-time countdown;
+  `base_enemy` kill gold × `CurrencyManager.kill_gold_multiplier()`. ~120 LoC, no new art._
 
   **Why it sticks:** turns the "I just got paid → I spend it all"
   rhythm into a visible feedback loop. Currently gold accumulation is

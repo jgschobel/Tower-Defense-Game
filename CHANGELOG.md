@@ -3,6 +3,11 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-21 (audit-polish — playtest CI budget + Coupon-Kombo)
+
+- fix(playtest): ANIM_FRAMES 24→8 (saves ~2s real clock), grace period 5→3 ticks (saves up to 12s worst-case), L2 hardcoded placements slow→cordula (+6th sniper) so wave DPS clears faster; stress+bughunt scenarios should now reliably fit in the 120s Godot CI timeout; closes #1101 #1102 #1106
+- feat(gameplay): "Coupon-Kombo" — spend ≥1000 gold within 3s → 10s window where kill gold earns +15%; HUD shows gold pill badge "🎫 KOMBO! +15% Xs" with real-time countdown; `CurrencyManager.kill_gold_multiplier()` + `kombo_triggered` signal; closes ROADMAP P2 Coupon-Kombo
+
 ## 2026-06-21 (audit-polish — A-path tint steps A1→A2 readability)
 
 - polish(tower): A-path upgrade tint A1→A2 now unambiguously distinct — blend gap widened (0.55 vs 0.82), hue step increased 20°→28°/tier, TierGlow ring at T2 jumps to radius=65/alpha=0.90 (was 58/0.55); ring color now tracks tier-shifted hue to match sprite; closes #1107
