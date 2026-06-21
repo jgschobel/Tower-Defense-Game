@@ -69,9 +69,11 @@ func _run_all() -> void:
 	for level_id in range(1, 4):
 		await _run_healthy_level(level_id)
 
-	# Stress and bug-hunt run last — they're diagnostic, not critical to summary.
-	await _run_stress_test()
+	# Bug-hunt runs before stress: bughunt is quick (~3s) and critical for UX
+	# coverage; stress is slower (~8s) and can be dropped if 120s CI clock runs
+	# out. This ordering guarantees bughunt always produces output (#1125).
 	await _run_bug_hunt()
+	await _run_stress_test()
 
 	_write_summary()
 	print("[playtest v3] done — %d snapshots, %d anim frames in %.1fs" % [
@@ -220,13 +222,12 @@ func _run_healthy_level(level_id: int) -> void:
 	# (d) L1/L2 slow enemies still on path after 20s main window (#1092).
 	# Early-exits the moment enemies_remaining reaches 0 to avoid burning the
 	# full 10s budget on healthy fast-clearing scenarios.
-	# "last two waves" = current_wave >= total_waves - 1 (e.g. wave 9 of 10).
+	# Grace fires unconditionally when we exit the main loop still PLAYING —
+	# wave 8/10 stragglers (3 tanky enemies) need the same window as wave 10.
+	# Previously only fired for last wave (current_wave >= total_waves-1), which
+	# caused L1 wave-8 timeout (#1122). Early-exit on enemies=0 keeps budget lean.
 	var wm_node := get_tree().get_first_node_in_group("wave_manager")
-	var _wm_last_wave_started: bool = wm_node != null and \
-		wm_node.get("current_wave") >= wm_node.get("total_waves") - 1 and \
-		wm_node.get("total_waves") > 0
-	if wm_node and (wm_node.get("all_done") == true or _wm_last_wave_started) \
-	and GameManager.current_state == GameManager.GameState.PLAYING:
+	if GameManager.current_state == GameManager.GameState.PLAYING:
 		var _grace_tick := 0
 		while _grace_tick < 3:  # was 5; 3×2s=6s real=72s game time at 12× — enough for stragglers
 			await get_tree().create_timer(2.0, true, false, true).timeout
