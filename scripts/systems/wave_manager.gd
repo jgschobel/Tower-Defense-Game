@@ -241,12 +241,20 @@ func _spawn_enemy(enemy_id: String) -> void:
 
 
 func register_spawned_enemy(enemy_instance: Node) -> void:
-	# Called when an enemy spawns children on death (e.g. tank → 2 basics).
-	# These bypass _spawn_enemy so we manually hook signals and bump the counter.
+	# Called when an enemy spawns children on death (e.g. tank → 2 basics,
+	# selbschtbedienigs_wage → 6-enemy payload). These bypass _spawn_enemy
+	# so we manually hook signals, bump the counter, and fire enemy_introduced
+	# for the first-appearance HUD reveal if the child type is new.
 	if not enemy_instance.enemy_died.is_connected(_on_enemy_died):
 		enemy_instance.enemy_died.connect(_on_enemy_died)
 	if not enemy_instance.enemy_reached_end.is_connected(_on_enemy_reached_end):
 		enemy_instance.enemy_reached_end.connect(_on_enemy_reached_end)
+	var child_data: Resource = enemy_instance.data if "data" in enemy_instance else null
+	if child_data and "id" in child_data:
+		var child_id: String = str(child_data.id)
+		if child_id != "" and child_id not in _seen_enemy_ids:
+			_seen_enemy_ids.append(child_id)
+			enemy_introduced.emit(child_id, child_data)
 	enemies_alive += 1
 	enemies_remaining_changed.emit(enemies_alive)
 
