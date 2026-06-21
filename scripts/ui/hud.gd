@@ -37,6 +37,7 @@ var shop_collapsed: bool = false
 var _shop_width: float = 152.0
 var _shop_collapse_tween: Tween = null
 var _tower_info_tween: Tween = null
+var _kombo_badge: Control = null
 
 
 func _ready() -> void:
@@ -44,6 +45,7 @@ func _ready() -> void:
 	GameManager.lives_changed.connect(_on_lives_changed)
 	if ComboTracker:
 		ComboTracker.combo_changed.connect(_on_combo_changed)
+	CurrencyManager.kombo_triggered.connect(_on_kombo_triggered)
 
 	_on_gold_changed(CurrencyManager.gold)
 	_on_lives_changed(GameManager.lives)
@@ -1831,6 +1833,15 @@ func _notification(_what: int) -> void:
 
 
 func _process(_delta: float) -> void:
+	# Kombo badge countdown (real-time, ignores Engine.time_scale).
+	if _kombo_badge != null and _kombo_badge.visible:
+		var rem_ms := CurrencyManager.kombo_remaining_ms()
+		if rem_ms <= 0:
+			_hide_kombo_badge()
+		else:
+			var lbl: Label = _kombo_badge.get_node_or_null("Lbl")
+			if lbl:
+				lbl.text = "🎫 KOMBO! +15%%  %ds" % ceili(rem_ms / 1000.0)
 	# Per-frame cooldown countdown for the active ability button so the
 	# text ticks down in real-time instead of only updating on tap.
 	# Guard: skip entirely when no tier-3+ tower is selected.
@@ -2729,3 +2740,68 @@ func _on_ability_pressed() -> void:
 	if _selected_tower.has_method("trigger_active_ability"):
 		_selected_tower.trigger_active_ability()
 		_refresh_tower_info()
+
+
+# --- Coupon-Kombo badge ---
+
+func _on_kombo_triggered() -> void:
+	if _kombo_badge == null:
+		_kombo_badge = _build_kombo_badge()
+		add_child(_kombo_badge)
+	# Reset modulate in case a previous tween left it faded
+	_kombo_badge.modulate = Color(1, 1, 1, 0)
+	_kombo_badge.visible = true
+	var lbl: Label = _kombo_badge.get_node_or_null("Lbl")
+	if lbl:
+		lbl.text = "🎫 KOMBO! +15%%  10s"
+	var t := _kombo_badge.create_tween()
+	t.tween_property(_kombo_badge, "modulate", Color.WHITE, 0.18)
+	t.tween_property(_kombo_badge, "modulate", Color(1.4, 1.2, 0.6), 0.12)
+	t.tween_property(_kombo_badge, "modulate", Color.WHITE, 0.20)
+
+
+func _hide_kombo_badge() -> void:
+	if _kombo_badge == null or not _kombo_badge.visible:
+		return
+	var t := _kombo_badge.create_tween()
+	t.tween_property(_kombo_badge, "modulate", Color(1, 1, 1, 0), 0.35)
+	t.tween_callback(func() -> void: _kombo_badge.visible = false)
+
+
+func _build_kombo_badge() -> Control:
+	var wrap := PanelContainer.new()
+	wrap.name = "KomboBadge"
+	wrap.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# Position below the TopBar, left-aligned near the gold counter
+	wrap.anchor_left = 0.0
+	wrap.anchor_top = 0.0
+	wrap.anchor_right = 0.0
+	wrap.anchor_bottom = 0.0
+	wrap.offset_left = 6.0
+	wrap.offset_top = _inset_top + 46.0
+	wrap.offset_right = 210.0
+	wrap.offset_bottom = _inset_top + 72.0
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.12, 0.09, 0.02, 0.92)
+	sb.border_width_top = 2
+	sb.border_width_bottom = 2
+	sb.border_width_left = 2
+	sb.border_width_right = 2
+	sb.border_color = Color(1.0, 0.82, 0.2, 1.0)
+	sb.corner_radius_top_left = 10
+	sb.corner_radius_top_right = 10
+	sb.corner_radius_bottom_left = 10
+	sb.corner_radius_bottom_right = 10
+	wrap.add_theme_stylebox_override("panel", sb)
+	var lbl := Label.new()
+	lbl.name = "Lbl"
+	lbl.text = "🎫 KOMBO! +15%%  10s"
+	lbl.add_theme_color_override("font_color", Color(1.0, 0.88, 0.3, 1.0))
+	lbl.add_theme_constant_override("outline_size", 1)
+	lbl.add_theme_color_override("font_outline_color", Color(0.1, 0.06, 0.0, 1.0))
+	lbl.add_theme_font_size_override("font_size", 14)
+	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	wrap.add_child(lbl)
+	wrap.visible = false
+	return wrap

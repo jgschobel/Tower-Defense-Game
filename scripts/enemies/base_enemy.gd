@@ -384,7 +384,7 @@ func die() -> void:
 	if ComboTracker:
 		ComboTracker.note_kill()
 		mult = ComboTracker.current_multiplier()
-	CurrencyManager.add_gold(int(round(gold_reward * mult)))
+	CurrencyManager.add_gold(int(round(gold_reward * mult * CurrencyManager.kill_gold_multiplier())))
 	GameManager.record_kill()
 	_show_gold_earned()
 	SfxManager.play_death(data.max_health if data else 100.0)
