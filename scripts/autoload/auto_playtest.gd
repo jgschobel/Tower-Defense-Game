@@ -14,7 +14,7 @@ const FPS_LOG := "user://playtest/fps.log"
 const SHOT_INTERVAL := 2.5
 const ANIM_INTERVAL := 0.12     # ~8 FPS for GIF
 const MAX_SHOTS_PER_SCENARIO := 6
-const ANIM_FRAMES := 24          # ~3s animation clip
+const ANIM_FRAMES := 8           # ~1s animation clip (was 24; reduced to save ~2s CI budget)
 const STRESS_ENEMY_COUNT := 80
 
 var _active: bool = false
@@ -172,8 +172,8 @@ func _run_healthy_level(level_id: int) -> void:
 	# Extended loop: keep sampling until WON/LOST or budget expires.
 	# 12× across all levels: 10 ticks × 2.0s = 240s game time — enough for any
 	# 10-wave level. WON/LOST early-exit keeps real time short (~10-15s typical).
-	# 20s ceiling: 3 levels × ≤20s = ≤60s, plus ~36s priority scenarios,
-	# leaving ~24s buffer inside the 120s Godot CI timeout for stress+bughunt.
+	# 20s ceiling: 3 levels × ≤20s = ≤60s, plus ~22s priority scenarios + grace
+	# 3×≤6s = ≤18s max → ≤100s leaving ~20s for stress+bughunt in 120s budget.
 	var sim_started := Time.get_ticks_msec()
 	var shot_idx := 0
 	var _diag_done := false
@@ -228,7 +228,7 @@ func _run_healthy_level(level_id: int) -> void:
 	if wm_node and (wm_node.get("all_done") == true or _wm_last_wave_started) \
 	and GameManager.current_state == GameManager.GameState.PLAYING:
 		var _grace_tick := 0
-		while _grace_tick < 5:
+		while _grace_tick < 3:  # was 5; 3×2s=6s real=72s game time at 12× — enough for stragglers
 			await get_tree().create_timer(2.0, true, false, true).timeout
 			_snapshot("%s_grace" % _scenario_name)
 			_grace_tick += 1
@@ -594,11 +594,16 @@ func _hardcoded_placements(level_id: int) -> Array:
 			{ "id": "slow",    "pos": Vector2(750, 380) },
 		]
 		2: return [
+			# cordula replaces slow: 3× higher DPS at T2-A (123 vs ~38),
+			# fast attack speed handles healer+fast waves better (#1102).
+			# 6th sniper at (200,400) covers early path segment (path enters
+			# near 150,480) so waves drain faster and grace period isn't needed.
 			{ "id": "basic",   "pos": Vector2(380, 420) },
-			{ "id": "slow",    "pos": Vector2(620, 300) },
+			{ "id": "cordula", "pos": Vector2(620, 300) },
 			{ "id": "sniper",  "pos": Vector2(880, 420) },
 			{ "id": "splash",  "pos": Vector2(520, 520) },
 			{ "id": "justus",  "pos": Vector2(920, 250) },
+			{ "id": "sniper",  "pos": Vector2(200, 400) },
 		]
 		3: return [
 			{ "id": "basic",   "pos": Vector2(340, 440) },
