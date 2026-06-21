@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-21 (audit-polish — A-path tint steps A1→A2 readability)
+
+- polish(tower): A-path upgrade tint A1→A2 now unambiguously distinct — blend gap widened (0.55 vs 0.82), hue step increased 20°→28°/tier, TierGlow ring at T2 jumps to radius=65/alpha=0.90 (was 58/0.55); ring color now tracks tier-shifted hue to match sprite; closes #1107
+
 ## 2026-06-21 (audit-polish — MOAB-class enemy intro completeness)
 
 - polish(enemy-intro): selbschtbedienigs_wage + selbschtskan_schiff now correctly get the orange MOAB telegraph flash + "MEGA-GFAHR!!" header on first appearance; they were tier-5 in EnemyMeta.threat_tier but missing from the _moab_tier_ids list in show_enemy_intro

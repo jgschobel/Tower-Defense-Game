@@ -1033,25 +1033,24 @@ func _apply_path_tint() -> void:
 		var brightness: float
 		match path_a_tier:
 			1:
-				# 0.66 + 1.0 brightness: raised from 0.58/0.95 which was still
-				# barely distinguishable from tier-0 in CI screenshots (#1031).
-				# No brightness penalty at A1 so the tinted sprite is visually
-				# brighter than the base, not dimmer.
-				blend = 0.66
+				# Light tint — sprite reads as "entered path A" vs tier-0 white.
+				# Kept intentionally subtle so A2's large blend jump (#1107) reads
+				# as a genuine power-up, not a minor colour tweak.
+				blend = 0.55
 				brightness = 1.0
 			2:
-				# Keep brightness=1.0 (was 0.92) so A2 reads as BRIGHTER than A1
-				# rather than subtly darker — the extra contrast makes the tier
-				# visually pop in CI screenshots (#1095).
-				blend = 0.76
+				# Big blend jump from A1 (0.55→0.82) — two clear visual cues:
+				# deeper colour saturation AND a brighter/larger glow ring (#1107).
+				blend = 0.82
 				brightness = 1.0
 			_:
-				blend = 0.82
-				brightness = 0.88
-		# 20°/tier hue rotation — raised from 12°/tier which left A1→A2 nearly
-		# identical in the green band where Lemurius sits (#1095).
-		var ah: float = fmod(data.path_a_tint.h + (20.0 / 360.0) * path_a_tier, 1.0)
-		var a_tint: Color = Color.from_hsv(ah, minf(data.path_a_tint.s + 0.12 * path_a_tier, 1.0), data.path_a_tint.v)
+				blend = 0.88
+				brightness = 0.82
+		# 28°/tier hue rotation lands A1/A2/A3 in clearly distinct hue regions
+		# even in narrow colour bands like Lemurius's green (was 20°/tier which
+		# left A1→A2 nearly indistinguishable in CI screenshots #1107 #1095).
+		var ah: float = fmod(data.path_a_tint.h + (28.0 / 360.0) * path_a_tier, 1.0)
+		var a_tint: Color = Color.from_hsv(ah, minf(data.path_a_tint.s + 0.15 * path_a_tier, 1.0), data.path_a_tint.v)
 		sprite.modulate = Color(
 			lerpf(1.0, a_tint.r, blend) * brightness,
 			lerpf(1.0, a_tint.g, blend) * brightness,
@@ -1214,17 +1213,30 @@ func _update_tier_glow(tier: int) -> void:
 	glow = Node2D.new()
 	glow.name = "TierGlow"
 	glow.z_index = -2  # below sprite
-	# Use path_a_tint for the halo when the tower has branching upgrades and
-	# A-path is invested — this aligns the ring colour with the sprite modulate
-	# so both signals read "green = A-path" (#1031).
+	# Ring colour matches the sprite's tier-shifted hue so both cues read
+	# consistently ("green ring + green sprite = A-path tier N", #1031 #1107).
 	var ring_color: Color
 	if data.has_branching_upgrades() and path_a_tier > 0:
-		ring_color = data.path_a_tint
+		var ring_h: float = fmod(data.path_a_tint.h + (28.0 / 360.0) * path_a_tier, 1.0)
+		ring_color = Color.from_hsv(ring_h, 1.0, 1.0)
 	else:
 		ring_color = data.projectile_color
 	ring_color.a = 0.0  # alpha driven by _draw
-	var tier_radius: float = 30.0 + tier * 14.0
-	var tier_alpha: float = 0.25 + tier * 0.15
+	# T2 ring jumps dramatically in radius AND alpha — two independent cues for
+	# the A1→A2 step so players see the upgrade even without comparing side-by-side
+	# (#1107). T1 is intentionally subtle; T2 is unmistakable; T3 is max.
+	var tier_radius: float
+	var tier_alpha: float
+	match tier:
+		1:
+			tier_radius = 40.0
+			tier_alpha = 0.42
+		2:
+			tier_radius = 65.0
+			tier_alpha = 0.90
+		_:
+			tier_radius = 78.0
+			tier_alpha = 1.0
 	var pulse_speed: float = 2.0 + tier * 0.5
 	glow.set_meta("ring_color", ring_color)
 	glow.set_meta("radius", tier_radius)

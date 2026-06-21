@@ -125,6 +125,13 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
 
 ## ⚡ P1 — Important Polish & Content
 
+### Visual Polish
+- [x] **A-path upgrade tint: A1→A2 step unambiguously distinct (#1107)** —
+  blend gap widened (A1=0.55, A2=0.82 vs previous 0.66/0.76); hue rotation
+  increased 20°→28°/tier so each tier lands in a clearly different colour
+  region; TierGlow ring at T2 jumps to radius=65/alpha=0.90 (was 58/0.55)
+  with ring colour now tracking the tier-shifted hue. Verified 2026-06-21.
+
 ### Content
 - [x] **Hero system foundation** — Lemurius "Banana-Storm" active ability at
   tier 3+: 3–5s triple-fire burst on 30s cooldown. Tap-button in upgrade
