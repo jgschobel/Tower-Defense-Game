@@ -244,7 +244,15 @@ func _run_healthy_level(level_id: int) -> void:
 				if not _ge.get("is_dead"):
 					_alive += 1
 			if _alive == 0:
-				await get_tree().process_frame
+				# Wait up to 5 frames for the enemy_died→wave_complete→WON
+				# signal chain to propagate. A single process_frame is not
+				# enough when is_dead=true is set before enemy_died.emit fires
+				# (the window between them is sub-frame but the timer can land
+				# there on slow CI runners, giving PLAYING/0-enemies — #1133).
+				for _win_f in range(5):
+					await get_tree().process_frame
+					if GameManager.current_state != GameManager.GameState.PLAYING:
+						break
 				break
 
 	Engine.time_scale = 1.0
@@ -597,6 +605,11 @@ func _hardcoded_placements(level_id: int) -> Array:
 			{ "id": "sniper",  "pos": Vector2(900, 430) },
 			{ "id": "splash",  "pos": Vector2(460, 520) },
 			{ "id": "slow",    "pos": Vector2(750, 380) },
+			# 6th tower: cordula covers the left entry segment (path enters
+			# near x=150). Wave 10 has 4 tanks + 10 fast + 10 basic = 24
+			# enemies; the 5-tower comp timed out with 11 alive (#1132).
+			# Cordula at T2-A has ~3× DPS of basic, shredding the tank stack.
+			{ "id": "cordula", "pos": Vector2(160, 350) },
 		]
 		2: return [
 			# cordula replaces slow: 3× higher DPS at T2-A (123 vs ~38),
