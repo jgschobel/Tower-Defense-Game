@@ -3,6 +3,12 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-22 (audit-polish — playtest scenario fixes)
+
+- fix(playtest): grace-exit on _alive==0 now waits up to 5 process frames for the enemy_died→wave_complete→WON signal chain; prevents L3_healthy reporting PLAYING/0-enemies (closes #1133)
+- fix(playtest): L1_healthy 6th tower (cordula @ 160,350) covers left-entry segment; wave 10 had 4 tanks+10 fast+10 basic that 5-tower comp couldn't clear in budget (closes #1132)
+- chore: closed 3 stale duplicate audit-grid PRs (#1141, #1140, #1134)
+
 ## 2026-06-22 (audit-polish — slider knobs + FPS metric)
 
 - fix(ui): options menu Musig/Effekt slider knobs no longer stuck at position 0 on open; root cause was _apply_theme() restyling MusicLabel/SfxLabel before first draw, deferring layout so knob position was computed from width=0; fix: queue_redraw() on all three sliders at end of _ready(); closes #1100
