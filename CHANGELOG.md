@@ -3,6 +3,11 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-22 (audit-polish — slider knobs + FPS metric)
+
+- fix(ui): options menu Musig/Effekt slider knobs no longer stuck at position 0 on open; root cause was _apply_theme() restyling MusicLabel/SfxLabel before first draw, deferring layout so knob position was computed from width=0; fix: queue_redraw() on all three sliders at end of _ready(); closes #1100
+- fix(playtest): L1_healthy FPS min no longer 2.0 due to anim-clip readback stalls; _fps_samples now cleared after _capture_anim_clip so only steady-state gameplay FPS is benchmarked; closes #1123 #1103 #1094 #1053
+
 ## 2026-06-21 (audit-polish — z-index hierarchy fix)
 
 - fix(visuals): all path overlays (FloorWash, vignette, PathShadowLayer, PathBorder, PathDraw, PathTroddenCenter, direction arrows) were at negative z_index (down to −90), rendering behind the background sprite — dark overlay shapes bled through transparent areas of the L3 PNG causing the reported "large dark blob"; fixed by establishing a proper hierarchy: overlays z=1–5, arrows z=9, enemies z=15, towers z=20, vignette z=30; closes #1124
