@@ -170,6 +170,10 @@ func _run_healthy_level(level_id: int) -> void:
 	# mid-run before _record_scenario fires (#871 root cause).
 	if level_id == 1:
 		await _capture_anim_clip("%s_wavestart" % _scenario_name)
+		# Clear samples polluted by readback stalls during the anim clip.
+		# Pre-combat samples (loading, placement, 0.4s wave-start) are
+		# unreliable for FPS benchmarking anyway; start fresh from here.
+		_fps_samples.clear()
 
 	# Extended loop: keep sampling until WON/LOST or budget expires.
 	# 12× across all levels: 10 ticks × 2.0s = 240s game time — enough for any

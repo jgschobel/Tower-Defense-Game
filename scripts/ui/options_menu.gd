@@ -20,6 +20,14 @@ func _ready() -> void:
 	music_slider.value = GameManager.music_volume
 	sfx_slider.value = GameManager.sfx_volume
 	_refresh_labels()
+	# _apply_theme() resizes MusicLabel and SfxLabel (style_label call), which
+	# defers layout recalc on those HBoxContainers. The slider knob position is
+	# computed from slider width at draw time; if layout hasn't finalized yet
+	# the width is 0, placing the knob at pixel 0 regardless of value.
+	# queue_redraw() schedules a redraw AFTER the deferred layout pass.
+	master_slider.queue_redraw()
+	music_slider.queue_redraw()
+	sfx_slider.queue_redraw()
 
 
 func _apply_theme() -> void:
