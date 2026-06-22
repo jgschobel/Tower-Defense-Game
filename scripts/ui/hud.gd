@@ -1002,8 +1002,8 @@ func _ensure_combo_badge() -> Label:
 	# Anchored within the TopBar height (0–65 px) so it doesn't float
 	# over the play field. Was at y=78–110 which is below the HUD bar
 	# and covered active combat (#1118).
-	lbl.offset_top = _inset_top + 14
-	lbl.offset_bottom = _inset_top + 56
+	lbl.offset_top = _inset_top + 70
+	lbl.offset_bottom = _inset_top + 115
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	lbl.add_theme_font_size_override("font_size", 24)
 	lbl.add_theme_color_override("font_color", Color(1, 0.95, 0.4))
@@ -1028,7 +1028,7 @@ func _on_combo_changed(counter: int, multiplier: float) -> void:
 		_combo_tween.tween_property(badge, "modulate:a", 0.0, 0.25)
 		_clear_combo_screen_tint()
 		return
-	badge.text = "RUUSCH! ×%d  ·  %.1f× Gold" % [counter, multiplier]
+	badge.text = "RUUSCH! x%d - %.1fx Gold" % [counter, multiplier]
 	badge.pivot_offset = badge.size * 0.5
 	_combo_tween = badge.create_tween().set_parallel(true)
 	_combo_tween.tween_property(badge, "modulate:a", 1.0, 0.1)
