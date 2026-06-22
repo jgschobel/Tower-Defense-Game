@@ -5,6 +5,7 @@ Each run appends one line.
 
 ## 2026-06-22
 
+- fix(playtest): MAX_SHOTS_PER_SCENARIO 6→9 (12s→18s per level = 144→216 game seconds); #1143 over-trimmed the budget leaving L1 9/10, L2 8/10, L3 7/10 waves (#1144); add Cordula to stress tower lineup at entry point for ~65% kill coverage (#1145)
 - fix(playtest): wire MAX_SHOTS_PER_SCENARIO + SHOT_INTERVAL constants into healthy-level loop (was hardcoded 10 shots / 20s, constants said 6 / 2.0); trim grace period 3→2 ticks; saves ~30s across L1/L2/L3 so bughunt+stress reliably run within 120s CI timeout (closes #1131 #1136)
 
 ## 2026-06-22 (audit-polish — playtest scenario fixes)

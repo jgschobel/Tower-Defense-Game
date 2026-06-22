@@ -13,7 +13,7 @@ const SUMMARY_FILE := "user://playtest/summary.md"
 const FPS_LOG := "user://playtest/fps.log"
 const SHOT_INTERVAL := 2.0      # real-clock seconds between gameplay screenshots
 const ANIM_INTERVAL := 0.12     # ~8 FPS for GIF
-const MAX_SHOTS_PER_SCENARIO := 6
+const MAX_SHOTS_PER_SCENARIO := 9
 const ANIM_FRAMES := 8           # ~1s animation clip (was 24; reduced to save ~2s CI budget)
 const STRESS_ENEMY_COUNT := 80
 
@@ -176,19 +176,21 @@ func _run_healthy_level(level_id: int) -> void:
 		_fps_samples.clear()
 
 	# Extended loop: keep sampling until WON/LOST or budget expires.
-	# 12× time_scale: 6 ticks × 2.0s = 144s game time — enough for all 10 waves.
-	# WON/LOST early-exit keeps real time short (~8-12s typical).
-	# 12s ceiling: 3 levels × ≤12s = ≤36s, plus ~15s priority scenarios + grace
-	# 3×≤4s = ≤12s max → ≤63s, leaving ~30s for bughunt+stress in 90s effective budget.
+	# 12× time_scale: 9 ticks × 2.0s = 216s game time — enough for all 10 waves.
+	# WON/LOST early-exit keeps real time short (~8-16s typical).
+	# 18s ceiling: 3 levels × ≤18s = ≤54s, plus ~15s priority scenarios + grace
+	# 3×≤4s = ≤12s max → ≤81s, leaving ~9s for bughunt+stress in 90s effective budget.
+	# (#1143 cut this to 6 shots/12s which was insufficient: L1 9/10, L2 8/10, L3 7/10 — #1144.)
 	# (Effective budget = 120s CI timeout minus ~30s Godot startup: #1131 #1136.)
 	var sim_started := Time.get_ticks_msec()
 	var shot_idx := 0
 	var _diag_done := false
 	while true:
 		# SHOT_INTERVAL real-clock seconds between screenshots (ignore_time_scale=true).
-		# Ceiling: MAX_SHOTS_PER_SCENARIO × SHOT_INTERVAL = 6 × 2.0s = 12s per level.
-		# Was hardcoded 10 shots / 20s — reduced to leave room for bughunt+stress
-		# within the 120s CI timeout (#1131 #1136).
+		# Ceiling: MAX_SHOTS_PER_SCENARIO × SHOT_INTERVAL = 9 × 2.0s = 18s per level.
+		# Was reduced to 6 shots / 12s in #1143 which left insufficient game time
+		# (L1 9/10, L2 8/10, L3 7/10 waves — #1144). 9 shots restores coverage
+		# while keeping 3-level total ≤54s within the 90s effective CI budget.
 		await get_tree().create_timer(SHOT_INTERVAL, true, false, true).timeout
 		_snapshot("%s_t%02d" % [_scenario_name, shot_idx])
 		# After first combat tick: emit a mid-combat diagnostic so kills=0
@@ -221,9 +223,10 @@ func _run_healthy_level(level_id: int) -> void:
 			break
 
 	# Grace-period: if still PLAYING after the main loop, poll until enemies drain.
-	# 2 ticks × SHOT_INTERVAL = 4s real (48s game at 12×) — enough for stragglers.
-	# Was 3 ticks (6s); trimmed to 2 to save 6s total across 3 levels so that
-	# bughunt + stress always fit within the 120s CI timeout (#1131 #1136).
+	# 2 ticks × SHOT_INTERVAL = 4s real (48s game at 12×) — covers stragglers.
+	# Budget: 3 levels × (18s main + 4s grace) = 66s; plus ~15s priority + ~11s
+	# bughunt+stress = ~92s total — just within the 90s effective CI window
+	# (some slack from early WON exits, which save most scenarios well under 18s).
 	# Early-exits the moment enemies_remaining reaches 0 to avoid burning budget.
 	var wm_node := get_tree().get_first_node_in_group("wave_manager")
 	if GameManager.current_state == GameManager.GameState.PLAYING:
@@ -406,16 +409,20 @@ func _run_stress_test() -> void:
 
 	var game_root := get_tree().current_scene
 
-	# Place 5 towers spread across L1 path bends so the 80-enemy pile
-	# actually stresses attack/projectile systems with ~65% kill coverage
-	# (#903 — 3 towers only hit 28/80). Positions match L1 hardcoded set.
+	# Place 6 towers spread across L1 path bends so the 80-enemy pile
+	# actually stresses attack/projectile systems. Matches L1 hardcoded set
+	# exactly (6 towers including Cordula). Previous 5-tower comp only achieved
+	# 28/80 kills (35%) because the single-target set lacked entry-point DPS
+	# (#1145). Cordula T2-A at path entry covers all 80 enemies as they cycle
+	# through progress=0 and has 3× DPS of basic (#903).
 	var _stress_gold_saved := CurrencyManager.gold
 	for _stress_entry in [
-		{"id": "basic",  "pos": Vector2(320, 430)},
-		{"id": "basic",  "pos": Vector2(620, 260)},
-		{"id": "sniper", "pos": Vector2(900, 430)},
-		{"id": "splash", "pos": Vector2(460, 520)},
-		{"id": "slow",   "pos": Vector2(750, 380)},
+		{"id": "basic",   "pos": Vector2(320, 430)},
+		{"id": "basic",   "pos": Vector2(620, 260)},
+		{"id": "sniper",  "pos": Vector2(900, 430)},
+		{"id": "splash",  "pos": Vector2(460, 520)},
+		{"id": "slow",    "pos": Vector2(750, 380)},
+		{"id": "cordula", "pos": Vector2(160, 350)},
 	]:
 		var _std = load("res://resources/tower_data/%s.tres" % _stress_entry.id)
 		if _std:
