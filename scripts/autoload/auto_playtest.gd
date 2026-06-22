@@ -11,7 +11,7 @@ extends Node
 const SHOT_DIR := "user://playtest/"
 const SUMMARY_FILE := "user://playtest/summary.md"
 const FPS_LOG := "user://playtest/fps.log"
-const SHOT_INTERVAL := 2.5
+const SHOT_INTERVAL := 2.0      # real-clock seconds between gameplay screenshots
 const ANIM_INTERVAL := 0.12     # ~8 FPS for GIF
 const MAX_SHOTS_PER_SCENARIO := 6
 const ANIM_FRAMES := 8           # ~1s animation clip (was 24; reduced to save ~2s CI budget)
@@ -176,17 +176,20 @@ func _run_healthy_level(level_id: int) -> void:
 		_fps_samples.clear()
 
 	# Extended loop: keep sampling until WON/LOST or budget expires.
-	# 12× across all levels: 10 ticks × 2.0s = 240s game time — enough for any
-	# 10-wave level. WON/LOST early-exit keeps real time short (~10-15s typical).
-	# 20s ceiling: 3 levels × ≤20s = ≤60s, plus ~22s priority scenarios + grace
-	# 3×≤6s = ≤18s max → ≤100s leaving ~20s for stress+bughunt in 120s budget.
+	# 12× time_scale: 6 ticks × 2.0s = 144s game time — enough for all 10 waves.
+	# WON/LOST early-exit keeps real time short (~8-12s typical).
+	# 12s ceiling: 3 levels × ≤12s = ≤36s, plus ~15s priority scenarios + grace
+	# 3×≤4s = ≤12s max → ≤63s, leaving ~30s for bughunt+stress in 90s effective budget.
+	# (Effective budget = 120s CI timeout minus ~30s Godot startup: #1131 #1136.)
 	var sim_started := Time.get_ticks_msec()
 	var shot_idx := 0
 	var _diag_done := false
 	while true:
-		# ignore_time_scale=true: each 2.0s wait is real-clock seconds,
-		# so the game runs 2.0 × time_scale game-seconds between screenshots.
-		await get_tree().create_timer(2.0, true, false, true).timeout
+		# SHOT_INTERVAL real-clock seconds between screenshots (ignore_time_scale=true).
+		# Ceiling: MAX_SHOTS_PER_SCENARIO × SHOT_INTERVAL = 6 × 2.0s = 12s per level.
+		# Was hardcoded 10 shots / 20s — reduced to leave room for bughunt+stress
+		# within the 120s CI timeout (#1131 #1136).
+		await get_tree().create_timer(SHOT_INTERVAL, true, false, true).timeout
 		_snapshot("%s_t%02d" % [_scenario_name, shot_idx])
 		# After first combat tick: emit a mid-combat diagnostic so kills=0
 		# root cause is visible in CI logs even before the scenario ends.
@@ -214,27 +217,19 @@ func _run_healthy_level(level_id: int) -> void:
 		or GameManager.current_state == GameManager.GameState.WON:
 			break
 		var elapsed := float(Time.get_ticks_msec() - sim_started) / 1000.0
-		if elapsed > 20.0 or shot_idx >= 10:
+		if elapsed > float(MAX_SHOTS_PER_SCENARIO) * SHOT_INTERVAL or shot_idx >= MAX_SHOTS_PER_SCENARIO:
 			break
 
-	# Grace-period: if we are on the penultimate or final wave with stragglers
-	# still alive, poll every 2s until enemies drain or state changes.
-	# 5 ticks × 2s = 10 real-seconds (40 game-seconds at 4× time_scale).
-	# Covers: (a) all_done=true but WON not yet propagated; (b) last wave sent
-	# but enemies still alive (#945); (c) L3 times out on wave 9 with 16 enemies
-	# remaining — tanks slowed by healers need the extra window (#1052).
-	# (d) L1/L2 slow enemies still on path after 20s main window (#1092).
-	# Early-exits the moment enemies_remaining reaches 0 to avoid burning the
-	# full 10s budget on healthy fast-clearing scenarios.
-	# Grace fires unconditionally when we exit the main loop still PLAYING —
-	# wave 8/10 stragglers (3 tanky enemies) need the same window as wave 10.
-	# Previously only fired for last wave (current_wave >= total_waves-1), which
-	# caused L1 wave-8 timeout (#1122). Early-exit on enemies=0 keeps budget lean.
+	# Grace-period: if still PLAYING after the main loop, poll until enemies drain.
+	# 2 ticks × SHOT_INTERVAL = 4s real (48s game at 12×) — enough for stragglers.
+	# Was 3 ticks (6s); trimmed to 2 to save 6s total across 3 levels so that
+	# bughunt + stress always fit within the 120s CI timeout (#1131 #1136).
+	# Early-exits the moment enemies_remaining reaches 0 to avoid burning budget.
 	var wm_node := get_tree().get_first_node_in_group("wave_manager")
 	if GameManager.current_state == GameManager.GameState.PLAYING:
 		var _grace_tick := 0
-		while _grace_tick < 3:  # was 5; 3×2s=6s real=72s game time at 12× — enough for stragglers
-			await get_tree().create_timer(2.0, true, false, true).timeout
+		while _grace_tick < 2:  # 2 × SHOT_INTERVAL real-seconds of grace
+			await get_tree().create_timer(SHOT_INTERVAL, true, false, true).timeout
 			_snapshot("%s_grace" % _scenario_name)
 			_grace_tick += 1
 			if GameManager.current_state != GameManager.GameState.PLAYING:

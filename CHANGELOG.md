@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-22
+
+- fix(playtest): wire MAX_SHOTS_PER_SCENARIO + SHOT_INTERVAL constants into healthy-level loop (was hardcoded 10 shots / 20s, constants said 6 / 2.0); trim grace period 3→2 ticks; saves ~30s across L1/L2/L3 so bughunt+stress reliably run within 120s CI timeout (closes #1131 #1136)
+
 ## 2026-06-22 (audit-polish — playtest scenario fixes)
 
 - fix(playtest): grace-exit on _alive==0 now waits up to 5 process frames for the enemy_died→wave_complete→WON signal chain; prevents L3_healthy reporting PLAYING/0-enemies (closes #1133)
