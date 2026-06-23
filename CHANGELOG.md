@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-23 (audit-polish — playtest budget reorder)
+
+- fix(playtest): move bughunt before healthy-level loop so L3's 12s grace can't starve it; L3 grace budget 8s→12s (5 stragglers alive at 8s on wave-10 boss+tanks); update budget comment (closes #1166 #1167)
+
 ## 2026-06-23 (audit-polish)
 
 - fix(playtest): grace-period now checks WaveManager.all_done before accepting 0-alive count as level-end; prevents early exit on between-wave quiet windows; stress test keeps wave_in_progress=false to stop wave_completed firing and spamming WaveReceipt into screenshots (closes #1159 #1152)

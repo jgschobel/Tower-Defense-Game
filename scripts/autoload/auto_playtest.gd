@@ -61,18 +61,18 @@ func _run_all() -> void:
 	await _run_upgrade_flow()
 	await _run_new_towers_showcase()
 
-	# Healthy runs for L1-L3 run BEFORE stress/bughunt so they always get budget.
-	# L1 takes ~25s (includes anim clip), L2/L3 ~18s each = ~61s total for three
-	# levels. Running them after stress+bughunt ate ~95s leaving only 2s for L3
-	# (#1038). Each caps at 20s real / 10 shots (see _run_healthy_level).
-	# L4-L7 pushed past CI timeout (issue #499); re-enable once budgets are known.
+	# Bug-hunt runs before the healthy level loop so L3's extended grace period
+	# (up to 12s) can't starve it out of the 90s effective CI budget (#1166).
+	# bughunt is ~3s, critical for ghost-cancel UX coverage.
+	await _run_bug_hunt()
+
+	# Healthy runs for L1-L3. L1 ~18s (includes anim clip), L2 ~18s, L3 ~30s
+	# (18s combat + 12s grace for straggler cleanup). L4-L7 pushed past CI
+	# timeout (issue #499); re-enable once budgets are known.
 	for level_id in range(1, 4):
 		await _run_healthy_level(level_id)
 
-	# Bug-hunt runs before stress: bughunt is quick (~3s) and critical for UX
-	# coverage; stress is slower (~8s) and can be dropped if 120s CI clock runs
-	# out. This ordering guarantees bughunt always produces output (#1125).
-	await _run_bug_hunt()
+	# Stress test: ~8s, can be dropped if 120s CI clock runs out.
 	await _run_stress_test()
 
 	_write_summary()
@@ -182,8 +182,8 @@ func _run_healthy_level(level_id: int) -> void:
 	# Extended loop: keep sampling until WON/LOST or budget expires.
 	# 12× time_scale: 9 ticks × 2.0s = 216s game time — enough for all 10 waves.
 	# WON/LOST early-exit keeps real time short (~8-16s typical).
-	# 18s ceiling: 3 levels × ≤18s = ≤54s, plus ~15s priority scenarios + grace
-	# 3×≤4s = ≤12s max → ≤81s, leaving ~9s for bughunt+stress in 90s effective budget.
+	# 18s ceiling per level. Grace: L1=4s, L2=8s, L3=12s. bughunt now runs before
+	# these levels (~3s). Effective budget: 120s CI - 30s Godot startup = 90s.
 	# (#1143 cut this to 6 shots/12s which was insufficient: L1 9/10, L2 8/10, L3 7/10 — #1144.)
 	# (Effective budget = 120s CI timeout minus ~30s Godot startup: #1131 #1136.)
 	var sim_started := Time.get_ticks_msec()
@@ -236,9 +236,9 @@ func _run_healthy_level(level_id: int) -> void:
 	# Falls back to one snap if enemies never clear within budget.
 	var wm_node := get_tree().get_first_node_in_group("wave_manager")
 	if GameManager.current_state == GameManager.GameState.PLAYING:
-		# L2+ grace budget extended to 8s (was 4s) because wave 10 on L2 was
-		# timing out with 2 stragglers alive after all waves launched (#1151).
-		var _grace_budget_ms: int = 8000 if level_id >= 2 else 4000
+		# Per-level grace budgets: L1=4s (always wins quickly), L2=8s (fixed #1151),
+		# L3=12s (heavier waves — 5 stragglers still alive at 8s in #1167).
+		var _grace_budget_ms: int = 4000 if level_id == 1 else (8000 if level_id == 2 else 12000)
 		var _grace_snapped := false
 		while _grace_budget_ms > 0 and GameManager.current_state == GameManager.GameState.PLAYING:
 			await get_tree().create_timer(0.15, true, false, true).timeout  # 150ms real-clock polls
