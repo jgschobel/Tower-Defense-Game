@@ -57,20 +57,21 @@ func _run_all() -> void:
 	# UI tour: capture the menu surfaces before any gameplay.
 	await _run_ui_tour()
 
-	# upgrade_flow + new_towers: quick scenarios (~5s each), run first.
+	# Healthy level runs go FIRST so L3's grace period (up to 12s) has budget.
+	# Previously upgrade_flow/new_towers/bughunt ran first and consumed ~13s,
+	# leaving only ~9s for L3 which was cut off mid-wave 7 (#1170).
+	# L1 ~18s (includes anim clip), L2 ~18s, L3 ~30s (18s combat + 12s grace).
+	# L4-L7 pushed past CI timeout (issue #499); re-enable once budgets known.
+	for level_id in range(1, 4):
+		await _run_healthy_level(level_id)
+
+	# Quick scenarios AFTER levels: each ~5-6s. At elapsed ~71s they still have
+	# ~30s before the 100s effective budget (120s CI – 20s startup overhead).
 	await _run_upgrade_flow()
 	await _run_new_towers_showcase()
 
-	# Bug-hunt runs before the healthy level loop so L3's extended grace period
-	# (up to 12s) can't starve it out of the 90s effective CI budget (#1166).
-	# bughunt is ~3s, critical for ghost-cancel UX coverage.
+	# Bughunt ~3s, critical for ghost-cancel UX coverage.
 	await _run_bug_hunt()
-
-	# Healthy runs for L1-L3. L1 ~18s (includes anim clip), L2 ~18s, L3 ~30s
-	# (18s combat + 12s grace for straggler cleanup). L4-L7 pushed past CI
-	# timeout (issue #499); re-enable once budgets are known.
-	for level_id in range(1, 4):
-		await _run_healthy_level(level_id)
 
 	# Stress test: ~8s, can be dropped if 120s CI clock runs out.
 	await _run_stress_test()
@@ -370,6 +371,19 @@ func _run_new_towers_showcase() -> void:
 		# giving only 2s real / 6s game time — not enough to see kills.
 		await get_tree().create_timer(1.2, true, false, true).timeout
 		_snapshot("new_towers_fight_t%d" % i)
+	# Grace: wait up to 4s real (12s game at 3×) for last enemy to clear.
+	# Without this, slow-firing towers (joe/justus/seve) leave 1 enemy alive
+	# when the scenario ends, masking real regressions (#1171).
+	var _nt_grace := 4000
+	while _nt_grace > 0 and GameManager.current_state == GameManager.GameState.PLAYING:
+		await get_tree().create_timer(0.15, true, false, true).timeout
+		_nt_grace -= 150
+		var _alive := 0
+		for _ne in get_tree().get_nodes_in_group("enemies"):
+			if not _ne.get("is_dead"):
+				_alive += 1
+		if _alive == 0:
+			break
 	Engine.time_scale = 1.0
 	_snapshot("new_towers_final")
 

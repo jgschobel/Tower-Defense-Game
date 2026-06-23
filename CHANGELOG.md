@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-23 (audit-polish — playtest budget L3+stress)
+
+- fix(playtest): move L1/L2/L3 healthy runs before upgrade_flow/new_towers/bughunt so L3 gets budget while fresh (~41s elapsed not ~81s); add 4s grace in new_towers after combat shots so last enemy clears before final snapshot (closes #1170 #1171); close #1158 (gold floater throttle already shipped in #1163)
+
 ## 2026-06-23 (audit-polish — playtest budget reorder)
 
 - fix(playtest): move bughunt before healthy-level loop so L3's 12s grace can't starve it; L3 grace budget 8s→12s (5 stragglers alive at 8s on wave-10 boss+tanks); update budget comment (closes #1166 #1167)
