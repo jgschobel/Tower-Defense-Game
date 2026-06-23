@@ -250,14 +250,23 @@ func _run_healthy_level(level_id: int) -> void:
 				if not _ge.get("is_dead"):
 					_alive += 1
 			if _alive == 0:
-				# Caught the between-wave quiet window. Wait one process frame
-				# for WaveManager to emit wave_completed and state to settle
-				# before snapping (same guard as before, #1133).
+				# Wait one process frame for WaveManager signals to settle
+				# (decrement_enemies → _check_wave_complete → all_done).
 				await get_tree().process_frame
+				# Guard against between-wave quiet windows: auto_start_waves
+				# creates a ~42ms real gap between waves where enemies are 0
+				# but the level isn't done. Only accept 0-alive as "level end"
+				# when WaveManager.all_done is true (last wave fully completed).
+				# Fixes #1159: scenarios were ending at wave N with N+1 still
+				# pending because this break fired during a between-wave gap.
+				var _wm_all_done: bool = wm_node != null and wm_node.get("all_done") == true
+				if not _wm_all_done:
+					continue  # between-wave gap — keep polling
 				_snapshot("%s_grace" % _scenario_name)
 				_grace_snapped = true
-				# Give WON up to 5 frames to trigger.
-				for _win_f in range(5):
+				# Give WON up to 10 frames to trigger (game_level defers 0.5s;
+				# at 12× that's ~42ms = ~2-3 frames, so 10 is a safe margin).
+				for _win_f in range(10):
 					await get_tree().process_frame
 					if GameManager.current_state != GameManager.GameState.PLAYING:
 						break
@@ -488,9 +497,13 @@ func _run_stress_test() -> void:
 	# "Wälle 1/1" instead of "Bereit" and _decrement_enemies() fires correctly.
 	# Without this the stress FPS benchmark reflects an idle pre-wave state
 	# rather than active combat (issue #727).
+	# wave_in_progress stays FALSE: setting it true caused wave_completed to
+	# fire when all 80 enemies died, triggering show_cash_arc_reward,
+	# show_wave_clear_celebration, and WaveReceipt — visible in every stress
+	# screenshot as card-shaped UI in the lower-left corner (#1152).
 	if wm:
 		wm.current_wave = 1
-		wm.wave_in_progress = true
+		wm.wave_in_progress = false
 		wm.is_spawning = false
 		wm.enemies_alive = STRESS_ENEMY_COUNT
 		if wm.has_signal("wave_started"):

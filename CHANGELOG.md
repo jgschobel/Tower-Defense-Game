@@ -5,6 +5,7 @@ Each run appends one line.
 
 ## 2026-06-23 (audit-polish)
 
+- fix(playtest): grace-period now checks WaveManager.all_done before accepting 0-alive count as level-end; prevents early exit on between-wave quiet windows; stress test keeps wave_in_progress=false to stop wave_completed firing and spamming WaveReceipt into screenshots (closes #1159 #1152)
 - polish(ui): options screen Dimmer warm dark (#06050a→#0f0d07) + amber gradient overlay matches game palette; title "Iistellige"→"Istellige" (single I, fixes I/l font ambiguity); gold floater throttle max 8 + wider ±30px spread prevents stacking at high kill rates (closes #1158 #1160 #1161)
 - fix(tower): B-path tint hue rotation 40°→55°/tier so B1 (warm) vs B2 (violet) gap is unmistakable in CI screenshots; B2 glow ring radius bonus 32→52 (3.7× B1's 14), B3 bonus 52→78; fix queue_free naming conflict that leaked zombie PathBGlow nodes across tier upgrades (closes #1153)
 - fix(playtest): L2/L3 between-wave gap 2.0→0.5s to reclaim ~1s real-clock per level; L2/L3 grace budget 4s→8s so last-wave stragglers have time to die before WON state (closes #1151)
