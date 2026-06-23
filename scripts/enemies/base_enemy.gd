@@ -29,6 +29,11 @@ var _death_tween: Tween = null
 # eventually texture swap to data.damage_variants[i] once AI art lands).
 var _damage_state: int = 0
 
+# Throttle for simultaneous gold floaters — prevents 80 labels stacking at
+# the same position during heavy waves (#1158). Class-level counter.
+static var _active_gold_floaters: int = 0
+const _MAX_GOLD_FLOATERS: int = 8
+
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var health_bar: ProgressBar = $HealthBar  # hidden permanently — see _ready
 
@@ -955,11 +960,13 @@ func _celebrate_boss_death(killer: Node = null) -> void:
 
 
 func _show_gold_earned() -> void:
-	# D26: styled gold floater — coin prefix, bolder size, arc trajectory.
+	# Throttle: skip if too many floaters already visible — prevents 80 labels
+	# stacking at the same pixel during heavy waves (#1158).
+	if _active_gold_floaters >= _MAX_GOLD_FLOATERS:
+		return
+	_active_gold_floaters += 1
 	var label := Label.new()
-	label.text = "+%d G" % gold_reward  # was "✦ +N G" — sparkle removed (tofu on Android Noto-stripped)
-	# Three tiers: small reward 18px, medium 24px, big 30px. Big rewards
-	# also get a brief sparkle pop scale.
+	label.text = "+%d G" % gold_reward
 	var font_size: int = 18
 	if gold_reward >= 50:
 		font_size = 30
@@ -971,14 +978,17 @@ func _show_gold_earned() -> void:
 	label.add_theme_constant_override("outline_size", 4)
 	label.z_index = 20
 	get_parent().add_child(label)
-	label.global_position = global_position + Vector2(randf_range(-12, 12), -30)
-	# Slight horizontal drift for variety — floats up and fades.
-	var drift_x: float = randf_range(-18.0, 18.0)
+	# Wider spread so simultaneous kills don't stack on the same pixel.
+	label.global_position = global_position + Vector2(randf_range(-30.0, 30.0), randf_range(-40.0, -20.0))
+	var drift_x: float = randf_range(-30.0, 30.0)
 	var tween := get_tree().create_tween().set_parallel(true)
 	tween.tween_property(label, "position:y", label.position.y - 55.0, 0.75)
 	tween.tween_property(label, "position:x", label.position.x + drift_x, 0.75)
 	tween.tween_property(label, "modulate:a", 0.0, 0.75).set_delay(0.25)
-	tween.chain().tween_callback(label.queue_free)
+	tween.chain().tween_callback(func() -> void:
+		_active_gold_floaters -= 1
+		label.queue_free()
+	)
 
 
 func _on_heal_timer_timeout() -> void:

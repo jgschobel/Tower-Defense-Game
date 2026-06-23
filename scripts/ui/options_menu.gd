@@ -31,14 +31,14 @@ func _ready() -> void:
 
 
 func _apply_theme() -> void:
-	# Gradient overlay on top of the solid Dimmer: lighter navy at top fading
-	# to transparent at bottom. Gives the "settings screen" visual depth instead
-	# of a flat void, whether loaded standalone (playtest) or as an overlay (#1042).
+	# Gradient overlay: warm amber at top fading to transparent at bottom.
+	# Matches COL_BG_DEEPEST (0.06,0.05,0.04) so the screen looks designed
+	# rather than a black void when standalone or overlaid (#1161).
 	if not has_node("GradOverlay"):
 		var gt := GradientTexture2D.new()
 		var g := Gradient.new()
-		g.set_color(0, Color(0.12, 0.20, 0.45, 0.55))
-		g.set_color(1, Color(0.02, 0.05, 0.12, 0.0))
+		g.set_color(0, Color(0.28, 0.20, 0.07, 0.70))
+		g.set_color(1, Color(0.06, 0.05, 0.04, 0.0))
 		gt.gradient = g
 		gt.fill_from = Vector2(0.5, 0.0)
 		gt.fill_to = Vector2(0.5, 1.0)
