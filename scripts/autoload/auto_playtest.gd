@@ -222,19 +222,21 @@ func _run_healthy_level(level_id: int) -> void:
 		if elapsed > float(MAX_SHOTS_PER_SCENARIO) * SHOT_INTERVAL or shot_idx >= MAX_SHOTS_PER_SCENARIO:
 			break
 
-	# Grace-period: if still PLAYING after the main loop, poll until enemies drain.
-	# 2 ticks × SHOT_INTERVAL = 4s real (48s game at 12×) — covers stragglers.
-	# Budget: 3 levels × (18s main + 4s grace) = 66s; plus ~15s priority + ~11s
-	# bughunt+stress = ~92s total — just within the 90s effective CI window
-	# (some slack from early WON exits, which save most scenarios well under 18s).
-	# Early-exits the moment enemies_remaining reaches 0 to avoid burning budget.
+	# Grace-period: poll for the between-wave quiet window then snap it.
+	# The old approach (snap every SHOT_INTERVAL=2.0s real) always fired
+	# mid-combat: 2.0s real == time_between_waves CI value, so enemies were
+	# still alive at every snap — both "grace" and "final" shots showed the
+	# same combat frame (#1146). Fix: poll every 150ms real-clock, snap once
+	# the moment enemies clear, then give WON a few frames to trigger.
+	# Budget: same 4.0s max real-clock as before (same CI timing envelope).
+	# Falls back to one snap if enemies never clear within budget.
 	var wm_node := get_tree().get_first_node_in_group("wave_manager")
 	if GameManager.current_state == GameManager.GameState.PLAYING:
-		var _grace_tick := 0
-		while _grace_tick < 2:  # 2 × SHOT_INTERVAL real-seconds of grace
-			await get_tree().create_timer(SHOT_INTERVAL, true, false, true).timeout
-			_snapshot("%s_grace" % _scenario_name)
-			_grace_tick += 1
+		var _grace_budget_ms: int = 4000
+		var _grace_snapped := false
+		while _grace_budget_ms > 0 and GameManager.current_state == GameManager.GameState.PLAYING:
+			await get_tree().create_timer(0.15, true, false, true).timeout  # 150ms real-clock polls
+			_grace_budget_ms -= 150
 			if GameManager.current_state != GameManager.GameState.PLAYING:
 				break
 			var _alive := 0
@@ -242,16 +244,22 @@ func _run_healthy_level(level_id: int) -> void:
 				if not _ge.get("is_dead"):
 					_alive += 1
 			if _alive == 0:
-				# Wait up to 5 frames for the enemy_died→wave_complete→WON
-				# signal chain to propagate. A single process_frame is not
-				# enough when is_dead=true is set before enemy_died.emit fires
-				# (the window between them is sub-frame but the timer can land
-				# there on slow CI runners, giving PLAYING/0-enemies — #1133).
+				# Caught the between-wave quiet window. Wait one process frame
+				# for WaveManager to emit wave_completed and state to settle
+				# before snapping (same guard as before, #1133).
+				await get_tree().process_frame
+				_snapshot("%s_grace" % _scenario_name)
+				_grace_snapped = true
+				# Give WON up to 5 frames to trigger.
 				for _win_f in range(5):
 					await get_tree().process_frame
 					if GameManager.current_state != GameManager.GameState.PLAYING:
 						break
 				break
+		# Fallback: enemies never cleared in budget — snap anyway so CI has a
+		# visual reference even if it shows mid-combat (better than nothing).
+		if not _grace_snapped and GameManager.current_state == GameManager.GameState.PLAYING:
+			_snapshot("%s_grace" % _scenario_name)
 
 	Engine.time_scale = 1.0
 	Engine.max_physics_steps_per_frame = 8

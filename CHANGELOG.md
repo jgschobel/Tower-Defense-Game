@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-23
+
+- fix(playtest): grace-period now polls every 150ms real-clock for enemy-clear and snaps the between-wave quiet window (was fixed 2s intervals that always fired mid-combat, #1146); hud: add auto-start countdown label to NextWavePreview when auto_start_waves=true; closed #1144 + #1145 as resolved
+
 ## 2026-06-22
 
 - fix(playtest): MAX_SHOTS_PER_SCENARIO 6→9 (12s→18s per level = 144→216 game seconds); #1143 over-trimmed the budget leaving L1 9/10, L2 8/10, L3 7/10 waves (#1144); add Cordula to stress tower lineup at entry point for ~65% kill coverage (#1145)

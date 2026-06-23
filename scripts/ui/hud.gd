@@ -1511,8 +1511,9 @@ func _refresh_next_wave_preview(visible_flag: bool) -> void:
 	# Keep clear of the right-anchored SideShop (~170px wide)
 	panel.offset_left = 20
 	panel.offset_right = -190
-	# Park just above the now-76px-tall BottomPanel, give preview ~60px
-	panel.offset_top = -146.0
+	# Park just above the now-76px-tall BottomPanel. Height: 82px to fit
+	# the enemy-chip row (~44px) + optional countdown label (~22px) + gap.
+	panel.offset_top = -168.0
 	panel.offset_bottom = -86.0
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = Color(0.08, 0.1, 0.12, 0.85)
@@ -1587,7 +1588,25 @@ func _refresh_next_wave_preview(visible_flag: bool) -> void:
 		more_lbl.add_theme_font_size_override("font_size", 14)
 		more_lbl.add_theme_color_override("font_color", Color(0.7, 0.75, 0.7, 0.85))
 		hbox.add_child(more_lbl)
-	panel.add_child(hbox)
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 4)
+	vbox.add_child(hbox)
+	# Between-wave countdown — only shown when waves auto-start so the player
+	# knows how long until the next wave fires without guessing (#1146 UX).
+	var _auto: bool = wm.get("auto_start_waves") if wm else false
+	if _auto:
+		var _duration: float = float(wm.get("time_between_waves")) if wm else 5.0
+		var countdown_lbl := Label.new()
+		countdown_lbl.name = "WaveCountdown"
+		countdown_lbl.text = "Auto-Start in %ds" % ceili(_duration)
+		countdown_lbl.add_theme_font_size_override("font_size", 13)
+		countdown_lbl.add_theme_color_override("font_color", Color(0.6, 0.75, 0.6, 0.9))
+		countdown_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		countdown_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		vbox.add_child(countdown_lbl)
+		var ctw := countdown_lbl.create_tween()
+		ctw.tween_method(func(v: float): countdown_lbl.text = ("Auto-Start in %ds" % ceili(v)) if v > 0.5 else "Auto-Start…", _duration, 0.0, _duration)
+	panel.add_child(vbox)
 	add_child(panel)
 
 
