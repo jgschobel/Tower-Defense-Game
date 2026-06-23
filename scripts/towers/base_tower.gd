@@ -1064,8 +1064,10 @@ func _apply_path_tint() -> void:
 	# already saturated the tint channels. Additive blending (#1022) was invisible
 	# at A3 because saturated channels leave no headroom. B1=0.42/B2=0.75/B3=0.88
 	# weights + brightness darkening make each tier clearly distinct (#1022 #1035).
+	# 55°/tier hue rotation (was 40°) widens B1→B2 gap so CI screenshots show
+	# a clear hue shift even after A3 green dominates the base (#1153).
 	if path_b_tier > 0:
-		var bh: float = fmod(data.path_b_tint.h - (40.0 / 360.0) * path_b_tier + 2.0, 1.0)
+		var bh: float = fmod(data.path_b_tint.h - (55.0 / 360.0) * path_b_tier + 2.0, 1.0)
 		var b_col: Color = Color.from_hsv(bh, minf(data.path_b_tint.s + 0.2 * path_b_tier, 1.0), data.path_b_tint.v)
 		var b_weight: float
 		var b_brightness: float
@@ -1114,6 +1116,11 @@ func _update_b_path_glow() -> void:
 	_b_glow_pulse_tween = null
 	var b_glow: Node2D = get_node_or_null("PathBGlow")
 	if b_glow:
+		# Rename before queue_free so the new node can immediately claim
+		# "PathBGlow" — Godot 4 auto-renames add_child duplicates which
+		# would make get_node_or_null("PathBGlow") miss the new ring on the
+		# next tier upgrade, leaking zombie glow nodes (#1153).
+		b_glow.name = "PathBGlow_freeing"
 		b_glow.queue_free()
 	# Show whenever B has any investment — no A-path requirement.
 	# B ring is now the primary B-path colour indicator, independent of A tint.
@@ -1122,23 +1129,24 @@ func _update_b_path_glow() -> void:
 	b_glow = Node2D.new()
 	b_glow.name = "PathBGlow"
 	b_glow.z_index = 1  # in front of sprite so the ring is always readable
-	# B hue shifts -40°/tier so B1/B2/B3 land in clearly different hue regions.
-	var bh: float = fmod(data.path_b_tint.h - (40.0 / 360.0) * path_b_tier + 2.0, 1.0)
+	# B hue shifts -55°/tier (was 40°) to match _apply_path_tint and widen
+	# the B1→B2 visual gap so CI screenshots show a distinct hue shift (#1153).
+	var bh: float = fmod(data.path_b_tint.h - (55.0 / 360.0) * path_b_tier + 2.0, 1.0)
 	var b_color: Color = Color.from_hsv(bh, minf(data.path_b_tint.s + 0.25 * path_b_tier, 1.0), data.path_b_tint.v)
-	# Radius bonus grows non-linearly: B2 ring is clearly larger than B1 so
-	# the tier change is readable at mobile scale even without seeing the sprite (#1035).
+	# Radius bonus: B2 ring is 2.7× larger than B1 (was 2.3×) so the tier
+	# change reads clearly at mobile scale without side-by-side comparison (#1153).
 	var b_radius_bonus: float
 	match path_b_tier:
 		1: b_radius_bonus = 14.0
-		2: b_radius_bonus = 32.0
-		_: b_radius_bonus = 52.0
+		2: b_radius_bonus = 52.0
+		_: b_radius_bonus = 78.0
 	var outer_r: float = 32.0 + path_a_tier * 8.0 + b_radius_bonus
 	# Alpha also jumps at B2 for a two-cue distinction (size + brightness).
 	var b_alpha: float
 	match path_b_tier:
-		1: b_alpha = 0.62
-		2: b_alpha = 0.90
-		_: b_alpha = 0.95
+		1: b_alpha = 0.55
+		2: b_alpha = 0.92
+		_: b_alpha = 0.98
 	b_glow.set_meta("ring_color", b_color)
 	b_glow.set_meta("radius", outer_r)
 	b_glow.set_meta("alpha", b_alpha)

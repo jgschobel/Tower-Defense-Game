@@ -3,6 +3,11 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-23 (audit-polish)
+
+- fix(tower): B-path tint hue rotation 40°→55°/tier so B1 (warm) vs B2 (violet) gap is unmistakable in CI screenshots; B2 glow ring radius bonus 32→52 (3.7× B1's 14), B3 bonus 52→78; fix queue_free naming conflict that leaked zombie PathBGlow nodes across tier upgrades (closes #1153)
+- fix(playtest): L2/L3 between-wave gap 2.0→0.5s to reclaim ~1s real-clock per level; L2/L3 grace budget 4s→8s so last-wave stragglers have time to die before WON state (closes #1151)
+
 ## 2026-06-23
 
 - fix(playtest): grace-period now polls every 150ms real-clock for enemy-clear and snaps the between-wave quiet window (was fixed 2s intervals that always fired mid-combat, #1146); hud: add auto-start countdown label to NextWavePreview when auto_start_waves=true; closed #1144 + #1145 as resolved

@@ -145,7 +145,11 @@ func _run_healthy_level(level_id: int) -> void:
 	var wm := game_root.get_node_or_null("WaveManager") as Node
 	if wm and wm.has_method("start_next_wave"):
 		wm.set("auto_start_waves", true)
-		wm.set("time_between_waves", 2.0)  # speed through between-wave breaks
+		# L2/L3 use 0.5s between waves (vs L1's 2.0s) to reclaim ~1s real-clock
+		# budget per level — wave 9/10 on L3 was timing out because between-wave
+		# pauses consumed time without killing enemies (#1151).
+		var btw: float = 0.5 if level_id >= 2 else 2.0
+		wm.set("time_between_waves", btw)
 		wm.call("start_next_wave")
 
 	# Time-scale boost so we see active gameplay within the CI budget.
@@ -232,7 +236,9 @@ func _run_healthy_level(level_id: int) -> void:
 	# Falls back to one snap if enemies never clear within budget.
 	var wm_node := get_tree().get_first_node_in_group("wave_manager")
 	if GameManager.current_state == GameManager.GameState.PLAYING:
-		var _grace_budget_ms: int = 4000
+		# L2+ grace budget extended to 8s (was 4s) because wave 10 on L2 was
+		# timing out with 2 stragglers alive after all waves launched (#1151).
+		var _grace_budget_ms: int = 8000 if level_id >= 2 else 4000
 		var _grace_snapped := false
 		while _grace_budget_ms > 0 and GameManager.current_state == GameManager.GameState.PLAYING:
 			await get_tree().create_timer(0.15, true, false, true).timeout  # 150ms real-clock polls
