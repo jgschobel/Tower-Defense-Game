@@ -2296,7 +2296,7 @@ func _style_path_button(btn: Button, path_letter: String, td: TowerData) -> void
 	var tint: Color = td.path_a_tint if path_letter == "a" else td.path_b_tint
 	var affordable: bool = cost >= 0 and _selected_tower.can_upgrade_path(path_letter)
 	if cost < 0:
-		btn.text = "%s  [✓ Max]" % display
+		btn.text = "%s  [✓ Maximal]" % display
 		btn.disabled = true
 	else:
 		var next_name := _selected_tower.get_path_next_tier_name(path_letter)
