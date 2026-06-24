@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-24 (audit-polish — Swiss German upgrade path names)
+
+- polish(text): swiss-german upgrade path names — joe: "Roid-Rage"→"Muskel-Wuet", "Cave-Chief"→"Höhle-Chef"; justus: "Quantum-Prof"→"Quanten-Prof", "Dimensions-Rift"→"Dimensions-Riss", "Storybook-Wiseman"→"Büecher-Weise", "Golden-Sage"→"Guldige Weise"; seve: "Cyborg-Commander"→"Cyborg-Anführer", "Support-Mech"→"Stütz-Mech", "War-Engineer"→"Kampf-Ing"; slow: "Insta-Reel Attacke"→"Viral-Schlecker"; support: "Supply-Chain-Meister"→"Logistik-Meischter"; hud: path-maxed badge "[✓ Max]"→"[✓ Maximal]"
+
 ## 2026-06-24 (audit-polish — tint A2 gap, options bg opaque, stress card cleanup)
 
 - fix(tower): A-path tint A1→A2 brightness gap 3%→12% (0.97→0.85) + hue rotation 28°→35°/tier so A2 reads visibly darker and more teal vs A1; glow ring hue updated to match (closes #1183)
