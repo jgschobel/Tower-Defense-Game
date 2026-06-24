@@ -16,13 +16,20 @@ signal closed
 
 func _ready() -> void:
 	_apply_theme()
-	# When opened as an overlay (add_child by main_menu/pause_menu) let the
-	# background scene show through; when opened standalone via change_scene_to_file
-	# there is nothing behind so keep the dimmer fully opaque (#1191 #1182).
+	# Standalone path (playtester UI tour / change_scene_to_file): set the
+	# dimmer to a warm dark brown that matches COL_BG_DEEPEST so the screen
+	# feels designed rather than a pure black void (#1195 re-opens #1191).
+	# Overlay path (add_child from main_menu / pause_menu): reduce opacity
+	# to 0.60 so the scene behind reads clearly — 0.78 was so opaque that
+	# the dark main-menu background still looked pure-black (#1195).
 	var dimmer := $Dimmer as ColorRect
 	if dimmer:
 		var is_overlay := get_parent() != get_tree().root
-		dimmer.color.a = 0.78 if is_overlay else 1.0
+		if is_overlay:
+			dimmer.color = Color(0, 0, 0, 0.60)
+		else:
+			# warm dark brown — not pure black, matches game palette
+			dimmer.color = Color(0.06, 0.05, 0.04, 1.0)
 	master_slider.value = GameManager.master_volume
 	music_slider.value = GameManager.music_volume
 	sfx_slider.value = GameManager.sfx_volume
@@ -38,14 +45,15 @@ func _ready() -> void:
 
 
 func _apply_theme() -> void:
-	# Gradient overlay: warm amber at top fading to transparent at bottom.
-	# Matches COL_BG_DEEPEST (0.06,0.05,0.04) so the screen looks designed
-	# rather than a black void when standalone or overlaid (#1161).
+	# Gradient overlay: warm amber at top → translucent dark at bottom.
+	# Prior amber (0.28,0.20,0.07 @ 0.70) was effectively invisible over the
+	# dark dimmer. Brightened to (0.55,0.38,0.14 @ 0.88) so the gradient
+	# clearly marks "you're in a menu" even on an OLED screen (#1195).
 	if not has_node("GradOverlay"):
 		var gt := GradientTexture2D.new()
 		var g := Gradient.new()
-		g.set_color(0, Color(0.28, 0.20, 0.07, 0.70))
-		g.set_color(1, Color(0.06, 0.05, 0.04, 0.0))
+		g.set_color(0, Color(0.55, 0.38, 0.14, 0.88))
+		g.set_color(1, Color(0.08, 0.06, 0.03, 0.55))
 		gt.gradient = g
 		gt.fill_from = Vector2(0.5, 0.0)
 		gt.fill_to = Vector2(0.5, 1.0)

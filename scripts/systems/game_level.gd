@@ -471,6 +471,13 @@ func _on_all_waves_completed() -> void:
 	# wave_started fires for the same frame) can remain on screen through the
 	# victory sequence and into the next scenario (#1009).
 	_dismiss_wave_receipt()
+	# Force the enemy-count label to 0 immediately. Under race conditions
+	# (tank spawns 2 children then the parent's enemy_died fires in the same
+	# decrement chain), enemies_remaining_changed can emit 1 after it emits 0,
+	# leaving the label showing "1 übrig" when the victory screen appears
+	# (#1197, re-opens #955). Explicit clear here is the safest guarantee.
+	if hud and hud.has_method("update_enemy_count"):
+		hud.update_enemy_count(0)
 	GameManager.complete_level()
 	hud.hide_tower_info()
 	var stars: int = GameManager.level_stars.get(level_id, 1)
