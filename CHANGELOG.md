@@ -3,6 +3,12 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-24 (audit-polish — tint A2 gap, options bg opaque, stress card cleanup)
+
+- fix(tower): A-path tint A1→A2 brightness gap 3%→12% (0.97→0.85) + hue rotation 28°→35°/tier so A2 reads visibly darker and more teal vs A1; glow ring hue updated to match (closes #1183)
+- fix(ui): options Dimmer alpha 0.82→1.0 — opened as standalone scene via change_scene_to_file has nothing behind it, semi-transparency shows Godot's black default; fully opaque dark canvas looks intentional (closes #1182)
+- fix(hud): _refresh_next_wave_preview kills ALL "NextWavePreview*" children (not just exact-name match) via get_children() loop; avoids Godot auto-rename accumulation and tween-race where old panel is still alive when new one is added (closes #1181)
+
 ## 2026-06-24 (audit-polish — tint, options bg, playtest order)
 
 - polish(tower): upgrade tint A1 blend 0.55→0.68 + brightness 0.96 (was 1.0); A2 brightness 0.93 (was 1.0); A1 glow ring r=46/a=0.68 (was 40/0.42), A2 r=66/a=0.92 — two independent cues per tier so A1→A2 reads clearly without side-by-side comparison (closes #1177)
