@@ -303,16 +303,19 @@ func _populate_levels() -> void:
 
 		vbox.add_child(btn)
 
-		# Level name label beneath the circle
+		# Level name label beneath the circle.
+		# min_height=44 is required: GridContainer sets cell height from the VBox
+		# minimum, which sums child minimums. Without a min height the label gets
+		# 0px of vertical space in the cell and is completely invisible (#1192).
 		var name_lbl := Label.new()
 		name_lbl.text = _get_level_name(i) if unlocked else "???"
 		name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		name_lbl.add_theme_font_size_override("font_size", 11)
+		name_lbl.add_theme_font_size_override("font_size", 13)
 		name_lbl.add_theme_color_override("font_color", accent.lightened(0.3) if unlocked else Color(0.72, 0.74, 0.88))
 		name_lbl.add_theme_color_override("font_outline_color", Color.BLACK)
 		name_lbl.add_theme_constant_override("outline_size", 2)
 		name_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		name_lbl.custom_minimum_size = Vector2(100, 0)
+		name_lbl.custom_minimum_size = Vector2(100, 44)
 		name_lbl.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 		name_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		vbox.add_child(name_lbl)

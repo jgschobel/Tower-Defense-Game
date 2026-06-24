@@ -16,6 +16,13 @@ signal closed
 
 func _ready() -> void:
 	_apply_theme()
+	# When opened as an overlay (add_child by main_menu/pause_menu) let the
+	# background scene show through; when opened standalone via change_scene_to_file
+	# there is nothing behind so keep the dimmer fully opaque (#1191 #1182).
+	var dimmer := $Dimmer as ColorRect
+	if dimmer:
+		var is_overlay := get_parent() != get_tree().root
+		dimmer.color.a = 0.78 if is_overlay else 1.0
 	master_slider.value = GameManager.master_volume
 	music_slider.value = GameManager.music_volume
 	sfx_slider.value = GameManager.sfx_volume
