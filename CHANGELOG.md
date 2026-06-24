@@ -3,6 +3,12 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-24 (audit-polish — playtest fixes: level names, options bg, tint gap)
+
+- fix(level-select): level name labels were invisible due to min_height=0 — GridContainer allocated 0px height for labels; set min_height=44 + font 11→13 so names render below each circle button (closes #1192)
+- fix(ui): options menu Dimmer now detects overlay vs standalone: semi-transparent (alpha=0.78) when overlaid on main_menu/pause_menu so background art shows through; opaque (alpha=1.0) when opened standalone via change_scene_to_file — eliminates black void while preserving playtest screenshot fidelity (closes #1191)
+- fix(tower): A-path tint blend progression completely reworked — A1: 0.72→0.38 (subtle hint, brightness 0.97→1.00), A2: 0.85→0.68 (clear midpoint, brightness 0.85→0.90), A3 unchanged (0.90/0.80) — widens A1→A2 luminance gap from 12% to ~19% creating unambiguous 3-tier distinction (closes #1189)
+
 ## 2026-06-24 (audit-polish — Swiss German upgrade path names)
 
 - polish(text): swiss-german upgrade path names — joe: "Roid-Rage"→"Muskel-Wuet", "Cave-Chief"→"Höhle-Chef"; justus: "Quantum-Prof"→"Quanten-Prof", "Dimensions-Rift"→"Dimensions-Riss", "Storybook-Wiseman"→"Büecher-Weise", "Golden-Sage"→"Guldige Weise"; seve: "Cyborg-Commander"→"Cyborg-Anführer", "Support-Mech"→"Stütz-Mech", "War-Engineer"→"Kampf-Ing"; slow: "Insta-Reel Attacke"→"Viral-Schlecker"; support: "Supply-Chain-Meister"→"Logistik-Meischter"; hud: path-maxed badge "[✓ Max]"→"[✓ Maximal]"

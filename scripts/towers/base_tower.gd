@@ -1036,13 +1036,15 @@ func _apply_path_tint() -> void:
 		var brightness: float
 		match path_a_tier:
 			1:
-				blend = 0.72
-				brightness = 0.97
+				# Low blend keeps A1 a subtle tint — large gap to A2 makes tiers
+				# distinguishable even without side-by-side comparison (#1189 #1183).
+				blend = 0.38
+				brightness = 1.00
 			2:
-				# 12% brightness drop vs A1 (0.97→0.85) adds a clear depth cue
-				# so A1→A2 reads even without side-by-side comparison (#1183).
-				blend = 0.85
-				brightness = 0.85
+				# 68% blend + 10% brightness drop creates a clear midpoint between
+				# the subtle A1 hint and the heavy A3 saturation (#1189).
+				blend = 0.68
+				brightness = 0.90
 			_:
 				blend = 0.90
 				brightness = 0.80
