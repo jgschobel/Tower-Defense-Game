@@ -1142,7 +1142,7 @@ func _flash_moab_telegraph() -> void:
 
 ## BTD6-style cash arc reward (research agent #4): spawn N coin sprites
 ## around the kill-center of the screen and arc them to the wallet HUD
-## position with staggered timing + per-coin ding. A floater "+CHF N"
+## position with staggered timing + per-coin ding. A floater "+N Gold"
 ## above the wallet caps it off. The biggest perceived-reward win per
 ## the wave research because it replaces silent counter-tick with
 ## kinetic, audible feedback that EVERY wave matters.
@@ -1187,9 +1187,9 @@ func show_cash_arc_reward(amount: int, wave_num: int) -> void:
 		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	pulse.tween_property(target_node, "scale", Vector2.ONE, 0.18) \
 		.set_trans(Tween.TRANS_SINE)
-	# "+CHF N" floater just above the wallet
+	# "+N Gold" floater just above the wallet
 	var floater := Label.new()
-	floater.text = "+%d CHF" % amount
+	floater.text = "+%d Gold" % amount
 	floater.add_theme_font_size_override("font_size", 22)
 	floater.add_theme_color_override("font_color", Color(1.0, 0.92, 0.30))
 	floater.add_theme_color_override("font_outline_color", Color(0.20, 0.10, 0.0))
@@ -2820,7 +2820,7 @@ func _build_kombo_badge() -> Control:
 	wrap.add_theme_stylebox_override("panel", sb)
 	var lbl := Label.new()
 	lbl.name = "Lbl"
-	lbl.text = "🎫 KOMBO! +15%%  10s"
+	lbl.text = "🎫 KOMBO! +15%  10s"
 	lbl.add_theme_color_override("font_color", Color(1.0, 0.88, 0.3, 1.0))
 	lbl.add_theme_constant_override("outline_size", 1)
 	lbl.add_theme_color_override("font_outline_color", Color(0.1, 0.06, 0.0, 1.0))
