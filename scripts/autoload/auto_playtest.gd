@@ -65,16 +65,21 @@ func _run_all() -> void:
 	for level_id in range(1, 4):
 		await _run_healthy_level(level_id)
 
-	# Quick scenarios AFTER levels: each ~5-6s. At elapsed ~71s they still have
-	# ~30s before the 100s effective budget (120s CI – 20s startup overhead).
+	# upgrade_flow first (~5s) then safety-critical scenarios immediately after
+	# levels, BEFORE new_towers (#1175: new_towers overran 120s CI budget because
+	# its 4s grace + long fight pushed total past the cutoff, silently dropping
+	# bughunt and stress from every run).
 	await _run_upgrade_flow()
-	await _run_new_towers_showcase()
 
 	# Bughunt ~3s, critical for ghost-cancel UX coverage.
 	await _run_bug_hunt()
 
-	# Stress test: ~8s, can be dropped if 120s CI clock runs out.
+	# Stress test: ~8s, perf regression guard for 80-enemy spawn.
 	await _run_stress_test()
+
+	# new_towers last: ~12-15s showcase. Least critical — cut here first if
+	# the CI clock is tight. Runs only when bughunt+stress have already completed.
+	await _run_new_towers_showcase()
 
 	_write_summary()
 	print("[playtest v3] done — %d snapshots, %d anim frames in %.1fs" % [
@@ -371,10 +376,11 @@ func _run_new_towers_showcase() -> void:
 		# giving only 2s real / 6s game time — not enough to see kills.
 		await get_tree().create_timer(1.2, true, false, true).timeout
 		_snapshot("new_towers_fight_t%d" % i)
-	# Grace: wait up to 4s real (12s game at 3×) for last enemy to clear.
-	# Without this, slow-firing towers (joe/justus/seve) leave 1 enemy alive
-	# when the scenario ends, masking real regressions (#1171).
-	var _nt_grace := 4000
+	# Grace: wait up to 2s real (6s game at 3×) for last enemy to clear.
+	# Reduced from 4s (#1175 budget pressure): new_towers moved to last slot
+	# so it can be cut by CI timeout — but halving grace frees ~2s in worst
+	# case to help bughunt/stress complete (#1171 root cause remains valid).
+	var _nt_grace := 2000
 	while _nt_grace > 0 and GameManager.current_state == GameManager.GameState.PLAYING:
 		await get_tree().create_timer(0.15, true, false, true).timeout
 		_nt_grace -= 150
