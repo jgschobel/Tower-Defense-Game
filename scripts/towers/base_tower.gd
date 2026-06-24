@@ -1036,16 +1036,16 @@ func _apply_path_tint() -> void:
 		var brightness: float
 		match path_a_tier:
 			1:
-				# Light tint — sprite reads as "entered path A" vs tier-0 white.
-				# Kept intentionally subtle so A2's large blend jump (#1107) reads
-				# as a genuine power-up, not a minor colour tweak.
-				blend = 0.55
-				brightness = 1.0
+				# Raised from 0.55: playtest #1177 showed A1 was imperceptibly
+				# close to base on-screen. 0.68 blend + slight brightness dip
+				# gives two independent cues (colour shift + dimmer sprite).
+				blend = 0.68
+				brightness = 0.96
 			2:
-				# Big blend jump from A1 (0.55→0.82) — two clear visual cues:
-				# deeper colour saturation AND a brighter/larger glow ring (#1107).
+				# Brightness dip added (1.0→0.93): distinguishes A2 from A1 via
+				# a second channel (depth) not just hue (#1177). Blend unchanged.
 				blend = 0.82
-				brightness = 1.0
+				brightness = 0.93
 			_:
 				blend = 0.88
 				brightness = 0.82
@@ -1248,18 +1248,19 @@ func _update_tier_glow(tier: int) -> void:
 	else:
 		ring_color = data.projectile_color
 	ring_color.a = 0.0  # alpha driven by _draw
-	# T2 ring jumps dramatically in radius AND alpha — two independent cues for
-	# the A1→A2 step so players see the upgrade even without comparing side-by-side
-	# (#1107). T1 is intentionally subtle; T2 is unmistakable; T3 is max.
+	# T1/T2 rings boosted per playtest #1177: old T1 (r=40, a=0.42) was
+	# invisible at mobile scale. T1 now r=46/a=0.68 and T2 r=66/a=0.92
+	# so each tier step reads clearly without a side-by-side comparison.
+	# T3 unchanged (r=78/a=1.0 — the "energy circle" reference from #1177).
 	var tier_radius: float
 	var tier_alpha: float
 	match tier:
 		1:
-			tier_radius = 40.0
-			tier_alpha = 0.42
+			tier_radius = 46.0
+			tier_alpha = 0.68
 		2:
-			tier_radius = 65.0
-			tier_alpha = 0.90
+			tier_radius = 66.0
+			tier_alpha = 0.92
 		_:
 			tier_radius = 78.0
 			tier_alpha = 1.0

@@ -3,6 +3,12 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-24 (audit-polish — tint, options bg, playtest order)
+
+- polish(tower): upgrade tint A1 blend 0.55→0.68 + brightness 0.96 (was 1.0); A2 brightness 0.93 (was 1.0); A1 glow ring r=46/a=0.68 (was 40/0.42), A2 r=66/a=0.92 — two independent cues per tier so A1→A2 reads clearly without side-by-side comparison (closes #1177)
+- fix(ui): options Dimmer alpha 1.0→0.82 so main menu scene shows faintly through; was fully opaque giving pitch-black canvas (closes #1176)
+- fix(playtest): move bughunt+stress before new_towers showcase; new_towers is least-critical and was overrunning CI budget, silently dropping both safety scenarios; new_towers grace 4s→2s (closes #1175)
+
 ## 2026-06-24 (audit-polish — Swiss German consistency)
 
 - polish(text): fix 4 Swiss German consistency issues — Fondue-Bomb→Fondue-Bombe (matches all other "-Bombe" enemies + short_name in enemy_meta.gd); wave-reward cash arc floater "+N CHF"→"+N Gold" (consistent with wave receipt and RUUSCH badge); KomboBadge initial text `%%`→`%` (stale escape never shown to player); cumulus perk hint `+ +1 Läbe`→`· +1 Läbe` (avoids double-plus awkwardness in victory/defeat message)
