@@ -1474,18 +1474,16 @@ func show_next_wave_button(visible_flag: bool) -> void:
 func _refresh_next_wave_preview(visible_flag: bool) -> void:
 	# Shows a compact panel above the Next Wave button with the enemy
 	# composition of the upcoming wave — "Chunt: 15x Brötli, 3x Cervelat".
-	# Hidden while a wave is in progress. ROADMAP #7: fade out instead of
-	# instant queue_free so the preview slides off gracefully when a
-	# wave starts.
-	var existing: Node = get_node_or_null("NextWavePreview")
-	if existing:
-		if existing is Control:
-			var ctl: Control = existing
-			var fade := ctl.create_tween()
-			fade.tween_property(ctl, "modulate:a", 0.0, 0.2)
-			fade.tween_callback(ctl.queue_free)
-		else:
-			existing.queue_free()
+	# Hidden while a wave is in progress.
+	# Kill ALL stale NextWavePreview children. Godot auto-renames duplicates
+	# to "NextWavePreview2" etc. if show_next_wave_button(true) fires while a
+	# previous panel is still being freed — get_node_or_null("NextWavePreview")
+	# misses them and they accumulate on the left side (#1181). Immediate
+	# queue_free also avoids the tween race where a 0.2s fade is in flight
+	# when the new panel is added (name collision → auto-rename → leak).
+	for child in get_children():
+		if str(child.name).begins_with("NextWavePreview"):
+			child.queue_free()
 	if not visible_flag:
 		return
 	# Find the game's WaveManager. current_scene may briefly be wrong
