@@ -3,6 +3,12 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-24 (audit-polish — playtest trio: win-screen overlap, tint A1/A2, options bg)
+
+- fix(level): _on_all_waves_completed now explicitly calls hud.update_enemy_count(0) before complete_level() — eliminates "1 übrig" label coexisting with the victory screen under tank-spawn-children race conditions (closes #1197)
+- fix(tower): A1 tint blend 0.38→0.55, brightness 1.00→0.90; A2 blend 0.68→0.82, brightness 0.90→0.82; A3 brightness 0.80→0.76; hue rotation 35°→42°/tier — each tier now has both hue and luminance progression so A1/A2 are visually distinct from tier-0 on mobile (closes #1196)
+- fix(ui): options dimmer standalone=COL_BG_DEEPEST warm-brown (not pure black), overlay opacity 0.78→0.60; gradient top Color(0.28,0.20,0.07,0.70)→Color(0.55,0.38,0.14,0.88) — panel now sits on a readable warm dark background (closes #1195)
+
 ## 2026-06-24 (audit-polish — playtest fixes: level names, options bg, tint gap)
 
 - fix(level-select): level name labels were invisible due to min_height=0 — GridContainer allocated 0px height for labels; set min_height=44 + font 11→13 so names render below each circle button (closes #1192)

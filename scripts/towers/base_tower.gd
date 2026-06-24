@@ -1036,23 +1036,22 @@ func _apply_path_tint() -> void:
 		var brightness: float
 		match path_a_tier:
 			1:
-				# Low blend keeps A1 a subtle tint — large gap to A2 makes tiers
-				# distinguishable even without side-by-side comparison (#1189 #1183).
-				blend = 0.38
-				brightness = 1.00
-			2:
-				# 68% blend + 10% brightness drop creates a clear midpoint between
-				# the subtle A1 hint and the heavy A3 saturation (#1189).
-				blend = 0.68
+				# 0.55 blend + 10% brightness drop: visible colour change at tier 1
+				# without overwhelming the sprite. Prior 0.38/1.0 was too subtle —
+				# A1 read identical to tier-0 on mobile (playtest #1197 #1196).
+				blend = 0.55
 				brightness = 0.90
+			2:
+				# 82% blend + 18% brightness drop — clearly darker+more-saturated
+				# than A1 so the A1→A2 step is legible without side-by-side (#1196).
+				blend = 0.82
+				brightness = 0.82
 			_:
 				blend = 0.90
-				brightness = 0.80
-		# 35°/tier hue rotation (was 28°) widens the hue gap so A1→A2 lands
-		# in clearly distinct colour regions even in narrow bands like Lemurius's
-		# green (was 20°/tier → 28°/tier → now 35°/tier, each step fixing CI
-		# screenshots showing identical A1/A2 hues #1107 #1095 #1183).
-		var ah: float = fmod(data.path_a_tint.h + (35.0 / 360.0) * path_a_tier, 1.0)
+				brightness = 0.76
+		# 42°/tier hue rotation (was 35°) widens the hue gap so each tier lands
+		# in a clearly distinct colour band on every tower palette (#1196 #1197).
+		var ah: float = fmod(data.path_a_tint.h + (42.0 / 360.0) * path_a_tier, 1.0)
 		var a_tint: Color = Color.from_hsv(ah, minf(data.path_a_tint.s + 0.15 * path_a_tier, 1.0), data.path_a_tint.v)
 		sprite.modulate = Color(
 			lerpf(1.0, a_tint.r, blend) * brightness,
@@ -1243,7 +1242,7 @@ func _update_tier_glow(tier: int) -> void:
 	# consistently ("green ring + green sprite = A-path tier N", #1031 #1107).
 	var ring_color: Color
 	if data.has_branching_upgrades() and path_a_tier > 0:
-		var ring_h: float = fmod(data.path_a_tint.h + (35.0 / 360.0) * path_a_tier, 1.0)
+		var ring_h: float = fmod(data.path_a_tint.h + (42.0 / 360.0) * path_a_tier, 1.0)
 		ring_color = Color.from_hsv(ring_h, 1.0, 1.0)
 	else:
 		ring_color = data.projectile_color
