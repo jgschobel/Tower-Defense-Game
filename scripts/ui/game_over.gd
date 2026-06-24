@@ -34,7 +34,7 @@ func _cumulus_perk_hint() -> String:
 	if bal >= 300:
 		return "  (✓ Alli Cumulus-Perks aktiv!)"
 	if bal >= 200:
-		return "  (✓ +50 Gold + +1 Läbe aktiv · noch %d bis +25 Gold)" % (300 - bal)
+		return "  (✓ +50 Gold · +1 Läbe aktiv · noch %d bis +25 Gold)" % (300 - bal)
 	if bal >= 100:
 		return "  (✓ +50 Gold aktiv · noch %d bis +1 Läbe)" % (200 - bal)
 	return "  (noch %d bis +50 Start-Gold)" % (100 - bal)

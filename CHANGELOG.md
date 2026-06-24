@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-24 (audit-polish — Swiss German consistency)
+
+- polish(text): fix 4 Swiss German consistency issues — Fondue-Bomb→Fondue-Bombe (matches all other "-Bombe" enemies + short_name in enemy_meta.gd); wave-reward cash arc floater "+N CHF"→"+N Gold" (consistent with wave receipt and RUUSCH badge); KomboBadge initial text `%%`→`%` (stale escape never shown to player); cumulus perk hint `+ +1 Läbe`→`· +1 Läbe` (avoids double-plus awkwardness in victory/defeat message)
+
 ## 2026-06-23 (audit-polish — playtest budget L3+stress)
 
 - fix(playtest): move L1/L2/L3 healthy runs before upgrade_flow/new_towers/bughunt so L3 gets budget while fresh (~41s elapsed not ~81s); add 4s grace in new_towers after combat shots so last enemy clears before final snapshot (closes #1170 #1171); close #1158 (gold floater throttle already shipped in #1163)
