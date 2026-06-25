@@ -56,6 +56,16 @@ func can_afford(amount: int) -> bool:
 	return gold >= amount
 
 
+func effective_cost(amount: int) -> int:
+	if GameManager and GameManager.bon_discount_uses > 0:
+		return maxi(1, amount / 2)
+	return amount
+
+
+func can_afford_effective(amount: int) -> bool:
+	return gold >= effective_cost(amount)
+
+
 ## Returns 1.15 during an active Coupon-Kombo window, else 1.0.
 func kill_gold_multiplier() -> float:
 	return 1.15 if Time.get_ticks_msec() < _kombo_until_ms else 1.0

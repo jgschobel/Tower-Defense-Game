@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-25 (audit-polish — bon affordability + touch target)
+
+- polish(bon): CurrencyManager.effective_cost()/can_afford_effective() make shop rows enable when bon discount covers the gap; cost labels show "🎫{half}" price; upgrade buttons show discounted cost; bon button 46×36→52×52 touch target; shop repaints immediately on bon activate.
+
 ## 2026-06-25 (audit-polish — options overlay + A3 floor + enemy halos)
 
 - fix(ui): options menu Dimmer alpha 1.0→0.82 so main menu shows through instead of full black void (closes #1208)
