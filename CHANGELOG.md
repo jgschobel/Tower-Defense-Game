@@ -3,6 +3,12 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-25 (audit-polish — options overlay + A3 floor + enemy halos)
+
+- fix(ui): options menu Dimmer alpha 1.0→0.82 so main menu shows through instead of full black void (closes #1208)
+- fix(tower): A3 luminance floor raised to MIN_LUM=0.45 + per-channel MIN_CHAN=0.10 floor prevents blue-heavy tints crushing warm-toned portraits to near-invisible (closes #1209)
+- fix(enemy): enemy_outline.gdshader discards near-white semi-transparent pixels (lum>0.88, a<0.75) — eliminates white rectangular halos in dense crowds caused by imperfect background removal (closes #1210)
+
 ## 2026-06-25 (audit-polish — ghost red tint + A3 luminance floor)
 
 - fix(placement): bughunt scenario now calls _update_ghost_position before _try_place so ghost moves to path position and turns red before the failed-placement screenshot (fixes #1205)
