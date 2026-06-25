@@ -570,14 +570,19 @@ func _update_visual() -> void:
 			else:
 				sprite.scale = Vector2.ONE * (photo_target / 512.0)
 			# Outline + circle-clip shader so photo enemies pop off the
-			# painted backgrounds.
+			# painted backgrounds. Always update params even when material
+			# already exists — pool reuse can inherit a previous enemy's
+			# shader config (e.g. circle_clip=false from a food sprite),
+			# which would strip the circular crop from a photo enemy (#1221).
 			if sprite.material == null:
 				var outline := ShaderMaterial.new()
 				outline.shader = preload("res://assets/shaders/enemy_outline.gdshader")
-				outline.set_shader_parameter("outline_color", Color(0.05, 0.03, 0.02, 1.0))
-				outline.set_shader_parameter("outline_radius", 0.010)
-				outline.set_shader_parameter("circle_clip", true)
 				sprite.material = outline
+			var pm := sprite.material as ShaderMaterial
+			if pm:
+				pm.set_shader_parameter("outline_color", Color(0.05, 0.03, 0.02, 1.0))
+				pm.set_shader_parameter("outline_radius", 0.010)
+				pm.set_shader_parameter("circle_clip", true)
 			return
 
 	# Use custom texture if set
@@ -592,13 +597,18 @@ func _update_visual() -> void:
 		# textures already have transparent backgrounds with their own
 		# shapes (Brötli, Cervelat, etc) so the outline tracks the
 		# silhouette, not a circular crop.
+		# Always update params on pool reuse — a previously circle_clip=true
+		# photo enemy retaining that flag would visually clip the food sprite
+		# into a circle, making most of it invisible (#1221).
 		if sprite.material == null:
 			var outline2 := ShaderMaterial.new()
 			outline2.shader = preload("res://assets/shaders/enemy_outline.gdshader")
-			outline2.set_shader_parameter("outline_color", Color(0.05, 0.03, 0.02, 1.0))
-			outline2.set_shader_parameter("outline_radius", 0.008)
-			outline2.set_shader_parameter("circle_clip", false)
 			sprite.material = outline2
+		var pm2 := sprite.material as ShaderMaterial
+		if pm2:
+			pm2.set_shader_parameter("outline_color", Color(0.05, 0.03, 0.02, 1.0))
+			pm2.set_shader_parameter("outline_radius", 0.008)
+			pm2.set_shader_parameter("circle_clip", false)
 		return
 
 	# Hide the default icon sprite — we draw food shapes instead
