@@ -43,9 +43,16 @@ func _ready() -> void:
 		call_deferred("_run_all")
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if _active and _readback_cooldown <= 0:
-		_fps_samples.append(Engine.get_frames_per_second())
+		# Use instantaneous FPS (1/delta) rather than Engine.get_frames_per_second().
+		# The engine's smoothed counter averages over ~1s of recent frames, so after
+		# the L1 anim-clip's 8 GPU readback stalls, the smoothed value stays depressed
+		# for 15+ frames even after _fps_samples.clear() — falsely inflating min FPS.
+		# 1/delta reflects THIS frame's actual cost, so _readback_cooldown=3 is
+		# sufficient to exclude the stall frame and the one frame after it whose
+		# delta includes the stall duration.  (Closes playtest-feedback #1190.)
+		_fps_samples.append(1.0 / maxf(delta, 0.001))
 	if _readback_cooldown > 0:
 		_readback_cooldown -= 1
 

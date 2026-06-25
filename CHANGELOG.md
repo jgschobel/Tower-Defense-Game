@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-25 (audit-polish — instantaneous FPS measurement eliminates L1 anim-clip smoothing bias)
+
+- fix(playtest): replace Engine.get_frames_per_second() with 1.0/maxf(delta,0.001) in auto_playtest._process() — smoothed counter stays depressed 15+ frames after the 8 GPU readback stalls in _capture_anim_clip(); _readback_cooldown=3 was sufficient only with instantaneous measurement; closes #1190
+
 ## 2026-06-24 (audit-polish — playtest trio: win-screen overlap, tint A1/A2, options bg)
 
 - fix(level): _on_all_waves_completed now explicitly calls hud.update_enemy_count(0) before complete_level() — eliminates "1 übrig" label coexisting with the victory screen under tank-spawn-children race conditions (closes #1197)
