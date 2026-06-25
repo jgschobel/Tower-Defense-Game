@@ -73,7 +73,14 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
   2.0 fps. Added _in_readback flag to auto_playtest.gd: _snapshot() and
   _capture_anim_clip() set it true before get_image(); _process() skips the FPS sample
   when set and clears it. Closes #975 #982 #989. The real-device FPS floor is still
-  unknown — a true device profile pass remains the next step._
+  unknown — a true device profile pass remains the next step.
+  Partial fix 2026-06-25: Replaced Engine.get_frames_per_second() (smoothed ~1s window)
+  with 1.0/maxf(delta,0.001) (instantaneous) in auto_playtest.gd _process(). Root cause
+  of L1 min-FPS 3.0 was that the engine's smoothed counter stays depressed for 15+
+  frames after the 8 GPU readback stalls in _capture_anim_clip(); existing
+  _readback_cooldown=3 was only sufficient to exclude 3 frames, not 15. With
+  instantaneous measurement, only the actual stall frames show slow FPS and
+  _readback_cooldown=3 is sufficient. Closes #1190._
 
 ### Tier-art completion
 - [ ] **D1/D2 portraits for remaining 3 towers** — Cordula and Kühne
