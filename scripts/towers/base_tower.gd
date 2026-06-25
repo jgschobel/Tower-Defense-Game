@@ -1051,12 +1051,25 @@ func _apply_path_tint() -> void:
 			_:
 				blend = 0.90
 				brightness = 0.72
-		# 42°/tier hue rotation (was 35°) widens the hue gap so each tier lands
-		# in a clearly distinct colour band on every tower palette (#1196 #1197).
-		var ah: float = fmod(data.path_a_tint.h + (42.0 / 360.0) * path_a_tier, 1.0)
-		# 0.20/tier saturation boost (was 0.15) makes A2 markedly more vivid than
-		# A1 providing a secondary colour cue alongside brightness (#1216).
-		var a_tint: Color = Color.from_hsv(ah, minf(data.path_a_tint.s + 0.20 * path_a_tier, 1.0), data.path_a_tint.v)
+		# Non-linear per-tier hue offsets: A1=+42° (stays in green band, subtle
+		# warmth), A2=+105° (jumps to clear teal/cyan so A1→A2 reads as a real
+		# colour change, not just brightness shift — #1222), A3=+155° (deep blue).
+		# Old linear 42°/tier kept A1 and A2 too close together on the green-cyan
+		# band; non-linear offsets widen the A1→A2 gap from 42° to 63°.
+		var hue_step: float
+		match path_a_tier:
+			1: hue_step = 42.0 / 360.0
+			2: hue_step = 105.0 / 360.0
+			_: hue_step = 155.0 / 360.0
+		var ah: float = fmod(data.path_a_tint.h + hue_step, 1.0)
+		# Explicit per-tier saturation boost: A2 bumped to 0.48 (was 0.20×2=0.40)
+		# for a more vivid cyan that separates it from the muted A1 green (#1222).
+		var sat_boost: float
+		match path_a_tier:
+			1: sat_boost = 0.20
+			2: sat_boost = 0.48
+			_: sat_boost = 0.60
+		var a_tint: Color = Color.from_hsv(ah, minf(data.path_a_tint.s + sat_boost, 1.0), data.path_a_tint.v)
 		sprite.modulate = Color(
 			lerpf(1.0, a_tint.r, blend) * brightness,
 			lerpf(1.0, a_tint.g, blend) * brightness,

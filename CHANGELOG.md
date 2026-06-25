@@ -3,6 +3,11 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-25 (audit-polish — A1→A2 tint gap + enemy shader pool reset)
+
+- fix(tower): A2 hue offset 84°→105° (non-linear per-tier) + sat boost 0.40→0.48 so A2 reads clearly as teal/cyan instead of staying in the green band alongside A1 (closes #1222)
+- fix(enemy): shader material params always updated on pool reuse — photo enemies with circle_clip=true no longer leak that flag to food-sprite enemies on pool reuse, fixing ~15 white puzzle-piece sprites in stress scenario (closes #1221)
+
 ## 2026-06-25 (audit-polish — playtest trio: story hint + options bg + A2 tint)
 
 - polish(story): ContinueButton font 28→36, PageIndicator 18→22; pulsing alpha tween (0.35↔1.0 @ 0.65s) on hint when typewriter finishes so players notice the tap target (#1218)
