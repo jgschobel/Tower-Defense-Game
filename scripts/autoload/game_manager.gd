@@ -9,6 +9,7 @@ signal lives_changed(new_lives: int)
 signal game_over(won: bool)
 signal level_completed(level_id: int)
 signal game_state_changed(new_state: int)
+signal bon_charges_changed(charges: int)
 
 const SAVE_PATH := "user://save_data.json"
 const MAX_LEVELS := 10
@@ -127,6 +128,12 @@ var level_kills: int = 0
 var cumulus_balance: int = 0
 var cumulus_waves_cleared: int = 0
 
+# Migros-Bon active-power: discount charges earned by completing levels.
+# bon_charges = stored charges (max 3), bon_discount_uses = remaining
+# 50%-off actions in the current active window (max 3 when activated).
+var bon_charges: int = 0
+var bon_discount_uses: int = 0
+
 
 func _ready() -> void:
 	load_game()
@@ -229,6 +236,28 @@ func earn_cumulus(amount: int) -> void:
 	save_game()
 
 
+func earn_bon_charge() -> void:
+	if bon_charges < 3:
+		bon_charges += 1
+		bon_charges_changed.emit(bon_charges)
+
+
+func activate_bon() -> void:
+	if bon_charges <= 0:
+		return
+	bon_charges -= 1
+	bon_discount_uses = 3
+	bon_charges_changed.emit(bon_charges)
+
+
+func consume_bon_discount() -> bool:
+	if bon_discount_uses <= 0:
+		return false
+	bon_discount_uses -= 1
+	bon_charges_changed.emit(bon_charges)
+	return true
+
+
 func cumulus_start_gold_bonus() -> int:
 	var bonus: int = 0
 	if cumulus_balance >= 100:
@@ -278,6 +307,7 @@ func complete_level() -> void:
 	if AminosManager and AminosManager.has_method("award_for_level_clear"):
 		AminosManager.award_for_level_clear(current_level, stars)
 
+	earn_bon_charge()
 	set_state(GameState.WON)
 	level_completed.emit(current_level)
 	save_game()
@@ -317,6 +347,7 @@ func save_game() -> void:
 		"total_kills": total_kills,
 		"cumulus_balance": cumulus_balance,
 		"cumulus_waves_cleared": cumulus_waves_cleared,
+		"bon_charges": bon_charges,
 	}
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file:
@@ -356,6 +387,7 @@ func load_game() -> void:
 		total_kills = save_data.get("total_kills", 0)
 		cumulus_balance = int(save_data.get("cumulus_balance", 0))
 		cumulus_waves_cleared = int(save_data.get("cumulus_waves_cleared", 0))
+		bon_charges = clampi(int(save_data.get("bon_charges", 0)), 0, 3)
 		AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Master"), linear_to_db(master_volume))
 
 
