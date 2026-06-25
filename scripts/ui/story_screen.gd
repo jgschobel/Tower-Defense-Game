@@ -26,6 +26,7 @@ var _chars_per_second: float = 60.0
 # Path used for async preload — resolved in _ready() so the level scene is
 # already in memory by the time the player taps through all dialogue pages.
 var _preload_path: String = ""
+var _hint_tween: Tween = null
 
 
 func _current_page_text() -> String:
@@ -134,6 +135,11 @@ func _ready() -> void:
 func _start_page() -> void:
 	_char_index = 0
 	_typing = true
+	if _hint_tween and _hint_tween.is_valid():
+		_hint_tween.kill()
+	_hint_tween = null
+	if continue_button:
+		continue_button.modulate.a = 1.0
 	if story_label:
 		story_label.text = ""
 	continue_button.text = "Tippä zum wiiterläse…"
@@ -181,6 +187,7 @@ func _process(delta: float) -> void:
 			continue_button.text = "LOS GAHT'S!"
 		else:
 			continue_button.text = "Wiiter ›"
+		_start_hint_pulse()
 	if story_label:
 		var speaker: String = _current_page_speaker()
 		var rendered: String = current_text.left(_char_index)
@@ -190,7 +197,22 @@ func _process(delta: float) -> void:
 			story_label.text = rendered
 
 
+func _start_hint_pulse() -> void:
+	if not continue_button:
+		return
+	if _hint_tween and _hint_tween.is_valid():
+		_hint_tween.kill()
+	_hint_tween = create_tween().set_loops()
+	_hint_tween.tween_property(continue_button, "modulate:a", 0.35, 0.65)
+	_hint_tween.tween_property(continue_button, "modulate:a", 1.0, 0.65)
+
+
 func _on_continue_button_pressed() -> void:
+	if _hint_tween and _hint_tween.is_valid():
+		_hint_tween.kill()
+	_hint_tween = null
+	if continue_button:
+		continue_button.modulate.a = 1.0
 	SfxManager.play_click()
 	if _typing:
 		# Tap during typewriter: finish current page immediately.
@@ -204,6 +226,7 @@ func _on_continue_button_pressed() -> void:
 			continue_button.text = "LOS GAHT'S!"
 		else:
 			continue_button.text = "Wiiter ›"
+		_start_hint_pulse()
 		return
 
 	if _current_page < _pages.size() - 1:

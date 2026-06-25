@@ -1042,17 +1042,21 @@ func _apply_path_tint() -> void:
 				blend = 0.55
 				brightness = 0.90
 			2:
-				# 82% blend + 18% brightness drop — clearly darker+more-saturated
-				# than A1 so the A1→A2 step is legible without side-by-side (#1196).
-				blend = 0.82
-				brightness = 0.82
+				# 88% blend + 26% brightness drop — clearly darker+more-saturated
+				# than A1 so the A1→A2 step is legible at mobile scale (#1216).
+				# Was 0.82/0.82 (only 8% brightness gap vs A1); raised to 0.88/0.74
+				# so the brightness step (16%) is more than double the old gap.
+				blend = 0.88
+				brightness = 0.74
 			_:
 				blend = 0.90
-				brightness = 0.76
+				brightness = 0.72
 		# 42°/tier hue rotation (was 35°) widens the hue gap so each tier lands
 		# in a clearly distinct colour band on every tower palette (#1196 #1197).
 		var ah: float = fmod(data.path_a_tint.h + (42.0 / 360.0) * path_a_tier, 1.0)
-		var a_tint: Color = Color.from_hsv(ah, minf(data.path_a_tint.s + 0.15 * path_a_tier, 1.0), data.path_a_tint.v)
+		# 0.20/tier saturation boost (was 0.15) makes A2 markedly more vivid than
+		# A1 providing a secondary colour cue alongside brightness (#1216).
+		var a_tint: Color = Color.from_hsv(ah, minf(data.path_a_tint.s + 0.20 * path_a_tier, 1.0), data.path_a_tint.v)
 		sprite.modulate = Color(
 			lerpf(1.0, a_tint.r, blend) * brightness,
 			lerpf(1.0, a_tint.g, blend) * brightness,

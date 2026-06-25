@@ -118,7 +118,7 @@ horizontal_alignment = 1
 
 [node name="PageIndicator" type="Label" parent="Panel/VBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 22
 theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
 text = "1 / 1"
 horizontal_alignment = 1
@@ -126,7 +126,7 @@ horizontal_alignment = 1
 [node name="ContinueButton" type="Button" parent="Panel/VBox"]
 layout_mode = 2
 custom_minimum_size = Vector2(0, 72)
-theme_override_font_sizes/font_size = 28
+theme_override_font_sizes/font_size = 36
 text = "Tippä zum wiiterläse…"
 
 [connection signal="pressed" from="Panel/VBox/ContinueButton" to="." method="_on_continue_button_pressed"]
