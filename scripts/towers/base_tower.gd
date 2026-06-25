@@ -907,7 +907,7 @@ func sell() -> void:
 func can_upgrade() -> bool:
 	if upgrade_level >= data.upgrade_costs.size():
 		return false
-	return CurrencyManager.can_afford(data.upgrade_costs[upgrade_level])
+	return CurrencyManager.can_afford_effective(data.upgrade_costs[upgrade_level])
 
 
 func get_upgrade_cost() -> int:
@@ -929,7 +929,7 @@ func can_upgrade_path(path_letter: String) -> bool:
 	var costs: Array[int] = data.path_a_costs if path_letter == "a" else data.path_b_costs
 	if tier >= costs.size():
 		return false
-	return CurrencyManager.can_afford(costs[tier])
+	return CurrencyManager.can_afford_effective(costs[tier])
 
 
 func get_path_upgrade_cost(path_letter: String) -> int:

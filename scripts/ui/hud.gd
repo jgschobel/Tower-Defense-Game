@@ -2303,7 +2303,9 @@ func _style_path_button(btn: Button, path_letter: String, td: TowerData) -> void
 		btn.disabled = true
 	else:
 		var next_name := _selected_tower.get_path_next_tier_name(path_letter)
-		btn.text = ">> %s\n%d G" % [next_name if next_name != "" else display, cost]
+		var eff_cost: int = CurrencyManager.effective_cost(cost) if CurrencyManager else cost
+		var cost_str: String = ("🎫%dG" % eff_cost) if eff_cost < cost else ("%dG" % cost)
+		btn.text = ">> %s\n%s" % [next_name if next_name != "" else display, cost_str]
 		btn.disabled = not _selected_tower.can_upgrade_path(path_letter)
 	btn.add_theme_color_override("font_color", tint)
 	btn.add_theme_color_override("font_outline_color", Color.BLACK)
@@ -2391,7 +2393,7 @@ func _inject_topbar_icon_chips() -> void:
 	_bon_button = Button.new()
 	_bon_button.name = "BonButton"
 	_bon_button.text = "🎫"
-	_bon_button.custom_minimum_size = Vector2(46, 36)
+	_bon_button.custom_minimum_size = Vector2(52, 52)
 	_bon_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_bon_button.visible = GameManager.bon_charges > 0
 	var bon_sb := StyleBoxFlat.new()
@@ -2459,7 +2461,8 @@ func _on_gold_changed(amount: int) -> void:
 			continue
 		var btn: Button = tower_shop.get_child(i)
 		var cost: int = tower_data_list[i].buy_cost
-		var affordable: bool = CurrencyManager.can_afford(cost)
+		var eff_cost: int = CurrencyManager.effective_cost(cost)
+		var affordable: bool = CurrencyManager.can_afford_effective(cost)
 		# Threshold-crossing pulse: previously unaffordable, now affordable
 		# → brief gold pulse on the cost label so the player notices the
 		# new option opening up. Stored in metadata to avoid an extra dict.
@@ -2473,10 +2476,13 @@ func _on_gold_changed(amount: int) -> void:
 		btn.disabled = not affordable
 		btn.modulate = Color.WHITE if affordable else Color(0.7, 0.7, 0.75, 1.0)
 		if i < _cost_labels.size():
+			# Show discounted price when bon is active
+			var bon_uses: int = GameManager.bon_discount_uses if GameManager else 0
+			_cost_labels[i].text = ("🎫%d" % eff_cost) if (bon_uses > 0 and eff_cost < cost) else ("%d" % cost)
 			var col: Color
 			if not affordable:
 				col = Color(1, 0.35, 0.25)
-			elif amount < int(float(cost) * 1.2):  # barely — <20% spare
+			elif amount < int(float(eff_cost) * 1.2):  # barely — <20% spare
 				col = Color(1, 0.75, 0.3)
 			else:
 				col = Color(1, 0.9, 0.3)
@@ -2666,6 +2672,8 @@ func _start_bon_pulse() -> void:
 
 func _on_bon_charges_changed(_charges: int) -> void:
 	_update_bon_button()
+	# Bon state change affects effective costs — refresh shop and upgrade UI.
+	_on_gold_changed(CurrencyManager.gold if CurrencyManager else 0)
 
 
 func _on_upgrade_button_pressed() -> void:
