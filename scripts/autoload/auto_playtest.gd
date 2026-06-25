@@ -544,6 +544,18 @@ func _run_stress_test() -> void:
 	await get_tree().process_frame
 	_snapshot("stress_spawned")
 
+	# Preliminary fps flush: the 120s CI timeout (SIGTERM) can fire during
+	# the snapshot loop below, leaving _record_scenario() unreached and the
+	# stress row absent from fps.log (#1203). Write a partial row immediately
+	# after spawning so even a mid-loop kill preserves stress metrics.
+	# If the full loop completes, _record_scenario() appends a second row
+	# with better data; the CI aggregator uses the LAST matching row.
+	if not _fps_samples.is_empty():
+		var _psum: float = 0.0
+		for _pv in _fps_samples:
+			_psum += _pv
+		_append_fps_log(_psum / float(_fps_samples.size()), _fps_samples.min())
+
 	# Let them march for a bit, sampling FPS at realistic intervals
 	for i in 6:
 		await get_tree().create_timer(1.0).timeout

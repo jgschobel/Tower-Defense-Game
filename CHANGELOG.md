@@ -8,6 +8,7 @@ Each run appends one line.
 - fix(ui): options menu Dimmer alpha 1.0→0.82 so main menu shows through instead of full black void (closes #1208)
 - fix(tower): A3 luminance floor raised to MIN_LUM=0.45 + per-channel MIN_CHAN=0.10 floor prevents blue-heavy tints crushing warm-toned portraits to near-invisible (closes #1209)
 - fix(enemy): enemy_outline.gdshader discards near-white semi-transparent pixels (lum>0.88, a<0.75) — eliminates white rectangular halos in dense crowds caused by imperfect background removal (closes #1210)
+- fix(playtest): stress scenario preliminary fps flush right after stress_spawned so 120s SIGTERM can't drop the entire stress row from fps.log (#1203)
 
 ## 2026-06-25 (audit-polish — ghost red tint + A3 luminance floor)
 
