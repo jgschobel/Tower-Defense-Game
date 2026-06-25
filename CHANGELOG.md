@@ -3,6 +3,11 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-25 (audit-polish — ghost red tint + A3 luminance floor)
+
+- fix(placement): bughunt scenario now calls _update_ghost_position before _try_place so ghost moves to path position and turns red before the failed-placement screenshot (fixes #1205)
+- fix(tower): removed path_b_tier>0 guard on luminance floor in _apply_path_tint — pure A3 towers (no B path) now get the MIN_LUM=0.35 boost, preventing near-black sprites at max upgrade (fixes #1204)
+
 ## 2026-06-25 (feat — Migros-Bon active power: 50% discount on 3 actions per level win)
 
 - feat(game): Migros-Bon active power — GameManager.bon_charges (+1 per level won, cap 3, persisted), activate_bon() converts 1 charge → 3 discount uses, consume_bon_discount() applies 50% off via CurrencyManager.spend_gold(); HUD injects "🎫 Bon" button (Migros red, 46×36) in TopBar with 1.06× pulse tween and slide-up "Bon aktiv! 3× 50% Rabatt" toast on activation; button shows remaining uses as "🎫×N" while active; closes ROADMAP #Migros-Bon
