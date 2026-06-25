@@ -39,6 +39,18 @@ void fragment() {
 		mask = 1.0 - smoothstep(0.88, 0.99, dist);
 	}
 
+	// Background-artifact removal: near-white semi-transparent pixels are
+	// residual halos from imperfect background-removal in the art pipeline
+	// (#1210). A pixel that is very bright (> 0.88 luminance) AND not fully
+	// opaque (a < 0.75) is almost certainly a white-background artifact —
+	// discard it before the outline/blend decision so it never contributes
+	// to the framebuffer, preventing white halos in dense crowds.
+	float lum = dot(tex_color.rgb, vec3(0.2126, 0.7152, 0.0722));
+	if (lum > 0.88 && a < 0.75) {
+		a = 0.0;
+		tex_color.a = 0.0;
+	}
+
 	// Blend: where the texture is opaque, draw texture; where it's
 	// transparent but a neighbor is opaque, draw the outline color.
 	if (a > 0.5) {
