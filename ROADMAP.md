@@ -215,7 +215,7 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
   `path_progress`, fanned by `±h_offset` so they don't visually stack.
   _Shipped 2026-06-12 via PR #855._
 
-- [ ] **Migros-Bon active power (50% off next 3 actions)** — top-bar
+- [x] **Migros-Bon active power (50% off next 3 actions)** — top-bar
   "🎫 Bon" button (only visible when ≥1 charge). Tap → next 3 tower
   placements OR upgrades cost 50% gold. Charge cost: 200 Cumulus to
   unlock first slot in Forschig menu; thereafter +1 charge per level
@@ -225,6 +225,10 @@ work. Cap: 15 items. When something ships, tick it AND remove it within
   60×60 px, animated 1.05× pulse when ≥1 charge. **Why it sticks:**
   gives meta-currency a *visible* effect mid-run, not just a passive
   +50 gold buff.
+  _Shipped 2026-06-25: GameManager.bon_charges + activate_bon() + consume_bon_discount();
+  CurrencyManager.spend_gold() applies 50% discount; HUD injects BonButton (Migros red)
+  with pulse tween + "🎫 Bon aktiv!" toast; +1 charge per level win (cap 3), persisted
+  in save. Forschig unlock deferred — charges auto-awarded from level completion._
 
 - [ ] **"Geischter-Lauf" (ghost replay) — laziest-player fantasy** —
   after each win, GameManager persists a JSON `replay_<lvl>.json`

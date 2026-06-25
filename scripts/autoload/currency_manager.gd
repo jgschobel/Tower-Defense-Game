@@ -41,10 +41,13 @@ func reset_wave_gold() -> void:
 
 
 func spend_gold(amount: int) -> bool:
-	if gold >= amount:
-		gold -= amount
+	var effective: int = amount
+	if GameManager and GameManager.consume_bon_discount():
+		effective = maxi(1, amount / 2)
+	if gold >= effective:
+		gold -= effective
 		gold_changed.emit(gold)
-		_track_spend(amount)
+		_track_spend(effective)
 		return true
 	return false
 

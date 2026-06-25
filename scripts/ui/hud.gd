@@ -38,6 +38,8 @@ var _shop_width: float = 152.0
 var _shop_collapse_tween: Tween = null
 var _tower_info_tween: Tween = null
 var _kombo_badge: Control = null
+var _bon_button: Button = null
+var _bon_pulse_tween: Tween = null
 
 
 func _ready() -> void:
@@ -46,6 +48,7 @@ func _ready() -> void:
 	if ComboTracker:
 		ComboTracker.combo_changed.connect(_on_combo_changed)
 	CurrencyManager.kombo_triggered.connect(_on_kombo_triggered)
+	GameManager.bon_charges_changed.connect(_on_bon_charges_changed)
 
 	_on_gold_changed(CurrencyManager.gold)
 	_on_lives_changed(GameManager.lives)
@@ -2384,6 +2387,37 @@ func _inject_topbar_icon_chips() -> void:
 		wave_icon.name = "WaveIcon"
 		hbox.add_child(wave_icon)
 		hbox.move_child(wave_icon, _index_of_node(hbox, wave_label))
+	# Migros-Bon button — visible only when bon_charges > 0
+	_bon_button = Button.new()
+	_bon_button.name = "BonButton"
+	_bon_button.text = "🎫"
+	_bon_button.custom_minimum_size = Vector2(46, 36)
+	_bon_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_bon_button.visible = GameManager.bon_charges > 0
+	var bon_sb := StyleBoxFlat.new()
+	bon_sb.bg_color = Color(0.9, 0.08, 0.15, 0.88)
+	bon_sb.corner_radius_top_left = 8
+	bon_sb.corner_radius_top_right = 8
+	bon_sb.corner_radius_bottom_left = 8
+	bon_sb.corner_radius_bottom_right = 8
+	bon_sb.content_margin_left = 4
+	bon_sb.content_margin_right = 4
+	bon_sb.content_margin_top = 2
+	bon_sb.content_margin_bottom = 2
+	_bon_button.add_theme_stylebox_override("normal", bon_sb)
+	_bon_button.add_theme_stylebox_override("hover", bon_sb)
+	var bon_pressed_sb := bon_sb.duplicate()
+	bon_pressed_sb.bg_color = Color(0.7, 0.06, 0.10, 0.95)
+	_bon_button.add_theme_stylebox_override("pressed", bon_pressed_sb)
+	_bon_button.add_theme_font_size_override("font_size", 18)
+	_bon_button.tooltip_text = "Migros-Bon: 50% Rabatt uf 3 Aktione"
+	_bon_button.pressed.connect(_on_bon_button_pressed)
+	hbox.add_child(_bon_button)
+	# Place it right before speed_button
+	if speed_button and speed_button.get_parent() == hbox:
+		hbox.move_child(_bon_button, _index_of_node(hbox, speed_button))
+	_update_bon_button()
+
 	# Separator before the buttons
 	if speed_button and speed_button.get_parent() == hbox:
 		var sep_before_btns := _make_topbar_separator()
@@ -2575,6 +2609,63 @@ func _on_speed_button_pressed() -> void:
 			_:
 				speed_button.modulate = Color.WHITE
 	SfxManager.play_click()
+
+
+func _on_bon_button_pressed() -> void:
+	if not GameManager or GameManager.bon_charges <= 0:
+		return
+	GameManager.activate_bon()
+	_update_bon_button()
+	SfxManager.play_click()
+	# Toast feedback: "Bon aktiv! 3× 50% Rabatt"
+	var toast := Label.new()
+	toast.text = "🎫 Bon aktiv!  3× 50% Rabatt"
+	toast.add_theme_font_size_override("font_size", 14)
+	toast.add_theme_color_override("font_color", Color(1.0, 0.92, 0.25))
+	toast.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.85))
+	toast.add_theme_constant_override("outline_size", 3)
+	toast.position = Vector2(40, 80)
+	toast.z_index = 20
+	add_child(toast)
+	var tw := create_tween()
+	tw.tween_property(toast, "position:y", 40.0, 0.6).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_interval(1.2)
+	tw.tween_property(toast, "modulate:a", 0.0, 0.4)
+	tw.tween_callback(toast.queue_free)
+
+
+func _update_bon_button() -> void:
+	if _bon_button == null:
+		return
+	var charges: int = GameManager.bon_charges if GameManager else 0
+	var uses: int = GameManager.bon_discount_uses if GameManager else 0
+	if charges > 0 or uses > 0:
+		_bon_button.visible = true
+		if uses > 0:
+			_bon_button.text = "🎫×%d" % uses
+			_bon_button.modulate = Color(1.0, 1.0, 0.5)
+		else:
+			_bon_button.text = "🎫" if charges == 1 else "🎫×%d" % charges
+			_bon_button.modulate = Color.WHITE
+			_start_bon_pulse()
+	else:
+		_bon_button.visible = false
+		if _bon_pulse_tween:
+			_bon_pulse_tween.kill()
+
+
+func _start_bon_pulse() -> void:
+	if _bon_button == null or not _bon_button.visible:
+		return
+	if _bon_pulse_tween:
+		_bon_pulse_tween.kill()
+	_bon_pulse_tween = create_tween().set_loops()
+	_bon_pulse_tween.tween_property(_bon_button, "scale", Vector2(1.06, 1.06), 0.5).set_ease(Tween.EASE_IN_OUT)
+	_bon_pulse_tween.tween_property(_bon_button, "scale", Vector2(1.0, 1.0), 0.5).set_ease(Tween.EASE_IN_OUT)
+
+
+func _on_bon_charges_changed(_charges: int) -> void:
+	_update_bon_button()
 
 
 func _on_upgrade_button_pressed() -> void:

@@ -3,6 +3,10 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-25 (feat — Migros-Bon active power: 50% discount on 3 actions per level win)
+
+- feat(game): Migros-Bon active power — GameManager.bon_charges (+1 per level won, cap 3, persisted), activate_bon() converts 1 charge → 3 discount uses, consume_bon_discount() applies 50% off via CurrencyManager.spend_gold(); HUD injects "🎫 Bon" button (Migros red, 46×36) in TopBar with 1.06× pulse tween and slide-up "Bon aktiv! 3× 50% Rabatt" toast on activation; button shows remaining uses as "🎫×N" while active; closes ROADMAP #Migros-Bon
+
 ## 2026-06-25 (audit-polish — instantaneous FPS measurement eliminates L1 anim-clip smoothing bias)
 
 - fix(playtest): replace Engine.get_frames_per_second() with 1.0/maxf(delta,0.001) in auto_playtest._process() — smoothed counter stays depressed 15+ frames after the 8 GPU readback stalls in _capture_anim_clip(); _readback_cooldown=3 was sufficient only with instantaneous measurement; closes #1190
