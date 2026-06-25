@@ -590,6 +590,8 @@ func _run_bug_hunt() -> void:
 			Vector2(1200, 200), # point_9: (1200,200) — path descending to exit
 		]
 		for p in bad_positions:
+			if placement.has_method("_update_ghost_position"):
+				placement.call("_update_ghost_position", p)
 			if placement.has_method("_try_place"):
 				placement.call("_try_place", p)
 			await get_tree().create_timer(0.15).timeout

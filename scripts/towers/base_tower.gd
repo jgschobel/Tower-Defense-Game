@@ -1091,21 +1091,21 @@ func _apply_path_tint() -> void:
 			lerpf(cur.b, b_col.b, b_weight) * b_brightness,
 			1.0
 		)
-	# Luminance floor: A3+B2/B3 can crush the sprite to a near-black blob
-	# (#1116). Boost all channels uniformly to keep a minimum perceived
-	# brightness so character silhouettes remain recognisable at end-game.
-	if path_b_tier > 0:
-		var fc := sprite.modulate
-		var lum := fc.r * 0.2126 + fc.g * 0.7152 + fc.b * 0.0722
-		const MIN_LUM := 0.35
-		if lum > 0.001 and lum < MIN_LUM:
-			var boost := MIN_LUM / lum
-			sprite.modulate = Color(
-				minf(fc.r * boost, 1.0),
-				minf(fc.g * boost, 1.0),
-				minf(fc.b * boost, 1.0),
-				1.0
-			)
+	# Luminance floor: any high-tier tint combination can crush the sprite to
+	# a near-black blob (#1116 #1204). Boost all channels uniformly to keep a
+	# minimum perceived brightness so character silhouettes remain recognisable.
+	# Previously guarded by path_b_tier > 0, which left pure A3 unprotected.
+	var fc := sprite.modulate
+	var lum := fc.r * 0.2126 + fc.g * 0.7152 + fc.b * 0.0722
+	const MIN_LUM := 0.35
+	if lum > 0.001 and lum < MIN_LUM:
+		var boost := MIN_LUM / lum
+		sprite.modulate = Color(
+			minf(fc.r * boost, 1.0),
+			minf(fc.g * boost, 1.0),
+			minf(fc.b * boost, 1.0),
+			1.0
+		)
 	_update_b_path_glow()
 
 
