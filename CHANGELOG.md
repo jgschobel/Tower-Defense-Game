@@ -3,6 +3,12 @@
 Running log of changes made by the autonomous dev loop. Newest first.
 Each run appends one line.
 
+## 2026-06-25 (audit-polish — playtest trio: story hint + options bg + A2 tint)
+
+- polish(story): ContinueButton font 28→36, PageIndicator 18→22; pulsing alpha tween (0.35↔1.0 @ 0.65s) on hint when typewriter finishes so players notice the tap target (#1218)
+- polish(options): standalone dimmer (0.06→0.18) + brighter gradient bottom (0.08→0.22) for warm amber background instead of pure black; fix missing MasterLabel in row styling loop (#1217)
+- polish(tower): A2 blend 0.82→0.88, brightness 0.82→0.74, saturation step 0.15→0.20/tier — A1→A2 brightness gap doubles (8%→16%) making the upgrade clearly visible at mobile scale (#1216)
+
 ## 2026-06-25 (audit-polish — bon affordability + touch target)
 
 - polish(bon): CurrencyManager.effective_cost()/can_afford_effective() make shop rows enable when bon discount covers the gap; cost labels show "🎫{half}" price; upgrade buttons show discounted cost; bon button 46×36→52×52 touch target; shop repaints immediately on bon activate.

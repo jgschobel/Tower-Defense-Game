@@ -28,8 +28,8 @@ func _ready() -> void:
 		if is_overlay:
 			dimmer.color = Color(0, 0, 0, 0.60)
 		else:
-			# warm dark brown — not pure black, matches game palette
-			dimmer.color = Color(0.06, 0.05, 0.04, 1.0)
+			# warm amber-brown so standalone path doesn't look pure-black (#1217)
+			dimmer.color = Color(0.18, 0.12, 0.06, 1.0)
 	master_slider.value = GameManager.master_volume
 	music_slider.value = GameManager.music_volume
 	sfx_slider.value = GameManager.sfx_volume
@@ -52,8 +52,8 @@ func _apply_theme() -> void:
 	if not has_node("GradOverlay"):
 		var gt := GradientTexture2D.new()
 		var g := Gradient.new()
-		g.set_color(0, Color(0.55, 0.38, 0.14, 0.88))
-		g.set_color(1, Color(0.08, 0.06, 0.03, 0.55))
+		g.set_color(0, Color(0.62, 0.44, 0.15, 0.92))
+		g.set_color(1, Color(0.22, 0.15, 0.06, 0.80))
 		gt.gradient = g
 		gt.fill_from = Vector2(0.5, 0.0)
 		gt.fill_to = Vector2(0.5, 1.0)
@@ -77,7 +77,7 @@ func _apply_theme() -> void:
 	if title:
 		DesignTokens.style_heading(title, DesignTokens.FONT_HEADING)
 	# Row label colours
-	for row_lbl_path: String in ["Panel/VBox/MusicRow/MusicLabel", "Panel/VBox/SfxRow/SfxLabel"]:
+	for row_lbl_path: String in ["Panel/VBox/MasterRow/MasterLabel", "Panel/VBox/MusicRow/MusicLabel", "Panel/VBox/SfxRow/SfxLabel"]:
 		var lbl := get_node_or_null(row_lbl_path) as Label
 		if lbl:
 			DesignTokens.style_label(lbl, DesignTokens.FONT_LABEL_LG)
