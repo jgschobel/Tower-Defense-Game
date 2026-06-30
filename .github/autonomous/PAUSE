@@ -1,0 +1,19 @@
+# Autonomous loop paused
+
+The autonomous-dev loop is paused because this file exists. Delete it
+to resume:
+
+  rm .github/autonomous/PAUSE
+  git commit -am "ops: resume autonomous loop"
+  git push
+
+Paused: 2026-06-30 — user said "the game is eating away all my tokens".
+The loop ran every 4h (6 runs/day) plus playtest every 6h (4 runs/day)
+= ~10 autonomous Claude sessions a day, all charging against the user's
+Claude Max quota.
+
+Workflow `.github/workflows/autonomous-dev.yml` checks for this file
+in its first step and skips the run if present.
+
+The `playtest.yml` cron schedule was also disabled in the same commit
+(workflow_dispatch retained so it can be triggered manually).
