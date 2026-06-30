@@ -12,19 +12,6 @@ on:
   #   push:
   #     branches: [main]
   workflow_dispatch:
-    paths:
-      - 'scripts/towers/**'
-      - 'scripts/enemies/**'
-      - 'scripts/projectiles/**'
-      - 'scripts/systems/**'
-      - 'scripts/ui/**'
-      - 'scenes/**'
-      - 'resources/tower_data/**'
-      - 'resources/enemy_data/**'
-      - 'resources/level_data/**'
-      - 'project.godot'
-      - 'export_presets.cfg'
-      - 'assets/textures/**'
 
 permissions:
   contents: write
