@@ -1,18 +1,17 @@
 name: Autonomous Playtester
 
 on:
-  schedule:
-    # Every 6 hours (was 3h). Private repo = 2000 free GitHub Actions
-    # minutes/month. Each playtest run ~6 min. At 8 cron/day + push-
-    # triggered we'd burn through quota in a week. 4 cron/day is the
-    # sustainable rate.
-    - cron: '30 */6 * * *'
+  # PAUSED 2026-06-30 — user said the game was eating tokens. Removed
+  # the cron schedule (was 4×/day) and push-on-main trigger (could fire
+  # several times an hour during active dev). workflow_dispatch retained
+  # so it can still be triggered manually from the Actions tab.
+  #
+  # To resume scheduled playtests:
+  #   schedule:
+  #     - cron: '30 */6 * * *'
+  #   push:
+  #     branches: [main]
   workflow_dispatch:
-  # Push-triggered: only fires on changes that could affect gameplay
-  # visually. Trims out ROADMAP / docs / workflow churn from triggering
-  # 6-min Godot runs. Saves ~30% of push-triggered minutes.
-  push:
-    branches: [main]
     paths:
       - 'scripts/towers/**'
       - 'scripts/enemies/**'
